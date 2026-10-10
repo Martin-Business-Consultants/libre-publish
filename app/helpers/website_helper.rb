@@ -14,11 +14,23 @@ module WebsiteHelper
   # CMS resolved for it, a collection list's entries say, as data.resolved).
   # A type the theme has no partial for is left out.
   def website_blocks(record)
+    if website_inline_edit && record.respond_to?(:blocks) && record.respond_to?(:expanded_blocks)
+      # Each of the page's own blocks keeps its place in the form, so its
+      # text can be edited where it's drawn; a synced pattern's can't.
+      return safe_join(Array(record.blocks).each_with_index.flat_map do |raw, row|
+        expanded = Page::BlockExpansion.new([raw], live: false).blocks
+        expanded.filter_map { website_block(it, row: (raw.is_a?(Hash) && raw["type"] != "pattern") ? row : nil) }
+      end)
+    end
+
     blocks = record.respond_to?(:expanded_blocks) ? record.expanded_blocks(live: !previewing?) : Array(record.try(:blocks))
     safe_join(blocks.filter_map { website_block(it) })
   end
 
-  def website_block(block)
+  # The editor's preview's markers (Website::InlineEdit), when it's drawing one.
+  def website_inline_edit = controller.instance_variable_get(:@website_inline_edit)
+
+  def website_block(block, row: nil)
     type = block["type"].to_s
     partial = "website/blocks/#{type}"
     unless lookup_context.exists?(partial, [], true)
@@ -26,7 +38,8 @@ module WebsiteHelper
       return
     end
 
-    html = render partial, data: Website::Fields.new(block["data"], website_block_types[type]&.fields, name: type, resolved: block["resolved"])
+    html = render partial, data: Website::Fields.new(block["data"], website_block_types[type]&.fields, name: type, resolved: block["resolved"],
+      inline_edit: website_inline_edit, row: row)
     website_html Cms::Hooks.apply("website.block", html, block: block)
   end
 

@@ -1,0 +1,157 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# The documentation site: docs/*.md and the changelog, rendered into _site/
+# as plain HTML pages with the guides down the side, each page's headings
+# beside it, and a search over all of them. No build tools: Commonmarker
+# and Nokogiri, which the CMS bundles. .github/workflows/docs.yml publishes
+# it to GitHub Pages on every change to main.
+#
+#   bin/docs            # writes _site/
+#   bin/docs --serve    # and serves it at http://localhost:4000
+require "bundler/setup"
+require "commonmarker"
+require "nokogiri"
+require "erb"
+require "json"
+require "fileutils"
+require "cgi"
+
+ROOT = File.expand_path("..", __dir__)
+OUT = File.join(ROOT, "_site")
+REPO = "https://github.com/Martin-Business-Consultants/libre-publish"
+VERSION = File.read(File.join(ROOT, "VERSION")).strip
+
+# The guides, in order, by section: [file, title].
+NAV = [
+  ["Start", [["index.md", "Overview"], ["install.md", "Install"]]],
+  ["Build a site", [["themes.md", "Themes"], ["seo.md", "Search and AI"]]],
+  ["Extend", [["plugins.md", "Plugins"], ["compatibility.md", "Compatibility"]]],
+  ["APIs", [["delivery-api.md", "Delivery API"], ["webhooks.md", "Webhooks"], ["agent-interface.md", "Agents: API, CLI and MCP"]]],
+  ["About", [["vision.md", "Vision"], ["../CHANGELOG.md", "Changelog"]]]
+].freeze
+
+PAGES = NAV.flat_map { |_, pages| pages }
+OPTIONS = {
+  extension: {table: true, strikethrough: true, autolink: true, tasklist: true, header_ids: ""},
+  render: {unsafe: true, hardbreaks: false}
+}.freeze
+
+def output_name(file) = (file == "../CHANGELOG.md") ? "changelog.html" : file.sub(/\.md\z/, ".html")
+
+def source_path(file) = File.expand_path(File.join(ROOT, "docs", file))
+
+# Links between guides, written as `docs/plugins.md`, plugins.md or
+# ../CHANGELOG.md, point at their pages; any other repository path at GitHub.
+def relink(doc)
+  known = PAGES.to_h { |file, _| [File.basename(file).downcase, output_name(file)] }
+  doc.css("a[href]").each do |link|
+    href = link["href"]
+    next if href.start_with?("http", "#", "mailto:")
+
+    path, anchor = href.split("#", 2)
+    target = known[File.basename(path).downcase]
+    link["href"] = target ? [target, anchor].compact.join("#") : "#{REPO}/blob/main/#{path.delete_prefix("../").delete_prefix("docs/../")}"
+  end
+  doc.css("code").each do |code|
+    next if code.ancestors("pre").any? || code.ancestors("a").any?
+
+    name = code.text.delete_prefix("docs/")
+    next unless (target = known[name.downcase]) && code.text.match?(%r{\A(docs/)?[\w-]+\.md\z|\ACHANGELOG\.md\z})
+
+    code.wrap(%(<a href="#{target}"></a>))
+  end
+end
+
+def render_page(file, title)
+  markdown = File.read(source_path(file))
+  doc = Nokogiri::HTML5.fragment(Commonmarker.to_html(markdown, options: OPTIONS, plugins: {syntax_highlighter: nil}))
+  relink(doc)
+  doc.css("h2, h3").each do |heading|
+    heading["id"] ||= heading.text.downcase.strip.gsub(/[^\w\s-]/, "").gsub(/\s+/, "-")
+    heading.add_child(%(<a class="anchor" href="##{heading["id"]}" aria-label="Link to this section">#</a>))
+  end
+  toc = doc.css("h2, h3").map { {level: it.name, id: it["id"], text: it.text.delete_suffix("#").strip} }
+  h1 = doc.at_css("h1")&.text.to_s.strip
+  h1 = title if h1.empty?
+  text = doc.text.gsub(/\s+/, " ").strip
+  {file:, title:, h1:, html: doc.to_html, toc:, text:, headings: toc.map { it[:text] }}
+end
+
+LAYOUT = ERB.new(<<~'HTML', trim_mode: "-")
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><%= h(page[:title]) %> · Libre Publish</title>
+    <meta name="description" content="<%= h(page[:text][0, 155]) %>">
+    <link rel="stylesheet" href="docs.css">
+    <script src="docs.js" defer></script>
+  </head>
+  <body>
+    <header class="top">
+      <a class="brand" href="index.html">Libre Publish <span class="version">v<%= VERSION %></span></a>
+      <div class="search">
+        <input type="search" id="search" placeholder="Search the docs" aria-label="Search the docs" autocomplete="off">
+        <ul id="results" hidden></ul>
+      </div>
+      <a class="repo" href="<%= REPO %>">GitHub</a>
+      <button class="menu" type="button" aria-controls="nav" aria-expanded="false">Menu</button>
+    </header>
+    <div class="layout">
+      <nav id="nav" class="nav" aria-label="Guides">
+        <%- NAV.each do |section, pages| -%>
+        <p class="nav-section"><%= h(section) %></p>
+        <ul>
+          <%- pages.each do |file, label| -%>
+          <li><a href="<%= output_name(file) %>"<%= ' aria-current="page"' if file == page[:file] %>><%= h(label) %></a></li>
+          <%- end -%>
+        </ul>
+        <%- end -%>
+      </nav>
+      <main class="content">
+        <%= page[:html] %>
+        <footer class="pager">
+          <%- if previous -%><a class="prev" href="<%= output_name(previous[0]) %>">← <%= h(previous[1]) %></a><%- end -%>
+          <%- if following -%><a class="next" href="<%= output_name(following[0]) %>"><%= h(following[1]) %> →</a><%- end -%>
+        </footer>
+        <p class="edit"><a href="<%= REPO %>/blob/main/<%= page[:file] == "../CHANGELOG.md" ? "CHANGELOG.md" : "docs/#{page[:file]}" %>">Edit this page on GitHub</a></p>
+      </main>
+      <%- if page[:toc].size > 1 -%>
+      <aside class="toc" aria-label="On this page">
+        <p class="nav-section">On this page</p>
+        <ul>
+          <%- page[:toc].each do |item| -%>
+          <li class="<%= item[:level] %>"><a href="#<%= item[:id] %>"><%= h(item[:text]) %></a></li>
+          <%- end -%>
+        </ul>
+      </aside>
+      <%- end -%>
+    </div>
+  </body>
+  </html>
+HTML
+
+def h(text) = CGI.escapeHTML(text.to_s)
+
+FileUtils.rm_rf(OUT)
+FileUtils.mkdir_p(OUT)
+pages = PAGES.map { |file, title| render_page(file, title) }
+pages.each_with_index do |page, index|
+  previous = index.positive? ? PAGES[index - 1] : nil
+  following = PAGES[index + 1]
+  File.write(File.join(OUT, output_name(page[:file])), LAYOUT.result(binding))
+end
+File.write(File.join(OUT, "search.json"), JSON.generate(pages.map { {url: output_name(it[:file]), title: it[:title], headings: it[:headings], text: it[:text][0, 20_000]} }))
+%w[docs.css docs.js].each { FileUtils.cp(File.join(ROOT, "docs/assets", it), OUT) }
+File.write(File.join(OUT, ".nojekyll"), "")
+puts "Wrote #{pages.size} pages to #{OUT.delete_prefix("#{ROOT}/")}"
+
+if ARGV.include?("--serve")
+  require "webrick"
+  server = WEBrick::HTTPServer.new(Port: 4000, DocumentRoot: OUT, AccessLog: [])
+  trap("INT") { server.shutdown }
+  puts "http://localhost:4000"
+  server.start
+end

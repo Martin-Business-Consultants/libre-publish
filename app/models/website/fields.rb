@@ -18,11 +18,15 @@ class Website::Fields
   # contact details), when it resolves anything.
   attr_reader :name, :resolved
 
-  def initialize(values, fields, name:, resolved: nil)
+  # inline_edit, row: in the editor's preview, the block's place in the
+  # page, so its short text can be edited where it's drawn (Website::InlineEdit).
+  def initialize(values, fields, name:, resolved: nil, inline_edit: nil, row: nil)
     @values = values.is_a?(Hash) ? values.stringify_keys : {}
     @fields = Array(fields).index_by { it["name"].to_s }
     @name = name
     @resolved = resolved
+    @inline_edit = inline_edit
+    @row = row
   end
 
   def [](key)
@@ -48,6 +52,8 @@ class Website::Fields
     when "repeater"
       Array(value).map.with_index { |item, i| self.class.new(item, field["of"], name: "#{name}.#{field["name"]}[#{i}]") }
     when "string_list", "record_refs" then Array(value)
+    when *Website::InlineEdit::EDITABLE_TYPES
+      (@inline_edit && @row) ? @inline_edit.mark("blocks.#{@row}.#{field["name"]}", value) : value
     else value
     end
   end

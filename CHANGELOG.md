@@ -6,6 +6,22 @@ section below. An install is brought to one with `bin/update v1.0.0`, or a
 Kamal site with `kamal deploy -d <site>`. Settings shows when a newer one is
 out.
 
+## 1.17.0
+
+### Added
+- **Edit in place in the preview.** In a page's or entry's Preview tab,
+  click the title or a block's short text (headings, labels, short lines)
+  where the website draws it and type; the change goes into the form, and
+  Save saves it. Markdown and rich text are still edited in the form.
+- **A documentation site**, from `docs/` (`bin/docs`), published to GitHub
+  Pages on every change: the guides down the side, each page's headings
+  beside it, and search.
+
+### Fixed
+- **The admin menu always scrolls to its end.** On a short window, the
+  bottom of the menu could be out of reach; now it scrolls whenever it's
+  taller than the window.
+
 ## 1.16.0
 
 ### Added
