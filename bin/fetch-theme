@@ -29,6 +29,11 @@ if entry.empty?
 end
 
 url, ref = entry.split("#", 2)
+unless url.match?(%r{\A(https://|git@|ssh://|file://|/)})
+  abort "CMS_THEME is #{redact(url).inspect}, which isn't a git URL. Give the theme repository's URL, with a token " \
+    "that can read it for a private one, and a tag or commit:\n" \
+    "  CMS_THEME=\"https://x-access-token:TOKEN@github.com/org/acme-theme#v1.0.0\""
+end
 name = File.basename(url.sub(/\.git\z/, "")).delete_suffix("-theme")
 abort "Can't tell a theme name from #{redact(url)}." if name.empty? || name.start_with?(".")
 directory = File.join(APP_ROOT, "themes", name)
