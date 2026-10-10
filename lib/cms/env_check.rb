@@ -62,7 +62,8 @@ module Cms
     def host
       host = value("APP_HOST")
       if host.nil?
-        @warnings << "APP_HOST isn't set, so links in email, asset URLs and form actions say https://localhost. Set it to the address people use."
+        @warnings << "APP_HOST isn't set, so links in email, asset URLs and form actions use the site URL's host (Settings › General), " \
+                     "or localhost until it's set."
       elsif host.match?(%r{[/:@\s]}) && !host.match?(/\A[^\/:@\s]+:\d+\z/)
         @errors << "APP_HOST is #{host.inspect}: give the host (and port, if any) alone, like cms.example.com — no scheme or path."
       end

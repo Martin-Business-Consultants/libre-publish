@@ -12,10 +12,10 @@ checkout with `bin/install`.
 
 | Variable | What it is |
 |---|---|
-| `APP_HOST` | The address people and the API use (`acme.librepublish.com`). Links in email, the `cms` CLI and agent bootstraps are built from it. |
+| `APP_HOST` | The address people and the API use (`acme.librepublish.com`). Links in email, the `cms` CLI and agent bootstraps are built from it. Optional: without it, the host of the site's URL (Settings › General), since Libre Publish lives on the site's host at `/cms`. |
 | `SITE_KEY` | What the API calls the site — the `tenant` field of webhook envelopes, `/api/manifest` and device login, which integrations match on. Defaults to the first label of `APP_HOST`. Keep it when a site changes host. |
 | `CMS_DATA_DIR` | Databases (`production.sqlite3`, `_cache`, `_queue`, `_cable`), Active Storage files, and `backups/`. Default `storage/` in the app. |
-| `SECRET_KEY_BASE`, `AR_ENCRYPTION_PRIMARY_KEY`, `AR_ENCRYPTION_DETERMINISTIC_KEY`, `AR_ENCRYPTION_KEY_DERIVATION_SALT` | The install's secrets. Losing them loses the sessions and every encrypted value (API tokens, integration keys). Without the `AR_ENCRYPTION_*` keys, encryption keys derive from `SECRET_KEY_BASE`. |
+| `SECRET_KEY_BASE`, `AR_ENCRYPTION_PRIMARY_KEY`, `AR_ENCRYPTION_DETERMINISTIC_KEY`, `AR_ENCRYPTION_KEY_DERIVATION_SALT` | The install's secrets. Losing them loses the sessions and every encrypted value (API tokens, integration keys). Without the `AR_ENCRYPTION_*` keys, encryption keys derive from `SECRET_KEY_BASE`. Optional: an install without `SECRET_KEY_BASE` makes one on its first boot and keeps it in the data directory (`.secret_key_base`), so a host needn't know a Rails app wants one, and a backup of the data directory restores with it. Setting one always wins. |
 | `CMS_PREVIOUS_SECRET_KEY_BASE` | Another install's `secret_key_base`, so values it encrypted stay readable here: a site moved from the old shared deployment, or an install whose `SECRET_KEY_BASE` changed. This install still writes with its own keys; `bin/rails cms:reencrypt` rewrites everything with them, after which this can go. |
 | `SMTP_ADDRESS`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD` | Outbound mail. The address, port and username default to Outsend's relay (`smtp.getoutsend.com`, 2587, `outsend`); the password is its API key. |
 | `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME` | The sender of the install's own mail (password resets, invitations), and the fallback for the site's. Default `noreply@<APP_HOST>`, `Libre Publish`. |
@@ -155,8 +155,11 @@ and a container boot that will migrate take one, and a migration doesn't run
 if it fails. One is also taken every night at 2am (`CMS_BACKUP_NIGHTLY=false`
 turns that off), and handed to `CMS_BACKUP_COMMAND` to copy off the server
 when one is set; a failed copy fails the job. Tools › Backup lists them for
-anyone with `tools:use` to download. Keep the install's secrets with them — a
-backup without its `SECRET_KEY_BASE` can't decrypt its tokens.
+anyone with `tools:use` to download. An install that made its own
+`SECRET_KEY_BASE` keeps it in the data directory, so its backups carry it, and
+whoever holds one can read its tokens: keep backups as private as the server.
+One given `SECRET_KEY_BASE` keeps it out of them; keep it with the backups, as
+a backup without it can't decrypt its tokens.
 
 To restore: stop the app, move the data directory aside, unpack the archive
 into an empty one (`tar -xzf cms-data-….tar.gz -C "$CMS_DATA_DIR"`), start the

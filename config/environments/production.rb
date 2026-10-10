@@ -61,10 +61,11 @@ Rails.application.configure do
   config.solid_queue.connects_to = {database: {writing: :queue}}
 
   # Where this install is reached (Site.host): mail links, the agent
-  # bootstrap, anything built outside a request. Set APP_HOST per install.
-  config.x.app_host = ENV.fetch("APP_HOST", "localhost")
+  # bootstrap, anything built outside a request. APP_HOST, else the site's own
+  # address (Settings › General), since Libre Publish lives on it at /cms.
+  # Mail reads it as it sends (ApplicationMailer#default_url_options).
+  config.x.app_host = ENV["APP_HOST"].presence
   config.x.app_protocol = ENV.fetch("APP_PROTOCOL", "https")
-  config.action_mailer.default_url_options = {host: config.x.app_host, protocol: config.x.app_protocol}
 
   # Outbound email over SMTP, from the install's environment (SMTP_*). It
   # defaults to Outsend's relay (plain auth, username "outsend", the API key

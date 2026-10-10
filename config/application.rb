@@ -2,6 +2,11 @@
 
 require_relative "boot"
 
+# Before anything reads it: a production install with no SECRET_KEY_BASE makes
+# one and keeps it in its data directory (config/secret_key_base.rb).
+require_relative "secret_key_base"
+SecretKeyBase.ensure!
+
 require "rails"
 # Pick the frameworks you want:
 require "active_model/railtie"

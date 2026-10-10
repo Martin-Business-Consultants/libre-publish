@@ -6,6 +6,20 @@ section below. An install is brought to one with `bin/update v1.0.0`, or a
 Kamal site with `kamal deploy -d <site>`. Settings shows when a newer one is
 out.
 
+## 1.8.2
+
+### Changed
+- **No Rails secrets to set.** An install with no `SECRET_KEY_BASE` makes
+  one on its first boot and keeps it in its data directory
+  (`.secret_key_base`, beside the database it protects), so a deploy tool
+  that has never heard of Rails starts it, every later deploy and update
+  finds the same key, and a backup of the data directory restores with it.
+  One that's set always wins, so installs that have one keep it.
+- **APP_HOST is optional.** Without it, links in mail, asset URLs and the
+  API's `cms_url` use the host of the site's URL (Settings › General):
+  Libre Publish lives on the site's own host, at `/cms`. One that's set
+  still wins.
+
 ## 1.8.1
 
 ### Added

@@ -3,7 +3,7 @@
 # The one site this install serves. An install is one customer's CMS: its
 # own process, database and data directory, reached at APP_HOST.
 #
-#   Site.host  # => "acme.librepublish.com"  (APP_HOST)
+#   Site.host  # => "acme.librepublish.com"  (APP_HOST, else the site URL's host)
 #   Site.key   # => "acme"                   (SITE_KEY, else the host's first label)
 #
 # `key` is what the API has always sent as `tenant` (manifest, webhook
@@ -12,8 +12,20 @@
 module Site
   module_function
 
+  # APP_HOST, else the host of the site's own address (Settings › General):
+  # Libre Publish lives on the website's host, at /cms, so a host that never
+  # heard of APP_HOST still gets right links once the site URL is set.
   def host
-    Rails.configuration.x.app_host.to_s
+    Rails.configuration.x.app_host.presence || site_url_host || "localhost"
+  end
+
+  def site_url_host
+    uri = URI.parse(Setting.get("general")["site_base_url"].to_s.strip)
+    return unless uri.host
+
+    uri.port == uri.default_port ? uri.host : "#{uri.host}:#{uri.port}"
+  rescue URI::InvalidURIError, ActiveRecord::ActiveRecordError
+    nil
   end
 
   def key
