@@ -11,6 +11,11 @@ out.
 ### Fixed
 - **Collapsing the menu.** Folded to icons, the menu left its full-width gray
   column behind, covering the left of the page; the column now folds with it.
+- **Saving from the preview** looked stuck on "Saving…": the save went
+  through, but the page came back with the preview as it was. Now the
+  preview is drawn again with what was saved and says "Saved ✓"; a save that
+  can't go through (a required field left empty) says so and opens the Edit
+  tab to show why.
 
 ## 1.18.0
 
