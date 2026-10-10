@@ -27,7 +27,7 @@ RSpec.describe "The admin layout", type: :request do
     expect(submenu_labels("Tools")).to start_with("Block types", "Developers", "Redirects")
     expect(menu_labels).not_to include("Approvals")
     expect(submenu_labels("Pages")).to eq(["All pages", "Add new"])
-    expect(submenu_labels("Tools")).to eq(["Block types", "Developers", "Redirects", "Sitemap", "Webhooks", "Backup"])
+    expect(submenu_labels("Tools")).to eq(["Block types", "Developers", "Redirects", "Search and replace", "Sitemap", "Webhooks", "Backup"])
   end
 
   it "lists each collection under Collections, and every settings section under Settings" do
@@ -53,7 +53,7 @@ RSpec.describe "The admin layout", type: :request do
     expect(menu_labels).not_to include("Collections", "Users", "Trash")
     expect(submenu_labels("Pages")).to eq(["All pages"])
     # Developers and the sitemap are tools, readable with pages:read.
-    expect(submenu_labels("Tools")).to eq(["Developers", "Sitemap"])
+    expect(submenu_labels("Tools")).to eq(["Developers", "Search and replace", "Sitemap"])
     expect(response.body).not_to include(">Page</a>")
   end
 

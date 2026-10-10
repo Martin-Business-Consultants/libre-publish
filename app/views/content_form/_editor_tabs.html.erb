@@ -10,7 +10,7 @@
 <% preview = kind.in?(%w[page entry]) && Website.enabled? %>
 <% tab_classes = "editor-tabs__tab -mb-px inline-flex items-center gap-1.5 border-b-2 px-3 pb-2.5 pt-1 text-sm font-medium" %>
 <% if record.persisted? %>
-  <%= tag.div data: { controller: class_names("tabs", "website-preview": preview), action: ("tabs:shown->website-preview#shown" if preview),
+  <%= tag.div data: { controller: ["tabs", ("website-preview" if preview)].compact.join(" "), action: ("tabs:shown->website-preview#shown" if preview),
         website_preview_form_value: ("#{kind}_form" if preview) } do %>
     <nav class="mb-6 flex gap-1 overflow-x-auto border-b border-gray-200" role="tablist" aria-label="View">
       <a href="#edit" role="tab" class="<%= tab_classes %>" data-tab="edit" data-tabs-target="tab" data-action="tabs#select">Edit</a>

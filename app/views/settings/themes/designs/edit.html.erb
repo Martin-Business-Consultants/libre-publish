@@ -23,7 +23,7 @@
             <%= settings_field setting.label, hint: setting.help do %>
               <% case setting.type %>
               <% when "color" %>
-                <%= form.color_field setting.name, value: value, class: "h-10 w-20" %>
+                <%= form.color_field setting.name, value: value, class: "h-10 w-24" %>
               <% when "select" %>
                 <%= form.select setting.name, setting.options.keys.map { |option| [option.humanize, option] }, { selected: value }, class: "w-full" %>
               <% else %>
