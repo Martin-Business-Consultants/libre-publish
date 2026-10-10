@@ -6,6 +6,14 @@ section below. An install is brought to one with `bin/update v1.0.0`, or a
 Kamal site with `kamal deploy -d <site>`. Settings shows when a newer one is
 out.
 
+## 1.12.1
+
+### Fixed
+- **The menu's fly-outs can't be hidden.** An open fly-out now shows in
+  the browser's top layer (the Popover API), above everything on the page
+  and clipped by nothing, so no page's stacking or scrolling, and no
+  browser's handling of a scrolling menu, can cover it.
+
 ## 1.12.0
 
 ### Added
