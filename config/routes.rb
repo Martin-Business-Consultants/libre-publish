@@ -23,6 +23,22 @@ Rails.application.routes.draw do
   # The admin: everything an editor signs in to. A path-only scope, so the
   # route helpers keep their names (pages_path is /cms/pages).
   scope path: Cms::PATH do
+    # The media library, at /cms/media. Folders are paths on assets
+    # (AssetFolders); the folder resource is addressed by ?path=. The route
+    # helpers keep the file_manager name; /file_manager links from before land
+    # here.
+    get "media", to: "file_manager#index", as: :file_manager
+    get "file_manager(/*rest)", to: redirect { |params, request| "/#{Cms::PATH}/media#{"/" + params[:rest] if params[:rest]}#{"?" + request.query_string if request.query_string.present?}" }
+    namespace :file_manager, path: "media" do
+      resources :assets, only: [:show, :create, :update, :destroy]
+      resource :folder, only: [:create, :update, :destroy]
+      resources :moves, only: :create
+      resources :bulk_deletions, only: :create
+      resources :bulk_uploads, only: [:create, :show]
+    end
+    # The picker a content form's asset fields open.
+    resource :asset_picker, only: [:show, :create]
+
     get "/", to: "home#index", as: :cms
 
     get  "sign_in", to: "sessions#new", as: :sign_in
@@ -212,6 +228,8 @@ Rails.application.routes.draw do
       namespace :plugins do
         resources :installations, only: :create
       end
+      # The plugins that are themes (Website.themes), with installing one.
+      resources :themes, only: :index
       resources :plugins, only: [:index, :show, :destroy], param: :key do
         scope module: :plugins do
           resource :activation, only: [:create, :destroy]
@@ -244,6 +262,11 @@ Rails.application.routes.draw do
   end
 
   namespace :api, defaults: {format: :json} do
+    resources :assets, only: [:index, :create, :show, :update, :destroy]
+    # Folders are paths on assets, not records: one resource, addressed by path.
+    resource :asset_folders, only: [:create, :update, :destroy]
+    resources :bulk_uploads, only: [:create, :show]
+
     # The delivery API: what a site reads to build and serve itself, live
     # content only, one answer shape (Api::V1::BaseController).
     namespace :v1 do

@@ -1,0 +1,84 @@
+/* The media library (file_manager/index), its asset picker and dropping files
+   on it: only what the markup's classes can't say. */
+@layer components {
+  /* A thumbnail's square (.media-thumb) fills with the picture:
+     asset_thumbnail draws a bare <img>. */
+  .media-thumb img {
+    block-size: 100%;
+    inline-size: 100%;
+    object-fit: cover;
+  }
+
+  /* A tile (in the grid, or the picker's) rings its square while it's
+     pointed at, focused or, in Bulk select, ticked. */
+  .media-tile:hover .media-thumb,
+  .media-tile:focus-visible .media-thumb,
+  .media-tile:has(:focus-visible) .media-thumb,
+  .media-library:has([data-media-bulk]:checked) .media-tile:has(:checked) .media-thumb {
+    outline: 2px solid var(--color-blue-600);
+    outline-offset: 2px;
+  }
+
+  /* The pagination frames the grid loads into lay their tiles out in it. */
+  .media-grid turbo-frame {
+    display: contents;
+  }
+
+  /* Bulk select: a checkbox dressed as a button. Ticked, it reads Cancel,
+     shows the bulk actions, and each tile, above its link, becomes its own
+     tick. In the list (no Bulk select) the bulk actions always show. */
+  .media-toolbar__bulk-off {
+    display: none;
+  }
+
+  .media-library:has([data-media-bulk]:checked) {
+    .media-toolbar__bulk-on {
+      display: none;
+    }
+
+    .media-toolbar__bulk-off {
+      display: inline;
+    }
+
+    .media-tile__select {
+      display: block;
+    }
+  }
+
+  .media-bulk-actions {
+    display: flex;
+  }
+
+  .media-library:has([data-media-bulk]:not(:checked)) .media-bulk-actions {
+    display: none;
+  }
+
+  .media-tile__select {
+    display: none;
+  }
+
+  /* A file's details: the picture, whole, at most half the screen tall. */
+  .media-details__preview img {
+    max-block-size: 50dvh;
+    max-inline-size: 100%;
+    object-fit: contain;
+  }
+
+  /* New folder / Rename folder: open, the form takes the row's width. */
+  .file-manager__inline-form[open] {
+    flex-basis: 100%;
+  }
+
+  /* Files dragged over the library (file_drop_controller): the overlay shows
+     (it toggles [hidden]) over a faint wash of the accent, and the folder
+     they'd land in is ringed. */
+  .file-drop__overlay {
+    background-color: color-mix(in oklch, var(--color-blue-600) 8%, transparent);
+    display: flex;
+  }
+
+  .file-drop__folder--over {
+    outline: 2px solid var(--color-blue-600);
+    outline-offset: 2px;
+  }
+}

@@ -42,7 +42,10 @@ module NavigationHelper
         ["Backup", :tools_backup_path, "tools:use"]
       ]},
       # What this install adds to the core, and switching it on (Settings::PluginsController).
-      {id: :plugins, label: "Plugins", icon: "package", path: :settings_plugins_path, capability: "settings:read"}
+      {id: :plugins, label: "Plugins", icon: "package", path: :settings_plugins_path, capability: "settings:read", submenu: [
+        ["Installed plugins", :settings_plugins_path, "settings:read"],
+        ["Themes", :settings_themes_path, "settings:read"]
+      ]}
     ],
     "Access" => [
       {id: :users, label: "Users", icon: "everyone", path: :users_path, capability: "users:read", submenu: [

@@ -14,7 +14,7 @@ class Settings::PluginsController < Settings::BaseController
 
   def index
     PluginChange.reconcile
-    @plugins = Cms::Plugins.manifests.values.sort_by(&:name)
+    @plugins = Cms::Plugins.manifests.values.reject { Website.themes.key?(it.key.to_s) }.sort_by(&:name)
     @change = PluginChange.current
     @changes = PluginChange.ordered.includes(:requested_by).limit(10)
   end
@@ -24,9 +24,9 @@ class Settings::PluginsController < Settings::BaseController
 
   def destroy
     change = PluginChange.remove(params[:key], by: Current.user, purge_data: params[:purge_data] == "1")
-    redirect_to settings_plugins_path, notice: "#{change.summary}. The CMS restarts when it's done; this page shows how it went."
+    redirect_to plugins_page, notice: "#{change.summary}. The CMS restarts when it's done; this page shows how it went."
   rescue PluginChange::Refused, ActiveRecord::RecordInvalid => error
-    redirect_to settings_plugins_path, alert: error.message
+    redirect_to plugins_page, alert: error.message
   end
 
   private

@@ -189,7 +189,8 @@ class PluginChange < ApplicationRecord
     migrations = target.glob("db/migrate/*.rb").map { it.basename.to_s[/\A\d+/] }.compact
     FileUtils.rm_rf(previous)
     File.rename(target, previous)
-    Cms::Plugins.switch!(key, on: false) if Cms::Plugins.manifests.key?(key.to_sym)
+    # A plugin the core took in (media) stays on: the core's is what runs.
+    Cms::Plugins.switch!(key, on: false) if Cms::Plugins.manifests.key?(key.to_sym) && !InstalledPlugins::ABSORBED.key?(key)
     purge(migrations) if purge_data?
   end
 

@@ -9,19 +9,19 @@ class Settings::Plugins::ActivationsController < Settings::BaseController
 
   def create
     if !@plugin.compatible?
-      redirect_to settings_plugins_path, alert: "#{@plugin.name} needs CMS #{@plugin.requires}; this is #{Cms::VERSION}."
+      redirect_to plugins_page, alert: "#{@plugin.name} needs CMS #{@plugin.requires}; this is #{Cms::VERSION}."
     else
       @granted = Cms::Plugins.switch!(@plugin.key, on: true)
       Event.record("plugin.enabled", plugin: @plugin.key.to_s, version: @plugin.version)
       Event.record("plugin.permissions_granted", plugin: @plugin.key.to_s, roles: @granted) if @granted.any?
-      redirect_to settings_plugins_path, notice: activation_notice
+      redirect_to plugins_page, notice: activation_notice
     end
   end
 
   def destroy
     Cms::Plugins.switch!(@plugin.key, on: false)
     Event.record("plugin.disabled", plugin: @plugin.key.to_s, version: @plugin.version)
-    redirect_to settings_plugins_path, notice: "#{@plugin.name} is off. Its data stays until you switch it on again."
+    redirect_to plugins_page, notice: "#{@plugin.name} is off. Its data stays until you switch it on again."
   end
 
   private

@@ -20,11 +20,13 @@ module Website
   Theme = Data.define(:key, :name, :version, :views, :importmap)
 
   mattr_accessor :theme
+  # Every theme that registered, by key (Settings › Themes lists them).
+  mattr_reader :themes, default: {}
 
   module_function
 
   def register(key, name:, version:, views:, importmap: Importmap::Map.new)
-    self.theme = Theme.new(key: key.to_s, name:, version:, views: views.to_s, importmap:)
+    self.theme = themes[key.to_s] = Theme.new(key: key.to_s, name:, version:, views: views.to_s, importmap:)
   end
 
   # A theme installed from Settings › Plugins is a plugin too, and draws the

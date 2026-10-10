@@ -10,6 +10,10 @@ class Settings::BaseController < ApplicationController
 
   def settings_screen? = true
 
+  # Where installing, updating or removing a plugin goes back to: Settings ›
+  # Themes when it was started there (from=themes), else Settings › Plugins.
+  def plugins_page = (params[:from] == "themes") ? settings_themes_path : settings_plugins_path
+
   # For what restarts or replaces the install (an update, a plugin's code),
   # which takes an admin, not just settings:write.
   def require_admin
