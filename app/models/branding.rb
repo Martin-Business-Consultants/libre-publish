@@ -97,7 +97,7 @@ class Branding
     900 => "color-mix(in oklch, %s 56%%, black)"
   }.freeze
 
-  # Corners: the radii Litewind's rounded-sm/-md/-lg/-xl read (badges,
+  # Corners: the radii the utilities' rounded-sm/-md/-lg/-xl read (badges,
   # controls, notices, panels and menus).
   CORNERS = {
     "none" => {sm: "0", md: "0", lg: "0", xl: "0"},

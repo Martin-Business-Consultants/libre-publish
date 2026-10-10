@@ -4,7 +4,7 @@
 
 /* Lexxy, the rich text editor (content_form/fields/_rich_text), draws its own
    DOM, so it's styled here rather than in the markup: its colors read
-   Litewind's gray and accent, which the dark theme re-points (_global.css),
+   the gray and accent tokens, which the dark theme re-points (_global.css),
    so the editor turns over with the rest of the admin. */
 :root {
   --lexxy-color-ink: var(--color-gray-900);

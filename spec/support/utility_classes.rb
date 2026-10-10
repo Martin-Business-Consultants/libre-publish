@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
-# What each Litewind class sets, read from the vendored stylesheet and the
-# app's tailwind-extras.css, so specs can tell when one element's classes
-# fight: two classes under the same variant (none, hover:, md:…) setting the
-# same property, like text-gray-600 beside text-blue-600, where which wins
-# depends on where Litewind happens to define them.
-module Litewind
-  SOURCES = ["vendor/assets/stylesheets/litewind-*.css", "app/assets/stylesheets/tailwind-extras.css"].freeze
+# What each utility class sets, read from lib/assets/stylesheets/utilities.css
+# and the app's tailwind-extras.css, so specs can tell when one element's
+# classes fight: two classes under the same variant (none, hover:, md:…)
+# setting the same property, like text-gray-600 beside text-blue-600, where
+# which wins depends on where the stylesheet happens to define them.
+module UtilityClasses
+  SOURCES = ["lib/assets/stylesheets/utilities.css", "app/assets/stylesheets/tailwind-extras.css"].freeze
 
   # Properties that come along with others and don't decide anything alone.
   IGNORED = %w[line-height].freeze
@@ -86,11 +86,11 @@ module Litewind
 
   # In the test environment, ui() and class_names check what they return.
   module Checked
-    def ui(...) = Litewind.check!(super)
-    def token_list(...) = Litewind.check!(super)
-    def class_names(...) = Litewind.check!(super)
+    def ui(...) = UtilityClasses.check!(super)
+    def token_list(...) = UtilityClasses.check!(super)
+    def class_names(...) = UtilityClasses.check!(super)
   end
 end
 
-UiHelper.prepend(Litewind::Checked)
-ActionView::Helpers::TagHelper.prepend(Litewind::Checked)
+UiHelper.prepend(UtilityClasses::Checked)
+ActionView::Helpers::TagHelper.prepend(UtilityClasses::Checked)

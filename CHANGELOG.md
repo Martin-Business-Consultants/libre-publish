@@ -6,6 +6,23 @@ section below. An install is brought to one with `bin/update v1.0.0`, or a
 Kamal site with `kamal deploy -d <site>`. Settings shows when a newer one is
 out.
 
+## 1.9.0
+
+### Changed
+- **The admin's classic look is back.** The admin is drawn as it was before
+  1.0's Litewind restyle (Fizzy's look): cool ink grays, a gray menu and
+  admin bar, 3px corners, semibold buttons and labels, bold page titles,
+  uppercase status badges, and a blue accent (primary buttons, links,
+  focus) until Settings › Branding sets a primary color. Layout, markup and
+  behaviour are unchanged, and the branding's color, type, corners and
+  shadow still reach every screen.
+- **The admin's CSS is all ours.** Litewind is gone: the utility classes the
+  admin uses (307 of them, Tailwind's definitions, MIT) live in
+  `lib/assets/stylesheets/utilities.css`, 45KB in place of 1.2MB, served as
+  written with no build. A plugin's views keep using the same class names;
+  one that needs a class the admin doesn't add it to its own stylesheet
+  (STYLE.md).
+
 ## 1.8.2
 
 ### Changed

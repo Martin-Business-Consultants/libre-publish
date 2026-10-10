@@ -1,14 +1,15 @@
-/* The admin is styled with Litewind (vendor/assets/stylesheets), Tailwind's
-   utilities compiled ahead of time so there's no build step: classes in the
-   markup, and app/assets/stylesheets only for what classes can't say (state,
-   behaviour, third-party DOM). STYLE.md has the conventions.
+/* The admin is styled with Tailwind's utility classes, our own copy of the
+   ones it uses (lib/assets/stylesheets/utilities.css), served as written:
+   classes in the markup, and app/assets/stylesheets only for what classes
+   can't say (state, behaviour, third-party DOM). STYLE.md has the
+   conventions.
 
-   Litewind's @layer statement loads first and fixes the order; the app's
-   rules join the same layers, so a utility in the markup beats a component
-   rule. */
+   utilities.css's @layer statement loads first and fixes the order; the
+   app's rules join the same layers, so a utility in the markup beats a
+   component rule. */
 @layer theme, base, components, utilities;
 
-/* Tokens are unlayered: they win over Litewind's theme layer, and
+/* Tokens are unlayered: they win over utilities.css's theme layer, and
    /branding.css (Branding#stylesheet) and the dark theme below win over these.
 
    Every screen is drawn from Settings › Branding's color, type and surface,
@@ -17,44 +18,46 @@
    - Color. Two families mean something. gray is the neutral (a bg-white
      canvas, the bg-gray-50 sidebar, gray-200 hairlines, gray-900 text), every
      step mixed from --neutral-tint: the branding's secondary color tints the
-     grays with its hue, faintly, at fixed lightness. blue is the accent
-     (primary buttons, links, focus, selection, what's current), read from
-     --accent-*: the branding's primary color, or until one is set an ink
-     drawn from the same tint, Payload's monochrome. red, green and yellow are
-     for status. Litewind has no dark: variant, so the dark theme re-points
+     grays with its hue, at fixed lightness. blue is the accent (primary
+     buttons, links, focus, selection, what's current), read from --accent-*:
+     the branding's primary color, or until one is set the classic blue. red,
+     green and yellow are for status. There's no dark: variant, so the dark theme re-points
      these families' steps instead and the same classes read in both. Other
      families don't, so the markup doesn't use them.
    - Type. --font-sans, the branding's font; every class and control reads it.
-   - Surface. Litewind's rounded-* read --radius-*, which the branding's
-     corners set; shadow-surface (panels) and shadow-overlay (menus,
+   - Surface. rounded-* read --radius-* (3px until the branding's
+     corners set them); shadow-surface (panels) and shadow-overlay (menus,
      dialogs, sheets, toasts) read --shadow-*, which its shadow sets. */
 :root {
   --font-sans: "Inter", "InterVariable", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Text", "Segoe UI", "Adwaita Sans", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
 
-  /* Achromatic until branding sets a secondary color. */
-  --neutral-tint: oklch(50% 0 0);
-  --color-gray-50: oklch(from var(--neutral-tint) 98.5% min(calc(c * 0.25), 0.03) h);
-  --color-gray-100: oklch(from var(--neutral-tint) 97% min(calc(c * 0.25), 0.03) h);
-  --color-gray-200: oklch(from var(--neutral-tint) 92.2% min(calc(c * 0.25), 0.03) h);
-  --color-gray-300: oklch(from var(--neutral-tint) 87% min(calc(c * 0.25), 0.03) h);
-  --color-gray-400: oklch(from var(--neutral-tint) 70.8% min(calc(c * 0.25), 0.03) h);
-  --color-gray-500: oklch(from var(--neutral-tint) 55.6% min(calc(c * 0.25), 0.03) h);
-  --color-gray-600: oklch(from var(--neutral-tint) 43.9% min(calc(c * 0.25), 0.03) h);
-  --color-gray-700: oklch(from var(--neutral-tint) 37.1% min(calc(c * 0.25), 0.03) h);
-  --color-gray-800: oklch(from var(--neutral-tint) 26.9% min(calc(c * 0.25), 0.03) h);
-  --color-gray-900: oklch(from var(--neutral-tint) 20.5% min(calc(c * 0.25), 0.03) h);
+  /* Fizzy's ink until branding sets a secondary color: cool grays, tinted a
+     little more as they darken. The branding's secondary color sets the hue
+     and how strongly (capped, so text stays text). */
+  --neutral-tint: oklch(50% 0.05 262);
+  --color-gray-50: oklch(from var(--neutral-tint) 96.5% min(calc(c * 0.04), 0.004) h);
+  --color-gray-100: oklch(from var(--neutral-tint) 94% min(calc(c * 0.06), 0.006) h);
+  --color-gray-200: oklch(from var(--neutral-tint) 91% min(calc(c * 0.08), 0.008) h);
+  --color-gray-300: oklch(from var(--neutral-tint) 84% min(calc(c * 0.1), 0.01) h);
+  --color-gray-400: oklch(from var(--neutral-tint) 70% min(calc(c * 0.16), 0.016) h);
+  --color-gray-500: oklch(from var(--neutral-tint) 56% min(calc(c * 0.28), 0.028) h);
+  --color-gray-600: oklch(from var(--neutral-tint) 48% min(calc(c * 0.4), 0.04) h);
+  --color-gray-700: oklch(from var(--neutral-tint) 40% min(calc(c * 0.52), 0.05) h);
+  --color-gray-800: oklch(from var(--neutral-tint) 33% min(calc(c * 0.7), 0.06) h);
+  --color-gray-900: oklch(from var(--neutral-tint) 26% min(calc(c * 1), 0.07) h);
 
-  /* Ink until branding sets a primary color. */
-  --accent-50: oklch(from var(--neutral-tint) 95.5% min(calc(c * 0.25), 0.03) h);
-  --accent-100: oklch(from var(--neutral-tint) 92% min(calc(c * 0.25), 0.03) h);
-  --accent-200: oklch(from var(--neutral-tint) 86% min(calc(c * 0.25), 0.03) h);
-  --accent-300: oklch(from var(--neutral-tint) 78% min(calc(c * 0.25), 0.03) h);
-  --accent-400: oklch(from var(--neutral-tint) 62% min(calc(c * 0.25), 0.03) h);
-  --accent-500: oklch(from var(--neutral-tint) 44% min(calc(c * 0.25), 0.03) h);
-  --accent-600: oklch(from var(--neutral-tint) 21% min(calc(c * 0.25), 0.03) h);
-  --accent-700: oklch(from var(--neutral-tint) 15% min(calc(c * 0.25), 0.03) h);
-  --accent-800: oklch(from var(--neutral-tint) 12% min(calc(c * 0.25), 0.03) h);
-  --accent-900: oklch(from var(--neutral-tint) 9% min(calc(c * 0.25), 0.03) h);
+  /* Fizzy's blue until branding sets a primary color: links, the primary
+     button, focus, what's current. */
+  --accent-50: oklch(96% 0.016 252);
+  --accent-100: oklch(92% 0.026 254);
+  --accent-200: oklch(84% 0.072 255);
+  --accent-300: oklch(75% 0.13 256);
+  --accent-400: oklch(66% 0.196 258);
+  --accent-500: oklch(62% 0.195 259);
+  --accent-600: oklch(57% 0.19 260);
+  --accent-700: oklch(48% 0.18 261);
+  --accent-800: oklch(40% 0.166 262);
+  --accent-900: oklch(26% 0.126 264);
   /* Words on an accent fill (text-on-accent, tailwind-extras.css). */
   --on-accent: #fff;
 
@@ -69,13 +72,21 @@
   --color-blue-800: var(--accent-800);
   --color-blue-900: var(--accent-900);
 
+  /* Fizzy's corners, 3px, until branding sets its own. */
+  --radius-xs: 2px;
+  --radius-sm: 3px;
+  --radius-md: 3px;
+  --radius-lg: 3px;
+  --radius-xl: 3px;
+  --radius-2xl: 4px;
+
   --page-dark: oklch(from var(--neutral-tint) 19.5% min(calc(c * 0.25), 0.03) h);
   --surface-dark: oklch(from var(--neutral-tint) 16% min(calc(c * 0.25), 0.03) h);
 
   /* Flat panels and a soft lift for what floats, until branding sets a
      shadow. */
   --shadow-surface: 0 0 #0000;
-  --shadow-overlay: 0 0 0 1px rgb(0 0 0 / 0.04), 0 10px 16px rgb(0 0 0 / 0.08), 0 2px 6px rgb(0 0 0 / 0.12);
+  --shadow-overlay: 0 0 0 1px oklch(0% 0 0 / 4%), 0 2px 4px oklch(0% 0 0 / 4%), 0 12px 32px -8px oklch(0% 0 0 / 12%);
 
   --focus-ring: 2px solid var(--color-blue-500);
 

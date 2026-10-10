@@ -2,10 +2,10 @@
 
 require "rails_helper"
 
-# The admin is styled with Litewind's precompiled Tailwind utilities
-# (vendor/assets/stylesheets, STYLE.md), which hold most of Tailwind but not
-# all of it: a class Litewind doesn't have silently does nothing. So every
-# class the views and helpers write must be one Litewind defines, one the
+# The admin is styled with Tailwind's utility classes, the ones it uses, in
+# lib/assets/stylesheets/utilities.css (STYLE.md). A class that file doesn't
+# have silently does nothing.
+# So every class the views and helpers write must be one it defines, one the
 # app's stylesheets define (tailwind-extras.css, and the hooks that state and
 # behaviour rules hang on), or a hook JavaScript or a spec looks for.
 RSpec.describe "Architecture: classes in the markup exist" do
@@ -21,25 +21,25 @@ RSpec.describe "Architecture: classes in the markup exist" do
   STRING = /"([^"#]*)"/
   SYMBOL_KEY = /(?<![\w"])([a-z][\w-]*):(?!:)/
 
-  it "writes only classes Litewind, the app's stylesheets or a hook define" do
-    known = litewind_classes | stylesheet_classes | hook_classes
+  it "writes only classes the utilities, the app's stylesheets or a hook define" do
+    known = utility_classes | stylesheet_classes | hook_classes
     offenders = used_classes.reject { |name, _| known.include?(name) }
 
     expect(offenders).to be_empty, <<~MESSAGE
       Classes nothing defines:
       #{offenders.map { |name, file| "  #{name} (#{file})" }.join("\n")}
-      Use one Litewind has (vendor/assets/stylesheets), or add Tailwind's
+      Use one lib/assets/stylesheets/utilities.css has, or add Tailwind's
       definition to app/assets/stylesheets/tailwind-extras.css.
     MESSAGE
   end
 
   it "never gives one element two classes that set the same property" do
     offenders = class_lists.flat_map do |file, list|
-      Litewind.conflicts(list).map { |first, second, shared| "  #{first} and #{second} (#{shared.join(", ")}) in #{file}" }
+      UtilityClasses.conflicts(list).map { |first, second, shared| "  #{first} and #{second} (#{shared.join(", ")}) in #{file}" }
     end
 
     expect(offenders).to be_empty, <<~MESSAGE
-      Classes that fight over a property (which wins depends on Litewind's
+      Classes that fight over a property (which wins depends on the stylesheet's
       order, not the markup's):
       #{offenders.uniq.join("\n")}
     MESSAGE
@@ -103,8 +103,8 @@ RSpec.describe "Architecture: classes in the markup exist" do
     source[/UI_RECIPES = \{.*?^  \}\.freeze/m].to_s.scan(/:\s*"([^"]*)"/).flatten
   end
 
-  def litewind_classes
-    Dir.glob(Rails.root.join("vendor/assets/stylesheets/litewind-*.css")).flat_map do |file|
+  def utility_classes
+    Dir.glob(Rails.root.join("lib/assets/stylesheets/utilities.css")).flat_map do |file|
       File.read(file).scan(/^\s*\.((?:\\.|[^\s,{:\\])+(?:\\:(?:\\.|[^\s,{:\\])+)*)/).flatten.map { it.delete("\\") }
     end.to_set
   end
@@ -119,7 +119,7 @@ RSpec.describe "Architecture: classes in the markup exist" do
   # classList calls and className assignments, and in class="…" a spec
   # expects.
   def hook_classes
-    Dir.glob(HOOK_SOURCES, base: Rails.root.to_s).excluding("spec/architecture/litewind_classes_spec.rb").flat_map do |file|
+    Dir.glob(HOOK_SOURCES, base: Rails.root.to_s).excluding("spec/architecture/utility_classes_spec.rb").flat_map do |file|
       source = Rails.root.join(file).read
       selectors = source.scan(/(?:querySelector(?:All)?|closest|matches|at_css|css|have_css|have_selector)\(\s*["'`]([^"'`]*)/).flatten
       lists = source.scan(/classList\.\w+\(([^)]*)\)/).flatten.flat_map { it.scan(/["'`]([^"'`]*)["'`]/).flatten }
