@@ -174,6 +174,7 @@ module WebsiteHelper
       tag.meta(name: "robots", content: robots),
       *website_hreflang_tags(record),
       (tag.link(rel: "alternate", type: "text/markdown", href: website_url(website_markdown_path(record))) if record.respond_to?(:public_path) && !robots.include?("noindex")),
+      *website_feed_tags,
       tag.meta(property: "og:type", content: seo["og_type"].presence || (article ? "article" : "website")),
       tag.meta(property: "og:site_name", content: website_settings["title"]),
       tag.meta(property: "og:title", content: og_title),

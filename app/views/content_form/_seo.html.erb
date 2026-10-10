@@ -9,6 +9,15 @@
 <% seo_scope = content_scope(scope)["seo"] %>
 <%= tag.section class: ui(:panel), data: ({ tab: "seo", tabs_target: "panel" } if record.persisted?), hidden: record.persisted? do %>
   <h2 class="<%= ui(:heading, "border-b border-gray-200 px-5 py-3.5") %>">SEO</h2>
+  <% checks = record.persisted? ? SeoAudit.new.for_record(record) : [] %>
+  <% if checks.any? %>
+    <ul class="space-y-1 border-b border-gray-200 px-5 py-3.5 text-sm" aria-label="SEO checks">
+      <% checks.each_with_index do |issue, index| %>
+        <%# herb:key index %>
+        <li class="<%= issue.problem? ? "text-red-600" : "text-gray-700" %>"><%= issue.message %></li>
+      <% end %>
+    </ul>
+  <% end %>
   <div class="divide-y divide-gray-200">
     <% [ [ "Search", SeoFields::SEARCH ], [ "Social sharing", SeoFields::SOCIAL ], [ "Structured data", SeoFields::STRUCTURED ] ].each do |title, fields| %>
       <%# herb:key title %>

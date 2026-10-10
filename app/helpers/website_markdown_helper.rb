@@ -42,6 +42,40 @@ module WebsiteMarkdownHelper
     lines.join("\n") + "\n"
   end
 
+  # A collection's RSS: each entry's title, address, date and description.
+  def website_feed_xml(collection, entries)
+    general = website_settings
+    require "builder"
+    xml = ::Builder::XmlMarkup.new
+    xml.instruct! :xml, version: "1.0", encoding: "UTF-8"
+    xml.rss(version: "2.0", "xmlns:atom": "http://www.w3.org/2005/Atom") do
+      xml.channel do
+        xml.title [collection.name, general["title"].presence].compact.join(" — ")
+        xml.link website_url("/")
+        xml.description general["description"].presence || collection.name
+        xml.tag! "atom:link", href: website_url("/#{collection.slug}/feed.xml"), rel: "self", type: "application/rss+xml"
+        xml.lastBuildDate entries.map(&:updated_at).max&.rfc2822 if entries.any?
+        entries.each do |entry|
+          xml.item do
+            xml.title entry.title
+            xml.link website_url(entry.public_path)
+            xml.guid website_url(entry.public_path), isPermaLink: "true"
+            xml.pubDate (entry.published_at || entry.created_at).rfc2822
+            summary = entry.seo.to_h["meta_description"].presence || entry.frontmatter.to_h.values_at("excerpt", "summary", "description").compact_blank.first
+            xml.description website_plain_text(summary) if summary.present?
+          end
+        end
+      end
+    end
+  end
+
+  # Every feed the website has, for a page's <head>.
+  def website_feed_tags
+    @website_feed_tags ||= Collection.order(:name).select { lookup_context.exists?("website/entries/#{it.slug}", [], false, [], formats: [:html]) }.map do |collection|
+      tag.link(rel: "alternate", type: "application/rss+xml", title: collection.name, href: website_url("/#{collection.slug}/feed.xml"))
+    end
+  end
+
   private
 
   def website_sitemap_records(entries)

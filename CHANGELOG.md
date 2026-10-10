@@ -6,6 +6,23 @@ section below. An install is brought to one with `bin/update v1.0.0`, or a
 Kamal site with `kamal deploy -d <site>`. Settings shows when a newer one is
 out.
 
+## 1.16.0
+
+### Added
+- **IndexNow.** When a page or entry is published, changed or taken down,
+  the CMS tells IndexNow's search engines at once (Bing, which ChatGPT
+  search draws on, Yandex and others), with a key it serves itself. Only
+  for a website on a public address; Settings › Search turns it off.
+- **RSS feeds.** Every collection the theme draws has `/<collection>/feed.xml`
+  with its newest entries, linked from each page's `<head>`.
+- **Tools › SEO audit.** Pages and entries without a meta description or
+  with one too short or long, titles cut off in results, the same title
+  or description twice, links to pages that don't exist, images without
+  alt text, and the site-wide details search engines and AI tie everything
+  to. Each one links to where it's fixed.
+- **SEO checks in the editor.** A page's or entry's SEO tab lists its own
+  issues above the fields.
+
 ## 1.15.0
 
 ### Added

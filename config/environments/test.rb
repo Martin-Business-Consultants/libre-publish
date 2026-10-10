@@ -48,6 +48,10 @@ Rails.application.configure do
   config.x.app_protocol = "http"
   config.action_mailer.default_url_options = {host: "example.com"}
 
+  # Specs that publish pages don't tell real search engines (IndexNow); its
+  # own specs switch it back on.
+  config.x.indexnow = false
+
   # Print deprecation notices to the stderr.
   config.active_support.deprecation = :stderr
 
