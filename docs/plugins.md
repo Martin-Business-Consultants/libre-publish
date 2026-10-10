@@ -14,13 +14,16 @@ carries it.
 |---|---|---|---|
 | Hello (`engines/hello`) | `hello` | development and test only | The reference plugin |
 
-Every install gets the two default plugins, Forms and Media; the others are
-installed from their own repositories (below):
+Every install gets the default plugin, Forms; the others are installed from
+their own repositories (below). Media was a plugin too until 1.12, when it
+joined the core: it's still listed in Settings › Plugins (bundled), so it can
+be switched off, and another plugin can provide the media library in its place
+(`provide :media`). An install that still has the cms-media plugin boots
+without it.
 
 | Plugin | Key | Default | Holds |
 |---|---|---|---|
 | Forms (`cms-plugins/forms`) | `forms` | on | Forms, their emails, the public `/api/forms/:slug/submissions` endpoint, the Submissions inbox, Settings › Forms |
-| Media (`cms-plugins/media`) | `media` | on, installed by default | The media library at `/cms/media` (files, folders, uploads, zips), the picker asset fields open, `/api/assets`, `/api/asset_folders`, `/api/bulk_uploads`. It provides the core's `MediaLibrary` (`provide :media`): without it an asset field takes an id by hand, `?resolve=assets` is left out, and Branding has no logo |
 | Commerce (`cms-plugins/commerce`) | `commerce` | off | Quote requests and the public `/api/quote_requests` endpoint, invoices and their hosted `/i/:token` page, Settings › Commerce |
 
 ## Where plugins live

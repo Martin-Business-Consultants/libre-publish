@@ -6,6 +6,21 @@ section below. An install is brought to one with `bin/update v1.0.0`, or a
 Kamal site with `kamal deploy -d <site>`. Settings shows when a newer one is
 out.
 
+## 1.12.0
+
+### Changed
+- **Media is part of the core.** The media library (`/cms/media`, the
+  picker asset fields open, `/api/assets`, `/api/asset_folders`,
+  `/api/bulk_uploads`) ships with the CMS instead of as the cms-media
+  plugin, since every site has images. Nothing changes for an install: the
+  same tables, routes, capabilities and switch in Settings › Plugins (now
+  marked bundled). An install that still has the cms-media plugin, from
+  `CMS_PLUGINS` or the data directory, boots without it, and Settings ›
+  Plugins says it can be removed. Another plugin can still provide the
+  media library in its place (`provide :media`).
+- **`GET /api/bulk_uploads/:id` needs `assets:read`**, like the rest of the
+  media API. Before, any signed-in caller could read an upload's progress.
+
 ## 1.11.0
 
 ### Added

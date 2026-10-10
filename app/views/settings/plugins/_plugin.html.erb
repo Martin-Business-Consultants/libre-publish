@@ -3,7 +3,8 @@
 <% switched_on = Cms::Plugins.switched_on?(plugin) %>
 <% missing = Cms::Plugins.missing_dependencies(plugin.key) %>
 <% settings_page = Cms::Plugins.settings_pages[plugin.key] %>
-<% source = InstalledPlugins.repo(plugin.key.to_s) %>
+<% absorbed = InstalledPlugins::ABSORBED.key?(plugin.key.to_s) %>
+<% source = InstalledPlugins.repo(plugin.key.to_s) unless absorbed %>
 <% newer = UpdateCheck::Plugins.latest_version(plugin.key) %>
 <% removable = InstalledPlugins.present.key?(plugin.key.to_s) %>
 <li id="plugin_<%= plugin.key %>" class="space-y-1 py-4">

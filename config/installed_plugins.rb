@@ -26,6 +26,11 @@ module InstalledPlugins
   extend self
 
   METADATA = ".cms-plugin.json"
+
+  # Plugins whose work the core now does itself, with the version that took
+  # it in: an install that still has one (default_plugins.yml before then, or
+  # the data directory) boots without it rather than with two of everything.
+  ABSORBED = {"media" => "1.12.0"}.freeze
   ROOT = Pathname(File.expand_path("..", __dir__))
 
   # CMS_DATA_DIR/plugins, where Settings › Plugins installs.
@@ -71,10 +76,13 @@ module InstalledPlugins
   def versions = @versions ||= {}
   # Where each that loaded came from: :installed, :image or :reference.
   def origins = @origins ||= {}
+  # Those left unloaded because the core does their work now (ABSORBED).
+  def absorbed = @absorbed ||= {}
 
   def load!
     chosen.each do |name, copy|
       next if Gem.loaded_specs.key?(name) # still in a Gemfile as a gem: Bundler loaded it
+      next absorbed[name] = copy[:path] if ABSORBED.key?(name)
 
       $LOAD_PATH.unshift copy[:path].join("lib").to_s
       require name
