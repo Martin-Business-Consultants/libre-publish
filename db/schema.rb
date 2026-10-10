@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_10_150000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_10_160000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -84,6 +84,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_10_150000) do
     t.index ["actor_type", "actor_id", "created_at"], name: "idx_audit_actor"
     t.index ["created_at"], name: "index_audit_logs_on_created_at"
     t.index ["target_type", "target_id", "created_at"], name: "idx_audit_target"
+  end
+
+  create_table "block_patterns", force: :cascade do |t|
+    t.json "blocks", default: [], null: false
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "name", null: false
+    t.string "slug", null: false
+    t.boolean "synced", default: false, null: false
+    t.datetime "updated_at", null: false
+    t.index ["slug"], name: "index_block_patterns_on_slug", unique: true
   end
 
   create_table "block_types", force: :cascade do |t|

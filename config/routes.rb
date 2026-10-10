@@ -91,6 +91,8 @@ Rails.application.routes.draw do
 
     # A new block row for the content editor's "Add block" picker.
     resources :content_blocks, only: :new
+    # Sets of blocks to use again, inserted from the block picker.
+    resources :block_patterns, path: "patterns", param: :slug, except: :show
     # An editor's JSON tab: the record as the API hands it to the site.
     get "api_previews/:kind/:id", to: "api_previews#show", as: :api_preview, constraints: {kind: /page|entry|global/}
     resource :content_picker, only: :show
@@ -229,7 +231,10 @@ Rails.application.routes.draw do
         resources :installations, only: :create
       end
       # The plugins that are themes (Website.themes), with installing one.
-      resources :themes, only: :index
+      resources :themes, only: :index, param: :key do
+        # Its design settings (Website::Design): Customize.
+        resource :design, only: [:edit, :update, :destroy], module: :themes
+      end
       resources :plugins, only: [:index, :show, :destroy], param: :key do
         scope module: :plugins do
           resource :activation, only: [:create, :destroy]
@@ -239,6 +244,7 @@ Rails.application.routes.draw do
     end
 
     namespace :tools do
+      resource :search_replace, only: [:show, :create], path: "search-replace"
       namespace :redirects do
         resource :export, only: :show
         resource :import, only: :create

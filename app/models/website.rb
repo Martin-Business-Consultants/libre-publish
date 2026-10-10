@@ -17,7 +17,11 @@ module Website
   # views: the directory its layout and templates are in, looked in first;
   # importmap: the Importmap::Map its pages load, kept apart from the
   # admin's so a visitor never downloads the editor.
-  Theme = Data.define(:key, :name, :version, :views, :importmap)
+  Theme = Data.define(:key, :name, :version, :views, :importmap, :design) do
+    # Its design settings (Website::Design): what Settings › Themes ›
+    # Customize offers.
+    def settings = Array(design).map { Website::Design::Setting.from(it) }
+  end
 
   mattr_accessor :theme
   # Every theme that registered, by key (Settings › Themes lists them).
@@ -25,8 +29,10 @@ module Website
 
   module_function
 
-  def register(key, name:, version:, views:, importmap: Importmap::Map.new)
-    self.theme = themes[key.to_s] = Theme.new(key: key.to_s, name:, version:, views: views.to_s, importmap:)
+  # design: the settings an editor can change without touching code
+  # (Website::Design), each {name:, label:, type:, default:, …}.
+  def register(key, name:, version:, views:, importmap: Importmap::Map.new, design: [])
+    self.theme = themes[key.to_s] = Theme.new(key: key.to_s, name:, version:, views: views.to_s, importmap:, design:)
   end
 
   # A theme installed from Settings › Plugins is a plugin too, and draws the
@@ -53,7 +59,7 @@ module Website
     renderer.render(template: template, locals: locals, layout: false)
   end
 
-  # What a cached page depends on: the content (DeliveryVersion) and the
-  # theme drawing it.
-  def cache_version = [theme&.key, theme&.version, DeliveryVersion.current].join("/")
+  # What a cached page depends on: the content (DeliveryVersion), the theme
+  # drawing it, and its design settings.
+  def cache_version = [theme&.key, theme&.version, DeliveryVersion.current, Website::Design.version].join("/")
 end

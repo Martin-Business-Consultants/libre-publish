@@ -2,12 +2,16 @@
 <%# An editor's tabs: Edit (the form, yielded); SEO, for a record that has
     it — the form's own SEO panel (content_form/seo), so it saves with the
     rest; and JSON, the record as the API hands it to the site
-    (api_previews#show, loaded when the tab is first opened). A record not
-    saved yet has only the form. %>
+    (api_previews#show, loaded when the tab is first opened); and Preview,
+    the page as the theme draws it with what's in the form now, saved or not
+    (website_preview), when the install has a theme that draws it. A record
+    not saved yet has only the form. %>
 <% seo = record.respond_to?(:seo) %>
+<% preview = kind.in?(%w[page entry]) && Website.enabled? %>
 <% tab_classes = "editor-tabs__tab -mb-px inline-flex items-center gap-1.5 border-b-2 px-3 pb-2.5 pt-1 text-sm font-medium" %>
 <% if record.persisted? %>
-  <div data-controller="tabs">
+  <%= tag.div data: { controller: ["tabs", ("website-preview" if preview)].compact.join(" "), action: ("tabs:shown->website-preview#shown" if preview),
+        website_preview_form_value: ("#{kind}_form" if preview) } do %>
     <nav class="mb-6 flex gap-1 overflow-x-auto border-b border-gray-200" role="tablist" aria-label="View">
       <a href="#edit" role="tab" class="<%= tab_classes %>" data-tab="edit" data-tabs-target="tab" data-action="tabs#select">Edit</a>
       <% if seo %>
@@ -20,6 +24,12 @@
         <%= icon_tag "code", class: "size-4" %>
         <span>JSON</span>
       </a>
+      <% if preview %>
+        <a href="#preview" role="tab" class="<%= tab_classes %>" data-tab="preview" data-tabs-target="tab" data-action="tabs#select">
+          <%= icon_tag "eye", class: "size-4" %>
+          <span>Preview</span>
+        </a>
+      <% end %>
     </nav>
     <div data-tab="<%= seo ? "edit seo" : "edit" %>" data-tabs-target="panel">
       <%= yield %>
@@ -29,7 +39,19 @@
         <p class="text-sm text-gray-500">Loading…</p>
       </turbo-frame>
     </section>
-  </div>
+    <% if preview %>
+      <section class="space-y-3" data-tab="preview" data-tabs-target="panel" hidden>
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <p class="text-sm text-gray-500">The website with what’s in the form now. Nothing is saved until you save.</p>
+          <div class="flex gap-2">
+            <button type="button" class="<%= ui(:button, :small) %>" data-action="website-preview#refresh">Refresh</button>
+            <button type="button" class="<%= ui(:button, :small) %>" data-action="website-preview#openTab">Open in a new tab</button>
+          </div>
+        </div>
+        <iframe name="website-preview-<%= record.id %>" class="website-preview__frame" title="Preview" data-website-preview-target="frame"></iframe>
+      </section>
+    <% end %>
+  <% end %>
 <% else %>
   <%= yield %>
 <% end %>

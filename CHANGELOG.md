@@ -6,6 +6,26 @@ section below. An install is brought to one with `bin/update v1.0.0`, or a
 Kamal site with `kamal deploy -d <site>`. Settings shows when a newer one is
 out.
 
+## 1.14.0
+
+### Added
+- **Live preview.** A page's or entry's editor has a Preview tab: the
+  website as the theme draws it, with what's in the form now, saved or not.
+  Nothing is saved until you save. "Open in a new tab" shows it full size.
+- **Theme design settings (Customize).** A theme can declare the colors,
+  fonts and choices an editor may change (`design:` on `Website.register`).
+  Settings › Themes › Customize changes them, and the website picks them up
+  at once through `website_design(:name)` and `website_design_tags` (CSS
+  custom properties, `--design-<name>`). docs/themes.md.
+- **Patterns.** Content › Patterns keeps sets of blocks to use again, edited
+  in the block editor. The block picker offers them: an unsynced pattern is
+  added as a copy, and a synced one as a "Synced pattern" block that always
+  shows the pattern as it is now, on the website and in the API.
+- **Search and replace.** Tools › Search and replace finds a phrase across
+  every page, entry and global (titles, blocks, fields, bodies, SEO) and
+  replaces it everywhere, saving each record with its history and the
+  audit log. Replacing needs the publish permissions.
+
 ## 1.13.0
 
 ### Added

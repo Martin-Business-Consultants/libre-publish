@@ -47,6 +47,8 @@ class CollectionEntriesController < ApplicationController
   end
 
   def update
+    return render_website_preview(@entry, entry_attributes(@entry)) if website_preview?
+
     prior_status = @entry.status
     if save_content(@entry, entry_attributes(@entry), prefix: "entries")
       @entry.track_update(from: prior_status)

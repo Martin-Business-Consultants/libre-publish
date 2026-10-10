@@ -25,6 +25,10 @@ module NavigationHelper
       {id: :globals, label: "Globals", icon: "world", path: :globals_path, capability: "globals:read", submenu: [
         ["All globals", :globals_path, "globals:read"],
         ["Add new", :new_global_path, "globals:write"]
+      ]},
+      {id: :patterns, label: "Patterns", icon: "copy-paste", path: :block_patterns_path, capability: "pages:read", submenu: [
+        ["All patterns", :block_patterns_path, "pages:read"],
+        ["Add new", :new_block_pattern_path, "pages:write"]
       ]}
     ],
     "Insights" => [
@@ -37,6 +41,7 @@ module NavigationHelper
         # How a frontend (the Astro site) works with this headless CMS.
         ["Developers", :developers_path, "pages:read"],
         ["Redirects", :tools_redirects_path, "redirects:read"],
+        ["Search and replace", :tools_search_replace_path, "pages:read"],
         ["Sitemap", :sitemap_path, "pages:read"],
         ["Webhooks", :webhooks_path, "webhooks:read"],
         ["Backup", :tools_backup_path, "tools:use"]

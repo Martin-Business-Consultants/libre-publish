@@ -422,3 +422,15 @@
 .admin-bar {
   background-color: var(--color-gray-50);
 }
+
+/* The editor's Preview tab: the website, framed, the height of the window. */
+@layer components {
+  .website-preview__frame {
+    background-color: var(--color-white);
+    block-size: calc(100dvh - var(--admin-bar-height) - 10rem);
+    border: 1px solid var(--color-gray-200);
+    border-radius: var(--radius-xl);
+    inline-size: 100%;
+    min-block-size: 30rem;
+  }
+}

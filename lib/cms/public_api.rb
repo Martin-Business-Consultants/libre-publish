@@ -23,7 +23,7 @@ module Cms
         website_blocks website_block website_scripts website_global website_fields website_entries
         website_path website_href website_settings website_image_tag website_image website_image_url
         website_markdown website_rich_text website_plain_text website_seo_tags website_json_ld
-        website_url website_javascript_tags website_form_field previewing?
+        website_url website_javascript_tags website_form_field previewing? website_design website_design_tags
       ]}
     }.freeze
 
