@@ -202,7 +202,7 @@ class PluginChange < ApplicationRecord
     connection.disable_referential_integrity do
       tables.each { connection.drop_table(it) }
     end
-    connection.execute("DELETE FROM schema_migrations WHERE version IN (#{migrations.map { connection.quote(it) }.join(",")})") if migrations.any?
+    migrations.each { ActiveRecord::Base.connection_pool.schema_migration.delete_version(it) }
     Setting.where(key: Setting.pluck(:key).select { it == key || it.start_with?("#{key}_", "#{key}.") }).delete_all
     Setting.unset(Cms::Plugins::SETTING_KEY, key)
     Setting.unset(Cms::Plugins::SETUP_KEY, key)
