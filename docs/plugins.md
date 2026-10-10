@@ -151,6 +151,12 @@ A plugin whose `requires` this version doesn't meet can't be switched on;
 one whose `depends_on` aren't on is switched on but "waiting". Changes to
 `engine.rb` need a server restart.
 
+What a plugin may call, and how long it keeps working, is in
+docs/compatibility.md: the registrations here are public API, so within a
+major version none is removed or changed in a way that breaks a call. A
+keyword this core doesn't know yet (from a plugin made for a newer one) is
+left out with a warning rather than failing the boot.
+
 `adopt_if: -> { Form.with_discarded.exists? }` is for a feature moved out of
 the core: while nobody has switched the plugin on or off, an install that
 already holds its data gets it switched on (and saved as on), so an upgrade
@@ -281,6 +287,40 @@ A plugin's screens use the same conventions as the core's:
 `layouts/shared/status_links`, `layouts/shared/bulk_actions` (the "Bulk
 actions" select, Apply, and the search box) and `layouts/shared/row_links`
 (Edit | … | Delete under the title).
+
+## Hooks
+
+WordPress's filters and actions. A **filter** changes a value the core is
+about to use: the block gets the value and the hook's context as keywords
+and returns the value, changed or not. Lowest `priority` runs first (10 by
+default).
+
+    Cms::Plugins.filter(:seo_plus, "website.seo") { |seo, record:| seo.merge(title: "#{seo[:title]} | Acme") }
+    Cms::Plugins.filter(:analytics, "website.head") { |html, request:| html + tag.script(src: "…", defer: true) }
+
+| Filter | Value | Context |
+| --- | --- | --- |
+| `website.seo` | `{title:, description:, canonical:, image:, robots:}` for the `<head>` | `record:` |
+| `website.block` | a block's HTML, as the theme drew it | `block:` |
+| `website.markdown` | Markdown drawn as HTML | `text:` |
+| `website.head` | HTML for the end of `<head>`, after the "scripts" global's | `request:` |
+| `website.body` | HTML for the end of `<body>` | `request:` |
+| `sitemap.entries` | the sitemap's rows | |
+
+HTML a filter returns is escaped unless it's marked safe, as ERB would:
+build it with tag helpers or `safe_join`.
+
+An **action** runs on something that happened, any event below:
+
+    Cms::Plugins.on(:hello, "page.published") { |payload| Hello::Greeting.create!(page_url: payload[:data][:url]) }
+
+A plugin announces its own with `Cms::Hooks.run("hello.greeted", greeting:)`,
+and applies its own filters with `Cms::Hooks.apply("hello.greeting", text,
+greeting:)` for other plugins to hook. Hooks run only while their plugin is
+on. One that raises is reported (`Rails.error`) and passed over, so a
+plugin's bug doesn't take a page down. Registering again (a code reload)
+drops the plugin's hooks first, so register them in `config.to_prepare`
+with the rest.
 
 ## Events
 

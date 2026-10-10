@@ -70,8 +70,9 @@ class Sitemap
   end
 
   # Yields only entries that should appear in the public sitemap.
+  # Plugins can add rows, or take some out (the sitemap.entries filter).
   def entries
-    all_entries.select(&:included?)
+    Cms::Hooks.apply("sitemap.entries", all_entries.select(&:included?))
   end
 
   # A row's address as a full URL on the site, or as it is when there's no

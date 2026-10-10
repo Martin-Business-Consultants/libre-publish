@@ -142,9 +142,13 @@ module Cms
       # tables: the tables it owns beyond those named for its key (one that
       # moved out of the core keeps its old names), which removing it with
       # its data drops (tables_of).
+      #
+      # A keyword this core doesn't know yet (a plugin made for a newer one)
+      # is left out with a warning rather than failing the boot.
       def register(key, name:, version:, description:, author: nil, bundled: false, enabled_by_default: false,
-        requires: nil, depends_on: [], homepage: nil, adopt_if: nil, tables: [])
+        requires: nil, depends_on: [], homepage: nil, adopt_if: nil, tables: [], **newer)
         key = key.to_sym
+        Rails.logger&.warn("[plugins] #{key} gives #{newer.keys.join(", ")}, which CMS #{Cms::VERSION} doesn't know; left out") if newer.any?
         manifests[key] = Manifest.new(key: key, name: name, version: version, description: description, author: author,
           bundled: bundled, enabled_by_default: enabled_by_default, requires: requires,
           depends_on: Array(depends_on).map(&:to_sym), homepage: homepage, adopt_if: adopt_if,
@@ -152,7 +156,22 @@ module Cms
         [menu_items, submenu_items, new_items, stylesheets, counters, manifest_sections, trash_kinds].each { it.delete(key) }
         webhook_event_groups.delete(key)
         api_write_holds.delete(key)
+        Cms::Hooks.forget(key)
         manifests[key]
+      end
+
+      # A filter on a hook (Cms::Hooks::FILTERS, or a plugin's own): the block
+      # gets the value and the hook's context as keywords, and returns the
+      # value. Lowest priority runs first; 10 is the default.
+      def filter(key, name, priority: 10, &block)
+        Cms::Hooks.add_filter(key, name, priority: priority, callable: block)
+      end
+
+      # An action on an event (page.published, entry.created,
+      # submission.created, …; docs/plugins.md, Events): the block gets its
+      # payload. Only while the plugin is on.
+      def on(key, event, priority: 10, &block)
+        Cms::Hooks.add_action(key, event, priority: priority, callable: block)
       end
 
       # The tables a plugin owns: those named for its key (hello_greetings)

@@ -6,6 +6,32 @@ section below. An install is brought to one with `bin/update v1.0.0`, or a
 Kamal site with `kamal deploy -d <site>`. Settings shows when a newer one is
 out.
 
+## 1.11.0
+
+### Added
+- **A compatibility promise, and a check that keeps it.**
+  docs/compatibility.md says what's public (the plugin API, the theme API,
+  the REST API under `/api`, webhooks) and how it changes. Within a major
+  version nothing public is removed or made to refuse a call that worked;
+  something on its way out is deprecated first and kept until the next major
+  version. `spec/contracts/public_api_spec.rb` checks every public method's
+  parameters and every API route against a snapshot
+  (`spec/fixtures/contracts/public_api.json`, `bin/rails cms:public_api`).
+- **Hooks: filters and actions.** `Cms::Plugins.filter` changes a value the
+  core is about to use (`website.seo`, `website.block`, `website.markdown`,
+  `website.head`, `website.body`, `sitemap.entries`), and `Cms::Plugins.on`
+  runs on an event (`page.published`, `entry.created`,
+  `submission.created`, …). Either runs only while its plugin is on, and one
+  that raises is reported and skipped. Plugins can add their own hooks with
+  `Cms::Hooks.apply` and `Cms::Hooks.run`. docs/plugins.md, Hooks.
+- **`Cms.deprecator`.** Deprecation warnings for the core's public API,
+  logged in development and printed in test runs, a plugin's included.
+
+### Changed
+- **A plugin made for a newer core still loads.** `Cms::Plugins.register`
+  leaves out a keyword it doesn't know, with a warning, rather than failing
+  the boot.
+
 ## 1.10.0
 
 ### Added

@@ -26,15 +26,19 @@ module WebsiteHelper
       return
     end
 
-    render partial, data: Website::Fields.new(block["data"], website_block_types[type]&.fields, name: type, resolved: block["resolved"])
+    html = render partial, data: Website::Fields.new(block["data"], website_block_types[type]&.fields, name: type, resolved: block["resolved"])
+    website_html Cms::Hooks.apply("website.block", html, block: block)
   end
 
   # What editors paste into the "scripts" global (analytics, a chat widget),
   # for the <head> (part: "head") or the end of <body> ("body"): trusted as
   # written, since only someone who can edit globals can put it there.
+  # Plugins add theirs after (the website.head and website.body filters).
   def website_scripts(part)
     items = Global.find_by(slug: "scripts") ? website_global(:scripts).items : []
-    safe_join(items.filter_map { it[part].to_s.html_safe if it.enabled != false && it[part].present? }, "\n") # rubocop:disable Rails/OutputSafety
+    pasted = items.filter_map { it[part].to_s.html_safe if it.enabled != false && it[part].present? } # rubocop:disable Rails/OutputSafety
+    added = website_html Cms::Hooks.apply("website.#{part}", ActiveSupport::SafeBuffer.new, request: request)
+    safe_join([*pasted, (added if added.present?)].compact, "\n")
   end
 
   # A global's data, by slug.
@@ -122,7 +126,7 @@ module WebsiteHelper
     return "" if text.blank?
 
     html = Commonmarker.to_html(text.to_s, options: Markdown::OPTIONS.deep_merge(render: {unsafe: true}), plugins: {syntax_highlighter: nil})
-    sanitize(html, tags: Markdown::TAGS, attributes: Markdown::ATTRIBUTES)
+    website_html Cms::Hooks.apply("website.markdown", sanitize(html, tags: Markdown::TAGS, attributes: Markdown::ATTRIBUTES), text: text)
   end
 
   # A text field (rich text from the editor, or plain text sent over the
@@ -145,11 +149,15 @@ module WebsiteHelper
   # fill what the panel leaves blank.
   def website_seo_tags(record = nil, title: nil, description: nil, image: nil, noindex: false)
     seo = record.respond_to?(:seo) ? record.seo.to_h.stringify_keys : {}
-    title = seo["meta_title"].presence || title || record&.title
-    description = seo["meta_description"].presence || description
-    canonical = seo["canonical_url"].presence || website_url(request.path)
-    image = website_image(seo["og_image_id"].presence || image)
-    robots = "noindex, nofollow" if noindex || seo["noindex"]
+    values = Cms::Hooks.apply("website.seo", {
+      title: seo["meta_title"].presence || title || record&.title,
+      description: seo["meta_description"].presence || description,
+      canonical: seo["canonical_url"].presence || website_url(request.path),
+      image: seo["og_image_id"].presence || image,
+      robots: ("noindex, nofollow" if noindex || seo["noindex"])
+    }, record: record)
+    title, description, canonical, robots = values.values_at(:title, :description, :canonical, :robots)
+    image = website_image(values[:image])
 
     safe_join([
       tag.title(title),
@@ -198,6 +206,10 @@ module WebsiteHelper
   def previewing? = controller.respond_to?(:previewing?, true) && controller.send(:previewing?)
 
   private
+
+  # What a filter returned, as HTML: escaped unless it's marked safe (a tag
+  # helper's, safe_join's), as ERB would.
+  def website_html(value) = value.to_s.html_safe? ? value : ERB::Util.html_escape(value.to_s)
 
   def website_block_types = @website_block_types ||= BlockType.all.index_by(&:slug)
 

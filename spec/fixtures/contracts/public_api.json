@@ -1,0 +1,879 @@
+{
+  "ruby": {
+    "Cms.data_dir": [],
+    "Cms.deprecator": [],
+    "Cms.version": [],
+    "Cms::Hooks.apply": [
+      [
+        "req",
+        "name"
+      ],
+      [
+        "req",
+        "value"
+      ],
+      [
+        "keyrest",
+        "context"
+      ]
+    ],
+    "Cms::Hooks.run": [
+      [
+        "req",
+        "name"
+      ],
+      [
+        "keyrest",
+        "payload"
+      ]
+    ],
+    "Cms::Plugins.api": [
+      [
+        "req",
+        "key"
+      ],
+      [
+        "req",
+        "path"
+      ],
+      [
+        "keyreq",
+        "description"
+      ]
+    ],
+    "Cms::Plugins.block_types": [
+      [
+        "req",
+        "key"
+      ],
+      [
+        "req",
+        "block_types"
+      ],
+      [
+        "key",
+        "package"
+      ]
+    ],
+    "Cms::Plugins.bootstrap": [
+      [
+        "req",
+        "key"
+      ],
+      [
+        "req",
+        "task"
+      ]
+    ],
+    "Cms::Plugins.counts": [
+      [
+        "req",
+        "key"
+      ],
+      [
+        "key",
+        "after"
+      ],
+      [
+        "key",
+        "backup"
+      ],
+      [
+        "keyrest",
+        "named"
+      ]
+    ],
+    "Cms::Plugins.deploy_provider": [
+      [
+        "req",
+        "key"
+      ],
+      [
+        "req",
+        "provider_key"
+      ],
+      [
+        "req",
+        "provider"
+      ]
+    ],
+    "Cms::Plugins.enabled?": [
+      [
+        "req",
+        "key"
+      ],
+      [
+        "opt",
+        "seen"
+      ]
+    ],
+    "Cms::Plugins.field_type": [
+      [
+        "req",
+        "key"
+      ],
+      [
+        "req",
+        "type"
+      ],
+      [
+        "keyreq",
+        "validator"
+      ],
+      [
+        "keyreq",
+        "partial"
+      ]
+    ],
+    "Cms::Plugins.filter": [
+      [
+        "req",
+        "key"
+      ],
+      [
+        "req",
+        "name"
+      ],
+      [
+        "key",
+        "priority"
+      ],
+      [
+        "block",
+        "block"
+      ]
+    ],
+    "Cms::Plugins.hold_api_writes": [
+      [
+        "req",
+        "key"
+      ],
+      [
+        "req",
+        "hold"
+      ]
+    ],
+    "Cms::Plugins.manifest_section": [
+      [
+        "req",
+        "key"
+      ],
+      [
+        "req",
+        "name"
+      ],
+      [
+        "req",
+        "build"
+      ],
+      [
+        "key",
+        "after"
+      ]
+    ],
+    "Cms::Plugins.menu": [
+      [
+        "req",
+        "key"
+      ],
+      [
+        "req",
+        "id"
+      ],
+      [
+        "keyreq",
+        "label"
+      ],
+      [
+        "keyreq",
+        "icon"
+      ],
+      [
+        "keyreq",
+        "path"
+      ],
+      [
+        "keyreq",
+        "group"
+      ],
+      [
+        "key",
+        "capability"
+      ],
+      [
+        "key",
+        "after"
+      ],
+      [
+        "key",
+        "group_after"
+      ]
+    ],
+    "Cms::Plugins.minutely": [
+      [
+        "req",
+        "key"
+      ],
+      [
+        "req",
+        "name"
+      ],
+      [
+        "req",
+        "task"
+      ],
+      [
+        "key",
+        "every"
+      ]
+    ],
+    "Cms::Plugins.new_item": [
+      [
+        "req",
+        "key"
+      ],
+      [
+        "keyreq",
+        "label"
+      ],
+      [
+        "keyreq",
+        "path"
+      ],
+      [
+        "key",
+        "capability"
+      ],
+      [
+        "key",
+        "after"
+      ]
+    ],
+    "Cms::Plugins.nightly": [
+      [
+        "req",
+        "key"
+      ],
+      [
+        "req",
+        "task"
+      ]
+    ],
+    "Cms::Plugins.on": [
+      [
+        "req",
+        "key"
+      ],
+      [
+        "req",
+        "event"
+      ],
+      [
+        "key",
+        "priority"
+      ],
+      [
+        "block",
+        "block"
+      ]
+    ],
+    "Cms::Plugins.permissions": [
+      [
+        "req",
+        "key"
+      ],
+      [
+        "req",
+        "group"
+      ],
+      [
+        "req",
+        "capabilities"
+      ],
+      [
+        "key",
+        "after"
+      ],
+      [
+        "key",
+        "defaults"
+      ]
+    ],
+    "Cms::Plugins.provide": [
+      [
+        "req",
+        "key"
+      ],
+      [
+        "req",
+        "name"
+      ],
+      [
+        "req",
+        "value"
+      ]
+    ],
+    "Cms::Plugins.provided": [
+      [
+        "req",
+        "name"
+      ]
+    ],
+    "Cms::Plugins.provided_all": [
+      [
+        "req",
+        "name"
+      ]
+    ],
+    "Cms::Plugins.register": [
+      [
+        "req",
+        "key"
+      ],
+      [
+        "keyreq",
+        "name"
+      ],
+      [
+        "keyreq",
+        "version"
+      ],
+      [
+        "keyreq",
+        "description"
+      ],
+      [
+        "key",
+        "author"
+      ],
+      [
+        "key",
+        "bundled"
+      ],
+      [
+        "key",
+        "enabled_by_default"
+      ],
+      [
+        "key",
+        "requires"
+      ],
+      [
+        "key",
+        "depends_on"
+      ],
+      [
+        "key",
+        "homepage"
+      ],
+      [
+        "key",
+        "adopt_if"
+      ],
+      [
+        "key",
+        "tables"
+      ],
+      [
+        "keyrest",
+        "newer"
+      ]
+    ],
+    "Cms::Plugins.settings": [
+      [
+        "req",
+        "key"
+      ],
+      [
+        "req",
+        "label"
+      ],
+      [
+        "req",
+        "path"
+      ],
+      [
+        "key",
+        "description"
+      ],
+      [
+        "key",
+        "capability"
+      ],
+      [
+        "key",
+        "group"
+      ],
+      [
+        "key",
+        "after"
+      ]
+    ],
+    "Cms::Plugins.slot": [
+      [
+        "req",
+        "name"
+      ],
+      [
+        "req",
+        "key"
+      ],
+      [
+        "req",
+        "partial"
+      ]
+    ],
+    "Cms::Plugins.stylesheet": [
+      [
+        "req",
+        "key"
+      ],
+      [
+        "req",
+        "name"
+      ]
+    ],
+    "Cms::Plugins.submenu": [
+      [
+        "req",
+        "key"
+      ],
+      [
+        "req",
+        "parent"
+      ],
+      [
+        "keyreq",
+        "label"
+      ],
+      [
+        "keyreq",
+        "path"
+      ],
+      [
+        "key",
+        "capability"
+      ],
+      [
+        "key",
+        "after"
+      ]
+    ],
+    "Cms::Plugins.tables_of": [
+      [
+        "req",
+        "key"
+      ]
+    ],
+    "Cms::Plugins.trashable": [
+      [
+        "req",
+        "key"
+      ],
+      [
+        "req",
+        "kind"
+      ],
+      [
+        "req",
+        "model"
+      ],
+      [
+        "keyreq",
+        "label"
+      ],
+      [
+        "key",
+        "meta"
+      ],
+      [
+        "key",
+        "after"
+      ]
+    ],
+    "Cms::Plugins.update_strategy": [
+      [
+        "req",
+        "key"
+      ],
+      [
+        "req",
+        "via"
+      ],
+      [
+        "req",
+        "runner"
+      ]
+    ],
+    "Cms::Plugins.webhook_event_filter": [
+      [
+        "req",
+        "key"
+      ],
+      [
+        "req",
+        "event"
+      ],
+      [
+        "keyreq",
+        "permit"
+      ],
+      [
+        "keyreq",
+        "validate"
+      ],
+      [
+        "keyreq",
+        "match"
+      ]
+    ],
+    "Cms::Plugins.webhook_events": [
+      [
+        "req",
+        "key"
+      ],
+      [
+        "req",
+        "label"
+      ],
+      [
+        "req",
+        "events"
+      ],
+      [
+        "key",
+        "after"
+      ],
+      [
+        "key",
+        "deploy"
+      ]
+    ],
+    "Website.cache_version": [],
+    "Website.draws?": [
+      [
+        "req",
+        "template"
+      ]
+    ],
+    "Website.enabled?": [],
+    "Website.register": [
+      [
+        "req",
+        "key"
+      ],
+      [
+        "keyreq",
+        "name"
+      ],
+      [
+        "keyreq",
+        "version"
+      ],
+      [
+        "keyreq",
+        "views"
+      ],
+      [
+        "key",
+        "importmap"
+      ]
+    ],
+    "Website.render": [
+      [
+        "req",
+        "template"
+      ],
+      [
+        "keyrest",
+        "locals"
+      ]
+    ],
+    "Website.theme": [],
+    "WebsiteHelper#previewing?": [],
+    "WebsiteHelper#website_block": [
+      [
+        "req",
+        "block"
+      ]
+    ],
+    "WebsiteHelper#website_blocks": [
+      [
+        "req",
+        "record"
+      ]
+    ],
+    "WebsiteHelper#website_entries": [
+      [
+        "req",
+        "collection_slug"
+      ],
+      [
+        "key",
+        "order"
+      ]
+    ],
+    "WebsiteHelper#website_fields": [
+      [
+        "req",
+        "record"
+      ]
+    ],
+    "WebsiteHelper#website_form_field": [
+      [
+        "req",
+        "form"
+      ],
+      [
+        "req",
+        "name"
+      ]
+    ],
+    "WebsiteHelper#website_global": [
+      [
+        "req",
+        "slug"
+      ]
+    ],
+    "WebsiteHelper#website_href": [
+      [
+        "req",
+        "link"
+      ]
+    ],
+    "WebsiteHelper#website_image": [
+      [
+        "req",
+        "id"
+      ]
+    ],
+    "WebsiteHelper#website_image_tag": [
+      [
+        "req",
+        "id"
+      ],
+      [
+        "key",
+        "sizes"
+      ],
+      [
+        "key",
+        "alt"
+      ],
+      [
+        "key",
+        "loading"
+      ],
+      [
+        "key",
+        "fetchpriority"
+      ],
+      [
+        "key",
+        "position"
+      ],
+      [
+        "keyrest",
+        "options"
+      ]
+    ],
+    "WebsiteHelper#website_image_url": [
+      [
+        "req",
+        "id"
+      ],
+      [
+        "key",
+        "width"
+      ]
+    ],
+    "WebsiteHelper#website_javascript_tags": [
+      [
+        "opt",
+        "entry_point"
+      ]
+    ],
+    "WebsiteHelper#website_json_ld": [
+      [
+        "req",
+        "data"
+      ]
+    ],
+    "WebsiteHelper#website_markdown": [
+      [
+        "req",
+        "text"
+      ]
+    ],
+    "WebsiteHelper#website_path": [
+      [
+        "req",
+        "record"
+      ]
+    ],
+    "WebsiteHelper#website_plain_text": [
+      [
+        "req",
+        "value"
+      ]
+    ],
+    "WebsiteHelper#website_rich_text": [
+      [
+        "req",
+        "value"
+      ]
+    ],
+    "WebsiteHelper#website_scripts": [
+      [
+        "req",
+        "part"
+      ]
+    ],
+    "WebsiteHelper#website_seo_tags": [
+      [
+        "opt",
+        "record"
+      ],
+      [
+        "key",
+        "title"
+      ],
+      [
+        "key",
+        "description"
+      ],
+      [
+        "key",
+        "image"
+      ],
+      [
+        "key",
+        "noindex"
+      ]
+    ],
+    "WebsiteHelper#website_settings": [],
+    "WebsiteHelper#website_url": [
+      [
+        "req",
+        "path"
+      ]
+    ]
+  },
+  "routes": [
+    "DELETE /api/block_types/:slug",
+    "DELETE /api/collections/:collection_slug/entries/:slug",
+    "DELETE /api/collections/:slug",
+    "DELETE /api/globals/:slug",
+    "DELETE /api/pages/:slug",
+    "DELETE /api/redirects/:id",
+    "DELETE /api/settings/:key",
+    "DELETE /api/trash/:kind/:id",
+    "DELETE /api/webhooks/:id",
+    "GET /api/api_tokens/me",
+    "GET /api/audit_log",
+    "GET /api/block_types",
+    "GET /api/block_types/:slug",
+    "GET /api/collections",
+    "GET /api/collections/:collection_slug/entries",
+    "GET /api/collections/:collection_slug/entries/:slug",
+    "GET /api/collections/:slug",
+    "GET /api/deploy",
+    "GET /api/docs",
+    "GET /api/docs/:slug",
+    "GET /api/frontend",
+    "GET /api/globals",
+    "GET /api/globals/:slug",
+    "GET /api/manifest",
+    "GET /api/pages",
+    "GET /api/pages/:slug",
+    "GET /api/redirects",
+    "GET /api/redirects/all",
+    "GET /api/redirects/export",
+    "GET /api/redirects/resolve",
+    "GET /api/references",
+    "GET /api/service_tokens",
+    "GET /api/service_tokens/:id",
+    "GET /api/settings",
+    "GET /api/settings/:key",
+    "GET /api/site_health",
+    "GET /api/sitemap",
+    "GET /api/sitemap/entries",
+    "GET /api/tools/backup",
+    "GET /api/trash",
+    "GET /api/updates",
+    "GET /api/v1/collections",
+    "GET /api/v1/collections/:collection_slug/entries",
+    "GET /api/v1/collections/:collection_slug/entries/:slug",
+    "GET /api/v1/collections/:slug",
+    "GET /api/v1/content",
+    "GET /api/v1/globals",
+    "GET /api/v1/globals/:slug",
+    "GET /api/v1/pages",
+    "GET /api/v1/pages/:path",
+    "GET /api/v1/redirects",
+    "GET /api/v1/schema",
+    "GET /api/v1/site",
+    "GET /api/v1/site_health",
+    "GET /api/v1/sitemap",
+    "GET /api/webhooks",
+    "GET /api/webhooks/:id",
+    "GET /api/webhooks/:webhook_id/deliveries",
+    "PATCH /api/block_types/:slug",
+    "PATCH /api/collections/:collection_slug/entries/:entry_slug/move",
+    "PATCH /api/collections/:collection_slug/entries/:entry_slug/toggle_field",
+    "PATCH /api/collections/:collection_slug/entries/:entry_slug/update_field",
+    "PATCH /api/collections/:collection_slug/entries/:slug",
+    "PATCH /api/collections/:collection_slug/schema",
+    "PATCH /api/collections/:slug",
+    "PATCH /api/deploy",
+    "PATCH /api/globals/:global_slug/schema",
+    "PATCH /api/globals/:slug",
+    "PATCH /api/pages/:page_slug/schema",
+    "PATCH /api/pages/:slug",
+    "PATCH /api/redirects/:id",
+    "PATCH /api/settings/:key",
+    "PATCH /api/sitemap/:source/:id",
+    "PATCH /api/webhooks/:id",
+    "POST /api/api_tokens/rotate",
+    "POST /api/block_types",
+    "POST /api/block_types/bulk_destroy",
+    "POST /api/block_types/seed",
+    "POST /api/collections",
+    "POST /api/collections/:collection_slug/entries",
+    "POST /api/collections/:collection_slug/entries/bulk_destroy",
+    "POST /api/collections/:collection_slug/entries/bulk_update_status",
+    "POST /api/collections/bulk_destroy",
+    "POST /api/deploy/trigger",
+    "POST /api/device/code",
+    "POST /api/device/token",
+    "POST /api/frontend/builds",
+    "POST /api/frontend/delivery_approval",
+    "POST /api/globals",
+    "POST /api/globals/bulk_destroy",
+    "POST /api/pages",
+    "POST /api/pages/bulk_destroy",
+    "POST /api/pages/bulk_update_status",
+    "POST /api/redirects",
+    "POST /api/redirects/import",
+    "POST /api/search",
+    "POST /api/service_tokens",
+    "POST /api/service_tokens/:service_token_id/reveal",
+    "POST /api/service_tokens/:service_token_id/revoke",
+    "POST /api/service_tokens/:service_token_id/rotate",
+    "POST /api/settings",
+    "POST /api/tools/backup",
+    "POST /api/trash/:kind/:id/restore",
+    "POST /api/updates/check",
+    "POST /api/webhooks",
+    "POST /api/webhooks/:webhook_id/rotate_secret",
+    "POST /api/webhooks/:webhook_id/test",
+    "PUT /api/block_types/:slug",
+    "PUT /api/collections/:collection_slug/entries/:slug",
+    "PUT /api/collections/:slug",
+    "PUT /api/globals/:slug",
+    "PUT /api/pages/:slug",
+    "PUT /api/redirects/:id",
+    "PUT /api/settings/:key",
+    "PUT /api/webhooks/:id"
+  ]
+}

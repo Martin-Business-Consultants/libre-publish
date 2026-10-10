@@ -1,5 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head><%= yield :head %></head>
-  <body><%= yield %></body>
+  <head><%= yield :head %><%= website_scripts("head") %></head>
+  <body><%= yield %><%= website_scripts("body") %></body>
 </html>

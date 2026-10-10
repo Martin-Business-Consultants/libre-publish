@@ -8,6 +8,10 @@ module Cms
 
   def self.version = Gem::Version.new(VERSION)
 
+  # Warns of a public API (docs/compatibility.md) on its way out: it keeps
+  # working through this major version and goes in the next.
+  def self.deprecator = @deprecator ||= ActiveSupport::Deprecation.new("#{version.segments.first + 1}.0", "Libre Publish")
+
   # Where Libre Publish lives on its host: /cms. "/" is the website (a
   # theme's, docs/themes.md); the API, the agent and frontend bootstraps,
   # /sitemap.xml and /up stay at the root, where sites and tools call them.

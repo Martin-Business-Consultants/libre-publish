@@ -134,4 +134,23 @@ RSpec.describe "Website", type: :request do
       expect(response).to redirect_to("/cms")
     end
   end
+
+  describe "plugins' filters" do
+    before { Cms::Plugins.register(:seo_plus, name: "SEO+", version: "1", description: "x", enabled_by_default: true) }
+    after { forget_plugin(:seo_plus) }
+
+    it "change a page's title tag, its blocks, and add to its head and body" do
+      Cms::Plugins.filter(:seo_plus, "website.seo") { |seo, record:| seo.merge(title: "#{record.title} | Acme") }
+      Cms::Plugins.filter(:seo_plus, "website.block") { |html, block:| html + tag.hr(class: block["type"]) }
+      Cms::Plugins.filter(:seo_plus, "website.head") { |html, **| html + tag.meta(name: "generator", content: "Libre Publish") }
+      Cms::Plugins.filter(:seo_plus, "website.body") { |*| "<script>alert(1)</script>" }
+
+      get "/"
+
+      expect(response.body).to include("<title>Home | Acme</title>", %(<hr class="text">), %(<meta name="generator" content="Libre Publish">))
+      expect(response.body).to include("&lt;script&gt;alert(1)&lt;/script&gt;")
+    end
+  end
+
+  def tag = ActionController::Base.helpers.tag
 end

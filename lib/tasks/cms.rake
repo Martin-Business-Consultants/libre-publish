@@ -22,6 +22,16 @@ namespace :cms do
     puts archive || "No migrations to run: no backup taken."
   end
 
+  desc "Write the public API's snapshot (spec/fixtures/contracts/public_api.json) after a deliberate addition"
+  task public_api: :environment do
+    path = Rails.root.join("spec/fixtures/contracts/public_api.json")
+    breaks = path.exist? ? Cms::PublicApi.breaks(JSON.parse(path.read)) : []
+    abort "Not written: these break callers (docs/compatibility.md):\n  #{breaks.join("\n  ")}" if breaks.any? && ENV["BREAKING"] != "1"
+
+    path.write(JSON.pretty_generate(Cms::PublicApi.snapshot) + "\n")
+    puts "Wrote #{path.relative_path_from(Rails.root)}"
+  end
+
   desc "Set up this install: starter content, roles, an owner and the machine tokens (JSON on stdout). Idempotent."
   task :bootstrap, [:email, :name] => :environment do |_, args|
     result = SiteSetup.new(owner_email: args[:email] || ENV["CMS_OWNER_EMAIL"], name: args[:name] || ENV["CMS_SITE_NAME"],
