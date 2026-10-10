@@ -6,6 +6,14 @@ section below. An install is brought to one with `bin/update v1.0.0`, or a
 Kamal site with `kamal deploy -d <site>`. Settings shows when a newer one is
 out.
 
+## 1.17.1
+
+### Changed
+- **The logo leads the admin bar.** With a logo in Settings › Branding, the
+  admin bar shows it in place of the home icon and the site's name, as tall
+  as the bar and as wide as that makes it. The menu no longer repeats it at
+  its top. Without a logo, the icon and name stay.
+
 ## 1.17.0
 
 ### Added

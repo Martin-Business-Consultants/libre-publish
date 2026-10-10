@@ -18,9 +18,16 @@
   </button>
 
   <div class="admin-bar__dropdown relative flex">
+    <% branding = current_branding %>
+    <% site_name = branding[:site_title].presence || Site.key %>
     <%= link_to dashboard_path, class: class_names(item_classes, "font-semibold text-gray-900"), title: "Dashboard (g h)", data: { keys: "g h" } do %>
-      <span class="flex h-7 w-7 items-center justify-center rounded-md bg-blue-600 text-on-accent"><%= icon_tag "home", class: "size-4" %></span>
-      <span class="admin-bar__label"><%= current_branding[:site_title].presence || Site.key %></span>
+      <% if branding[:logo_url_small].present? %>
+        <%# Settings › Branding's logo, as tall as the bar and as wide as it is. %>
+        <%= image_tag branding[:logo_url_small], alt: site_name, class: "admin-bar__logo" %>
+      <% else %>
+        <span class="flex h-7 w-7 items-center justify-center rounded-md bg-blue-600 text-on-accent"><%= icon_tag "home", class: "size-4" %></span>
+        <span class="admin-bar__label"><%= site_name %></span>
+      <% end %>
     <% end %>
     <% if site_url %>
       <ul class="<%= menu_classes %>">

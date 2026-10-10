@@ -388,32 +388,6 @@
   }
 }
 
-/* The site's logo at the top of the admin menu, left-aligned and at most
-   50px tall (scaled down to the menu's width if it's wider); folded to icons,
-   its favicon instead (layouts/shared/_admin_menu). */
-@layer components {
-  .admin-menu__brand-logo {
-    max-height: 50px;
-  }
-
-  .admin-menu__brand-favicon {
-    display: none;
-  }
-
-  @media (min-width: 783px) {
-    :root[data-menu="folded"] {
-      .admin-menu__brand-logo:has(+ .admin-menu__brand-favicon) {
-        display: none;
-      }
-
-      .admin-menu__brand-favicon {
-        display: block;
-      }
-    }
-  }
-}
-
-
 /* The classic look's admin bar: the menu's gray, across the top. Unlayered,
    so it wins over the bg-white its markup carries. */
 .admin-bar {
@@ -429,5 +403,16 @@
     border-radius: var(--radius-xl);
     inline-size: 100%;
     min-block-size: 30rem;
+  }
+}
+
+/* The admin bar's logo (Settings › Branding): the bar's height, less its
+   padding, and whatever width that gives, within reason. */
+@layer components {
+  .admin-bar__logo {
+    block-size: calc(var(--admin-bar-height) - 1rem);
+    inline-size: auto;
+    max-inline-size: 14rem;
+    object-fit: contain;
   }
 }
