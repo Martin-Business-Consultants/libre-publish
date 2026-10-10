@@ -63,7 +63,7 @@ RUN --mount=type=secret,id=CMS_THEME,required=false bin/fetch-theme
 # A plugin's gems aren't in the repository's Gemfile.lock, so with any
 # installed the lock is resolved here (the core's gems stay at their locked
 # versions) and kept aside for `COPY . .`, which would put the original back.
-RUN if ls plugins/*/*.gemspec themes/*/*.gemspec > /dev/null 2>&1; then BUNDLE_DEPLOYMENT=0 BUNDLE_FROZEN=0 bundle lock; fi && \
+RUN if ls plugins/*/*.gemspec themes/*/*.gemspec 2> /dev/null | grep -q .; then BUNDLE_DEPLOYMENT=0 BUNDLE_FROZEN=0 bundle lock; fi && \
     cp Gemfile.lock /tmp/Gemfile.lock && \
     bundle install && \
     rm -rf ~/.bundle/ "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git && \

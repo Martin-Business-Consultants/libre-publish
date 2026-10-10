@@ -6,6 +6,10 @@
 # record it shows (Website::Address), hands the theme its content through
 # WebsiteHelper, and serves the result from Website::PagesController.
 #
+# A theme comes with the install (themes/, CMS_THEME at a Docker build) or is
+# installed from Settings › Plugins like a plugin, from its GitHub release,
+# into the data directory, where it outlasts updates.
+#
 # Without a theme the CMS stays headless: "/" is the admin's, and a site
 # built elsewhere reads the delivery API as it always has.
 module Website
@@ -23,7 +27,13 @@ module Website
     self.theme = Theme.new(key: key.to_s, name:, version:, views: views.to_s, importmap:)
   end
 
-  def enabled? = !theme.nil?
+  # A theme installed from Settings › Plugins is a plugin too, and draws the
+  # site only while it's switched on there.
+  def enabled?
+    return false if theme.nil?
+
+    !Cms::Plugins.manifests.key?(theme.key.to_sym) || Cms::Plugins.enabled?(theme.key)
+  end
 
   # Whether the theme has a template (website/emails/form, say), for a part
   # of the CMS that lets the theme draw something it otherwise draws itself.

@@ -11,7 +11,18 @@ and the delivery API serves the site. With one, `/` and every address the
 CMS gives a page or entry are the site's; editors still sign in at
 `/sign_in` and work in the admin where they always have.
 
-`themes/healing` (healingearthdesignbysarah.com) is the reference.
+The reference is healingearthdesignbysarah.com's,
+[healing-theme](https://github.com/Martin-Business-Consultants/healing-theme).
+
+## Installing one
+
+Like a plugin: Settings › Plugins › Add a plugin, and give the theme's
+GitHub repository (`owner/name` or its URL). The CMS installs its latest
+release into the data directory, where it outlasts updates, and restarts;
+the site is on while the theme is switched on there. A theme registers as a
+plugin (`Cms::Plugins.register`) as well as with `Website`, so that's all it
+takes. A theme can also come with the install, in `themes/` (a checkout, or
+a Docker build's `CMS_THEME` secret, bin/fetch-theme).
 
 ## What the core does
 
