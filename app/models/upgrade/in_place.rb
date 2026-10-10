@@ -16,8 +16,8 @@ require "digest"
 # other system packages or Debian (CMS_BASE in the Dockerfile) can't: it
 # redeploys through Upgrade.redeployer when there is one, else fails with how.
 # Plugins installed from Settings › Plugins live in the data volume and carry
-# over; one the image carries that the bundle doesn't (from CMS_PLUGINS)
-# would be lost, so the update refuses and says so.
+# over. One only the image carries (CMS_PLUGINS, the CMS_THEME theme) is
+# copied there first, so the release keeps running it (InstalledPlugins).
 class Upgrade::InPlace
   class Failed < StandardError; end
 
@@ -128,12 +128,7 @@ class Upgrade::InPlace
     version = partial.join("VERSION").read.strip
     raise Failed, "The #{tag} bundle holds #{version}, not #{@upgrade.to_version}." unless version == @upgrade.to_version
 
-    left_behind = plugins_in(Rails.root) - plugins_in(partial)
-    if left_behind.any?
-      raise Failed, "This install's image carries #{left_behind.to_sentence} (CMS_PLUGINS), which the #{tag} bundle doesn't, so updating " \
-                    "here would leave #{left_behind.one? ? "it" : "them"} behind. Redeploy instead (with your deploy tool, or `bin/kamal deploy`), or " \
-                    "install #{left_behind.one? ? "it" : "them"} from Settings › Plugins, where plugins carry over. Nothing was changed."
-    end
+    carry_over(partial)
 
     FileUtils.rm_rf(directory)
     File.rename(partial, directory)
@@ -141,7 +136,22 @@ class Upgrade::InPlace
     FileUtils.rm_rf(partial) if partial&.exist?
   end
 
-  def plugins_in(root) = root.glob("plugins/*/*.gemspec").map { it.basename(".gemspec").to_s }
+  # The plugins and theme this install runs from its image that the bundle
+  # doesn't bring, copied into the data directory with where they came from,
+  # where the release finds them (and Settings › Plugins can update them).
+  def carry_over(release)
+    bundled = InstalledPlugins.plugins_in(release.join("plugins")).map { it[:name] }
+    InstalledPlugins.loaded.each do |name, path|
+      next unless InstalledPlugins.origins[name] == :image && !bundled.include?(name)
+
+      copy = InstalledPlugins.directory.join(name)
+      next if copy.exist?
+
+      FileUtils.mkdir_p(InstalledPlugins.directory)
+      FileUtils.cp_r(path, InstalledPlugins.directory.join(".#{name}.carrying"))
+      File.rename(InstalledPlugins.directory.join(".#{name}.carrying"), copy)
+    end
+  end
 
   # Atomic: a new link beside the old, renamed over it.
   def switch

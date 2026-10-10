@@ -32,26 +32,10 @@ gem "thruster", "~> 0.1.26", require: false
 gem "turbo-rails", "~> 2.0"
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 
-# Plugins (docs/plugins.md): installed ones live in plugins/, one gem each,
-# put there by `bin/rails "plugins:install[git url]"` (the defaults, Forms
-# and Media, among them).
-Dir.glob(File.expand_path("plugins/*/*.gemspec", __dir__)).sort.each do |gemspec|
-  gem File.basename(gemspec, ".gemspec"), path: File.dirname(gemspec)
-end
-
-# The website's theme (themes/*, docs/themes.md): an engine that draws the
-# public site, so the CMS serves it itself. At most one.
-Dir.glob(File.expand_path("themes/*/*.gemspec", __dir__)).sort.each do |gemspec|
-  gem File.basename(gemspec, ".gemspec"), path: File.dirname(gemspec)
-end
-
-# The reference plugin (engines/hello), for working on the core and its
-# specs: no install carries it.
-group :development, :test do
-  Dir.glob(File.expand_path("engines/*/*.gemspec", __dir__)).sort.each do |gemspec|
-    gem File.basename(gemspec, ".gemspec"), path: File.dirname(gemspec)
-  end
-end
+# Plugins and the theme (plugins/, themes/, engines/hello, and those installed
+# from Settings › Plugins) aren't gems here: config/installed_plugins.rb loads
+# them all, so one can be updated after the image is built without touching
+# this file's lock.
 
 group :development, :test do
   gem "brakeman", "~> 8.1", require: false

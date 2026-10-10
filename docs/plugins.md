@@ -66,7 +66,16 @@ installed from their own repositories (below):
   checkout (`../cms-plugins/forms`) and link it in:
   `ln -s ../../cms-plugins/forms plugins/forms`.
 
-The Gemfile picks up every `engines/*/*.gemspec` and `plugins/*/*.gemspec`.
+Plugins aren't in the Gemfile: `config/installed_plugins.rb` loads each at
+boot, from the data directory (installed or updated from Settings ›
+Plugins), then `plugins/` and `themes/` (the image's), then `engines/` (in
+development and test). Where one name is in several, the newest version
+runs, and on a tie the data directory's. So a plugin may depend only on gems
+the core bundles. Each records its GitHub repository in
+`.cms-plugin.json` (`bin/fetch-plugins`, `bin/fetch-theme` and Settings ›
+Plugins write it), which is where its updates come from: a daily check shows
+a newer release in Settings › Plugins and the admin bar, and Update installs
+it into the data directory, over the image's copy.
 Every plugin is off until an administrator switches it on in Settings ›
 Plugins, unless its manifest says `enabled_by_default: true`. Off keeps its
 data.
@@ -91,7 +100,11 @@ data.
   plugins and keep their names (`forms`, `form_submissions`, `form_emails`,
   `quote_requests`, `invoices`), as do its model and controller class names
   (`Form`, `Invoice`), so polymorphic references and audit rows stay valid.
-  Its old migrations stay in the core's `db/migrate`.
+  Its old migrations stay in the core's `db/migrate`. Such a plugin names
+  them in its manifest (`tables: %w[forms form_submissions]`) so they count as
+  its own. Removing a plugin from Settings › Plugins can delete its data too:
+  the tables named for its key and those it names, the record that its
+  migrations ran, and the settings named for it.
 - **Routes** join the app's route set from an initializer
   (`app.routes.append { scope "hello", module: "hello", as: "hello" … }`) rather
   than mounting an isolated engine, so the core's layout and helpers work on

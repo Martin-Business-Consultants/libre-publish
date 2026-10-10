@@ -42,4 +42,19 @@ RSpec.describe "Installing plugins from Settings › Plugins", type: :request do
     expect(response).not_to redirect_to(settings_plugins_path)
     expect(PluginChange.count).to eq(0)
   end
+
+  it "shows an update that's out, and removes an installed plugin with its data when asked" do
+    allow(InstalledPlugins).to receive(:present).and_return("hello" => Rails.root.join("engines/hello"))
+    allow(InstalledPlugins).to receive(:repo).and_call_original
+    allow(InstalledPlugins).to receive(:repo).with("hello").and_return("acme/cms-hello")
+    allow(PluginChange).to receive(:image_copy?).and_return(false)
+    allow(UpdateCheck::Plugins).to receive(:available).and_return("hello" => "9.0.0")
+    sign_in_as admin
+
+    get settings_plugins_path
+    expect(response.body).to include("9.0.0 available", "1 plugin update", "Delete its data too", "hello_greetings")
+
+    delete settings_plugin_path(:hello), params: {purge_data: "1"}
+    expect(PluginChange.last).to have_attributes(action: "remove", key: "hello", purge_data: true)
+  end
 end

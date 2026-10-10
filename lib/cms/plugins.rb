@@ -48,7 +48,7 @@
 module Cms
   module Plugins
     Manifest = Struct.new(:key, :name, :version, :description, :author, :bundled, :enabled_by_default,
-      :requires, :depends_on, :homepage, :adopt_if, keyword_init: true) do
+      :requires, :depends_on, :homepage, :adopt_if, :tables, keyword_init: true) do
       # requires: a Gem::Requirement on the core's version (">= 1.1").
       def compatible?
         requires.blank? || Gem::Requirement.new(requires).satisfied_by?(Cms.version)
@@ -138,16 +138,29 @@ module Cms
       # the plugin now holds (a core feature moved into a plugin: its tables
       # have rows). While nobody has switched the plugin on or off, a true
       # answer switches it on, so an upgrade never takes a feature away.
+      #
+      # tables: the tables it owns beyond those named for its key (one that
+      # moved out of the core keeps its old names), which removing it with
+      # its data drops (tables_of).
       def register(key, name:, version:, description:, author: nil, bundled: false, enabled_by_default: false,
-        requires: nil, depends_on: [], homepage: nil, adopt_if: nil)
+        requires: nil, depends_on: [], homepage: nil, adopt_if: nil, tables: [])
         key = key.to_sym
         manifests[key] = Manifest.new(key: key, name: name, version: version, description: description, author: author,
           bundled: bundled, enabled_by_default: enabled_by_default, requires: requires,
-          depends_on: Array(depends_on).map(&:to_sym), homepage: homepage, adopt_if: adopt_if)
+          depends_on: Array(depends_on).map(&:to_sym), homepage: homepage, adopt_if: adopt_if,
+          tables: Array(tables).map(&:to_s))
         [menu_items, submenu_items, new_items, stylesheets, counters, manifest_sections, trash_kinds].each { it.delete(key) }
         webhook_event_groups.delete(key)
         api_write_holds.delete(key)
         manifests[key]
+      end
+
+      # The tables a plugin owns: those named for its key (hello_greetings)
+      # and those its manifest names, that exist.
+      def tables_of(key)
+        existing = ActiveRecord::Base.connection.tables
+        declared = manifests[key.to_sym]&.tables.to_a
+        (existing.grep(/\A#{Regexp.escape(key.to_s)}_/) + (declared & existing)).uniq.sort
       end
 
       # A partial rendered in a core view's slot (SLOT_NAMES), with that

@@ -11,7 +11,7 @@
 
   <dl class="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
     <div><dt class="<%= fact_label_classes %>">Version</dt><dd class="<%= fact_value_classes %>"><%= @plugin.version %></dd></div>
-    <div><dt class="<%= fact_label_classes %>">Source</dt><dd class="<%= fact_value_classes %>"><%= @plugin.bundled ? "Bundled with the CMS" : "Installed in plugins/" %></dd></div>
+    <div><dt class="<%= fact_label_classes %>">Source</dt><dd class="<%= fact_value_classes %>"><%= plugin_source_label(@plugin) %></dd></div>
     <% if @plugin.author.present? %>
       <div><dt class="<%= fact_label_classes %>">Author</dt><dd class="<%= fact_value_classes %>"><%= @plugin.author %></dd></div>
     <% end %>
@@ -20,6 +20,10 @@
     <% end %>
     <% if @plugin.depends_on.any? %>
       <div><dt class="<%= fact_label_classes %>">Needs plugins</dt><dd class="<%= fact_value_classes %>"><%= @plugin.depends_on.map { |dependency| Cms::Plugins.manifests[dependency]&.name || dependency.to_s }.to_sentence %></dd></div>
+    <% end %>
+    <% tables = Cms::Plugins.tables_of(@plugin.key) %>
+    <% if tables.any? %>
+      <div><dt class="<%= fact_label_classes %>">Its data</dt><dd class="<%= fact_value_classes %>"><%= tables.to_sentence %></dd></div>
     <% end %>
     <% if @plugin.homepage.present? %>
       <div><dt class="<%= fact_label_classes %>">Homepage</dt><dd class="<%= fact_value_classes %>"><%= link_to @plugin.homepage, @plugin.homepage, class: ui(:link), rel: "noopener" %></dd></div>

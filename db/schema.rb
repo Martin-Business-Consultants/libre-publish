@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_09_120200) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_10_120000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -364,6 +364,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_09_120200) do
     t.string "from_version"
     t.string "key"
     t.text "message"
+    t.boolean "purge_data", default: false, null: false
     t.string "repo", null: false
     t.integer "requested_by_id"
     t.string "status", default: "running", null: false

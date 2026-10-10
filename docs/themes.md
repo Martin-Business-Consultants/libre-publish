@@ -88,7 +88,8 @@ it without a word).
       lib/tasks/<theme>.rake                  <theme>:snapshot
       spec/fixtures/cms/snapshot.json, spec/requests/website_spec.rb
 
-The Gemfile loads `themes/*/*.gemspec`; an install has at most one.
+The CMS loads `themes/*/` as it does plugins (docs/plugins.md); an install has at most one.
+Settings › Plugins updates a theme fetched from GitHub like any plugin.
 
 Every template and partial declares its locals (`<%# locals: (data:) -%>`),
 and Herb compiles them (ReActionView): a broken tag fails the render, and

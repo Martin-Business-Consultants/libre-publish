@@ -51,6 +51,14 @@
     <% end %>
   <% end %>
 
+  <% plugin_updates = UpdateCheck::Plugins.available %>
+  <% if plugin_updates.any? && Current.user.admin? %>
+    <%= link_to settings_plugins_path, class: class_names(item_classes, "admin-bar__update font-medium text-blue-600"), title: "Newer plugin releases are available" do %>
+      <%= icon_tag "refresh", class: "size-4" %>
+      <span class="admin-bar__label"><%= pluralize(plugin_updates.size, "plugin update") %></span>
+    <% end %>
+  <% end %>
+
   <div class="flex items-center gap-2 px-2 text-gray-500">
     <%= plugin_slots(:nav_actions) %>
   </div>

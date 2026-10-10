@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-# Installed plugins live in plugins/, one directory per plugin, each a gem
-# with a gemspec the Gemfile picks up. Installing clones a git repository
-# there, bundles, migrates and asks Puma to restart. Bundled plugins
+# Installed plugins live in plugins/, one directory per plugin, each an
+# engine with a gemspec that config/installed_plugins.rb loads. Installing
+# clones a git repository there, migrates and asks Puma to restart. Bundled plugins
 # (engines/) ship with the core and are never touched here. docs/plugins.md.
 namespace :plugins do
   desc "Run the first-time setup of every plugin that's on but was never set up here (role defaults, block types)"
@@ -118,14 +118,11 @@ namespace :plugins do
     system(*command, exception: true)
   end
 
-  # The Gemfile changed, so bundle and migrate in fresh processes, on the
-  # environment this one started with (an install's own Bundler settings
-  # kept). Puma's tmp_restart plugin picks up the touch; a Docker install
-  # rebuilds its image instead (the Dockerfile copies plugins/ in before
-  # bundling).
+  # The plugins changed, so migrate in a fresh process that loads them, on
+  # the environment this one started with. Puma's tmp_restart plugin picks up
+  # the touch; a Docker install rebuilds its image instead.
   def apply_plugin_changes!
     Bundler.with_original_env do
-      run! "bundle", "install"
       run! "bin/rails", "db:migrate"
       run! "bin/rails", "assets:precompile" if ENV["RAILS_ENV"] == "production"
     end

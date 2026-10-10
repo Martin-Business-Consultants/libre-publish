@@ -21,6 +21,7 @@ RSpec.describe PluginChange do
     InstalledPlugins.loaded.clear
     InstalledPlugins.failed.clear
     InstalledPlugins.versions.clear
+    InstalledPlugins.origins.clear
   end
 
   after do
@@ -28,6 +29,7 @@ RSpec.describe PluginChange do
     InstalledPlugins.loaded.clear
     InstalledPlugins.failed.clear
     InstalledPlugins.versions.clear
+    InstalledPlugins.origins.clear
   end
 
   def release(files)
@@ -90,10 +92,11 @@ RSpec.describe PluginChange do
       expect(again.reload.message).to match(/already installed/)
 
       FileUtils.rm_rf(installed)
+      InstalledPlugins.loaded["hello"] = Rails.root.join("engines/hello")
       plugin_release("hello")
       bundled = described_class.install("acme/cms-thing", by: admin)
       perform_enqueued_jobs
-      expect(bundled.reload.message).to match(/comes with this install/)
+      expect(bundled.reload.message).to match(/already installed/)
     end
 
     it "is one change at a time, and wants a repository" do
@@ -192,8 +195,83 @@ RSpec.describe PluginChange do
       expect(Cms::Restart).to have_received(:later)
     end
 
-    it "leaves plugins it didn't install to be changed by hand" do
-      expect { described_class.remove("hello", by: admin) }.to raise_error(described_class::Refused, /by hand/)
+    it "removes its data too when asked: its tables, its migrations' record and its settings" do
+      installed.join("db/migrate").mkpath
+      installed.join("db/migrate/20990101000000_create_thing_widgets.rb").write("")
+      connection = ActiveRecord::Base.connection
+      connection.create_table(:thing_widgets) { it.string :name }
+      connection.execute("INSERT INTO schema_migrations (version) VALUES ('20990101000000')")
+      Setting.set("thing_options", {"color" => "blue"})
+      Setting.set(Cms::Plugins::SETUP_KEY, {"thing" => Time.current.iso8601})
+
+      change = described_class.remove("thing", by: admin, purge_data: true)
+      perform_enqueued_jobs
+
+      expect(change.reload).to have_attributes(summary: "Removing thing and its data", message: "Dropped thing_widgets.")
+      expect(connection.table_exists?(:thing_widgets)).to be(false)
+      expect(connection.select_values("SELECT version FROM schema_migrations")).not_to include("20990101000000")
+      expect(Setting.find_by(key: "thing_options")).to be_nil
+      expect(Setting.get(Cms::Plugins::SETUP_KEY)).not_to have_key("thing")
+    ensure
+      connection&.drop_table(:thing_widgets, if_exists: true)
+    end
+
+    it "keeps the data of a plugin the image has a copy of" do
+      Rails.root.join("plugins/thing").tap(&:mkpath).join("thing.gemspec").write("")
+
+      expect { described_class.remove("thing", by: admin, purge_data: true) }.to raise_error(described_class::Refused, /data stays/)
+    ensure
+      FileUtils.rm_rf(Rails.root.join("plugins/thing"))
+    end
+
+    it "leaves the image's plugins in it: they're switched off, not removed" do
+      expect { described_class.remove("hello", by: admin) }.to raise_error(described_class::Refused, /switch it off/)
+    end
+
+    it "is done removing once the image's copy runs again" do
+      change = described_class.create!(action: "remove", repo: "acme/cms-thing", key: "thing")
+      InstalledPlugins.loaded["thing"] = Rails.root.join("plugins/thing")
+      InstalledPlugins.origins["thing"] = :image
+
+      change.reconcile
+
+      expect(change.reload).to be_succeeded
+    end
+  end
+
+  describe "updating a plugin the image brought" do
+    let(:image) { Pathname(Dir.mktmpdir("image")).join("thing").tap(&:mkpath) }
+
+    before do
+      image.join("thing.gemspec").write(%(spec.version = "1.1.0"))
+      image.join(InstalledPlugins::METADATA).write({repo: "acme/cms-thing", version: "1.1.0"}.to_json)
+      InstalledPlugins.loaded["thing"] = image
+      InstalledPlugins.versions["thing"] = "1.1.0"
+      InstalledPlugins.origins["thing"] = :image
+    end
+
+    after { FileUtils.rm_rf(image.parent) }
+
+    it "puts the newer release in the data directory, beside the image's copy" do
+      plugin_release
+
+      change = described_class.update_plugin("thing", by: admin)
+      perform_enqueued_jobs
+
+      expect(change.reload).to have_attributes(status: "running", from_version: "1.1.0", to_version: "1.2.0")
+      expect(installed.join("lib/thing.rb")).to exist
+      expect(image.join("thing.gemspec")).to exist
+    end
+
+    it "goes back to the image's copy when the release won't load" do
+      change = described_class.create!(action: "update", repo: "acme/cms-thing", key: "thing", from_version: "1.1.0", to_version: "1.2.0")
+      installed.join("lib").mkpath
+      InstalledPlugins.failed["thing"] = "NameError: boom"
+
+      change.reconcile
+
+      expect(change.reload).to be_failed
+      expect(installed).not_to exist
     end
   end
 end

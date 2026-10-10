@@ -23,10 +23,4 @@ jobs:
         with:
           bundler-cache: true
 
-      # bin/setup installs the default plugins (config/default_plugins.yml),
-      # which adds their gems to the bundle: a frozen (deployment) bundle,
-      # as bundler-cache leaves it, refuses that. bin/install doesn't freeze
-      # it either, for the same reason.
-      - run: bundle config set --local deployment false && bundle config set --local frozen false
-
       - run: bin/ci

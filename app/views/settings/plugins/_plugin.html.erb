@@ -3,13 +3,18 @@
 <% switched_on = Cms::Plugins.switched_on?(plugin) %>
 <% missing = Cms::Plugins.missing_dependencies(plugin.key) %>
 <% settings_page = Cms::Plugins.settings_pages[plugin.key] %>
-<% source = InstalledPlugins.metadata(plugin.key.to_s)["repo"] %>
+<% source = InstalledPlugins.repo(plugin.key.to_s) %>
+<% newer = UpdateCheck::Plugins.latest_version(plugin.key) %>
+<% removable = InstalledPlugins.present.key?(plugin.key.to_s) %>
 <li id="plugin_<%= plugin.key %>" class="space-y-1 py-4">
   <div class="flex flex-wrap items-center justify-between gap-3">
     <div class="flex min-w-0 flex-col gap-0.5">
       <span class="text-sm font-semibold text-gray-900">
         <%= link_to plugin.name, settings_plugin_path(plugin.key), class: "hover:underline" %>
         <span class="ml-1 text-xs font-normal text-gray-500"><%= plugin.version %> · <%= plugin.bundled ? "bundled" : (source || "installed") %></span>
+        <% if newer %>
+          <span class="ml-1 text-xs font-semibold text-blue-600"><%= newer %> available</span>
+        <% end %>
       </span>
       <span class="text-sm text-gray-500"><%= plugin.description %></span>
     </div>
@@ -29,10 +34,12 @@
         <% end %>
       <% end %>
       <% if source && Current.user.admin? %>
-        <%= button_to "Update", settings_plugin_upgrade_path(plugin.key), class: ui(:button, :small),
+        <%= button_to "Update", settings_plugin_upgrade_path(plugin.key), class: ui(:button, newer ? :primary : nil, :small),
               title: "Install " + source + "’s latest release in place of this one" %>
-        <%= render "layouts/shared/delete_dialog", name: plugin.name, path: settings_plugin_path(plugin.key),
-              message: "Its code comes off this server and the CMS restarts. Its tables and data stay, so installing it again brings them back." %>
+      <% end %>
+      <% if removable && Current.user.admin? %>
+        <%= render "settings/plugins/remove_dialog", plugin: plugin,
+              tables: PluginChange.image_copy?(plugin.key) ? [] : Cms::Plugins.tables_of(plugin.key) %>
       <% end %>
     </div>
   </div>

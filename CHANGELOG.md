@@ -6,6 +6,38 @@ section below. An install is brought to one with `bin/update v1.0.0`, or a
 Kamal site with `kamal deploy -d <site>`. Settings shows when a newer one is
 out.
 
+## 1.10.0
+
+### Added
+- **Plugin and theme updates.** A daily check (with the CMS's own) finds
+  each plugin's and theme's newest GitHub release. Settings › Plugins shows
+  "0.3.0 available" beside one that has a newer release, and the admin bar
+  counts them. Update works for every plugin that says where it came from,
+  the default ones (Forms, Media) and a `CMS_THEME` theme included: the
+  release goes in the data directory and runs in place of the image's copy.
+  If it won't load, the image's copy runs again.
+- **Remove a plugin with its data.** Removing an installed plugin can now
+  also drop its tables (those named for its key, plus any its manifest
+  declares with `tables:`), its migrations' records and its settings, so a
+  reinstall starts clean. A plugin's page lists the tables it owns.
+
+### Changed
+- **One plugin loader.** Plugins and themes are no longer gems in the
+  Gemfile. The CMS loads each at boot from the data directory, the image's
+  `plugins/` and `themes/`, or `engines/` (development and test). Where a
+  plugin is in more than one, the newest version runs, and on a tie the data
+  directory's. The Docker build no longer re-locks the bundle, and a plugin
+  may depend only on gems the core bundles (all of ours do).
+- **Plugins carry where they came from.** `bin/fetch-plugins` and
+  `bin/fetch-theme` write `.cms-plugin.json` (repository, ref, version) beside
+  each plugin, as Settings › Plugins always has.
+- **Updating in place keeps the image's plugins and theme.** One the image
+  carries but the release's bundle doesn't (from `CMS_PLUGINS` or
+  `CMS_THEME`) is copied into the data directory first. Before, an update
+  refused for a `CMS_PLUGINS` plugin, and would have left a theme behind.
+- **Forms 1.1.1** by default: the forms API takes a field's
+  `options_collection`, as the builder does.
+
 ## 1.9.1
 
 ### Fixed

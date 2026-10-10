@@ -23,7 +23,7 @@ class Settings::PluginsController < Settings::BaseController
   end
 
   def destroy
-    change = PluginChange.remove(params[:key], by: Current.user)
+    change = PluginChange.remove(params[:key], by: Current.user, purge_data: params[:purge_data] == "1")
     redirect_to settings_plugins_path, notice: "#{change.summary}. The CMS restarts when it's done; this page shows how it went."
   rescue PluginChange::Refused, ActiveRecord::RecordInvalid => error
     redirect_to settings_plugins_path, alert: error.message

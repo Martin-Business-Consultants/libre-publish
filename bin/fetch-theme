@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-# Clones an install's theme into themes/ for the Docker build, before
-# bundling (docs/themes.md), as bin/fetch-plugins does plugins. A theme is
+# Clones an install's theme into themes/ for the Docker build
+# (docs/themes.md), as bin/fetch-plugins does plugins. A theme is
 # usually a site's own work, kept in a private repository, so it comes from
 # the CMS_THEME builder secret: one git URL, optionally with #<tag, branch or
 # commit>, and a token in the URL for a private one. Unset, the install is
@@ -12,11 +12,20 @@
 #   bin/fetch-theme                   # reads CMS_THEME, or /run/secrets/CMS_THEME in a build
 #   bin/fetch-theme --url "url#ref"   # the same, from the argument
 require "fileutils"
+require "json"
 
 APP_ROOT = File.expand_path("..", __dir__)
 SECRET_FILE = "/run/secrets/CMS_THEME"
 
 def redact(url) = url.sub(%r{//[^/@]+@}, "//")
+
+# Where it came from, for Settings › Plugins to update it from (InstalledPlugins.metadata).
+def write_metadata(directory, url, ref)
+  repo = url[%r{github\.com[:/]([\w.-]+/[\w.-]+?)(?:\.git)?\z}, 1]
+  gemspec = Dir.glob(File.join(directory, "*.gemspec")).first
+  version = File.read(gemspec)[/\.version\s*=\s*["']([^"']+)["']/, 1]
+  File.write(File.join(directory, ".cms-plugin.json"), JSON.generate({repo: repo, ref: ref, version: version}.compact))
+end
 
 entry = if ARGV.first == "--url" then ARGV[1].to_s
 elsif File.exist?(SECRET_FILE) then File.read(SECRET_FILE)
@@ -53,3 +62,4 @@ abort "Couldn't clone #{redact(url)}#{" at #{ref}" if ref}: check the URL, the r
 # No history, and no remote URL holding a token, in the image.
 FileUtils.rm_rf File.join(directory, ".git")
 abort "#{name} isn't a theme: no gemspec at its top level." if Dir.glob(File.join(directory, "*.gemspec")).empty?
+write_metadata(directory, url, ref)

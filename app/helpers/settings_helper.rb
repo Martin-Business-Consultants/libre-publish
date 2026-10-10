@@ -57,6 +57,17 @@ module SettingsHelper
     sections.select { |_, links| links.any? }
   end
 
+  # Where a plugin's running copy came from (InstalledPlugins), and its repository.
+  def plugin_source_label(plugin)
+    key = plugin.key.to_s
+    where = case InstalledPlugins.origins[key]
+    when :installed then "Installed from Settings › Plugins"
+    when :image then "Comes with this install"
+    else plugin.bundled ? "Bundled with the CMS" : "This checkout"
+    end
+    [where, InstalledPlugins.repo(key)].compact.join(" · ")
+  end
+
   # A secret, code or command shown for copying: mono, on gray-50.
   SETTINGS_CODE_CLASSES = "block rounded-md border border-gray-200 bg-gray-50 px-3 py-2 font-mono text-xs text-gray-800 break-all whitespace-pre-wrap"
 

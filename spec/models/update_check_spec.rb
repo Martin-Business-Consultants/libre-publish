@@ -6,7 +6,7 @@ RSpec.describe UpdateCheck do
   def respond_with(response)
     http = instance_double(Net::HTTP, "use_ssl=": nil, "open_timeout=": nil, "read_timeout=": nil)
     allow(Net::HTTP).to receive(:new).and_return(http)
-    allow(http).to receive(:request) { |request| @request = request; response }
+    allow(http).to receive(:request) { |request| @request = request; (@paths ||= []) << request.path; response }
   end
 
   def release(tag)
@@ -21,7 +21,7 @@ RSpec.describe UpdateCheck do
 
     UpdateCheckJob.perform_now
 
-    expect(@request.path).to eq("/repos/Martin-Business-Consultants/libre-publish/releases/latest")
+    expect(@paths.first).to eq("/repos/Martin-Business-Consultants/libre-publish/releases/latest")
     expect(described_class.latest_version).to eq("99.0.0")
     expect(described_class.latest_tag).to eq("v99.0.0")
     expect(described_class.release_url).to end_with("v99.0.0")
