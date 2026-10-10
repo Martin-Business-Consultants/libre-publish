@@ -8,13 +8,21 @@
 # text, links, images and lists, whatever the theme draws it as.
 module WebsiteMarkdownHelper
   TITLE_FIELDS = /\A(heading|title|headline|name)\z/
+  # A block's settings rather than its words: how it's laid out, where an
+  # image is cropped, which form a submission came from.
+  SETTING_FIELDS = /(\A|_)(position|style|layout|source|variant|theme|align|alignment|size|class|anchor|id|key|slug|kind)\z/
   BODY_TYPES = %w[text markdown plain_text code].freeze
 
   def website_markdown_document(record)
     parts = ["# #{record.title}"]
     description = record.seo.to_h["meta_description"].presence
     parts << "> #{website_plain_text(description)}" if description
-    parts << record.body_markdown.to_s.strip if record.is_a?(CollectionEntry) && record.body_markdown.present?
+    if record.is_a?(CollectionEntry)
+      # An entry's own fields (a case study's goal and outcome, a service's details), then its body.
+      fields = Array(record.collection.fields)
+      parts.concat(fields.filter_map { website_field_markdown(it, record.frontmatter.to_h[it["name"]], labelled: true) })
+      parts << record.body_markdown.to_s.strip if record.body_markdown.present?
+    end
     blocks = record.respond_to?(:expanded_blocks) ? record.expanded_blocks(live: !previewing?) : Array(record.try(:blocks))
     parts.concat(blocks.filter_map { website_block_markdown(it) })
     parts << "---\nSource: #{website_url(record.public_path)}\nUpdated: #{record.updated_at.to_date.iso8601}"
@@ -102,12 +110,21 @@ module WebsiteMarkdownHelper
     parts.compact_blank.join("\n\n").presence
   end
 
-  def website_field_markdown(field, value)
+  def website_field_markdown(field, value, labelled: false)
     return if value.blank?
+    return if field["type"].in?(%w[string plain_text]) && field["name"].to_s.match?(SETTING_FIELDS)
 
+    text = website_field_markdown_value(field, value)
+    # An entry's fields are named, since nothing around them says what they are.
+    return text unless labelled && text.present? && !field["type"].in?(%w[asset repeater group])
+    field["name"].to_s.match?(TITLE_FIELDS) ? text : "**#{field["label"].presence || field["name"].to_s.humanize}:** #{text.sub(/\A#+\s*/, "")}"
+  end
+
+  def website_field_markdown_value(field, value)
     case field["type"]
     when "string" then field["name"].to_s.match?(TITLE_FIELDS) ? "## #{website_plain_text(value)}" : website_plain_text(value)
     when *BODY_TYPES then value.to_s.lstrip.start_with?("<") ? website_html_markdown(value) : value.to_s.strip
+    when "select", "boolean", "integer", "datetime", "record_ref", "record_refs" then nil
     when "string_list" then Array(value).map { "- #{it}" }.join("\n")
     when "url" then "<#{value}>"
     when "link"

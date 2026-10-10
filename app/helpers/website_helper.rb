@@ -265,7 +265,7 @@ module WebsiteHelper
               "image" => (website_url(image[:src]) if image), "dateModified" => record.updated_at&.iso8601,
               "datePublished" => record.try(:published_at)&.iso8601}
       if type.in?(%w[Article BlogPosting NewsArticle])
-        node.merge!("headline" => title.to_s.truncate(110), "author" => {"@id" => "#{home}#organization"},
+        node.merge!("headline" => (record.try(:title).presence || title).to_s.truncate(110), "author" => {"@id" => "#{home}#organization"},
           "publisher" => {"@id" => "#{home}#organization"}, "mainEntityOfPage" => canonical)
       end
       node["breadcrumb"] = {"@id" => "#{canonical}#breadcrumb"}

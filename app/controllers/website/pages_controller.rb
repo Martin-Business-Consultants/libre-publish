@@ -18,6 +18,21 @@ class Website::PagesController < ActionController::Base
   self.etaggers = []
 
   before_action { prepend_view_path Website.theme.views if Website.enabled? }
+  before_action :one_host
+
+  private def one_host
+    site = URI(Setting.get("general")["site_base_url"].to_s)
+    return if site.host.blank? || request.host == site.host
+
+    # www.example.com and example.com are one site, at the address Settings ›
+    # General gives it: the other one redirects there, so search sees one copy.
+    if request.host == "www.#{site.host}" || "www.#{request.host}" == site.host
+      redirect_to "#{site.scheme}://#{site.host}#{":#{site.port}" unless [80, 443].include?(site.port)}#{request.fullpath}",
+        status: :moved_permanently, allow_other_host: true
+    end
+  rescue URI::InvalidURIError
+    nil
+  end
 
   def show
     return headless unless Website.enabled?
