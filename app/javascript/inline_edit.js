@@ -55,13 +55,41 @@
   style.textContent = `
     .lp-editable { outline: 1px dashed transparent; outline-offset: 2px; border-radius: 2px; cursor: text; transition: outline-color .15s; }
     .lp-editable:hover { outline-color: rgb(37 99 235 / .5); }
-    .lp-editable:focus { outline: 2px solid rgb(37 99 235); background: rgb(37 99 235 / .06); }`
+    .lp-editable:focus { outline: 2px solid rgb(37 99 235); background: rgb(37 99 235 / .06); }
+    .lp-save { position: fixed; right: 1.25rem; top: 1.25rem; z-index: 2147483647; display: flex; align-items: center; gap: .6rem;
+      padding: .7rem 1.1rem; border: 0; border-radius: 999px; background: rgb(37 99 235); color: #fff; cursor: pointer;
+      font: 600 15px/1 ui-sans-serif, system-ui, -apple-system, sans-serif; box-shadow: 0 8px 24px rgb(0 0 0 / .25);
+      transform: translateY(-200%); transition: transform .2s ease; }
+    .lp-save.lp-save--shown { transform: none; }
+    .lp-save:hover { background: rgb(29 78 216); }
+    .lp-save small { font-weight: 500; opacity: .85; }`
   document.head.append(style)
+
+  // Surfaces with the first edit: how many changes wait, and saving them.
+  const save = document.createElement("button")
+  save.type = "button"
+  save.className = "lp-save"
+  save.innerHTML = "Save <small></small>"
+  save.addEventListener("click", () => {
+    save.disabled = true
+    save.firstChild.textContent = "Saving… "
+    window.parent.postMessage({ type: "lp-inline-save" }, window.location.origin)
+  })
+  document.body.append(save)
+  const edited = new Set()
 
   // A link around editable text doesn't follow while it's being edited.
   document.addEventListener("click", event => {
     if (event.target.closest(".lp-editable")) event.preventDefault()
   }, true)
+
+  // ⌘S / Ctrl+S saves, from anywhere in the preview.
+  document.addEventListener("keydown", event => {
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "s") {
+      event.preventDefault()
+      window.parent.postMessage({ type: "lp-inline-save" }, window.location.origin)
+    }
+  })
 
   document.addEventListener("keydown", event => {
     const span = event.target.closest?.(".lp-editable")
@@ -80,5 +108,8 @@
       if (other !== span && other.dataset.lpField === span.dataset.lpField) other.textContent = value
     }
     window.parent.postMessage({ type: "lp-inline-edit", field: span.dataset.lpField, value }, window.location.origin)
+    edited.add(span.dataset.lpField)
+    save.querySelector("small").textContent = edited.size === 1 ? "1 change" : `${edited.size} changes`
+    save.classList.add("lp-save--shown")
   })
 })()

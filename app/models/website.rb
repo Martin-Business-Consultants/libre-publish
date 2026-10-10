@@ -23,9 +23,24 @@ module Website
     def settings = Array(design).map { Website::Design::Setting.from(it) }
   end
 
-  mattr_accessor :theme
   # Every theme that registered, by key (Settings › Themes lists them).
   mattr_reader :themes, default: {}
+
+  # The theme that draws the site: the one registered last, unless it's
+  # switched off and another isn't (two themes side by side, while one is
+  # being built: bin/theme link).
+  def self.theme
+    chosen = @theme
+    return chosen if chosen.nil? || themes.size <= 1 || switched_on?(chosen)
+
+    themes.values.find { switched_on?(it) } || chosen
+  end
+
+  def self.theme=(theme)
+    @theme = theme
+  end
+
+  def self.switched_on?(theme) = !Cms::Plugins.manifests.key?(theme.key.to_sym) || Cms::Plugins.enabled?(theme.key)
 
   module_function
 
@@ -38,9 +53,8 @@ module Website
   # A theme installed from Settings › Plugins is a plugin too, and draws the
   # site only while it's switched on there.
   def enabled?
-    return false if theme.nil?
-
-    !Cms::Plugins.manifests.key?(theme.key.to_sym) || Cms::Plugins.enabled?(theme.key)
+    current = theme
+    !current.nil? && switched_on?(current)
   end
 
   # Whether the theme has a template (website/emails/form, say), for a part

@@ -24,7 +24,7 @@ VERSION = File.read(File.join(ROOT, "VERSION")).strip
 
 # The guides, in order, by section: [file, title].
 NAV = [
-  ["Start", [["index.md", "Overview"], ["install.md", "Install"]]],
+  ["Start", [["index.md", "Overview"], ["install.md", "Install"], ["local-development.md", "Local development"]]],
   ["Build a site", [["themes.md", "Themes"], ["seo.md", "Search and AI"]]],
   ["Extend", [["plugins.md", "Plugins"], ["compatibility.md", "Compatibility"]]],
   ["APIs", [["delivery-api.md", "Delivery API"], ["webhooks.md", "Webhooks"], ["agent-interface.md", "Agents: API, CLI and MCP"]]],

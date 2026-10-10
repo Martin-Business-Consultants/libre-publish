@@ -6,6 +6,36 @@ section below. An install is brought to one with `bin/update v1.0.0`, or a
 Kamal site with `kamal deploy -d <site>`. Settings shows when a newer one is
 out.
 
+## 1.18.0
+
+### Added
+- **Local development against real content** (docs/local-development.md).
+  - **`bin/pull`** copies a live site onto your machine: its backup,
+    through the API with a cms CLI profile (or `--url`/`--token`), in place
+    of the local database and files. The copy is made safe: webhooks,
+    deploys and IndexNow off, the site's address local, and
+    `local@localhost` / `password1234` to sign in. `--without-people` leaves
+    out everyone's accounts, form submissions and tokens. The live site is
+    only read.
+  - **`bin/theme`** works on a theme from its own repository: `new` starts
+    one from the
+    [theme starter](https://github.com/Martin-Business-Consultants/libre-publish-theme-starter)
+    (every core block type, design settings, no build), `link` loads one from
+    where it is and switches it on, `unlink` puts things back. Templates and
+    CSS reload as you save.
+- **A Save button in the preview.** Editing text in place surfaces a Save
+  button over the page, with how many changes wait; ⌘S / Ctrl+S saves too.
+
+### Changed
+- **Which theme draws the site**, when an install has two: the one
+  registered last, unless it's switched off and another isn't.
+- **Settings › Updates › Check now** checks the plugins and themes too.
+
+### Fixed
+- **Importing a site into an install that loads the reference plugin**
+  (development) no longer fails on its table, which a production database
+  already has.
+
 ## 1.17.1
 
 ### Changed

@@ -21,8 +21,9 @@ export default class extends Controller {
   // An edit from the preview: "title", or "blocks.<row>.<field>" for a
   // field of the form's nth block row.
   receive(event) {
-    if (event.origin !== window.location.origin || event.data?.type !== "lp-inline-edit") return
-    if (event.source !== this.frameTarget.contentWindow) return
+    if (event.origin !== window.location.origin || event.source !== this.frameTarget.contentWindow) return
+    if (event.data?.type === "lp-inline-save") return this.save()
+    if (event.data?.type !== "lp-inline-edit") return
 
     const input = this.#input(event.data.field)
     if (!input) return
