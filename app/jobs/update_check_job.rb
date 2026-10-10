@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Daily: is there a newer CMS release (UpdateCheck), or plugin or theme
-# release (UpdateCheck::Plugins)? And settle any update
+# release (UpdateCheck::Plugins, the plugin directory first)? And settle any update
 # that finished or went quiet while nobody had Settings › Updates open.
 class UpdateCheckJob < ApplicationJob
   queue_as :default
@@ -9,6 +9,7 @@ class UpdateCheckJob < ApplicationJob
   def perform
     if UpdateCheck.checking?
       UpdateCheck.check_now
+      PluginDirectory.refresh
       UpdateCheck::Plugins.check_now
     end
   ensure

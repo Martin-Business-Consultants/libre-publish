@@ -18,6 +18,7 @@ RSpec.describe UpdateCheck do
 
   it "stores the latest release and says when it is newer" do
     respond_with(release("v99.0.0"))
+    allow(PluginDirectory).to receive(:refresh)
 
     UpdateCheckJob.perform_now
 

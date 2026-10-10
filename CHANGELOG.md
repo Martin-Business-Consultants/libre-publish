@@ -6,6 +6,26 @@ section below. An install is brought to one with `bin/update v1.0.0`, or a
 Kamal site with `kamal deploy -d <site>`. Settings shows when a newer one is
 out.
 
+## 1.13.0
+
+### Added
+- **The plugin directory.** Settings › Plugins and Settings › Themes list
+  the plugins and themes Libre Publish has reviewed
+  ([libre-publish-plugins](https://github.com/Martin-Business-Consultants/libre-publish-plugins)),
+  each with a Verified badge and Install. The list is signed (Ed25519) and
+  checked against the public key the CMS ships with, and installing or
+  updating from it downloads the exact commit that was reviewed, so a
+  tampered list or a retagged release can't put other code on a site. It's
+  fetched daily with the update check, and a listed plugin's updates follow
+  the directory. Installing any other plugin by its repository still works,
+  marked as unreviewed. A self-hosted directory: `CMS_PLUGIN_DIRECTORY_URL`
+  and `CMS_PLUGIN_DIRECTORY_KEY`.
+
+### Fixed
+- **A plugin's tables stay out of `schema.rb`** when it comes with the
+  image (`plugins/`, `themes/`), as they always did for one installed from
+  Settings › Plugins. Only the reference plugin's are kept.
+
 ## 1.12.1
 
 ### Fixed

@@ -69,11 +69,14 @@
   </section>
 
   <% if Current.user.admin? %>
+    <%= render "settings/plugins/directory", entries: @directory, kind: "theme", from: "themes" %>
+
     <section class="<%= ui(:panel, "space-y-3 p-6") %>">
-      <h2 class="<%= ui(:heading) %>">Add a theme</h2>
+      <h2 class="<%= ui(:heading) %>">Or any theme, by its repository</h2>
       <p class="text-sm text-gray-500">
-        By its GitHub repository: the CMS installs its latest release on this server, where it stays through deploys
-        and updates, and restarts. Then switch it on here.
+        Its GitHub repository: the CMS installs its latest release on this server, where it stays through deploys
+        and updates, and restarts. One the directory doesn’t list hasn’t been reviewed: install only code you trust,
+        since a plugin runs with the CMS’s full access. Then switch it on here.
       </p>
       <%= form_with url: settings_plugins_installations_path(from: "themes"), class: "flex flex-wrap gap-2" do |form| %>
         <%= form.text_field :repo, class: "min-w-0 flex-1", placeholder: "owner/acme-theme", autocomplete: "off", required: true,

@@ -83,6 +83,19 @@ Every plugin is off until an administrator switches it on in Settings ›
 Plugins, unless its manifest says `enabled_by_default: true`. Off keeps its
 data.
 
+## The directory
+
+Settings › Plugins and Settings › Themes list the plugins and themes in the
+[plugin directory](https://github.com/Martin-Business-Consultants/libre-publish-plugins),
+reviewed and pinned to a release's commit. The list is signed with the
+directory's Ed25519 key, and the CMS refuses one whose signature doesn't
+match the public key it ships with (`PluginDirectory::PUBLIC_KEY`).
+Installing or updating a listed plugin downloads exactly the pinned commit.
+To list yours, open a pull request there (its README says what's checked).
+A company running its own directory sets `CMS_PLUGIN_DIRECTORY_URL` (the
+JSON, with its signature at the same address plus `.sig`) and
+`CMS_PLUGIN_DIRECTORY_KEY` (the public key, PEM).
+
 ## The shape of one
 
     engines/hello/

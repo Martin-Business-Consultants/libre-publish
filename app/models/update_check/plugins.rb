@@ -16,6 +16,11 @@ module UpdateCheck::Plugins
     found = stored.dup
     InstalledPlugins.loaded.each_key do |name|
       repo = InstalledPlugins.repo(name) or next
+      # One the directory lists updates to the release it vouches for.
+      if (listed = PluginDirectory.find_by_repo(repo))
+        found[name] = {"latest_version" => listed.version, "release_url" => "https://github.com/#{repo}/releases/tag/v#{listed.version}"}
+        next
+      end
       release = UpdateCheck::Github.new(repo: repo).get("releases/latest")
       found[name] = {"latest_version" => release["tag_name"].to_s.delete_prefix("v"), "release_url" => release["html_url"]}
     rescue StandardError => error

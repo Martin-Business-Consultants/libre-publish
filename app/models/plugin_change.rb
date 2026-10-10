@@ -42,15 +42,24 @@ class PluginChange < ApplicationRecord
 
   def self.current = running.ordered.first
 
-  def self.install(repo, by:) = start(action: "install", repo: repo, by: by)
+  # From the plugin directory when it lists the repository: its pinned
+  # commit, reviewed, rather than whatever the latest release is now.
+  def self.install(repo, by:)
+    listed = PluginDirectory.find_by_repo(repo.to_s.sub(%r{\A(https?://)?(www\.)?github\.com/}, "").delete_suffix("/").delete_suffix(".git"))
+    raise Refused, "#{listed.name} needs CMS #{listed.requires}; this is #{Cms::VERSION}." if listed && !listed.compatible?
+
+    start(action: "install", repo: repo, pinned_commit: listed&.commit, to_version: listed&.version, by: by)
+  end
 
   def self.update_plugin(key, by:)
     repo = installed_repo(key)
     running = InstalledPlugins.versions[key.to_s]
-    latest = UpdateCheck::Github.new(repo: repo).get("releases/latest")["tag_name"].to_s.delete_prefix("v")
+    listed = PluginDirectory.find_by_repo(repo)
+    latest = listed&.version || UpdateCheck::Github.new(repo: repo).get("releases/latest")["tag_name"].to_s.delete_prefix("v")
     raise Refused, "#{key} is already at its newest release (#{running})." if latest == running
 
-    start(action: "update", key: key.to_s, repo: repo, from_version: running, by: by)
+    start(action: "update", key: key.to_s, repo: repo, from_version: running, by: by,
+      pinned_commit: listed&.commit, to_version: (latest if listed))
   rescue UpdateCheck::Github::Error => error
     raise Refused, error.message
   end
@@ -88,7 +97,13 @@ class PluginChange < ApplicationRecord
 
   # Run by PluginChangeJob. True once the change is in place and waits on the restart.
   def perform(restart: true)
-    (action == "remove") ? take_out : put_in(latest_tag)
+    if action == "remove"
+      take_out
+    elsif pinned_commit
+      put_in(pinned_commit, version: to_version)
+    else
+      put_in(latest_tag)
+    end
     Cms::Restart.later(report: report) if restart
     true
   rescue Failed, UpdateCheck::Github::Error, SystemCallError, RuntimeError, JSON::ParserError => error
@@ -164,8 +179,8 @@ class PluginChange < ApplicationRecord
 
   # Downloads the release, checks it's a plugin, and swaps it in. The one it
   # replaces stays beside it until the next change, to roll back to.
-  def put_in(tag)
-    update!(to_version: tag.delete_prefix("v"))
+  def put_in(tag, version: tag.delete_prefix("v"))
+    update!(to_version: version)
     archive = github.download("https://api.github.com/repos/#{repo}/tarball/#{tag}", scratch.join("plugin.tar.gz"))
     unpacked = scratch.join("plugin").tap { FileUtils.mkdir_p(it) }
     system("tar", "-xzf", archive.to_s, "-C", unpacked.to_s, "--strip-components=1", "--no-same-owner", exception: true)
@@ -177,7 +192,8 @@ class PluginChange < ApplicationRecord
     raise Failed, "#{name} is already installed. Update it instead." if action == "install" && (InstalledPlugins.present.key?(name) || InstalledPlugins.loaded.key?(name))
 
     update!(key: name)
-    unpacked.join(InstalledPlugins::METADATA).write({repo: repo, version: to_version, tag: tag, installed_at: Time.current.iso8601}.to_json)
+    unpacked.join(InstalledPlugins::METADATA).write({repo: repo, version: to_version, tag: (tag unless pinned_commit),
+      commit: pinned_commit, directory: pinned_commit.present?, installed_at: Time.current.iso8601}.compact.to_json)
     FileUtils.rm_rf(previous)
     File.rename(target, previous) if target.exist?
     File.rename(unpacked, target)

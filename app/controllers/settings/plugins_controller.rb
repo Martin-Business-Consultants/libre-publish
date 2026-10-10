@@ -16,6 +16,8 @@ class Settings::PluginsController < Settings::BaseController
     PluginChange.reconcile
     @plugins = Cms::Plugins.manifests.values.reject { Website.themes.key?(it.key.to_s) }.sort_by(&:name)
     @change = PluginChange.current
+    @directory = PluginDirectory.plugins
+    PluginDirectoryJob.perform_later unless PluginDirectory.checked_at
     @changes = PluginChange.ordered.includes(:requested_by).limit(10)
   end
 

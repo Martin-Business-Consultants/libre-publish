@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 
-# Plugins installed from Settings › Plugins (InstalledPlugins) own tables
-# named for their key, which stay out of the core's schema.rb: a new install
-# loads the core alone, and each plugin migrates its own tables when it's
-# installed.
+# Plugins (InstalledPlugins) own tables named for their key, which stay out
+# of the core's schema.rb: a new install loads the core alone, and each
+# plugin migrates its own tables when it's installed.
 Rails.application.config.after_initialize do
-  prefixes = InstalledPlugins.present.keys.map { "#{it}_" }
+  # Every plugin's but the reference one's (engines/, whose tables the test
+  # database is loaded with): from the data directory, or the image's.
+  keys = InstalledPlugins.present.keys + InstalledPlugins.origins.reject { |_, origin| origin == :reference }.keys
+  prefixes = keys.uniq.map { "#{it}_" }
   ActiveRecord::SchemaDumper.ignore_tables |= [/\A(?:#{prefixes.map { Regexp.escape(it) }.join("|")})/] if prefixes.any?
 
   # A plugin installed from Settings › Plugins brings stylesheets the image
