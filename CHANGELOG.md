@@ -6,14 +6,14 @@ section below. An install is brought to one with `bin/update v1.0.0`, or a
 Kamal site with `kamal deploy -d <site>`. Settings shows when a newer one is
 out.
 
-## Unreleased
+## 1.8.0
 
 ### Changed
 - **Libre Publish lives under `/cms`, and `/` is the website.** Every admin
   page, sign-in included, moved from the root to `/cms` (`/cms/pages`,
-  `/cms/sign_in`), plugins' with them: Forms and Media are pinned at the
-  commits that draw theirs there. With a theme, `/` is the site; a headless
-  install sends `/` to `/cms`. The API, `/agent` and `/frontend`,
+  `/cms/sign_in`), plugins' with them: Forms and Media 1.1.0 draw theirs
+  there. With a theme, `/` is the site; a headless install sends `/` to
+  `/cms`. The API, `/agent` and `/frontend`,
   `/sitemap.xml` and `/up` stay at the root, so sites, the CLI and the Astro
   integration need no change. An old admin address redirects to its `/cms`
   one, so bookmarks and links in emails keep working. A plugin draws its
