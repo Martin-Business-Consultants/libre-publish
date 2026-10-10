@@ -16,6 +16,10 @@ out.
   the default ones (Forms, Media) and a `CMS_THEME` theme included: the
   release goes in the data directory and runs in place of the image's copy.
   If it won't load, the image's copy runs again.
+- **Remove a plugin with its data.** Removing an installed plugin can now
+  also drop its tables (those named for its key, plus any its manifest
+  declares with `tables:`), its migrations' records and its settings, so a
+  reinstall starts clean. A plugin's page lists the tables it owns.
 
 ### Changed
 - **One plugin loader.** Plugins and themes are no longer gems in the

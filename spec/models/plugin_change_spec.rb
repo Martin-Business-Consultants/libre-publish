@@ -195,6 +195,35 @@ RSpec.describe PluginChange do
       expect(Cms::Restart).to have_received(:later)
     end
 
+    it "removes its data too when asked: its tables, its migrations' record and its settings" do
+      installed.join("db/migrate").mkpath
+      installed.join("db/migrate/20990101000000_create_thing_widgets.rb").write("")
+      connection = ActiveRecord::Base.connection
+      connection.create_table(:thing_widgets) { it.string :name }
+      connection.execute("INSERT INTO schema_migrations (version) VALUES ('20990101000000')")
+      Setting.set("thing_options", {"color" => "blue"})
+      Setting.set(Cms::Plugins::SETUP_KEY, {"thing" => Time.current.iso8601})
+
+      change = described_class.remove("thing", by: admin, purge_data: true)
+      perform_enqueued_jobs
+
+      expect(change.reload).to have_attributes(summary: "Removing thing and its data", message: "Dropped thing_widgets.")
+      expect(connection.table_exists?(:thing_widgets)).to be(false)
+      expect(connection.select_values("SELECT version FROM schema_migrations")).not_to include("20990101000000")
+      expect(Setting.find_by(key: "thing_options")).to be_nil
+      expect(Setting.get(Cms::Plugins::SETUP_KEY)).not_to have_key("thing")
+    ensure
+      connection&.drop_table(:thing_widgets, if_exists: true)
+    end
+
+    it "keeps the data of a plugin the image has a copy of" do
+      Rails.root.join("plugins/thing").tap(&:mkpath).join("thing.gemspec").write("")
+
+      expect { described_class.remove("thing", by: admin, purge_data: true) }.to raise_error(described_class::Refused, /data stays/)
+    ensure
+      FileUtils.rm_rf(Rails.root.join("plugins/thing"))
+    end
+
     it "leaves the image's plugins in it: they're switched off, not removed" do
       expect { described_class.remove("hello", by: admin) }.to raise_error(described_class::Refused, /switch it off/)
     end

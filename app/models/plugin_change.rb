@@ -6,7 +6,8 @@
 # public GitHub repository. Installing or updating downloads that release,
 # puts it in place and restarts the install (Cms::Restart), which loads it and
 # runs its migrations on the way up; removing deletes its code and restarts,
-# leaving its tables and data for a reinstall. A plugin updates only when
+# leaving its tables and data for a reinstall, unless it's removed with its
+# data (purge_data): then its tables, migrations' records and settings go too. A plugin updates only when
 # someone presses its Update button. The change succeeds once the install
 # boots with the plugin loaded at that release (or gone); an update that won't
 # load puts the previous release back.
@@ -54,10 +55,12 @@ class PluginChange < ApplicationRecord
     raise Refused, error.message
   end
 
-  def self.remove(key, by:)
+  def self.remove(key, by:, purge_data: false)
     raise Refused, "#{key} comes with this install's image; switch it off instead." unless InstalledPlugins.present.key?(key.to_s)
+    raise Refused, "#{key} is the image's too, so its data stays for the image's copy." if purge_data && image_copy?(key)
 
-    start(action: "remove", key: key.to_s, repo: installed_repo(key), from_version: InstalledPlugins.versions[key.to_s], by: by)
+    start(action: "remove", key: key.to_s, repo: installed_repo(key), from_version: InstalledPlugins.versions[key.to_s],
+      purge_data: purge_data, by: by)
   end
 
   def self.start(by:, **attributes)
@@ -73,6 +76,10 @@ class PluginChange < ApplicationRecord
   # Settles running changes once the install has restarted. Called by
   # Settings › Plugins.
   def self.reconcile = running.find_each(&:reconcile)
+
+  # The image (or a checkout) has a copy of it too, which runs once the data
+  # directory's is gone.
+  def self.image_copy?(key) = InstalledPlugins.available.fetch(key.to_s, []).any? { it[:source] != :installed }
 
   def self.installed_repo(key)
     InstalledPlugins.repo(key.to_s) or
@@ -121,7 +128,7 @@ class PluginChange < ApplicationRecord
     case action
     when "install" then "Installing #{name}"
     when "update" then "Updating #{name} to #{to_version || "its newest release"}"
-    else "Removing #{name}"
+    else purge_data? ? "Removing #{name} and its data" : "Removing #{name}"
     end
   end
 
@@ -179,9 +186,27 @@ class PluginChange < ApplicationRecord
   def take_out
     raise Failed, "#{key} isn't installed." unless target.exist?
 
+    migrations = target.glob("db/migrate/*.rb").map { it.basename.to_s[/\A\d+/] }.compact
     FileUtils.rm_rf(previous)
     File.rename(target, previous)
     Cms::Plugins.switch!(key, on: false) if Cms::Plugins.manifests.key?(key.to_sym)
+    purge(migrations) if purge_data?
+  end
+
+  # Its tables, the record that its migrations ran (so a reinstall makes
+  # them afresh), and its settings: those named for it, its on/off switch and
+  # its first-time setup. Its code stays aside (previous), its data doesn't.
+  def purge(migrations)
+    connection = ActiveRecord::Base.connection
+    tables = Cms::Plugins.tables_of(key)
+    connection.disable_referential_integrity do
+      tables.each { connection.drop_table(it) }
+    end
+    connection.execute("DELETE FROM schema_migrations WHERE version IN (#{migrations.map { connection.quote(it) }.join(",")})") if migrations.any?
+    Setting.where(key: Setting.pluck(:key).select { it == key || it.start_with?("#{key}_", "#{key}.") }).delete_all
+    Setting.unset(Cms::Plugins::SETTING_KEY, key)
+    Setting.unset(Cms::Plugins::SETUP_KEY, key)
+    update!(message: "Dropped #{tables.any? ? tables.to_sentence : "no tables"}.")
   end
 
   # The release before goes back; for an image's plugin updated here the

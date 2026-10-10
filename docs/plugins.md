@@ -100,7 +100,11 @@ data.
   plugins and keep their names (`forms`, `form_submissions`, `form_emails`,
   `quote_requests`, `invoices`), as do its model and controller class names
   (`Form`, `Invoice`), so polymorphic references and audit rows stay valid.
-  Its old migrations stay in the core's `db/migrate`.
+  Its old migrations stay in the core's `db/migrate`. Such a plugin names
+  them in its manifest (`tables: %w[forms form_submissions]`) so they count as
+  its own. Removing a plugin from Settings › Plugins can delete its data too:
+  the tables named for its key and those it names, the record that its
+  migrations ran, and the settings named for it.
 - **Routes** join the app's route set from an initializer
   (`app.routes.append { scope "hello", module: "hello", as: "hello" … }`) rather
   than mounting an isolated engine, so the core's layout and helpers work on

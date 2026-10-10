@@ -21,6 +21,10 @@
     <% if @plugin.depends_on.any? %>
       <div><dt class="<%= fact_label_classes %>">Needs plugins</dt><dd class="<%= fact_value_classes %>"><%= @plugin.depends_on.map { |dependency| Cms::Plugins.manifests[dependency]&.name || dependency.to_s }.to_sentence %></dd></div>
     <% end %>
+    <% tables = Cms::Plugins.tables_of(@plugin.key) %>
+    <% if tables.any? %>
+      <div><dt class="<%= fact_label_classes %>">Its data</dt><dd class="<%= fact_value_classes %>"><%= tables.to_sentence %></dd></div>
+    <% end %>
     <% if @plugin.homepage.present? %>
       <div><dt class="<%= fact_label_classes %>">Homepage</dt><dd class="<%= fact_value_classes %>"><%= link_to @plugin.homepage, @plugin.homepage, class: ui(:link), rel: "noopener" %></dd></div>
     <% end %>

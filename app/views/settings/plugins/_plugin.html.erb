@@ -38,8 +38,8 @@
               title: "Install " + source + "’s latest release in place of this one" %>
       <% end %>
       <% if removable && Current.user.admin? %>
-        <%= render "layouts/shared/delete_dialog", name: plugin.name, path: settings_plugin_path(plugin.key),
-              message: "Its code comes off this server and the CMS restarts. Its tables and data stay, so installing it again brings them back." %>
+        <%= render "settings/plugins/remove_dialog", plugin: plugin,
+              tables: PluginChange.image_copy?(plugin.key) ? [] : Cms::Plugins.tables_of(plugin.key) %>
       <% end %>
     </div>
   </div>
