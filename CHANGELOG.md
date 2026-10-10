@@ -6,6 +6,31 @@ section below. An install is brought to one with `bin/update v1.0.0`, or a
 Kamal site with `kamal deploy -d <site>`. Settings shows when a newer one is
 out.
 
+## 1.15.0
+
+### Added
+- **Search and AI fundamentals** (docs/seo.md).
+  - **Structured data from the content**: every page carries schema.org
+    JSON-LD for the organization behind the site, the site, the page (its
+    SEO panel's type, an Article for an entry, else a WebPage) and its
+    breadcrumbs. The SEO panel's schema.org type now takes effect.
+  - **Settings › Search**: let in or keep out AI answer engines and AI
+    training crawlers separately, say whether the site is an organization,
+    a local business or a person, and list its profiles elsewhere.
+  - **`/robots.txt`** made by the CMS: the admin and API kept out, the
+    sitemap named, AI crawlers as Settings › Search says, and a headless
+    install's host closed entirely.
+  - **`/llms.txt`** and **a Markdown copy of every page** (`/about.md`), for
+    AI readers, linked from each page's `<head>`.
+  - **hreflang** in each page's `<head>` and in `/sitemap.xml`.
+
+### Changed
+- **A page's `<head>` is complete.** The SEO panel's Open Graph title,
+  description and type and its Twitter card are used. The share image
+  carries its size and alt text, an entry its dates. `nofollow` works on
+  its own. An indexable page allows the large image preview and full
+  snippet.
+
 ## 1.14.0
 
 ### Added

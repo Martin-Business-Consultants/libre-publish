@@ -28,6 +28,7 @@ module SettingsHelper
       ["General", :settings_general_path, "settings:read", "Business name, contact details, public URL."],
       # Your appearance, and (with settings:read) the logo, colors, type and brand context.
       ["Branding", :settings_branding_path, nil, "Appearance, logo, favicon, colors, font, corners, and brand context."],
+      ["Search", :settings_search_path, "settings:read", "How search engines and AI see the site: AI crawlers, who you are, robots.txt."],
       ["Updates", :settings_updates_path, "settings:read", "The version this install runs, and updating to the newest release."]
     ],
     "Integrations" => [

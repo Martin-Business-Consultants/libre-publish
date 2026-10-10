@@ -27,6 +27,8 @@ class Website::PagesController < ActionController::Base
     path = request.original_fullpath.split("?").first
     return redirect_to(path.chomp("/") + request.query_string.then { it.empty? ? "" : "?#{it}" }, status: :moved_permanently) if path.length > 1 && path.end_with?("/")
 
+    return markdown(path.delete_suffix(".md")) if path.end_with?(".md")
+
     address = Website::Address.new(request.path, drafts: previewing?)
     case address.record
     when Page then render_record "website/pages/show", page: address.record
@@ -35,7 +37,39 @@ class Website::PagesController < ActionController::Base
     end
   end
 
+  # /robots.txt (Website::Robots): served with a theme or without, so the
+  # admin and the API stay out of search either way.
+  def robots
+    expires_in 1.hour, public: true
+    render plain: Website::Robots.new(base_url).to_s
+  end
+
+  # /llms.txt: the site's index for AI readers (WebsiteMarkdownHelper).
+  def llms
+    return head(:not_found) unless Website.enabled?
+
+    expires_in 1.hour, public: true
+    render plain: helpers.website_llms_txt(Sitemap.new.entries), content_type: "text/markdown"
+  end
+
   private
+
+  # A page or entry as Markdown: /about.md, and /index.md for the home page.
+  def markdown(path)
+    address = Website::Address.new((path == "/index") ? "/" : path, drafts: previewing?)
+    record = address.record
+    # Only what the website has a page for (the theme draws it as HTML).
+    drawn = record.is_a?(Page) || lookup_context.exists?("website/entries/#{record&.collection&.slug}", [], false, [], formats: [:html])
+    return head(:not_found) unless record && drawn
+    return head(:not_found) if record.seo.to_h["noindex"] && !previewing?
+
+    expires_in 1.minute, public: true, stale_while_revalidate: 1.day unless previewing?
+    if previewing? || stale?(etag: [Website.cache_version, record, :markdown], public: true)
+      render plain: helpers.website_markdown_document(record), content_type: "text/markdown"
+    end
+  end
+
+  def base_url = Setting.get("general")["site_base_url"].presence&.chomp("/") || request.base_url
 
   # A published page can be cached anywhere (the browser, Thruster,
   # Cloudflare) and revalidates against the content and the theme; a preview
