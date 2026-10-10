@@ -11,9 +11,11 @@ class ContentBlocksController < ApplicationController
   before_action :require_content_write
 
   def new
-    block_type = BlockType.find_by!(slug: params[:type].to_s)
     scope = params[:scope].to_s
     return head(:bad_request) unless scope.match?(SCOPE)
+    return new_pattern(params[:type].to_s.delete_prefix("pattern:"), scope) if params[:type].to_s.start_with?("pattern:")
+
+    block_type = BlockType.find_by!(slug: params[:type].to_s)
 
     block = {"id" => SecureRandom.uuid, "type" => block_type.slug, "version" => block_type.version,
              "data" => block_type.defaults.is_a?(Hash) ? block_type.defaults.deep_dup : {}}
@@ -24,6 +26,23 @@ class ContentBlocksController < ApplicationController
   end
 
   private
+
+  # A pattern from the picker's Patterns section: a synced one as one
+  # "pattern" block naming it, an unsynced one as copies of its blocks.
+  def new_pattern(slug, scope)
+    pattern = BlockPattern.find_by!(slug: slug)
+    blocks = if pattern.synced?
+      [{"id" => SecureRandom.uuid, "type" => "pattern", "version" => BlockType.find_by(slug: "pattern")&.version || 1, "data" => {"pattern" => pattern.slug}}]
+    else
+      pattern.copied_blocks
+    end
+    rows = blocks.map do |block|
+      render_to_string(partial: "content_form/block", locals: {
+        block: block, scope: helpers.content_scope(scope)[helpers.content_row_key], depth: params[:depth].to_i, errors: [], open: true
+      })
+    end
+    render html: rows.join.html_safe # rubocop:disable Rails/OutputSafety -- our own rendered partials
+  end
 
   # Adding a block is part of writing a page, entry or global, whichever
   # this form is.

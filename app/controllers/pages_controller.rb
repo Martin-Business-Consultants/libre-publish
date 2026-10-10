@@ -54,6 +54,8 @@ class PagesController < ApplicationController
   end
 
   def update
+    return render_website_preview(@page, page_attributes(@page)) if website_preview?
+
     prior_status = @page.status
     if save_content(@page, page_attributes(@page), prefix: "pages")
       @page.track_update(from: prior_status)

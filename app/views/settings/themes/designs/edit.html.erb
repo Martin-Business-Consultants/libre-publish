@@ -1,0 +1,43 @@
+<% @page_title = "Customize " + @theme.name %>
+
+<%= render "layouts/shared/page_header", title: @page_title,
+      description: "The colors, fonts and choices the theme lets you change. Saving changes the website at once." %>
+
+<div class="max-w-3xl space-y-6">
+  <% if @theme.settings.none? %>
+    <section class="<%= ui(:panel, "p-6") %>">
+      <p class="text-sm text-gray-500">This theme has nothing to customize: its design is in its code.</p>
+    </section>
+  <% else %>
+    <%= form_with url: settings_theme_design_path(@theme.key), method: :patch, scope: :design, class: "space-y-6" do |form| %>
+      <section class="<%= ui(:panel, "space-y-5 p-6") %>">
+        <% @theme.settings.each do |setting| %>
+          <%# herb:key setting.name %>
+          <% value = @values[setting.name] %>
+          <% if setting.type == "boolean" %>
+            <label class="flex items-start gap-2 text-sm text-gray-900">
+              <%= form.check_box setting.name, { checked: value }, "1", "0" %>
+              <span><%= setting.label %></span>
+            </label>
+          <% else %>
+            <%= settings_field setting.label, hint: setting.help do %>
+              <% case setting.type %>
+              <% when "color" %>
+                <%= form.color_field setting.name, value: value, class: "h-10 w-20" %>
+              <% when "select" %>
+                <%= form.select setting.name, setting.options.keys.map { |option| [option.humanize, option] }, { selected: value }, class: "w-full" %>
+              <% else %>
+                <%= form.text_field setting.name, value: value, class: "w-full", placeholder: setting.default %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      </section>
+      <div class="flex flex-wrap items-center gap-2">
+        <button type="submit" class="<%= ui(:button, :primary) %>">Save</button>
+        <%= link_to "View site", root_path, class: ui(:button), target: "_blank", rel: "noopener" %>
+      </div>
+    <% end %>
+    <%= button_to "Reset to the theme’s defaults", settings_theme_design_path(@theme.key), method: :delete, class: ui(:link, "text-sm") %>
+  <% end %>
+</div>

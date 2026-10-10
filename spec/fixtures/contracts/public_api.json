@@ -577,6 +577,10 @@
       [
         "key",
         "importmap"
+      ],
+      [
+        "key",
+        "design"
       ]
     ],
     "Website.render": [
@@ -603,6 +607,13 @@
         "record"
       ]
     ],
+    "WebsiteHelper#website_design": [
+      [
+        "req",
+        "name"
+      ]
+    ],
+    "WebsiteHelper#website_design_tags": [],
     "WebsiteHelper#website_entries": [
       [
         "req",

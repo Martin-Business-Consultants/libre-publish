@@ -65,6 +65,35 @@ module ContentEditing
     false
   end
 
+  # The editor's Preview tab posts the form here (?website_preview), unsaved:
+  # the record takes what was posted, in memory only, and the theme draws it
+  # as the website would, drafts and all. Nothing is saved or recorded.
+  def website_preview? = params[:website_preview].present?
+
+  def render_website_preview(record, attributes)
+    return head(:not_found) unless Website.enabled?
+
+    record.assign_attributes(attributes)
+    template, locals = website_template_for(record)
+    prepend_view_path Website.theme.views
+    return head(:not_found) unless template_exists?(template)
+
+    @website_previewing = true
+    response.headers["Cache-Control"] = "private, no-store"
+    render template, locals: locals, layout: "website"
+  end
+
+  def website_template_for(record)
+    if record.is_a?(CollectionEntry)
+      ["website/entries/#{record.collection.slug}", {entry: record}]
+    else
+      ["website/pages/show", {page: record}]
+    end
+  end
+
+  # WebsiteHelper's previewing?: the preview shows drafts.
+  def previewing? = @website_previewing == true
+
   # The forms post under `page`, `entry` and `global`.
   def posted_lock_version(record)
     scope = record.is_a?(CollectionEntry) ? :entry : record.model_name.param_key

@@ -203,6 +203,17 @@ module WebsiteHelper
       raise(Website::Fields::Unknown.new("form #{form.slug} has no field #{name.to_s.inspect} (it has #{form.fields.map { it["name"] }.to_sentence})", name))
   end
 
+  # A design setting's value (Website::Design): what an editor chose in
+  # Settings › Themes › Customize, or the theme's default.
+  def website_design(name) = Website::Design.value(name)
+
+  # The design settings as CSS custom properties (--design-accent), for the
+  # theme's layout to put in its <head>.
+  def website_design_tags
+    css = Website::Design.css
+    tag.style(css.html_safe) if css.present? # rubocop:disable Rails/OutputSafety -- values are held to their type and stripped of ;{}<>
+  end
+
   def previewing? = controller.respond_to?(:previewing?, true) && controller.send(:previewing?)
 
   private

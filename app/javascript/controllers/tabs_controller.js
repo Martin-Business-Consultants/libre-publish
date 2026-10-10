@@ -5,7 +5,8 @@ import { Controller } from "@hotwired/stimulus"
 // (data-tab="edit seo"), and panels may nest. The chosen one is kept in the address's #hash, so a link
 // or a reload lands on it. A lazy frame in a panel loads when the panel is
 // shown: Turbo waits for a lazy frame to scroll into view, and doesn't see
-// one that was hidden come out.
+// one that was hidden come out. Showing one dispatches tabs:shown, with its
+// name, for what a panel needs to do then (the website preview loads).
 export default class extends Controller {
   static targets = [ "tab", "panel" ]
 
@@ -27,5 +28,6 @@ export default class extends Controller {
       if (!panel.hidden) panel.querySelectorAll("turbo-frame[loading=lazy]").forEach(frame => { frame.loading = "eager" })
     })
     if (remember) history.replaceState(history.state, "", `#${name}`)
+    this.dispatch("shown", { detail: { name } })
   }
 }

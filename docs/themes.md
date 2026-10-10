@@ -91,6 +91,25 @@ it without a word).
 The CMS loads `themes/*/` as it does plugins (docs/plugins.md); an install has at most one.
 Settings › Plugins updates a theme fetched from GitHub like any plugin.
 
+### Design settings
+
+A theme can let an editor change its colors, fonts and a few choices without
+touching code, in Settings › Themes › Customize:
+
+    Website.register :acme, name: "Acme", version: Acme::VERSION, views: root.join("app/views"), design: [
+      {name: "accent", label: "Accent color", type: "color", default: "#a8382f"},
+      {name: "heading_font", label: "Headings", type: "select", default: "serif",
+       options: {"serif" => "Georgia, serif", "sans" => "system-ui, sans-serif"}},
+      {name: "show_banner", label: "Show the announcement bar", type: "boolean", default: true},
+      {name: "tagline", label: "Tagline", type: "string", default: "Grow well"}
+    ]
+
+`type` is `color` (#rrggbb), `select` (one of `options`' keys; the value is
+what a CSS property gets), `boolean` or `string`. The layout puts
+`website_design_tags` in its `<head>` for `--design-accent`,
+`--design-heading-font` and the rest, and a template reads one with
+`website_design(:show_banner)`. Saving them changes the website at once.
+
 Every template and partial declares its locals (`<%# locals: (data:) -%>`),
 and Herb compiles them (ReActionView): a broken tag fails the render, and
 an unused local fails the lint.

@@ -3,7 +3,8 @@
 # A page's blocks with their dynamic data resolved inline, so an API consumer
 # doesn't need a second request per block: a `collection_list` gets the
 # entries it lists (filtered, sorted, grouped as the block says), and
-# `contact_info` gets the site's contact details.
+# `contact_info` gets the site's contact details, and a synced `pattern`
+# becomes the pattern's blocks (BlockPattern), as they are now.
 #
 # `live: true` is the delivery API's (/api/v1): only published entries, so a
 # list set to show drafts ("filter_status": "any") never puts one on a site.
@@ -25,6 +26,7 @@ class Page::BlockExpansion
         slug = block.dig("data", "collection_slug").to_s
         "collection:#{slug}" if slug.present?
       when "contact_info" then "site"
+      when "pattern" then "patterns"
       end
     end.uniq
   end
@@ -37,7 +39,7 @@ class Page::BlockExpansion
   def blocks
     return [] unless @blocks.is_a?(Array)
 
-    @blocks.map do |block|
+    with_patterns(@blocks).map do |block|
       next block unless block.is_a?(Hash)
 
       case block["type"]
@@ -52,6 +54,19 @@ class Page::BlockExpansion
   end
 
   private
+
+  # A synced pattern's place taken by its blocks; one that's gone, by none.
+  def with_patterns(blocks)
+    slugs = blocks.filter_map { it["data"].to_h["pattern"].to_s if it.is_a?(Hash) && it["type"] == "pattern" }
+    return blocks if slugs.empty?
+
+    patterns = BlockPattern.where(slug: slugs).index_by(&:slug)
+    blocks.flat_map do |block|
+      next [block] unless block.is_a?(Hash) && block["type"] == "pattern"
+
+      Array(patterns[block.dig("data", "pattern").to_s]&.blocks)
+    end
+  end
 
   def contact_info
     {"contact" => Setting.get("general").slice(*CONTACT_KEYS)}

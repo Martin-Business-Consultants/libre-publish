@@ -48,6 +48,9 @@
               <% if drawing %>
                 <%= link_to "View site", root_path, class: ui(:button, :small), target: "_blank", rel: "noopener" %>
               <% end %>
+              <% if theme.settings.any? %>
+                <%= link_to "Customize", edit_settings_theme_design_path(theme.key), class: ui(:button, :small) %>
+              <% end %>
               <% if plugin && Current.user.can?("settings:write") %>
                 <% if Cms::Plugins.switched_on?(plugin) %>
                   <%= button_to "Switch off", settings_plugin_activation_path(plugin.key, from: "themes"), method: :delete, class: ui(:button, :small) %>

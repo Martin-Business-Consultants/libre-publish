@@ -8,7 +8,7 @@
 # Every entry is upserted by `slug`, so calling `install!` repeatedly is
 # safe and only revives missing/blank rows.
 module BlockType::Defaults
-  ALL = [
+  BASE = [
     # ───────── Curated set (visible in the picker) ─────────
 
     {
@@ -358,6 +358,19 @@ module BlockType::Defaults
       }
     }
   ].freeze
+
+  # A synced pattern, placed: it shows the pattern's blocks, whatever they
+  # are when the page is drawn (BlockPattern, Page::BlockExpansion).
+  PATTERN = {
+    slug: "pattern", label: "Synced pattern", category: "Patterns", icon: "Copy",
+    description: "A pattern kept in step everywhere it's used: change the pattern and every page shows the change.",
+    fields: [
+      {"name" => "pattern", "label" => "Pattern", "type" => "string", "required" => true,
+       "help" => "The pattern's slug (Content › Patterns)."}
+    ]
+  }.freeze
+
+  ALL = (BASE + [PATTERN]).freeze
 
   # Upserts each definition (ALL unless told otherwise) into the site.
   # Idempotent: re-runs only fill in what's missing. Returns the count of rows
