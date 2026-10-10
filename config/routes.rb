@@ -1,16 +1,9 @@
 # frozen_string_literal: true
 
 Rails.application.routes.draw do
-  get  "sign_in", to: "sessions#new", as: :sign_in
-  post "sign_in", to: "sessions#create"
-
-  # Two-factor sign-in challenge — second step after username/password.
-  get  "sign_in/challenge", to: "sessions#challenge", as: :sessions_challenge
-  post "sign_in/challenge", to: "sessions#verify"
-
-  get  "sign_up", to: "registrations#new", as: :sign_up
-  post "sign_up", to: "registrations#create"
-
+  # Libre Publish lives under /cms (Cms::PATH) and "/" is the website. What
+  # sites, the CLI and integrations call stays at the root: these, the API
+  # (namespace :api, below), /up and the website's own.
   # Local-agent bootstrap — `curl -fsSL https://<host>/agent/install.sh | sh`.
   # Public by design (see AgentBootstrapsController); `format: false` keeps
   # Rails from reading ".sh" / ".md" as a response format.
@@ -24,216 +17,230 @@ Rails.application.routes.draw do
   get "frontend/AGENTS.md", to: "agent_bootstraps#frontend_md", as: :frontend_agents_md, format: false
   get "frontend/install.sh", to: "agent_bootstraps#frontend_install", as: :frontend_install, format: false
 
-  # How frontends work with the CMS: the JSON, the Astro integration, and
-  # the frontend this CMS serves.
-  get "developers", to: "developers#show", as: :developers
-
-  # Docs: guides (app/guides) and site health.
-  get "docs", to: "docs#index", as: :docs
-  get "docs/site-health", to: "docs#site_health", as: :site_health_docs
-  get "docs/:slug", to: "docs#show", as: :doc, constraints: {slug: /[a-z0-9-]+/}
-
-  resources :sessions, only: [:destroy]
-  # A Markdown field's Preview tab (MarkdownPreviewsController).
-  resource :markdown_preview, only: :create
-  namespace :users do
-    resources :bulk_deletions, only: :create
-  end
-  resources :users, only: [:index, :new, :create, :edit, :update, :destroy]
-
-  namespace :identity do
-    resource :email_verification, only: [:show, :create]
-    resource :password_reset,     only: [:new, :edit, :create, :update]
-  end
-
-  # Public sitemap for search engines. Defined ahead of the admin :sitemap
-  # route so `/sitemap.xml` doesn't get matched by the admin route as
-  # `index` with format=xml.
+  # Public sitemap for search engines.
   get "sitemap.xml", to: "sitemaps#xml", as: :sitemap_xml, defaults: {format: :xml}
 
-  get :dashboard, to: "dashboard#index"
+  # The admin: everything an editor signs in to. A path-only scope, so the
+  # route helpers keep their names (pages_path is /cms/pages).
+  scope path: Cms::PATH do
+    get "/", to: "home#index", as: :cms
 
-  get :sitemap,       to: "sitemaps#index", as: :sitemap, constraints: {format: /html|/}
-  patch "sitemap/:source/:id", to: "sitemap_entries#update", as: :sitemap_entry,
-                                constraints: {source: /page|collection_entry/}
+    get  "sign_in", to: "sessions#new", as: :sign_in
+    post "sign_in", to: "sessions#create"
 
-  get "audit_log", to: "audit_logs#index", as: :audit_logs
+    # Two-factor sign-in challenge — second step after username/password.
+    get  "sign_in/challenge", to: "sessions#challenge", as: :sessions_challenge
+    post "sign_in/challenge", to: "sessions#verify"
 
-  get    "trash",                       to: "trash#index",                as: :trash
-  get    "trash/:kind/:id",             to: "trash#show",                 as: :trash_item
-  delete "trash/:kind/:id",             to: "trash#destroy"
-  post   "trash/:kind/:id/restoration", to: "trash/restorations#create",  as: :trash_item_restoration
+    get  "sign_up", to: "registrations#new", as: :sign_up
+    post "sign_up", to: "registrations#create"
 
-  # Content.
-  page_path_format = %r{[^/]+(?:/[^/]+)*}
+    # How frontends work with the CMS: the JSON, the Astro integration, and
+    # the frontend this CMS serves.
+    get "developers", to: "developers#show", as: :developers
 
-  # A new block row for the content editor's "Add block" picker.
-  resources :content_blocks, only: :new
-  # An editor's JSON tab: the record as the API hands it to the site.
-  get "api_previews/:kind/:id", to: "api_previews#show", as: :api_preview, constraints: {kind: /page|entry|global/}
-  resource :content_picker, only: :show
+    # Docs: guides (app/guides) and site health.
+    get "docs", to: "docs#index", as: :docs
+    get "docs/site-health", to: "docs#site_health", as: :site_health_docs
+    get "docs/:slug", to: "docs#show", as: :doc, constraints: {slug: /[a-z0-9-]+/}
 
-  namespace :pages do
-    resources :bulk_deletions, only: :create
-    resources :bulk_status_changes, only: :create
-  end
-  # Ahead of `resources :pages`: a page slug is a full path and may contain
-  # slashes, so PATCH /pages/about/schema would otherwise be pages#update.
-  get   "pages/:page_slug/versions", to: "pages/versions#index", as: :page_versions, constraints: {page_slug: page_path_format}
-  get   "pages/:page_slug/versions/:id", to: "pages/versions#show", as: :page_version, constraints: {page_slug: page_path_format, id: /\d+/}
-  post  "pages/:page_slug/versions/:version_id/restoration", to: "pages/versions/restorations#create", as: :page_version_restoration,
-        constraints: {page_slug: page_path_format, version_id: /\d+/}
-  get   "pages/:page_slug/schema", to: "pages/schemas#show", as: :page_schema, constraints: {page_slug: page_path_format}
-  patch "pages/:page_slug/schema", to: "pages/schemas#update", constraints: {page_slug: page_path_format}
-  resources :pages, param: :slug, except: :show, constraints: {slug: page_path_format}
+    resources :sessions, only: [:destroy]
+    # A Markdown field's Preview tab (MarkdownPreviewsController).
+    resource :markdown_preview, only: :create
+    namespace :users do
+      resources :bulk_deletions, only: :create
+    end
+    resources :users, only: [:index, :new, :create, :edit, :update, :destroy]
 
-  namespace :block_types do
-    resources :bulk_deletions, only: :create
-    resource :seeding, only: :create
-  end
-  resources :block_types, param: :slug, except: :show
-
-  namespace :roles do
-    resources :bulk_deletions, only: :create
-  end
-  resources :roles, only: [:index, :new, :create, :edit, :update, :destroy]
-
-  namespace :collections do
-    resources :bulk_deletions, only: :create
-  end
-  # The Build board, at the URL (and helper) it always had.
-  get "collections/:collection_slug/entries/build", to: "collections/boards#show", as: :build_collection_entries
-  resources :collections, param: :slug, except: :show do
-    scope module: :collections do
-      resource :schema, only: [:show, :update]
-      namespace :entries do
-        resources :bulk_deletions, only: :create
-        resources :bulk_status_changes, only: :create
-      end
+    namespace :identity do
+      resource :email_verification, only: [:show, :create]
+      resource :password_reset,     only: [:new, :edit, :create, :update]
     end
 
-    resources :entries, controller: "collection_entries", param: :slug, except: :show do
-      scope module: "collections/entries" do
-        # A boolean flipped from the entries table, a card control edited on
-        # the board, and a card dropped into a board column.
-        resource :flag, only: :update
-        resource :card_field, only: :update
-        resource :placement, only: :create
-        resources :versions, only: [:index, :show] do
-          resource :restoration, only: :create, module: :versions
+    get :dashboard, to: "dashboard#index"
+
+    get :sitemap,       to: "sitemaps#index", as: :sitemap, constraints: {format: /html|/}
+    patch "sitemap/:source/:id", to: "sitemap_entries#update", as: :sitemap_entry,
+                                  constraints: {source: /page|collection_entry/}
+
+    get "audit_log", to: "audit_logs#index", as: :audit_logs
+
+    get    "trash",                       to: "trash#index",                as: :trash
+    get    "trash/:kind/:id",             to: "trash#show",                 as: :trash_item
+    delete "trash/:kind/:id",             to: "trash#destroy"
+    post   "trash/:kind/:id/restoration", to: "trash/restorations#create",  as: :trash_item_restoration
+
+    # Content.
+    page_path_format = %r{[^/]+(?:/[^/]+)*}
+
+    # A new block row for the content editor's "Add block" picker.
+    resources :content_blocks, only: :new
+    # An editor's JSON tab: the record as the API hands it to the site.
+    get "api_previews/:kind/:id", to: "api_previews#show", as: :api_preview, constraints: {kind: /page|entry|global/}
+    resource :content_picker, only: :show
+
+    namespace :pages do
+      resources :bulk_deletions, only: :create
+      resources :bulk_status_changes, only: :create
+    end
+    # Ahead of `resources :pages`: a page slug is a full path and may contain
+    # slashes, so PATCH /pages/about/schema would otherwise be pages#update.
+    get   "pages/:page_slug/versions", to: "pages/versions#index", as: :page_versions, constraints: {page_slug: page_path_format}
+    get   "pages/:page_slug/versions/:id", to: "pages/versions#show", as: :page_version, constraints: {page_slug: page_path_format, id: /\d+/}
+    post  "pages/:page_slug/versions/:version_id/restoration", to: "pages/versions/restorations#create", as: :page_version_restoration,
+          constraints: {page_slug: page_path_format, version_id: /\d+/}
+    get   "pages/:page_slug/schema", to: "pages/schemas#show", as: :page_schema, constraints: {page_slug: page_path_format}
+    patch "pages/:page_slug/schema", to: "pages/schemas#update", constraints: {page_slug: page_path_format}
+    resources :pages, param: :slug, except: :show, constraints: {slug: page_path_format}
+
+    namespace :block_types do
+      resources :bulk_deletions, only: :create
+      resource :seeding, only: :create
+    end
+    resources :block_types, param: :slug, except: :show
+
+    namespace :roles do
+      resources :bulk_deletions, only: :create
+    end
+    resources :roles, only: [:index, :new, :create, :edit, :update, :destroy]
+
+    namespace :collections do
+      resources :bulk_deletions, only: :create
+    end
+    # The Build board, at the URL (and helper) it always had.
+    get "collections/:collection_slug/entries/build", to: "collections/boards#show", as: :build_collection_entries
+    resources :collections, param: :slug, except: :show do
+      scope module: :collections do
+        resource :schema, only: [:show, :update]
+        namespace :entries do
+          resources :bulk_deletions, only: :create
+          resources :bulk_status_changes, only: :create
+        end
+      end
+
+      resources :entries, controller: "collection_entries", param: :slug, except: :show do
+        scope module: "collections/entries" do
+          # A boolean flipped from the entries table, a card control edited on
+          # the board, and a card dropped into a board column.
+          resource :flag, only: :update
+          resource :card_field, only: :update
+          resource :placement, only: :create
+          resources :versions, only: [:index, :show] do
+            resource :restoration, only: :create, module: :versions
+          end
         end
       end
     end
-  end
 
-  namespace :globals do
-    resources :bulk_deletions, only: :create
-  end
-  resources :globals, param: :slug, except: :show do
-    resource :schema, only: [:show, :update], module: :globals
-  end
-
-  resources :webhooks do
-    scope module: :webhooks do
-      resource :secret_rotation, only: :create
-      resource :test_delivery, only: :create
-    end
-  end
-
-  # The site's branding as overrides of the admin's CSS tokens.
-  get "branding.css", to: "branding_stylesheets#show", as: :branding_stylesheet, format: false
-
-  get "settings", to: "settings/sections#index", as: :settings
-  # The admin bar's search, across everything (GlobalSearch).
-  resource :search, only: :show
-
-  namespace :settings do
-    resource :general, only: [:show, :update], controller: "generals"
-    resource :profile, only: [:show, :update, :destroy]
-    resource :password, only: [:show, :update]
-    resource :email, only: [:show, :update]
-    # One token per user: nothing to create or destroy, only read and roll.
-    resource :api_token, only: [:show], controller: "api_tokens" do
-      scope module: :api_tokens do
-        resource :reveal, only: :create
-        resource :rotation, only: :create
-      end
-    end
-    # Credentials for machines rather than people: the published site, a
-    # build, an agent. Many per site, each with its own role.
-    resources :service_tokens, only: [:index, :create] do
-      scope module: :service_tokens do
-        resource :reveal, only: :create
-        resource :rotation, only: :create
-        resource :revocation, only: :create
-      end
-    end
-    resource :branding, only: [:show, :update]
-    # Brand *context* — the written brief (voice, audience, facts, style)
-    # published to agents via /api/manifest. Distinct from :branding above,
-    # which is the visual identity.
-    resource :brand, only: [:show, :update], controller: "brands"
-    resource :two_factor, only: [:show, :destroy], controller: "two_factors" do
-      scope module: :two_factors do
-        resource :activation, only: :create
-        resource :recovery_codes, only: :create
-      end
-    end
-    resource :github, only: [:show, :update], controller: "githubs"
-    resource :deploy, only: [:show, :update], controller: "deploys" do
-      scope module: :deploys do
-        resource :trigger, only: :create
-        # The secret cache purges are signed with (Frontend.purge_secret).
-        resource :purge_secret_reveal, only: :create
-        resource :purge_secret_rotation, only: :create
-        # Takes what the last build reported about rendering and purges.
-        resource :delivery_approval, only: :create
-      end
-    end
-    # This install's version and the newest release; create updates to it
-    # (Upgrade), and check asks GitHub now.
-    resource :updates, only: [:show, :create] do
-      scope module: :updates do
-        resource :check, only: :create
-      end
-    end
-    resources :sessions, only: [:index]
-    resource :appearance, only: [:show], controller: "appearances"
-    # What this install adds (Cms::Plugins); create/destroy switch one on/off.
-    # Installing one from GitHub, updating it and removing it (destroy) are
-    # PluginChanges.
-    namespace :plugins do
-      resources :installations, only: :create
-    end
-    resources :plugins, only: [:index, :show, :destroy], param: :key do
-      scope module: :plugins do
-        resource :activation, only: [:create, :destroy]
-        resource :upgrade, only: :create
-      end
-    end
-  end
-
-  namespace :tools do
-    namespace :redirects do
-      resource :export, only: :show
-      resource :import, only: :create
+    namespace :globals do
       resources :bulk_deletions, only: :create
     end
-    resources :redirects, except: :show
+    resources :globals, param: :slug, except: :show do
+      resource :schema, only: [:show, :update], module: :globals
+    end
 
-    # Tools › Backup: download one now, or an archive bin/update left.
-    resource :backup, only: [:show, :create] do
-      scope module: :backups do
-        resources :archives, only: :show, param: :name, format: false,
-          constraints: {name: /cms-data-\d{8}-\d{6}\.tar\.gz/}
+    resources :webhooks do
+      scope module: :webhooks do
+        resource :secret_rotation, only: :create
+        resource :test_delivery, only: :create
       end
     end
-  end
-  get :tools, to: redirect("/tools/backup")
 
-  # Device login: `cms login` sends someone here to approve their terminal.
-  get  "connect", to: "device_approvals#new"
-  post "connect", to: "device_approvals#create"
+    # The site's branding as overrides of the admin's CSS tokens.
+    get "branding.css", to: "branding_stylesheets#show", as: :branding_stylesheet, format: false
+
+    get "settings", to: "settings/sections#index", as: :settings
+    # The admin bar's search, across everything (GlobalSearch).
+    resource :search, only: :show
+
+    namespace :settings do
+      resource :general, only: [:show, :update], controller: "generals"
+      resource :profile, only: [:show, :update, :destroy]
+      resource :password, only: [:show, :update]
+      resource :email, only: [:show, :update]
+      # One token per user: nothing to create or destroy, only read and roll.
+      resource :api_token, only: [:show], controller: "api_tokens" do
+        scope module: :api_tokens do
+          resource :reveal, only: :create
+          resource :rotation, only: :create
+        end
+      end
+      # Credentials for machines rather than people: the published site, a
+      # build, an agent. Many per site, each with its own role.
+      resources :service_tokens, only: [:index, :create] do
+        scope module: :service_tokens do
+          resource :reveal, only: :create
+          resource :rotation, only: :create
+          resource :revocation, only: :create
+        end
+      end
+      resource :branding, only: [:show, :update]
+      # Brand *context* — the written brief (voice, audience, facts, style)
+      # published to agents via /api/manifest. Distinct from :branding above,
+      # which is the visual identity.
+      resource :brand, only: [:show, :update], controller: "brands"
+      resource :two_factor, only: [:show, :destroy], controller: "two_factors" do
+        scope module: :two_factors do
+          resource :activation, only: :create
+          resource :recovery_codes, only: :create
+        end
+      end
+      resource :github, only: [:show, :update], controller: "githubs"
+      resource :deploy, only: [:show, :update], controller: "deploys" do
+        scope module: :deploys do
+          resource :trigger, only: :create
+          # The secret cache purges are signed with (Frontend.purge_secret).
+          resource :purge_secret_reveal, only: :create
+          resource :purge_secret_rotation, only: :create
+          # Takes what the last build reported about rendering and purges.
+          resource :delivery_approval, only: :create
+        end
+      end
+      # This install's version and the newest release; create updates to it
+      # (Upgrade), and check asks GitHub now.
+      resource :updates, only: [:show, :create] do
+        scope module: :updates do
+          resource :check, only: :create
+        end
+      end
+      resources :sessions, only: [:index]
+      resource :appearance, only: [:show], controller: "appearances"
+      # What this install adds (Cms::Plugins); create/destroy switch one on/off.
+      # Installing one from GitHub, updating it and removing it (destroy) are
+      # PluginChanges.
+      namespace :plugins do
+        resources :installations, only: :create
+      end
+      resources :plugins, only: [:index, :show, :destroy], param: :key do
+        scope module: :plugins do
+          resource :activation, only: [:create, :destroy]
+          resource :upgrade, only: :create
+        end
+      end
+    end
+
+    namespace :tools do
+      namespace :redirects do
+        resource :export, only: :show
+        resource :import, only: :create
+        resources :bulk_deletions, only: :create
+      end
+      resources :redirects, except: :show
+
+      # Tools › Backup: download one now, or an archive bin/update left.
+      resource :backup, only: [:show, :create] do
+        scope module: :backups do
+          resources :archives, only: :show, param: :name, format: false,
+            constraints: {name: /cms-data-\d{8}-\d{6}\.tar\.gz/}
+        end
+      end
+    end
+    get :tools, to: redirect("/#{Cms::PATH}/tools/backup")
+
+    # Device login: `cms login` sends someone here to approve their terminal.
+    get  "connect", to: "device_approvals#new"
+    post "connect", to: "device_approvals#create"
+  end
 
   namespace :api, defaults: {format: :json} do
     # The delivery API: what a site reads to build and serve itself, live
@@ -386,12 +393,13 @@ Rails.application.routes.draw do
     post "service_tokens/:service_token_id/revoke", to: "service_tokens/revocations#create", as: :service_token_revocation
   end
 
-  # With a theme (Website), "/" is the site's home page and editors start at
-  # /pages; without one it's the admin's. config/initializers/website.rb
-  # adds the website's catch-all after every plugin's routes.
+  # "/" is the website's home page, with a theme (Website); without one, a
+  # headless install has no site to show, so "/" goes to the admin.
+  # config/initializers/website.rb adds the website's catch-all after every
+  # plugin's routes, and sends old admin addresses (/pages) to /cms.
   get "/", to: "website/pages#show", constraints: ->(_) { Website.enabled? }
   get "site.webmanifest", to: "website/manifests#show", format: false, constraints: ->(_) { Website.enabled? }
-  root "home#index"
+  root to: redirect("/#{Cms::PATH}")
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.

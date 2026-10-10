@@ -24,6 +24,17 @@ class Website::Address
   # The redirect rule for the path, from Tools › Redirects (counted).
   def redirect = Redirect.resolve(path)
 
+  # Where the admin page the path was before the admin moved under /cms
+  # (1.8) is now: "/pages/home/edit" is "/cms/pages/home/edit". Nil for any
+  # other path, so bookmarks and links in old emails keep working.
+  def admin_path
+    moved = "/#{Cms::PATH}#{path}"
+    route = Rails.application.routes.recognize_path(moved, method: :get)
+    moved unless route[:controller].to_s.start_with?("website/")
+  rescue ActionController::RoutingError
+    nil
+  end
+
   private
 
   def page

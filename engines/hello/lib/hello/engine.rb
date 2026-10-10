@@ -10,12 +10,15 @@ module Hello
     end
 
     # Routes join the app's own route set (as hello_*), so the core layout's
-    # helpers work on the plugin's pages.
+    # helpers work on the plugin's pages. Its admin pages go under /cms
+    # (Cms::PATH) with the core's; its API stays at the root.
     initializer "hello.routes" do |app|
       app.routes.append do
-        scope "hello", module: "hello", as: "hello" do
-          resources :greetings, only: [:index, :create]
-          resource :settings, only: [:show, :update]
+        scope path: Cms::PATH do
+          scope "hello", module: "hello", as: "hello" do
+            resources :greetings, only: [:index, :create]
+            resource :settings, only: [:show, :update]
+          end
         end
 
         scope "api/hello", module: "hello/api", as: "api_hello", defaults: {format: :json} do

@@ -52,12 +52,12 @@ RSpec.describe "Public pages", type: :request do
     expect(response.body).to include("Password confirmation doesn&#39;t match")
   end
 
-  it "sends the root path to sign in, or to the pages list once signed in" do
-    get root_url
+  it "sends /cms to sign in, or to the pages list once signed in" do
+    get cms_url
     expect(response).to redirect_to(sign_in_url)
 
     sign_in_as create(:user)
-    get root_url
+    get cms_url
     expect(response).to redirect_to(pages_url)
   end
 end

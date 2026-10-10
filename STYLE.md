@@ -169,6 +169,13 @@ calls back into the same class, the synchronous method is `foo_now`.
 
 ## The app
 
+- **Libre Publish lives under `/cms`; `/` is the website.** Always. Every
+  admin route goes inside `scope path: Cms::PATH` in `config/routes.rb`, a
+  plugin's inside the same scope in its engine, and links come from route
+  helpers, never a written `"/pages"`. Only what sites, the CLI and
+  integrations call sits at the root: `/api`, `/agent`, `/frontend`,
+  `/sitemap.xml`, `/up`, and the website's own addresses (a theme's,
+  docs/themes.md).
 - **One install per site.** No tenancy. `Site.key` and `Site.host` come from
   the environment.
 - **`Current`** holds the request's user, session, token, address and user

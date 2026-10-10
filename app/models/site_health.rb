@@ -42,23 +42,23 @@ module SiteHealth
     [
       Check.new(key: "business_name", group: "Business details", title: "The business name is set",
         detail: "Settings › General › Business name: search results, emails and structured data use it.",
-        ok: general["title"].present?, href: "/settings/general", cli: "cms get /settings/general"),
+        ok: general["title"].present?, href: "/#{Cms::PATH}/settings/general", cli: "cms get /settings/general"),
       Check.new(key: "address", group: "Business details", title: "The full address is set",
         detail: address.all?(&:present?) ? address.join(", ") : "Settings › General › Address, City, State and Zip, as the business is listed elsewhere.",
-        ok: address.all?(&:present?), href: "/settings/general", cli: "cms get /settings/general"),
+        ok: address.all?(&:present?), href: "/#{Cms::PATH}/settings/general", cli: "cms get /settings/general"),
       Check.new(key: "phone", group: "Business details", title: "The phone number is set",
         detail: phone ? "The site reads it from Settings › General, so it changes in one place." : "Settings › General › Phone.",
-        ok: phone.present?, href: "/settings/general", cli: "cms get /settings/general"),
+        ok: phone.present?, href: "/#{Cms::PATH}/settings/general", cli: "cms get /settings/general"),
       Check.new(key: "phone_consistent", group: "Business details", title: "One phone number, everywhere",
         detail: others.empty? ? "No other phone number appears in the site's pages or globals." :
           "Other numbers appear in: #{others.map { |number, where| "#{format_phone(number)} (#{where.first(3).to_sentence})" }.join("; ")}. Make them the business's, or read it from Settings.",
-        ok: phone ? others.empty? : nil, href: "/pages", cli: "cms search \"#{format_phone(others.keys.first || phone)}\""),
+        ok: phone ? others.empty? : nil, href: "/#{Cms::PATH}/pages", cli: "cms search \"#{format_phone(others.keys.first || phone)}\""),
       Check.new(key: "email", group: "Business details", title: "The contact email is set",
         detail: "Settings › General › Email: the address visitors write to.",
-        ok: general["email"].to_s.include?("@"), href: "/settings/general", cli: "cms get /settings/general"),
+        ok: general["email"].to_s.include?("@"), href: "/#{Cms::PATH}/settings/general", cli: "cms get /settings/general"),
       Check.new(key: "time_zone", group: "Business details", title: "The site's time zone is set",
         detail: "Settings › General › Time zone: schedules and dates are read in it.",
-        ok: general["timezone"].present?, href: "/settings/general", cli: nil),
+        ok: general["timezone"].present?, href: "/#{Cms::PATH}/settings/general", cli: nil),
       Check.new(key: "business_profile", group: "Business details", title: "Google Business Profile matches",
         detail: "The name, address and phone on Google (and Apple, Bing, Yelp) should be exactly these. The CMS can't see them; check them yourself.",
         ok: nil, href: nil, cli: nil)
@@ -80,14 +80,14 @@ module SiteHealth
       Check.new(key: "captcha", group: "Forms and spam", title: "Forms are protected from spam",
         detail: protection[:configured] ? "#{protection[:provider] == "turnstile" ? "Cloudflare Turnstile" : "Google reCAPTCHA"} is set up with both keys." :
           "Settings › Forms › Spam protection: Cloudflare Turnstile (recommended) or reCAPTCHA, with its site key and secret. The hidden _hp field alone stops only simple bots.",
-        ok: forms.any? ? protection[:configured] == true : nil, href: "/settings/forms", cli: nil),
+        ok: forms.any? ? protection[:configured] == true : nil, href: "/#{Cms::PATH}/settings/forms", cli: nil),
       Check.new(key: "form_notifications", group: "Forms and spam", title: "Every live form tells someone",
         detail: silent.empty? ? "Each published form's notification email is on, with recipients." : "#{silent.map(&:title).to_sentence} #{silent.one? ? "has" : "have"} no notification email on with recipients.",
-        ok: forms.any? ? silent.empty? : nil, href: "/forms", cli: "cms emails <form>"),
+        ok: forms.any? ? silent.empty? : nil, href: "/#{Cms::PATH}/forms", cli: "cms emails <form>"),
       Check.new(key: "form_sender_domain", group: "Forms and spam", title: "Form emails come from the site's own domain",
         detail: sender.present? ? "They come from #{sender}." : "Settings › Forms › From address: an address on the site's domain gets delivered; a default may land in spam.",
         ok: forms.any? ? (sender.present? && (site_domain.blank? || sender.end_with?("@#{site_domain}") || sender.end_with?(".#{site_domain}"))) : nil,
-        href: "/settings/forms", cli: nil)
+        href: "/#{Cms::PATH}/settings/forms", cli: nil)
     ]
   end
 
@@ -103,22 +103,22 @@ module SiteHealth
     [
       Check.new(key: "meta_descriptions", group: "Search", title: "Published pages have meta descriptions",
         detail: no_description.empty? ? "Every published page has one." : "#{no_description.size} #{"page".pluralize(no_description.size)} without: #{no_description.first(5).map(&:title).to_sentence}.",
-        ok: published.any? ? no_description.empty? : nil, href: "/pages?status=published", cli: "cms pages --status published"),
+        ok: published.any? ? no_description.empty? : nil, href: "/#{Cms::PATH}/pages?status=published", cli: "cms pages --status published"),
       Check.new(key: "social_image", group: "Search", title: "The home page has a sharing image",
         detail: "The home page's SEO › Social image: what links to the site show in messages and social posts.",
-        ok: home ? seo.(home)["og_image_id"].present? : nil, href: home ? "/pages/home/edit" : "/pages", cli: "cms page home"),
+        ok: home ? seo.(home)["og_image_id"].present? : nil, href: home ? "/#{Cms::PATH}/pages/home/edit" : "/#{Cms::PATH}/pages", cli: "cms page home"),
       Check.new(key: "structured_data", group: "Search", title: "The home page says what the business is",
         detail: "The home page's SEO › Structured data: a schema type (LocalBusiness, or a more exact one) or JSON-LD with the name, address and phone.",
-        ok: home ? structured.present? : nil, href: home ? "/pages/home/edit" : "/pages", cli: "cms page home"),
+        ok: home ? structured.present? : nil, href: home ? "/#{Cms::PATH}/pages/home/edit" : "/#{Cms::PATH}/pages", cli: "cms page home"),
       Check.new(key: "not_hidden", group: "Search", title: "No published page is hidden from search by mistake",
         detail: hidden.empty? ? "None is set to noindex." : "#{hidden.map(&:title).to_sentence} #{hidden.one? ? "is" : "are"} set to hide from search engines. Fine if meant.",
-        ok: published.any? ? hidden.empty? : nil, href: "/pages", cli: nil),
+        ok: published.any? ? hidden.empty? : nil, href: "/#{Cms::PATH}/pages", cli: nil),
       Check.new(key: "sitemap", group: "Search", title: "The sitemap lists the site",
         detail: "The site builds sitemap.xml from the CMS's sitemap; published pages and entries are in it unless hidden.",
-        ok: published.any? ? Sitemap.new.entries.any? : nil, href: "/sitemap", cli: "cms sitemap"),
+        ok: published.any? ? Sitemap.new.entries.any? : nil, href: "/#{Cms::PATH}/sitemap", cli: "cms sitemap"),
       Check.new(key: "redirects", group: "Search", title: "Old addresses redirect",
         detail: "After a redesign or a move, every old URL should redirect (Tools › Redirects), or its links and rankings are lost.",
-        ok: nil, href: "/tools/redirects", cli: "cms redirects")
+        ok: nil, href: "/#{Cms::PATH}/tools/redirects", cli: "cms redirects")
     ]
   end
 
@@ -129,16 +129,16 @@ module SiteHealth
     has = ->(*words) { published.any? { |path, slug, title| words.any? { [path, slug, title.to_s.downcase].join(" ").include?(it) } } }
     [
       Check.new(key: "home", group: "Pages a site needs", title: "A published home page",
-        detail: "A page at the path home: the site serves it at /.", ok: published.any? { it.first == "home" }, href: "/pages", cli: "cms page home"),
+        detail: "A page at the path home: the site serves it at /.", ok: published.any? { it.first == "home" }, href: "/#{Cms::PATH}/pages", cli: "cms page home"),
       Check.new(key: "contact_page", group: "Pages a site needs", title: "A contact page",
-        detail: "A published page visitors find the address, phone and a form on.", ok: has.("contact"), href: "/pages", cli: "cms pages"),
+        detail: "A published page visitors find the address, phone and a form on.", ok: has.("contact"), href: "/#{Cms::PATH}/pages", cli: "cms pages"),
       Check.new(key: "privacy_page", group: "Pages a site needs", title: "A privacy policy",
-        detail: "Required wherever a form collects details or tracking runs (GDPR, CCPA, Google Ads).", ok: has.("privacy"), href: "/pages", cli: "cms pages"),
+        detail: "Required wherever a form collects details or tracking runs (GDPR, CCPA, Google Ads).", ok: has.("privacy"), href: "/#{Cms::PATH}/pages", cli: "cms pages"),
       Check.new(key: "terms_page", group: "Pages a site needs", title: "Terms of service",
-        detail: "Expected by anyone who sells, books or takes quotes online.", ok: has.("terms"), href: "/pages", cli: "cms pages"),
+        detail: "Expected by anyone who sells, books or takes quotes online.", ok: has.("terms"), href: "/#{Cms::PATH}/pages", cli: "cms pages"),
       Check.new(key: "accessibility_page", group: "Pages a site needs", title: "An accessibility statement",
         detail: "Recommended in the US and required for public bodies in the EU: what the site does for accessibility and whom to contact.",
-        ok: has.("accessibility") || nil, href: "/pages", cli: "cms pages")
+        ok: has.("accessibility") || nil, href: "/#{Cms::PATH}/pages", cli: "cms pages")
     ]
   end
 
@@ -150,7 +150,7 @@ module SiteHealth
     [
       Check.new(key: "alt_text", group: "Content", title: "Images the site uses have alt text",
         detail: unlabelled.empty? ? "Every image in use has alt text." : "#{unlabelled.size} #{"image".pluralize(unlabelled.size)} in use without, such as #{unlabelled.first(3).map(&:title).to_sentence}.",
-        ok: images.any? ? unlabelled.empty? : nil, href: "/media?kind=images", cli: "cms asset <id> set alt=\"…\"")
+        ok: images.any? ? unlabelled.empty? : nil, href: "/#{Cms::PATH}/media?kind=images", cli: "cms asset <id> set alt=\"…\"")
     ]
   end
 
@@ -163,19 +163,19 @@ module SiteHealth
     admins = User.joins(:role).where(roles: {name: "Admin"})
     [
       Check.new(key: "https", group: "Operations", title: "The site is served over HTTPS",
-        detail: "Settings › General › Site base URL starts with https://.", ok: Setting.get("general")["site_base_url"].to_s.start_with?("https://"), href: "/settings/general", cli: nil),
+        detail: "Settings › General › Site base URL starts with https://.", ok: Setting.get("general")["site_base_url"].to_s.start_with?("https://"), href: "/#{Cms::PATH}/settings/general", cli: nil),
       Check.new(key: "rebuilds", group: "Operations", title: "Publishing rebuilds the site, and the last rebuild worked",
         detail: Deploys.current.configured? ? "The last rebuild was #{deploy["last_status"].presence || "never run"}." : "Settings › Deploy: a GitHub dispatch or a host's build hook.",
-        ok: Deploys.current.configured? && deploy["last_status"] == "success", href: "/settings/deploy", cli: "cms deploy"),
+        ok: Deploys.current.configured? && deploy["last_status"] == "success", href: "/#{Cms::PATH}/settings/deploy", cli: "cms deploy"),
       Check.new(key: "webhooks", group: "Operations", title: "Webhooks are delivering",
         detail: failing.empty? ? "None is failing." : "#{failing.to_sentence} #{failing.one? ? "is" : "are"} failing.",
-        ok: Webhook.where(active: true).exists? ? failing.empty? : nil, href: "/webhooks", cli: "cms webhooks"),
+        ok: Webhook.where(active: true).exists? ? failing.empty? : nil, href: "/#{Cms::PATH}/webhooks", cli: "cms webhooks"),
       Check.new(key: "recent_backup", group: "Operations", title: "A backup from the last week",
         detail: archives.any? ? "The newest is from #{archives.map(&:taken_at).max.to_date}." : "Tools › Backup: none yet. Updates take one automatically; download one too.",
-        ok: archives.any? { it.taken_at > 7.days.ago }, href: "/tools/backup", cli: "cms backup > backup.tar.gz"),
+        ok: archives.any? { it.taken_at > 7.days.ago }, href: "/#{Cms::PATH}/tools/backup", cli: "cms backup > backup.tar.gz"),
       Check.new(key: "two_factor", group: "Operations", title: "Admins use two-factor sign-in",
         detail: "Settings › Two-factor, for each person with the Admin role.",
-        ok: admins.any? ? admins.where(totp_enabled: false).none? : nil, href: "/settings/two_factor", cli: nil)
+        ok: admins.any? ? admins.where(totp_enabled: false).none? : nil, href: "/#{Cms::PATH}/settings/two_factor", cli: nil)
     ]
   end
 

@@ -69,7 +69,7 @@ destination from what you give it.
 On boot the container backs up the data directory (`bin/rails cms:backup`),
 then runs `db:prepare`: an empty volume gets the site's starter roles, block
 types, settings and globals — never the demo seed — and an existing one is
-migrated. Open `https://<host>/sign_up` to create the owner, or
+migrated. Open `https://<host>/cms/sign_up` to create the owner, or
 `kamal app exec -d <site> 'bin/rails cms:bootstrap[owner@acme.com]'`, which
 prints the owner's password and the site's two machine tokens once.
 
@@ -83,7 +83,7 @@ From a checkout of a release (`git clone … && git checkout v1.0.0`):
 It installs the production gems, writes `.env` with fresh secrets (only if
 there isn't one; mode 600), prepares the database and compiles assets. With
 `--admin-email` it creates the owner and prints the password once; otherwise
-the first visit to `/sign_up` does. Run it with
+the first visit to `/cms/sign_up` does. Run it with
 `set -a; . ./.env; set +a; bin/thrust bin/rails server`, or as a service with
 `config/cms.service`.
 

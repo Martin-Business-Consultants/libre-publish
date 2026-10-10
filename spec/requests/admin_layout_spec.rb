@@ -64,8 +64,8 @@ RSpec.describe "The admin layout", type: :request do
 
     expect(item("Pages")).to include("admin-menu__item--current")
     expect(item("Collections")).not_to include("admin-menu__item--current")
-    expect(response.body).to match(%r{<a class="admin-menu__submenu-link[ "][^>]*aria-current="page" href="/pages/new">Add new</a>})
-    expect(response.body).not_to match(%r{aria-current="page" href="/pages">All pages})
+    expect(response.body).to match(%r{<a class="admin-menu__submenu-link[ "][^>]*aria-current="page" href="/cms/pages/new">Add new</a>})
+    expect(response.body).not_to match(%r{aria-current="page" href="/cms/pages">All pages})
   end
 
   it "adds a plugin's top-level item, submenu links and New entry only while it's on" do

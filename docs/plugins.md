@@ -20,7 +20,7 @@ installed from their own repositories (below):
 | Plugin | Key | Default | Holds |
 |---|---|---|---|
 | Forms (`cms-plugins/forms`) | `forms` | on | Forms, their emails, the public `/api/forms/:slug/submissions` endpoint, the Submissions inbox, Settings › Forms |
-| Media (`cms-plugins/media`) | `media` | on, installed by default | The media library at `/media` (files, folders, uploads, zips), the picker asset fields open, `/api/assets`, `/api/asset_folders`, `/api/bulk_uploads`. It provides the core's `MediaLibrary` (`provide :media`): without it an asset field takes an id by hand, `?resolve=assets` is left out, and Branding has no logo |
+| Media (`cms-plugins/media`) | `media` | on, installed by default | The media library at `/cms/media` (files, folders, uploads, zips), the picker asset fields open, `/api/assets`, `/api/asset_folders`, `/api/bulk_uploads`. It provides the core's `MediaLibrary` (`provide :media`): without it an asset field takes an id by hand, `?resolve=assets` is left out, and Branding has no logo |
 | Commerce (`cms-plugins/commerce`) | `commerce` | off | Quote requests and the public `/api/quote_requests` endpoint, invoices and their hosted `/i/:token` page, Settings › Commerce |
 
 ## Where plugins live
@@ -95,7 +95,10 @@ data.
 - **Routes** join the app's route set from an initializer
   (`app.routes.append { scope "hello", module: "hello", as: "hello" … }`) rather
   than mounting an isolated engine, so the core's layout and helpers work on
-  plugin pages. API routes go under `/api/<key>/`.
+  plugin pages. Admin pages go under `/cms`, inside `scope path: Cms::PATH`
+  ("/" is the website's), and API routes under `/api/<key>/`, at the root. A
+  plugin that should also run on a core from before `/cms` (1.7 and earlier)
+  guards it: `defined?(Cms::PATH) ? scope(path: Cms::PATH, &admin) : admin.call`.
 - **Controllers** inherit the core's (`ApplicationController`,
   `Settings::BaseController`, `Api::BaseController`), `include PluginGated`
   and say `plugin :hello`: every action is a 404 while the plugin is off. They
