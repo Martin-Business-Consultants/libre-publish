@@ -31,6 +31,9 @@ out.
   carries but the release's bundle doesn't (from `CMS_PLUGINS` or
   `CMS_THEME`) is copied into the data directory first. Before, an update
   refused for a `CMS_PLUGINS` plugin, and would have left a theme behind.
+- **Forms 1.1.1** by default: the forms API takes a field's
+  `options_collection`, as the builder does.
+
 ## 1.9.1
 
 ### Fixed
