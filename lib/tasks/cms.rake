@@ -32,6 +32,15 @@ namespace :cms do
     puts "Wrote #{path.relative_path_from(Rails.root)}"
   end
 
+  desc "Replace this development install's data with a live site's backup, made safe to work on (bin/pull, docs/local-development.md)"
+  task :pull, [:archive] => :environment do |_, args|
+    abort 'Usage: bin/rails "cms:pull[path/to/backup.tar.gz]"' if args[:archive].blank?
+
+    LocalPull.new(args[:archive], without_people: ENV["WITHOUT_PEOPLE"].present?, local_url: ENV["LOCAL_URL"].presence || "http://localhost:3000").call
+  rescue LocalPull::Refused, TenantImport::Error => e
+    abort e.message
+  end
+
   desc "Set up this install: starter content, roles, an owner and the machine tokens (JSON on stdout). Idempotent."
   task :bootstrap, [:email, :name] => :environment do |_, args|
     result = SiteSetup.new(owner_email: args[:email] || ENV["CMS_OWNER_EMAIL"], name: args[:name] || ENV["CMS_SITE_NAME"],

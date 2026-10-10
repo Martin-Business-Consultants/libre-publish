@@ -21,6 +21,7 @@ surface that AI agents use as well as people do.
 | --- | --- |
 | Run your own | [Install](install.md) |
 | Build a website's design | [Themes](themes.md) |
+| Work on a site locally, with its real content | [Local development](local-development.md) |
 | Be found by search engines and AI | [Search and AI](seo.md) |
 | Add a feature | [Plugins](plugins.md) |
 | Know what stays stable | [Compatibility](compatibility.md) |

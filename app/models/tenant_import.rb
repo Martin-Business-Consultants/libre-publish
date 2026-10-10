@@ -46,7 +46,10 @@ class TenantImport
 
   attr_reader :source_dir, :tenant, :site_key, :warnings
 
-  def initialize(source_dir, tenant: nil, site_key: nil, files_dir: nil, dry_run: false, force: false, out: $stdout)
+  # local: a copy for working on this machine (LocalPull), not a move: no
+  # owner to carry, no host to switch, and secrets left behind on purpose.
+  def initialize(source_dir, tenant: nil, site_key: nil, files_dir: nil, dry_run: false, force: false, out: $stdout, local: false)
+    @local = local
     self.source_dir = source_dir
     @tenant_option = tenant.presence
     @site_key_option = site_key.presence
@@ -80,7 +83,7 @@ class TenantImport
     kept = replace_database
     applied = migrate
     blobs = move_blobs
-    owner = carry_owner
+    owner = carry_owner unless @local
     undecryptable = check_encryption
 
     report_import(kept:, applied:, blobs:, owner:, undecryptable:)
@@ -267,11 +270,31 @@ class TenantImport
 
   def migrate
     context = migration_context
+    adopt_reference_tables(context)
     pending = context.migrations.count { !context.get_all_versions.include?(it.version) }
     context.migrate
     ActiveRecord::Base.connection_pool.internal_metadata[:environment] = ActiveRecord::Base.connection_db_config.env_name
     ActiveRecord::Base.descendants.reject(&:abstract_class?).each(&:reset_column_information)
     pending
+  end
+
+  # A production database is loaded from schema.rb, which holds the reference
+  # plugin's tables (engines/) without the record that their migrations ran,
+  # since production doesn't load the plugin. Where such a table is already
+  # there, its migration counts as run, rather than failing to make it again
+  # (a copy pulled into development, LocalPull).
+  def adopt_reference_tables(context)
+    engines = Rails.root.join("engines").to_s
+    connection = ActiveRecord::Base.connection
+    ran = context.get_all_versions
+    context.migrations.each do |migration|
+      next if ran.include?(migration.version) || !migration.filename.start_with?(engines)
+
+      tables = File.read(migration.filename).scan(/create_table[ (]:?["']?(\w+)/).flatten
+      next unless tables.any? && tables.all? { connection.table_exists?(it) }
+
+      ActiveRecord::Base.connection_pool.schema_migration.create_version(migration.version.to_s)
+    end
   end
 
   # ── 4. Files ───────────────────────────────────────────────────────────
@@ -363,9 +386,11 @@ class TenantImport
     @out.puts "Imported into #{target_db}#{" (the previous database is at #{kept})" if kept}"
     @out.puts "  migrations run: #{applied}"
     @out.puts "  blobs: #{blobs.map { |state, n| "#{n} #{state.to_s.tr("_", " ")}" }.join(", ").presence || "none"}"
-    @out.puts "  owner: #{owner || "not set"}"
+    @out.puts "  owner: #{owner || "not set"}" unless @local
     @out.puts "  records: " + counts_now.map { |table, n| "#{table} #{n}" }.join(", ")
-    if undecryptable.any?
+    if undecryptable.any? && @local
+      @out.puts "  secrets (API keys, tokens) stay on the live site: enter any you need here again"
+    elsif undecryptable.any?
       @warnings << "encrypted values this install can't read (#{undecryptable.map { |column, n| "#{column} × #{n}" }.join(", ")}): " \
                    "set CMS_PREVIOUS_SECRET_KEY_BASE to the old deployment's secret_key_base (then bin/rails cms:reencrypt), or re-enter them"
     end
@@ -381,6 +406,7 @@ class TenantImport
 
   def finish(dry_run: false)
     @warnings.each { @out.puts "  ! #{it}" }
+    return self if @local
     @out.puts <<~NEXT.chomp
       #{dry_run ? "Nothing was changed." : "Done."} Set, for this install:
         APP_HOST=#{site_key}.librepublish.com

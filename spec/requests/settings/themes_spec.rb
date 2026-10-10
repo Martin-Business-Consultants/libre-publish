@@ -38,4 +38,20 @@ RSpec.describe "Settings › Themes", type: :request do
 
     expect(response).to redirect_to(settings_themes_path)
   end
+
+  it "draws the site with the theme that's switched on, when two are registered" do
+    others = Website.themes.except("fixture")
+    others.each_key { Website.themes.delete(it) } # themes a checkout has linked
+    Cms::Plugins.register(:other, name: "Other", version: "1.0.0", description: "x", enabled_by_default: true)
+    Website.register :other, name: "Other", version: "1.0.0", views: Rails.root.join("spec/fixtures/website_theme/views")
+    expect(Website.theme.key).to eq("other")
+
+    switch_plugin :other, on: false
+    expect(Website.theme.key).to eq("fixture")
+    expect(Website).to be_enabled
+  ensure
+    Website.themes.delete("other")
+    Website.themes.merge!(others) if others
+    forget_plugin(:other)
+  end
 end

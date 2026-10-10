@@ -170,6 +170,12 @@ RSpec.describe "Settings: the version and updates", type: :request do
   end
 
   describe "Check now" do
+    # Plugins and themes are checked too (UpdateCheck::Plugins, its own spec).
+    before do
+      allow(PluginDirectory).to receive(:refresh)
+      allow(UpdateCheck::Plugins).to receive(:check_now)
+    end
+
     it "asks GitHub and says what it found" do
       github_answers(release_response("v99.0.0"))
       sign_in_as editor

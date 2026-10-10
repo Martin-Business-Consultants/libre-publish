@@ -1,5 +1,8 @@
 # Themes
 
+To build one against a live site's content on your machine, start with
+[Local development](local-development.md): `bin/theme new`, `bin/pull`.
+
 A theme makes the CMS draw the public website itself, instead of handing its
 content to a site built elsewhere (Astro, over the delivery API). It's a
 Rails engine, like a plugin, in `themes/<name>`: a layout, a template per

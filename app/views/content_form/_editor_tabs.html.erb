@@ -42,7 +42,7 @@
     <% if preview %>
       <section class="space-y-3" data-tab="preview" data-tabs-target="panel" hidden>
         <div class="flex flex-wrap items-center justify-between gap-2">
-          <p class="text-sm text-gray-500">The website with what’s in the form now. Click text outlined on hover to change it there; nothing is saved until you save.</p>
+          <p class="text-sm text-gray-500">The website with what’s in the form now. Click text outlined on hover to change it there, then Save (or ⌘S). Nothing is saved until you do.</p>
           <div class="flex gap-2">
             <button type="button" class="<%= ui(:button, :primary, :small) %>" data-website-preview-target="save" data-action="website-preview#save" disabled>Save</button>
             <button type="button" class="<%= ui(:button, :small) %>" data-action="website-preview#refresh">Refresh</button>
