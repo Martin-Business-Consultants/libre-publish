@@ -148,10 +148,12 @@
       inset: var(--admin-bar-height) auto 0 0;
       position: fixed;
       z-index: calc(var(--z-nav) - 1);
+    }
 
-      :root[data-menu="folded"] & {
-        inline-size: var(--admin-menu-folded-width);
-      }
+    /* Folded, it narrows with the menu. Written out rather than nested: a
+       nested rule (&) can't stand for a pseudo-element, so it never applied. */
+    :root[data-menu="folded"] #global-container:has(#admin-menu)::before {
+      inline-size: var(--admin-menu-folded-width);
     }
   }
 

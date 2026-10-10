@@ -6,6 +6,12 @@ section below. An install is brought to one with `bin/update v1.0.0`, or a
 Kamal site with `kamal deploy -d <site>`. Settings shows when a newer one is
 out.
 
+## 1.18.1
+
+### Fixed
+- **Collapsing the menu.** Folded to icons, the menu left its full-width gray
+  column behind, covering the left of the page; the column now folds with it.
+
 ## 1.18.0
 
 ### Added
