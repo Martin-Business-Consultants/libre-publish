@@ -288,6 +288,40 @@ A plugin's screens use the same conventions as the core's:
 actions" select, Apply, and the search box) and `layouts/shared/row_links`
 (Edit | … | Delete under the title).
 
+## Hooks
+
+WordPress's filters and actions. A **filter** changes a value the core is
+about to use: the block gets the value and the hook's context as keywords
+and returns the value, changed or not. Lowest `priority` runs first (10 by
+default).
+
+    Cms::Plugins.filter(:seo_plus, "website.seo") { |seo, record:| seo.merge(title: "#{seo[:title]} | Acme") }
+    Cms::Plugins.filter(:analytics, "website.head") { |html, request:| html + tag.script(src: "…", defer: true) }
+
+| Filter | Value | Context |
+| --- | --- | --- |
+| `website.seo` | `{title:, description:, canonical:, image:, robots:}` for the `<head>` | `record:` |
+| `website.block` | a block's HTML, as the theme drew it | `block:` |
+| `website.markdown` | Markdown drawn as HTML | `text:` |
+| `website.head` | HTML for the end of `<head>`, after the "scripts" global's | `request:` |
+| `website.body` | HTML for the end of `<body>` | `request:` |
+| `sitemap.entries` | the sitemap's rows | |
+
+HTML a filter returns is escaped unless it's marked safe, as ERB would:
+build it with tag helpers or `safe_join`.
+
+An **action** runs on something that happened, any event below:
+
+    Cms::Plugins.on(:hello, "page.published") { |payload| Hello::Greeting.create!(page_url: payload[:data][:url]) }
+
+A plugin announces its own with `Cms::Hooks.run("hello.greeted", greeting:)`,
+and applies its own filters with `Cms::Hooks.apply("hello.greeting", text,
+greeting:)` for other plugins to hook. Hooks run only while their plugin is
+on. One that raises is reported (`Rails.error`) and passed over, so a
+plugin's bug doesn't take a page down. Registering again (a code reload)
+drops the plugin's hooks first, so register them in `config.to_prepare`
+with the rest.
+
 ## Events
 
 Everything goes out through `Event` (STYLE.md, Events). A plugin's model

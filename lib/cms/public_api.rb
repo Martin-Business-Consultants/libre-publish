@@ -15,8 +15,9 @@ module Cms
         register slot menu submenu new_item settings permissions counts manifest_section trashable
         webhook_events webhook_event_filter hold_api_writes provide provided provided_all stylesheet
         nightly minutely bootstrap api block_types field_type deploy_provider update_strategy
-        enabled? tables_of
+        enabled? tables_of filter on
       ]},
+      "Cms::Hooks" => {singleton: %i[apply run]},
       "Website" => {singleton: %i[register enabled? draws? render theme cache_version]},
       "WebsiteHelper" => {instance: %i[
         website_blocks website_block website_scripts website_global website_fields website_entries

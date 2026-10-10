@@ -3,6 +3,30 @@
     "Cms.data_dir": [],
     "Cms.deprecator": [],
     "Cms.version": [],
+    "Cms::Hooks.apply": [
+      [
+        "req",
+        "name"
+      ],
+      [
+        "req",
+        "value"
+      ],
+      [
+        "keyrest",
+        "context"
+      ]
+    ],
+    "Cms::Hooks.run": [
+      [
+        "req",
+        "name"
+      ],
+      [
+        "keyrest",
+        "payload"
+      ]
+    ],
     "Cms::Plugins.api": [
       [
         "req",
@@ -99,6 +123,24 @@
       [
         "keyreq",
         "partial"
+      ]
+    ],
+    "Cms::Plugins.filter": [
+      [
+        "req",
+        "key"
+      ],
+      [
+        "req",
+        "name"
+      ],
+      [
+        "key",
+        "priority"
+      ],
+      [
+        "block",
+        "block"
       ]
     ],
     "Cms::Plugins.hold_api_writes": [
@@ -215,6 +257,24 @@
       [
         "req",
         "task"
+      ]
+    ],
+    "Cms::Plugins.on": [
+      [
+        "req",
+        "key"
+      ],
+      [
+        "req",
+        "event"
+      ],
+      [
+        "key",
+        "priority"
+      ],
+      [
+        "block",
+        "block"
       ]
     ],
     "Cms::Plugins.permissions": [
