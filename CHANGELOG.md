@@ -6,6 +6,14 @@ section below. An install is brought to one with `bin/update v1.0.0`, or a
 Kamal site with `kamal deploy -d <site>`. Settings shows when a newer one is
 out.
 
+## 1.9.1
+
+### Fixed
+- **The menu's fly-outs stay on top.** Nothing on a page can draw over the
+  admin menu's fly-outs or the admin bar any more: the page area is its own
+  stacking layer. A fly-out also no longer opens partly under the admin bar
+  when its item has scrolled up there.
+
 ## 1.9.0
 
 ### Changed
