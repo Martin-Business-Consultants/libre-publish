@@ -1,16 +1,17 @@
 # frozen_string_literal: true
 
 module ApplicationHelper
-  LITEWIND_STYLESHEET = "litewind-2.0.1"
+  UTILITIES_STYLESHEET = "utilities"
 
   def page_title_tag
     tag.title [@page_title, current_branding[:site_title].presence || "CMS"].compact.join(" | ")
   end
 
   # Herb compiles stylesheet_link_tag into a single <link>, which skips
-  # Propshaft's :app expansion, so the layout calls this instead. Litewind
-  # (vendor/assets, Tailwind's utilities with no build step) comes first: its
-  # @layer statement sets the order the app's layers join (_global.css).
+  # Propshaft's :app expansion, so the layout calls this instead. The utility
+  # classes (lib/assets/stylesheets/utilities.css, Tailwind's, ours, no
+  # build) come first: their @layer statement sets the order the app's
+  # layers join (_global.css).
   #
   # A plugin's stylesheets load only where it shows something
   # (page_plugins), each in its own tag, which Turbo adds and drops as pages
@@ -20,7 +21,7 @@ module ApplicationHelper
   # than a page that fails.
   def app_stylesheet_tags
     safe_join([
-      stylesheet_link_tag(LITEWIND_STYLESHEET, "data-turbo-track": "reload"),
+      stylesheet_link_tag(UTILITIES_STYLESHEET, "data-turbo-track": "reload"),
       stylesheet_link_tag(:app, "data-turbo-track": "reload"),
       *Cms::Plugins.enabled_stylesheets(page_plugins).filter_map { plugin_stylesheet_tag(it) }
     ], "\n")

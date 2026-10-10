@@ -1,5 +1,5 @@
-/* Element defaults on top of Litewind's preflight: what Tailwind's forms
-   plugin would give native controls (Litewind doesn't compile it in), focus
+/* Element defaults on top of Tailwind's preflight (utilities.css): what Tailwind's forms
+   plugin would give native controls (utilities.css doesn't include it), focus
    rings, and the few resets preflight leaves out. The markup's classes beat
    all of it (utilities layer). */
 @layer base {

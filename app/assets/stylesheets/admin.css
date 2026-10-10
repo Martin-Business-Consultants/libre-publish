@@ -411,3 +411,9 @@
   }
 }
 
+
+/* The classic look's admin bar: the menu's gray, across the top. Unlayered,
+   so it wins over the bg-white its markup carries. */
+.admin-bar {
+  background-color: var(--color-gray-50);
+}

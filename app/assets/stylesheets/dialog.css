@@ -13,7 +13,7 @@
     --dialog-duration: 150ms;
 
     color: var(--color-gray-900);
-    /* Centered: Litewind's preflight takes away the browser's margin: auto. */
+    /* Centered: Tailwind's preflight takes away the browser's margin: auto. */
     margin: auto;
     max-block-size: calc(100dvh - calc(var(--spacing) * 8));
     max-inline-size: calc(100vw - calc(var(--spacing) * 8));

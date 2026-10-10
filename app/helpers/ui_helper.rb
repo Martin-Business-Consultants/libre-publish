@@ -2,7 +2,8 @@
 
 # The class lists for the admin's repeated pieces (buttons, panels, menus,
 # badges, notices, tables, form text), in one place so every screen draws
-# them alike, after Payload's admin: neutral, flat and compact. They draw
+# them alike, in the admin's classic look (Fizzy's): ink grays, a blue
+# accent, small corners, semibold controls, flat panels. They draw
 # only with the tokens Settings › Branding sets (_global.css): blue is the
 # accent (the primary color; black until one's set), gray the neutral,
 # rounded-* the corners, shadow-surface/-overlay the shadow. A view writes `class: ui(:button, :primary)`, adding its own layout
@@ -14,7 +15,7 @@
 module UiHelper
   UI_RECIPES = {
     button: {
-      base: "inline-flex items-center justify-center gap-1.5 rounded-md font-medium whitespace-nowrap",
+      base: "inline-flex items-center justify-center gap-1.5 rounded-md font-semibold whitespace-nowrap",
       tone: {
         secondary: "border border-gray-300 bg-white text-gray-900 hover:border-gray-400 hover:bg-gray-50",
         primary: "border border-blue-600 bg-blue-600 text-on-accent hover:bg-blue-700",
@@ -44,7 +45,7 @@ module UiHelper
       base: "flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
     },
     badge: {
-      base: "inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 text-xs font-medium whitespace-nowrap",
+      base: "inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 text-xs font-semibold tracking-wide whitespace-nowrap uppercase",
       tone: {
         gray: "bg-gray-100 text-gray-700",
         blue: "bg-blue-50 text-blue-700",
@@ -63,13 +64,13 @@ module UiHelper
       }
     },
     page_title: {
-      base: "text-3xl font-semibold tracking-tight text-gray-900"
+      base: "text-3xl font-bold tracking-tight text-gray-900"
     },
     heading: {
       base: "text-base font-semibold text-gray-900"
     },
     label: {
-      base: "block text-sm font-medium text-gray-900"
+      base: "block text-sm font-semibold text-gray-900"
     },
     help: {
       base: "text-xs text-gray-500"

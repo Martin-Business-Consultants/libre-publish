@@ -200,16 +200,16 @@ ERB with Herb/ReActionView, Stimulus and Turbo, no build step.
 `bundle exec herb lint app/views engines` must pass. Every partial declares
 strict locals; no ERB output in attribute names; no inline styles.
 
-### Styling: Litewind
+### Styling: utility classes, our own
 
-The admin is styled with Tailwind utility classes in the markup, from
-[Litewind](https://github.com/reallygoodsoftware/litewind) 2.0.1: Tailwind v4
-compiled ahead of time into one stylesheet
-(`vendor/assets/stylesheets/litewind-2.0.1.css`, loaded first by
-`app_stylesheet_tags`), so there's still no build step. The look follows
-Payload's admin: near-monochrome and flat, a white canvas with a gray-50
-sidebar, gray-200 hairlines, compact controls, the primary button in the
-brand's color (black until one is set).
+The admin is styled with Tailwind's utility classes in the markup, from our
+own stylesheet, `lib/assets/stylesheets/utilities.css`: Tailwind v4's
+definitions (MIT) of exactly the classes the admin uses, with its theme
+variables and preflight, loaded first by `app_stylesheet_tags`. No build
+step: it's served as written, and a class the markup needs is added to it by
+hand. The look is the admin's classic one (Fizzy's): ink grays, a gray menu
+and admin bar, hairlines, 3px corners, semibold controls, the accent in blue
+until the branding sets a primary color.
 
 - **Classes, not stylesheets, say how a thing looks.** Spacing, type, color,
   borders, corners and shadows go in `class`. `app/assets/stylesheets` holds
@@ -219,7 +219,7 @@ brand's color (black until one is set).
   variable, animations, dialogs), third-party DOM (Lexxy), element
   defaults (`base.css`: native form controls, focus rings) and the tokens
   (`_global.css`). Those rules hang on a BEM hook (`admin-menu__submenu`) and
-  read Litewind's tokens (`var(--color-gray-200)`, `var(--radius-lg)`).
+  read the tokens (`var(--color-gray-200)`, `var(--radius-lg)`).
 - **Repeated pieces come from `UiHelper#ui`**: `ui(:button)`,
   `ui(:button, :primary)`, `ui(:button, :plain, :small)`, `ui(:button, :danger)`
   (outlined) and `ui(:button, :destructive)` (filled, for the confirming
@@ -231,13 +231,13 @@ brand's color (black until one is set).
   `ui(:table)`, `ui(:th)`, `ui(:td)`. Add layout as a string,
   `ui(:button, :small, "w-full")`, never a class the recipe already sets a
   property for (no `items-center` beside a recipe's `items-start`).
-- **Only Litewind's classes exist.** It has most of Tailwind but not all
-  (no `dark:`, `group-*`, `focus-within:`, arbitrary values or opacity
-  modifiers; few `focus:` variants). A missing utility goes in
-  `tailwind-extras.css` under Tailwind's name and definition.
-  `spec/architecture/litewind_classes_spec.rb` fails on a class nothing
+- **Only the classes in `utilities.css` exist.** A class the markup needs
+  that isn't there is added to it under Tailwind's name and definition
+  (`tailwind-extras.css` holds the app's own few). No `dark:` variant: the
+  dark theme re-points the tokens instead.
+  `spec/architecture/utility_classes_spec.rb` fails on a class nothing
   defines and on two classes that set the same property on one element;
-  in specs, `ui` and `class_names` raise on the second (`spec/support/litewind.rb`).
+  in specs, `ui` and `class_names` raise on the second (`spec/support/utility_classes.rb`).
   Class lists kept in a variable are named `*_classes` so the spec reads them.
 - **Everything respects Settings › Branding's color, type and surface.**
   Markup draws only with tokens the branding sets (`_global.css`,
@@ -245,9 +245,9 @@ brand's color (black until one is set).
   - *Color*: two families mean something. `gray` is the neutral, every step
     mixed from `--neutral-tint` (the secondary color tints it, faintly).
     `blue` is the accent, read from `--accent-*`: the primary color, or an
-    ink until one is set. Use blue for primary buttons, links, focus,
+    blue until one is set. Use blue for primary buttons, links, focus,
     selection and what's current. `red`, `green` and `yellow` are for status.
-    Litewind has no `dark:`, so the dark theme re-points these families'
+    There's no `dark:` variant, so the dark theme re-points these families'
     steps: write the light theme's classes and the dark one follows. No
     other family, no `black`, no hex. Words on a `bg-blue-*` fill are
     `text-on-accent`.

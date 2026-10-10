@@ -117,7 +117,7 @@ data.
   subclass, so jobs already queued still run.
 - **API responses** are jbuilder views under the plugin's `app/views/api/`;
   a controller renders JSON itself only for an error body. 
-- **Views** follow the core's frontend rules (STYLE.md: Litewind's Tailwind
+- **Views** follow the core's frontend rules (STYLE.md: the admin's Tailwind
   classes and the core's `ui(...)` recipes and partials, strict locals, no
   inline styles); `bin/ci` lints `engines/` with Herb, and the classes spec
   checks a plugin's views as it does the core's. A plugin's stylesheet holds

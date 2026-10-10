@@ -61,7 +61,7 @@
 }
 
 /* With reduced motion the animation ends at once, so it stays green instead
-   (in the utilities layer, after Litewind's, to beat the button's colors). */
+   (in the utilities layer, after the utility classes', to beat the button's colors). */
 @layer utilities {
   @media (prefers-reduced-motion: reduce) {
     .btn--success {

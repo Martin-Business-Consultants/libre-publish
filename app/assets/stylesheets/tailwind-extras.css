@@ -1,8 +1,8 @@
-/* Tailwind utilities Litewind doesn't compile in, under Tailwind's own names
+/* Tailwind utilities the app defines itself, under Tailwind's own names
    and with Tailwind v4's definitions, so the markup reads as plain Tailwind.
-   Add one here only when Litewind lacks it (spec/architecture/
-   litewind_classes_spec.rb checks every class in the views against
-   Litewind, this file and the app's other stylesheets). Three are the app's
+   Tailwind's own go in lib/assets/stylesheets/utilities.css
+   (spec/architecture/utility_classes_spec.rb checks every class in the
+   views against it, this file and the app's other stylesheets). Three are the app's
    own, reading Settings › Branding's tokens (_global.css): text-on-accent,
    words on a bg-blue-* fill; shadow-surface, a panel's shadow; and
    shadow-overlay, what floats above the page (menus, dialogs, toasts). */
@@ -64,7 +64,7 @@
   .shadow-overlay { box-shadow: var(--shadow-overlay); }
   .underline-offset-2 { text-underline-offset: 2px; }
 
-  /* Litewind's hover: variants cover backgrounds, gray borders and opacity;
+  /* utilities.css's hover: variants cover backgrounds, gray borders and opacity;
      these are the text ones the admin needs. */
   .hover\:underline { &:hover { @media (hover: hover) { text-decoration-line: underline; } } }
   .hover\:text-gray-900 { &:hover { @media (hover: hover) { color: var(--color-gray-900); } } }
