@@ -113,16 +113,13 @@
       inline-size: var(--admin-menu-folded-width);
     }
 
-    /* Fixed while the page scrolls, and scrolling on its own only when it's
-       taller than the window (.admin-menu--scrolls, admin_menu_controller's):
-       Safari clips even fixed fly-outs to a scrolling menu, so one that
-       fits mustn't scroll. */
+    /* Fixed while the page scrolls, and scrolling on its own when it's
+       taller than the window. Its fly-outs are in the top layer
+       (admin_menu_controller), so scrolling never clips them. */
     @media (min-width: 783px) {
-      &.admin-menu--scrolls {
-        overflow-y: auto;
-        overscroll-behavior: contain;
-        scrollbar-width: thin;
-      }
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
     }
 
     @media (max-width: 782px) {
