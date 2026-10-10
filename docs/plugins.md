@@ -151,6 +151,12 @@ A plugin whose `requires` this version doesn't meet can't be switched on;
 one whose `depends_on` aren't on is switched on but "waiting". Changes to
 `engine.rb` need a server restart.
 
+What a plugin may call, and how long it keeps working, is in
+docs/compatibility.md: the registrations here are public API, so within a
+major version none is removed or changed in a way that breaks a call. A
+keyword this core doesn't know yet (from a plugin made for a newer one) is
+left out with a warning rather than failing the boot.
+
 `adopt_if: -> { Form.with_discarded.exists? }` is for a feature moved out of
 the core: while nobody has switched the plugin on or off, an install that
 already holds its data gets it switched on (and saved as on), so an upgrade

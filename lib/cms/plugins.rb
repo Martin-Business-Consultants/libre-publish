@@ -142,9 +142,13 @@ module Cms
       # tables: the tables it owns beyond those named for its key (one that
       # moved out of the core keeps its old names), which removing it with
       # its data drops (tables_of).
+      #
+      # A keyword this core doesn't know yet (a plugin made for a newer one)
+      # is left out with a warning rather than failing the boot.
       def register(key, name:, version:, description:, author: nil, bundled: false, enabled_by_default: false,
-        requires: nil, depends_on: [], homepage: nil, adopt_if: nil, tables: [])
+        requires: nil, depends_on: [], homepage: nil, adopt_if: nil, tables: [], **newer)
         key = key.to_sym
+        Rails.logger&.warn("[plugins] #{key} gives #{newer.keys.join(", ")}, which CMS #{Cms::VERSION} doesn't know; left out") if newer.any?
         manifests[key] = Manifest.new(key: key, name: name, version: version, description: description, author: author,
           bundled: bundled, enabled_by_default: enabled_by_default, requires: requires,
           depends_on: Array(depends_on).map(&:to_sym), homepage: homepage, adopt_if: adopt_if,
