@@ -599,6 +599,10 @@
       [
         "req",
         "block"
+      ],
+      [
+        "key",
+        "row"
       ]
     ],
     "WebsiteHelper#website_blocks": [

@@ -79,8 +79,12 @@ module ContentEditing
     return head(:not_found) unless template_exists?(template)
 
     @website_previewing = true
+    @website_inline_edit = Website::InlineEdit.new
+    record.title = @website_inline_edit.mark("title", record.title)
     response.headers["Cache-Control"] = "private, no-store"
-    render template, locals: locals, layout: "website"
+    html = render_to_string(template, locals: locals, layout: "website")
+    tags = @website_inline_edit.tags(helpers)
+    render html: (html.include?("</body>") ? html.sub("</body>", "#{tags}</body>") : html + tags).html_safe # rubocop:disable Rails/OutputSafety
   end
 
   def website_template_for(record)

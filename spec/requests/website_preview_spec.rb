@@ -36,12 +36,23 @@ RSpec.describe "Previewing an edit on the website", type: :request do
 
     expect(response).to have_http_status(:ok)
     expect(response.headers["Cache-Control"]).to include("no-store")
-    expect(response.body).to include("<h1>About us</h1>", "Unsaved <strong>words</strong>")
+    unmarked = response.body.gsub(/\u2063[\u200B\u200C\u200D\u2060]*\u2063|\u2064/, "")
+    expect(unmarked).to include("<h1>About us</h1>", "Unsaved <strong>words</strong>")
     expect(page.reload).to have_attributes(title: "About", lock_version: 0)
   end
 
   it "offers the tab only when a theme draws the site" do
     get edit_page_path(page.path)
     expect(response.body).to include(%(data-tab="preview"), "website-preview")
+  end
+
+  it "marks the title and the blocks' short text for editing in place, and loads the script that does it" do
+    BlockType::Defaults.install!
+    patch page_path(page.path, website_preview: 1), params: edit_params(title: "About us", body: "Unsaved words")
+
+    expect(response.body).to include("\u2063", "About us\u2064", "inline_edit")
+    fields = JSON.parse(Nokogiri::HTML(response.body).at("#lp-inline-edit").text)["fields"]
+    expect(fields).to include("title")
+    expect(page.reload.title).to eq("About")
   end
 end
