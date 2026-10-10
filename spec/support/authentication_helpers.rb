@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+# sign_in_as writes its cookie into the cookie jar Rails.application.env_config
+# holds, which outlives the example; it's dropped after each one, so a session
+# (and its flash) never carries into the next example's requests.
 module AuthenticationHelpers
   extend ActiveSupport::Concern
 
@@ -16,4 +19,8 @@ module AuthenticationHelpers
     cookies = request.cookie_jar
     cookies.delete(:session_token)
   end
+end
+
+RSpec.configure do |config|
+  config.after { Rails.application.env_config.delete("action_dispatch.cookies") }
 end
