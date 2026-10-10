@@ -1,0 +1,109 @@
+<% @page_title = "Updates" %>
+<% release_tag = UpdateCheck.latest_tag %>
+<% fact_label_classes = "text-xs font-medium text-gray-500" %>
+<% fact_value_classes = "mt-0.5 text-sm text-gray-900" %>
+
+<%= render "layouts/shared/page_header", title: "Updates" %>
+
+<%# While an update runs the page reloads itself (refresh), and stops once
+    it has settled and the server leaves the controller off. %>
+<%= tag.div class: "space-y-6", data: ({ controller: "refresh", refresh_interval_value: 5 } if @upgrade) do %>
+  <section class="<%= ui(:panel, "space-y-5 p-6") %>">
+    <dl class="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+      <div><dt class="<%= fact_label_classes %>">Running</dt><dd class="<%= fact_value_classes %>">CMS <%= cms_version %></dd></div>
+      <div>
+        <dt class="<%= fact_label_classes %>">Newest release</dt>
+        <dd class="<%= fact_value_classes %>">
+          <% if UpdateCheck.latest_version %>
+            <%= external_link UpdateCheck.release_url, "CMS #{UpdateCheck.latest_version}" %>
+            <span class="text-gray-500"><%= UpdateCheck.update_available? ? "(newer)" : "(up to date)" %></span>
+          <% else %>
+            <span class="text-gray-500">Not checked yet</span>
+          <% end %>
+        </dd>
+      </div>
+      <div>
+        <dt class="<%= fact_label_classes %>">Checked</dt>
+        <dd class="<%= fact_value_classes %>">
+          <% if UpdateCheck.checked_at %>
+            <%= time_ago_tag UpdateCheck.checked_at %><% if UpdateCheck.checking? %>, and every day<% end %>
+          <% else %>
+            <span class="text-gray-500">Never<% unless UpdateCheck.checking? %> (CMS_UPDATE_CHECK=false)<% end %></span>
+          <% end %>
+        </dd>
+      </div>
+      <div><dt class="<%= fact_label_classes %>">Updates by</dt><dd class="<%= fact_value_classes %>"><%= update_method_description %></dd></div>
+    </dl>
+    <div><%= button_to "Check now", settings_updates_check_path, class: ui(:button, :small) %></div>
+  </section>
+
+  <% if @upgrade %>
+    <section class="<%= ui(:panel, "space-y-3 p-6") %>">
+      <h2 class="<%= ui(:heading) %>">Updating to <%= @upgrade.to_version %></h2>
+      <p class="text-sm text-gray-700">
+        Started <%= time_ago_tag @upgrade.created_at %> by <%= upgrade_requester @upgrade %>.
+        The install backs up its data, migrates and restarts on <%= @upgrade.to_version %>; until then <%= cms_version %> keeps running.
+        This page checks every few seconds.
+      </p>
+      <% if (note = @upgrade.runner.try(:note)) %>
+        <p class="text-sm text-gray-700"><%= note %></p>
+      <% end %>
+      <% if @upgrade.external_url %>
+        <p class="text-sm"><%= external_link @upgrade.external_url, upgrade_follow_text(@upgrade) %></p>
+      <% end %>
+    </section>
+  <% elsif UpdateCheck.update_available? %>
+    <section class="<%= ui(:panel, "space-y-4 p-6") %>">
+      <div class="space-y-1">
+        <h2 class="<%= ui(:heading) %>">CMS <%= UpdateCheck.latest_version %></h2>
+        <% if UpdateCheck.published_at %>
+          <p class="text-sm text-gray-500">Released <%= l UpdateCheck.published_at.to_date, format: :long %>.</p>
+        <% end %>
+      </div>
+      <% if UpdateCheck.notes %>
+        <div class="max-h-80 space-y-2 overflow-y-auto rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700"><%= simple_format UpdateCheck.notes %></div>
+      <% end %>
+
+      <% if !Upgrade.available? %>
+        <p class="text-sm text-gray-700"><%= Upgrade.unavailable_reason %> On the server:</p>
+        <pre class="<%= settings_code_classes %>"><code><%= manual_update_command(release_tag) %></code></pre>
+        <p class="text-xs text-gray-500">
+          To use a button instead, run from a checkout made by <code>bin/install</code>, or for a Docker install set
+          <code>CMS_GITHUB_TOKEN</code> and <code>CMS_DEPLOY_DESTINATION</code>. See <code>docs/install.md</code>.
+        </p>
+      <% elsif Current.user.admin? %>
+        <div>
+          <%= render "layouts/shared/confirm_dialog", label: "Update to #{UpdateCheck.latest_version}", title: "Update to CMS #{UpdateCheck.latest_version}?",
+                message: "The CMS backs up its data, updates and restarts. It’s unavailable for a minute or two; nobody is signed out. If anything fails, #{cms_version} keeps running and this page says why.",
+                path: settings_updates_path, button: "Update now", primary: true %>
+        </div>
+      <% else %>
+        <p class="text-sm text-gray-500">An admin can update to it from here.</p>
+      <% end %>
+    </section>
+  <% end %>
+
+  <% if @upgrades.any? %>
+    <section class="<%= ui(:panel, "space-y-3 p-6") %>">
+      <h2 class="<%= ui(:heading) %>">Past updates</h2>
+      <ul class="divide-y divide-gray-100 text-sm">
+        <% @upgrades.each do |upgrade| %>
+          <%# herb:key upgrade.id %>
+          <li class="flex flex-col gap-1 py-2.5">
+            <span>
+              <%= status_tag upgrade.status %>
+              <strong class="font-semibold text-gray-900"><%= upgrade.from_version %> → <%= upgrade.to_version %></strong>
+              <span class="text-gray-500"> · <%= upgrade_requester upgrade %> · <%= time_ago_tag upgrade.created_at %></span>
+              <% if upgrade.external_url %>
+                <span class="text-gray-500"> · </span><%= external_link upgrade.external_url, "Deploy log" %>
+              <% end %>
+            </span>
+            <% if upgrade.message.present? %>
+              <pre class="overflow-x-auto whitespace-pre-wrap text-xs text-red-600"><%= upgrade.message %></pre>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    </section>
+  <% end %>
+<% end %>

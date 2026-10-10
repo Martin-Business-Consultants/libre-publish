@@ -1,0 +1,20 @@
+<%# locals: () %>
+<%# The flash as toasts, stacked at the bottom right of the screen: green for
+    a notice, which fades after a few seconds (held while hovered), and red
+    for an alert, which stays until it's dismissed. %>
+<%= turbo_frame_tag :flash, class: "toasts" do %>
+  <% { notice: ["success", :green], alert: ["error", :red] }.each do |type, (tone, color)| %>
+    <%# herb:key type %>
+    <% if (message = flash[type]).present? %>
+      <div class="<%= ui(:notice, color, "notice--#{tone} toast shadow-overlay") %>" role="<%= type == :alert ? "alert" : "status" %>" data-controller="element-removal"
+           data-action="<%= "animationend->element-removal#remove" if type == :notice %>">
+        <%= icon_tag(type == :alert ? "close-circle" : "check-circle", class: "size-5 shrink-0") %>
+        <p class="flex-1 font-medium"><%= message %></p>
+        <button type="button" class="rounded-md p-1 opacity-60 hover:opacity-100" title="Dismiss this notice" data-action="element-removal#remove">
+          <%= icon_tag "close", class: "size-4" %>
+          <span class="sr-only">Dismiss this notice</span>
+        </button>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

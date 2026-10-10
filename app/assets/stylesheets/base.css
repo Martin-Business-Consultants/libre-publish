@@ -1,0 +1,225 @@
+/* Element defaults on top of Litewind's preflight: what Tailwind's forms
+   plugin would give native controls (Litewind doesn't compile it in), focus
+   rings, and the few resets preflight leaves out. The markup's classes beat
+   all of it (utilities layer). */
+@layer base {
+  html,
+  body {
+    overflow-x: clip;
+  }
+
+  body {
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+    -webkit-text-size-adjust: none;
+    /* Inter's single-storey a and open digits, where it's installed. */
+    font-feature-settings: "cv11", "ss01";
+    font-size: var(--text-sm);
+    interpolate-size: allow-keywords;
+    line-height: var(--text-sm--line-height);
+    min-block-size: 100dvh;
+  }
+
+  p,
+  li,
+  h1,
+  h2,
+  h3,
+  h4 {
+    overflow-wrap: break-word;
+  }
+
+  a:not([class]) {
+    color: var(--color-blue-600);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in oklch, currentColor 40%, transparent);
+    text-underline-offset: 2px;
+
+    &:hover {
+      text-decoration-color: currentColor;
+    }
+  }
+
+  button,
+  summary,
+  [role="button"],
+  label:has(input[type="checkbox"], input[type="radio"]) {
+    cursor: pointer;
+  }
+
+  summary {
+    list-style: none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+  }
+
+  :is(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: 2px;
+  }
+
+  :is(button, input, select, textarea):disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  :is(a, button, input, select, textarea) {
+    transition: 120ms ease-out;
+    transition-property: background-color, border-color, box-shadow, color, outline-color;
+    touch-action: manipulation;
+  }
+
+  /* Text-like controls, selects and textareas: the forms plugin's look. */
+  :where(input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"], [type="hidden"], [type="submit"], [type="button"], [type="reset"], [type="image"])),
+  :where(select),
+  :where(textarea) {
+    background-color: var(--color-white);
+    border: 1px solid var(--color-gray-300);
+    border-radius: var(--radius-md);
+    color: var(--color-gray-900);
+    font-size: var(--text-sm);
+    line-height: var(--text-sm--line-height);
+    max-inline-size: 100%;
+    min-block-size: calc(var(--spacing) * 8);
+    padding: calc(var(--spacing) * 1.25) calc(var(--spacing) * 2.5);
+
+    &::placeholder {
+      color: var(--color-gray-400);
+      opacity: 1;
+    }
+
+    &:hover:not(:focus, :disabled) {
+      border-color: var(--color-gray-400);
+    }
+
+    /* Payload's field focus: the border darkens, no ring. */
+    &:focus {
+      border-color: var(--color-gray-900);
+      outline: none;
+    }
+
+    &[aria-invalid="true"] {
+      border-color: var(--color-red-500);
+    }
+  }
+
+  :where(select:not([multiple], [size])) {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right calc(var(--spacing) * 2) center;
+    background-repeat: no-repeat;
+    background-size: 1.25em 1.25em;
+    padding-inline-end: calc(var(--spacing) * 9);
+  }
+
+  :where(textarea) {
+    field-sizing: content;
+    min-block-size: 5lh;
+  }
+
+  :where(input[type="checkbox"], input[type="radio"], progress, input[type="range"]) {
+    accent-color: var(--color-blue-600);
+  }
+
+  :where(input[type="checkbox"], input[type="radio"]) {
+    block-size: 1rem;
+    flex-shrink: 0;
+    inline-size: 1rem;
+    margin: 0;
+  }
+
+  :where(input[type="file"]) {
+    font-size: var(--text-sm);
+
+    &::file-selector-button {
+      background: var(--color-white);
+      border: 1px solid var(--color-gray-300);
+      border-radius: var(--radius-md);
+      color: var(--color-gray-900);
+      cursor: pointer;
+      font-weight: var(--font-weight-medium);
+      margin-inline-end: calc(var(--spacing) * 3);
+      padding: calc(var(--spacing) * 1) calc(var(--spacing) * 3);
+    }
+  }
+
+  :where(fieldset) {
+    border: 0;
+    margin: 0;
+    min-inline-size: 0;
+    padding: 0;
+  }
+
+  kbd {
+    background: var(--color-gray-50);
+    border: 1px solid var(--color-gray-300);
+    border-block-end-width: 2px;
+    border-radius: var(--radius-sm);
+    color: var(--color-gray-600);
+    font-family: var(--font-mono);
+    font-size: 0.75em;
+    font-weight: var(--font-weight-medium);
+    padding: 0 0.35em;
+    white-space: nowrap;
+  }
+
+  code {
+    font-size: 0.9em;
+  }
+
+  dialog {
+    border: 0;
+    padding: 0;
+  }
+
+  ::selection {
+    background-color: var(--color-blue-200);
+  }
+
+  :where(ul, ol):where([role="list"]) {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  video {
+    max-inline-size: 100%;
+  }
+
+  @page {
+    margin: 1in;
+  }
+
+  turbo-frame,
+  turbo-cable-stream-source {
+    display: contents;
+  }
+
+  .turbo-progress-bar {
+    visibility: hidden;
+  }
+
+  [hidden] {
+    display: none !important;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  @media screen and (-webkit-min-device-pixel-ratio: 0) and (min-resolution: 0.001dpcm) {
+    * {
+      scrollbar-color: var(--color-gray-300) transparent;
+      scrollbar-width: thin;
+    }
+  }
+}

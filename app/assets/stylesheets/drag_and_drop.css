@@ -1,0 +1,22 @@
+/* Dragging a card on a board (drag_and_drop_controller, collections/boards):
+   the card being dragged, and the column it's over. The column's resting fill
+   lives here too, not in a class, since the hover state re-colors it. */
+@layer components {
+  .board-column {
+    background-color: var(--color-gray-50);
+    transition: background-color 150ms;
+  }
+
+  .drag-and-drop__dragged-item {
+    filter: grayscale(1);
+    opacity: 0.5;
+    outline: 2px dashed var(--color-blue-400);
+    outline-offset: 2px;
+  }
+
+  .drag-and-drop__hover-container {
+    background-color: var(--color-blue-50);
+    outline: 2px dashed var(--color-blue-400);
+    outline-offset: -2px;
+  }
+}

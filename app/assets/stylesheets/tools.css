@@ -1,0 +1,9 @@
+/* A trashed image's preview (trash/_details): media_thumbnail draws a bare
+   <img>, so its size limits hang on the wrapper. */
+@layer components {
+  .trash-item__preview img {
+    max-block-size: 50dvh;
+    max-inline-size: 100%;
+    object-fit: contain;
+  }
+}

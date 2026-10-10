@@ -1,0 +1,79 @@
+<% @page_title = "Plugins" %>
+
+<%= render "layouts/shared/page_header", title: "Plugins" %>
+
+<%# While a plugin is being installed, updated or removed the page reloads
+    itself (refresh), and stops once the server leaves the controller off. %>
+<%= tag.div class: "space-y-6", data: ({ controller: "refresh", refresh_interval_value: 5 } if @change) do %>
+  <% if @change %>
+    <section class="<%= ui(:panel, "space-y-2 p-6") %>">
+      <h2 class="<%= ui(:heading) %>"><%= @change.summary %></h2>
+      <p class="text-sm text-gray-700">
+        Started <%= time_ago_tag @change.created_at %><% if @change.requested_by %> by <%= @change.requested_by.name.presence || @change.requested_by.email %><% end %>.
+        The CMS restarts when it’s in place, which takes a few seconds. This page checks every few seconds.
+      </p>
+    </section>
+  <% end %>
+
+  <section class="<%= ui(:panel, "p-6") %>">
+    <p class="text-sm text-gray-500">
+      What this install adds to the core. Bundled plugins ship with the CMS; installed ones were added below, or with
+      <code>CMS_PLUGINS</code> or <code>bin/rails "plugins:install[…]"</code>. A plugin starts off: switch it on here.
+      Switching one off hides it and keeps its data.
+    </p>
+
+    <% if @plugins.any? %>
+      <ul class="mt-4 divide-y divide-gray-100 border-t border-gray-100">
+        <% @plugins.each do |plugin| %>
+          <%# herb:key plugin.key %>
+          <%= render "settings/plugins/plugin", plugin: plugin %>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="py-12 text-center text-sm text-gray-500">No plugins are installed.</p>
+    <% end %>
+
+    <% InstalledPlugins.failed.each do |name, error| %>
+      <%# herb:key name %>
+      <p class="mt-3 text-xs text-red-600"><strong><%= name %></strong> is installed but didn’t load: <%= error %></p>
+    <% end %>
+  </section>
+
+  <% if Current.user.admin? %>
+    <section class="<%= ui(:panel, "space-y-3 p-6") %>">
+      <h2 class="<%= ui(:heading) %>">Add a plugin</h2>
+      <p class="text-sm text-gray-500">
+        By its GitHub repository: the CMS installs its latest release on this server, where it stays through deploys
+        and updates, and restarts.
+      </p>
+      <%= form_with url: settings_plugins_installations_path, class: "flex flex-wrap gap-2" do |form| %>
+        <%= form.text_field :repo, class: "min-w-0 flex-1", placeholder: "owner/cms-thing", autocomplete: "off", required: true,
+              aria: { label: "GitHub repository" } %>
+        <button type="submit" class="<%= ui(:button, :primary) %>">Install</button>
+      <% end %>
+    </section>
+  <% end %>
+
+  <% if @changes.any? %>
+    <section class="<%= ui(:panel, "space-y-3 p-6") %>">
+      <h2 class="<%= ui(:heading) %>">Recent changes</h2>
+      <ul class="divide-y divide-gray-100">
+        <% @changes.each do |change| %>
+          <%# herb:key change.id %>
+          <li class="space-y-1 py-2.5 text-sm">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="font-medium text-gray-900"><%= change.summary %></span>
+              <%= status_tag change.status %>
+              <span class="text-xs text-gray-500"><%= time_ago_tag change.created_at %><% if change.requested_by %> · <%= change.requested_by.email %><% end %></span>
+            </div>
+            <% if change.message.present? %>
+              <pre class="<%= settings_code_classes("text-xs") %>"><code><%= change.message %></code></pre>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    </section>
+  <% end %>
+<% end %>
+
+<p class="text-xs text-gray-500">CMS <%= cms_version %></p>

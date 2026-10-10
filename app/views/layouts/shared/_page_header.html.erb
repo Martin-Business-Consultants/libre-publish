@@ -1,0 +1,40 @@
+<%# locals: (title:, icon: nil, **) %>
+<%# An admin page's title row: the title, and its actions (content_for
+    :page_actions, a New button first) across from it at the right. No line
+    under it on what the page is for: other locals (a plugin's
+    description:) are taken and not shown. On a Settings page it goes above
+    the page and its sidebar (layouts/settings) rather than where it's rendered. %>
+<% header = capture do %>
+<div class="page-title mb-6 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+  <h1 class="<%= ui(:page_title, "flex items-center gap-2") %>">
+    <% if icon %>
+      <%= icon_tag icon, class: "size-6 text-gray-400" %>
+    <% end %>
+    <%= title %>
+  </h1>
+  <% if content_for?(:page_actions) %>
+    <div class="page-title__actions ml-auto flex flex-wrap items-center justify-end gap-2">
+      <%= content_for(:page_actions) %>
+    </div>
+  <% end %>
+</div>
+<% if (cli = cli_command_hint) %>
+  <p class="mb-4 flex flex-wrap items-center gap-2 text-xs text-gray-500">
+    <span>From the CLI or MCP:</span>
+    <code class="rounded-md bg-gray-100 px-1.5 py-0.5 font-mono text-gray-700"><%= cli %></code>
+    <button type="button" class="<%= ui(:button, :plain, :small) %>" title="Copy the command" data-controller="copy-to-clipboard"
+            data-copy-to-clipboard-content-value="<%= cli %>" data-copy-to-clipboard-success-class="btn--success" data-action="copy-to-clipboard#copy">Copy</button>
+  </p>
+<% end %>
+<% if search_term %>
+  <p class="mb-4 text-sm text-gray-600">
+    Search results for “<strong><%= search_term %></strong>”
+    <%= link_to "Clear", url_for(request.query_parameters.except("s", "page")), class: ui(:link) %>
+  </p>
+<% end %>
+<% end %>
+<% if settings_screen? %>
+  <% content_for :settings_header, header %>
+<% else %>
+  <%= header %>
+<% end %>

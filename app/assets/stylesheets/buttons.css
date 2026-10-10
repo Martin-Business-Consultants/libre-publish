@@ -1,0 +1,73 @@
+/* Buttons are drawn by their classes (UiHelper#ui(:button)); this holds the
+/* two states the markup doesn't carry. */
+
+/* A form being submitted (Turbo marks it aria-busy and disables its submit
+   button): the disabled submit button shows a pulsing ellipsis in place of
+   its label. */
+@layer components {
+  form[aria-busy] :is(button, input)[type="submit"]:disabled {
+    position: relative;
+
+    > * {
+      visibility: hidden;
+    }
+
+    &::after {
+      --mask: no-repeat radial-gradient(#000 68%, #0000 71%);
+      --size: 1.25em;
+
+      -webkit-mask: var(--mask), var(--mask), var(--mask);
+      -webkit-mask-size: 28% 45%;
+      animation: submitting 1s infinite linear;
+      aspect-ratio: 8 / 5;
+      background: currentColor;
+      content: "";
+      inline-size: var(--size);
+      inset: 50%;
+      margin-block: calc((var(--size) / 3) * -1);
+      margin-inline: calc((var(--size) / 2) * -1);
+      position: absolute;
+    }
+  }
+}
+
+/* A Copy button that just copied (copy_to_clipboard_controller adds its
+   success class, btn--success): green for a couple of seconds, with a small
+   pop, then back to its own colors. An animation's values beat the button's
+   classes while it runs. */
+@layer components {
+  .btn--success {
+    animation: copied 2s ease-out;
+  }
+
+  @keyframes copied {
+    0% {
+      background-color: var(--color-green-50);
+      border-color: var(--color-green-300);
+      color: var(--color-green-700);
+      scale: 0.94;
+    }
+
+    12% {
+      scale: 1;
+    }
+
+    80% {
+      background-color: var(--color-green-50);
+      border-color: var(--color-green-300);
+      color: var(--color-green-700);
+    }
+  }
+}
+
+/* With reduced motion the animation ends at once, so it stays green instead
+   (in the utilities layer, after Litewind's, to beat the button's colors). */
+@layer utilities {
+  @media (prefers-reduced-motion: reduce) {
+    .btn--success {
+      background-color: var(--color-green-50);
+      border-color: var(--color-green-300);
+      color: var(--color-green-700);
+    }
+  }
+}

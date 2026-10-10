@@ -1,0 +1,74 @@
+/* Tailwind utilities Litewind doesn't compile in, under Tailwind's own names
+   and with Tailwind v4's definitions, so the markup reads as plain Tailwind.
+   Add one here only when Litewind lacks it (spec/architecture/
+   litewind_classes_spec.rb checks every class in the views against
+   Litewind, this file and the app's other stylesheets). Three are the app's
+   own, reading Settings › Branding's tokens (_global.css): text-on-accent,
+   words on a bg-blue-* fill; shadow-surface, a panel's shadow; and
+   shadow-overlay, what floats above the page (menus, dialogs, toasts). */
+@layer utilities {
+  .whitespace-normal { white-space: normal; }
+  .whitespace-nowrap { white-space: nowrap; }
+  .whitespace-pre { white-space: pre; }
+  .whitespace-pre-wrap { white-space: pre-wrap; }
+  .whitespace-pre-line { white-space: pre-line; }
+  .text-wrap { text-wrap: wrap; }
+  .text-nowrap { text-wrap: nowrap; }
+  .text-balance { text-wrap: balance; }
+  .text-pretty { text-wrap: pretty; }
+  .text-ellipsis { text-overflow: ellipsis; }
+
+  .-mb-px { margin-bottom: -1px; }
+  .ml-auto { margin-left: auto; }
+  .mr-auto { margin-right: auto; }
+  .ms-auto { margin-inline-start: auto; }
+  .me-auto { margin-inline-end: auto; }
+  .mt-auto { margin-top: auto; }
+  .mb-auto { margin-bottom: auto; }
+  .my-auto { margin-block: auto; }
+
+  .shrink { flex-shrink: 1; }
+  .shrink-0 { flex-shrink: 0; }
+  .grow { flex-grow: 1; }
+  .grow-0 { flex-grow: 0; }
+  .basis-0 { flex-basis: calc(var(--spacing) * 0); }
+
+  .inset-0 { inset: calc(var(--spacing) * 0); }
+  .inset-y-0 { inset-block: calc(var(--spacing) * 0); }
+  .isolate { isolation: isolate; }
+
+  .size-3 { width: calc(var(--spacing) * 3); height: calc(var(--spacing) * 3); }
+  .size-4 { width: calc(var(--spacing) * 4); height: calc(var(--spacing) * 4); }
+  .size-5 { width: calc(var(--spacing) * 5); height: calc(var(--spacing) * 5); }
+  .size-6 { width: calc(var(--spacing) * 6); height: calc(var(--spacing) * 6); }
+  .size-8 { width: calc(var(--spacing) * 8); height: calc(var(--spacing) * 8); }
+  .size-10 { width: calc(var(--spacing) * 10); height: calc(var(--spacing) * 10); }
+  .h-px { height: 1px; }
+  .w-px { width: 1px; }
+  .min-h-dvh { min-height: 100dvh; }
+  .min-h-36 { min-height: calc(var(--spacing) * 36); }
+  .min-h-40 { min-height: calc(var(--spacing) * 40); }
+  .min-h-64 { min-height: calc(var(--spacing) * 64); }
+  .aspect-square { aspect-ratio: 1 / 1; }
+  .aspect-video { aspect-ratio: var(--aspect-video, 16 / 9); }
+
+  .line-clamp-1 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; }
+  .line-clamp-2 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+  .line-clamp-3 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
+
+  .cursor-grab { cursor: grab; }
+  .scroll-mt-20 { scroll-margin-top: calc(var(--spacing) * 20); }
+
+  .text-on-accent { color: var(--on-accent); }
+  .shadow-surface { box-shadow: var(--shadow-surface); }
+  .shadow-overlay { box-shadow: var(--shadow-overlay); }
+  .underline-offset-2 { text-underline-offset: 2px; }
+
+  /* Litewind's hover: variants cover backgrounds, gray borders and opacity;
+     these are the text ones the admin needs. */
+  .hover\:underline { &:hover { @media (hover: hover) { text-decoration-line: underline; } } }
+  .hover\:text-gray-900 { &:hover { @media (hover: hover) { color: var(--color-gray-900); } } }
+  .hover\:text-blue-600 { &:hover { @media (hover: hover) { color: var(--color-blue-600); } } }
+  .hover\:text-blue-700 { &:hover { @media (hover: hover) { color: var(--color-blue-700); } } }
+  .hover\:text-red-700 { &:hover { @media (hover: hover) { color: var(--color-red-700); } } }
+}

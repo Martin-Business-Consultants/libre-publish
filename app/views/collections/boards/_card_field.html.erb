@@ -1,0 +1,26 @@
+<%# locals: (collection:, entry:, field:) %>
+<%# One control on a card, saved on its own (a change submits; text commits on
+    blur or Enter, since that's when a text input changes). %>
+<% label = field_label_text(field) %>
+<% value = entry.board_value(field) %>
+<%= form_with url: collection_entry_card_field_path(collection.slug, entry.slug), method: :patch,
+      class: "flex items-center gap-2", data: { controller: "form" } do %>
+  <%= hidden_field_tag :field, field["name"], id: nil %>
+  <span class="w-24 shrink-0 truncate text-xs text-gray-500" aria-hidden="true"><%= label %></span>
+  <% if field["type"] == "boolean" %>
+    <%= hidden_field_tag :value, (!value).to_s, id: nil %>
+    <button type="submit" class="<%= ui(:button, :small, "mr-auto") %>" aria-pressed="<%= value == true %>" title="<%= label %>">
+      <span class="<%= class_names("h-2 w-2 rounded-full", value ? "bg-green-500" : "bg-gray-300") %>" aria-hidden="true"></span>
+      <%= value ? "On" : "Off" %>
+    </button>
+  <% elsif field["type"] == "select" %>
+    <%= select_tag :value, options_for_select(Array(field["options"]), value), include_blank: label, id: nil,
+          class: "min-w-0 flex-1", "aria-label": label, data: { action: "change->form#submit" } %>
+  <% elsif field["type"] == "datetime" %>
+    <%= datetime_local_field_tag :value, datetime_local_value(value), id: nil, class: "min-w-0 flex-1",
+          "aria-label": label, data: { action: "change->form#submit" } %>
+  <% else %>
+    <%= text_field_tag :value, value, id: nil, class: "min-w-0 flex-1", placeholder: label, "aria-label": label,
+          inputmode: (field["type"] == "integer" ? "numeric" : nil), autocomplete: "off", data: { action: "change->form#submit" } %>
+  <% end %>
+<% end %>

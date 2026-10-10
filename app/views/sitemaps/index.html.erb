@@ -1,0 +1,109 @@
+<% @page_title = "Sitemap" %>
+<% xml_url = @base_url.chomp("/") + "/sitemap.xml" %>
+<% can_write = Current.user.can?("pages:write") %>
+<% included = @entries.count(&:included?) %>
+
+<% content_for :page_actions do %>
+  <%= link_to "View sitemap.xml", "/sitemap.xml", class: ui(:button), target: "_blank", rel: "noopener" %>
+  <button type="button" class="<%= ui(:button) %>" data-controller="copy-to-clipboard" data-copy-to-clipboard-content-value="<%= xml_url %>" data-copy-to-clipboard-success-class="btn--success" data-action="copy-to-clipboard#copy">Copy URL</button>
+<% end %>
+<%= render "layouts/shared/page_header", title: @page_title %>
+
+<%= render "layouts/shared/status_links", param: :show, current: @filter.to_s,
+      options: [ [ "All", nil, @entries.size ], [ "Included", "included", included ], [ "Excluded", "excluded", @entries.size - included ] ] %>
+
+<div class="mb-3 flex flex-wrap items-center justify-between gap-3">
+  <p class="text-xs text-gray-500">
+    Published at <span class="font-mono text-gray-700"><%= xml_url %></span>, and to a build as <a href="/api/sitemap" class="<%= ui(:link, "font-mono") %>">/api/sitemap</a>.
+  </p>
+  <div class="ml-auto">
+    <%= render "layouts/shared/list_search", placeholder: "Search the sitemap…" %>
+  </div>
+</div>
+
+<section class="<%= ui(:panel, "overflow-x-auto") %>">
+  <table class="data-table <%= ui(:table) %>">
+    <thead>
+      <tr>
+        <th class="<%= ui(:th) %>">Title</th>
+        <th class="<%= ui(:th) %>">Type</th>
+        <th class="<%= ui(:th) %>">Status</th>
+        <th class="<%= ui(:th, "text-right") %>">Priority</th>
+        <th class="<%= ui(:th) %>">Change freq.</th>
+        <th class="<%= ui(:th) %>">Last modified</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @shown.each do |entry| %>
+        <%# herb:key "#{entry.source}-#{entry.id}" %>
+        <% record = @records.dig(entry.source, entry.id) %>
+        <% edit_path = (admin_record_path(record) if record && can_write) %>
+        <% live_url = @sitemap.absolute_url(entry.loc, @base_url) %>
+        <tr id="sitemap_<%= entry.source %>_<%= entry.id %>" class="hover:bg-gray-50" data-filter-target="item">
+          <td class="<%= ui(:td) %>">
+            <% if edit_path %>
+              <%= link_to entry.title, edit_path, class: "font-medium text-gray-900 hover:underline" %>
+            <% else %>
+              <span class="font-medium text-gray-900"><%= entry.title %></span>
+            <% end %>
+            <div class="font-mono text-xs text-gray-500"><%= entry.loc %></div>
+            <div class="row-actions mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+              <% if edit_path %>
+                <span><%= link_to "Edit", edit_path, class: "text-blue-600 hover:underline" %></span>
+              <% end %>
+              <% if external_url?(live_url) %>
+                <span><%= external_link live_url, "View", link_class: "text-blue-600 hover:underline" %></span>
+              <% end %>
+              <% if can_write %>
+                <details class="quick-edit">
+                  <summary class="cursor-pointer text-blue-600 hover:underline">Quick edit</summary>
+                  <%= form_with url: sitemap_entry_path(entry.source, entry.id), method: :patch, namespace: "sitemap_#{entry.source}_#{entry.id}",
+                        class: "mt-2 flex flex-wrap items-end gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3" do %>
+                    <%= hidden_field_tag :show, @filter, id: nil %>
+                    <% if Current.user.can?(Sitemap.publish_capability(entry.source)) %>
+                      <label class="flex flex-col gap-1">
+                        <span class="text-xs font-medium text-gray-700">Status</span>
+                        <%= select_tag "entry[status]", options_for_select(Page::STATUSES, entry.status), id: nil %>
+                      </label>
+                    <% end %>
+                    <label class="flex flex-col gap-1">
+                      <span class="text-xs font-medium text-gray-700">Priority</span>
+                      <%= number_field_tag "entry[sitemap_priority]", entry.priority, step: 0.1, min: 0, max: 1, class: "w-24", id: nil %>
+                    </label>
+                    <label class="flex flex-col gap-1">
+                      <span class="text-xs font-medium text-gray-700">Change freq.</span>
+                      <%= select_tag "entry[sitemap_changefreq]", options_for_select(Sitemap::CHANGEFREQS, entry.changefreq), id: nil %>
+                    </label>
+                    <label class="flex h-8 items-center gap-1.5 text-xs text-gray-700">
+                      <%= hidden_field_tag "entry[noindex]", "false", id: nil %>
+                      <%= check_box_tag "entry[noindex]", "true", entry.noindex, id: nil %>
+                      <span>noindex</span>
+                    </label>
+                    <label class="flex h-8 items-center gap-1.5 text-xs text-gray-700">
+                      <%= hidden_field_tag "entry[nofollow]", "false", id: nil %>
+                      <%= check_box_tag "entry[nofollow]", "true", entry.nofollow, id: nil %>
+                      <span>nofollow</span>
+                    </label>
+                    <button type="submit" class="<%= ui(:button, :primary) %>">Update</button>
+                  <% end %>
+                </details>
+              <% end %>
+            </div>
+          </td>
+          <td class="<%= ui(:td) %>"><%= entry.collection_slug ? entry.collection_slug.humanize : "Page" %></td>
+          <td class="<%= ui(:td) %>">
+            <%= status_tag entry.status, highlight: entry.included? %>
+            <% if entry.noindex %>
+              <%= status_tag "noindex" %>
+            <% end %>
+          </td>
+          <td class="<%= ui(:td, "text-right tabular-nums") %>"><%= format("%.2f", entry.priority.to_f) %></td>
+          <td class="<%= ui(:td) %>"><%= entry.changefreq %></td>
+          <td class="<%= ui(:td, "text-xs whitespace-nowrap") %>"><%= entry.lastmod.present? ? time_ago_tag(Time.zone.parse(entry.lastmod.to_s)) : "—" %></td>
+        </tr>
+      <% end %>
+      <%= table_empty_row("Nothing to show.", columns: 6) if @shown.none? %>
+    </tbody>
+  </table>
+</section>
+<%= pagination_nav @pagination %>

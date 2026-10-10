@@ -1,0 +1,32 @@
+<% @page_title = "Settings" %>
+
+<%= render "layouts/shared/page_header", title: "Settings" %>
+
+<p class="text-sm text-gray-500">
+  CMS <%= cms_version %>
+  <% if UpdateCheck.update_available? %>
+    · <strong class="font-semibold text-gray-900">Version <%= UpdateCheck.latest_version %> is available.</strong>
+    <%= link_to "What’s new", UpdateCheck.release_url || UpdateCheck.changelog_url, class: ui(:link), rel: "noopener" %>
+    <% if Current.user.can?("settings:read") %>
+      · <%= link_to "Update in Settings › Updates", settings_updates_path, class: ui(:link) %>
+    <% end %>
+  <% end %>
+</p>
+
+<% settings_sections.each do |group, links| %>
+  <%# herb:key group %>
+  <section class="space-y-3">
+    <h2 class="<%= ui(:heading) %>"><%= group %></h2>
+    <ul class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <% links.each do |text, path, description| %>
+        <%# herb:key path %>
+        <li>
+          <%= link_to path, class: ui(:panel, "flex h-full flex-col gap-1 p-5 hover:border-gray-300 hover:bg-gray-50") do %>
+            <span class="text-sm font-semibold text-gray-900"><%= text %></span>
+            <span class="text-sm text-gray-500"><%= description %></span>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  </section>
+<% end %>

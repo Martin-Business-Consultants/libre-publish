@@ -1,0 +1,111 @@
+/* Modal dialogs (<dialog class="dialog">, opened with showModal by
+/* dialog_controller or bulk_actions_controller): what the markup's classes
+/* can't say. A dialog lays out as a column only while it's open (a display
+/* class would show it closed too, so the markup gives it gap-* and no
+/* flex), fades and scales in over a dimmed page, and the page under it stays
+/* put. The markup draws the box: its border, corners, padding, background. */
+@layer components {
+  html:has(dialog:modal) {
+    overflow: hidden;
+  }
+
+  .dialog {
+    --dialog-duration: 150ms;
+
+    color: var(--color-gray-900);
+    /* Centered: Litewind's preflight takes away the browser's margin: auto. */
+    margin: auto;
+    max-block-size: calc(100dvh - calc(var(--spacing) * 8));
+    max-inline-size: calc(100vw - calc(var(--spacing) * 8));
+    opacity: 0;
+    overflow-y: auto;
+    transform: scale(0.96);
+    transform-origin: center;
+    transition-behavior: allow-discrete;
+    /* Closing is quicker than opening. */
+    transition-duration: calc(var(--dialog-duration) / 2);
+    transition-property: display, opacity, overlay, transform;
+    transition-timing-function: ease-out;
+
+    &::backdrop {
+      /* Black in both themes: --color-black turns white in the dark one. */
+      background-color: rgb(0 0 0 / 0.4);
+      opacity: 0;
+      transition-behavior: allow-discrete;
+      transition-duration: calc(var(--dialog-duration) / 2);
+      transition-property: display, opacity, overlay;
+      transition-timing-function: ease-out;
+    }
+
+    &[open] {
+      display: flex;
+      flex-direction: column;
+      opacity: 1;
+      transform: none;
+      transition-duration: var(--dialog-duration);
+
+      &::backdrop {
+        opacity: 1;
+        transition-duration: var(--dialog-duration);
+      }
+    }
+
+    @starting-style {
+      &[open] {
+        opacity: 0;
+        transform: scale(0.96);
+      }
+
+      &[open]::backdrop {
+        opacity: 0;
+      }
+    }
+  }
+
+  /* A modal that asks one thing (delete, a quick action): one width for all
+     of them. */
+  .dialog--action {
+    inline-size: calc(var(--spacing) * 112);
+  }
+
+  /* A modal that slides in from the right and runs the viewport's height
+     (New page, Choose a file): room to grow, a form filling it, its actions
+     (.dialog__actions) pinned to the foot. */
+  .dialog--sheet {
+    block-size: 100dvh;
+    inline-size: min(36rem, 100vw);
+    inset-inline: auto 0;
+    margin: 0;
+    max-block-size: 100dvh;
+    max-inline-size: 100vw;
+    transform: translateX(100%);
+
+    &[open] {
+      transform: none;
+    }
+
+    @starting-style {
+      &[open] {
+        transform: translateX(100%);
+      }
+    }
+
+    > header {
+      flex-shrink: 0;
+    }
+
+    > form {
+      flex: 1;
+    }
+
+    .dialog__actions {
+      margin-block-start: auto;
+    }
+  }
+
+  /* A sheet with more to lay out (a webhook's mapping): half the screen,
+     never narrower than a sheet, the whole screen on a phone. */
+  .dialog--sheet-half {
+    inline-size: max(50vw, min(36rem, 100vw));
+  }
+}

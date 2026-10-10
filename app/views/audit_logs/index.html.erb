@@ -1,0 +1,73 @@
+<% @page_title = "Audit log" %>
+
+<%= render "layouts/shared/page_header", title: @page_title %>
+
+<%= form_with url: audit_logs_path, method: :get, class: ui(:panel, "mb-6 flex flex-wrap items-end gap-4 p-4"), data: { turbo_action: "advance" } do %>
+  <label class="space-y-1.5">
+    <span class="<%= ui(:label) %>">Actor</span>
+    <%= text_field_tag :actor, params[:actor], placeholder: "email or name", autocomplete: "off" %>
+  </label>
+  <label class="space-y-1.5">
+    <span class="<%= ui(:label) %>">Action</span>
+    <%= select_tag :action_filter, options_for_select(@known_actions, params[:action_filter]), include_blank: "Any action" %>
+  </label>
+  <label class="space-y-1.5">
+    <span class="<%= ui(:label) %>">From</span>
+    <%= datetime_local_field_tag :from, params[:from] %>
+  </label>
+  <label class="space-y-1.5">
+    <span class="<%= ui(:label) %>">To</span>
+    <%= datetime_local_field_tag :to, params[:to] %>
+  </label>
+  <div class="flex gap-2">
+    <button type="submit" class="<%= ui(:button) %>">Apply</button>
+    <%= link_to "Clear", audit_logs_path, class: ui(:button, :plain) %>
+  </div>
+<% end %>
+
+<div class="mb-3 flex flex-wrap items-center justify-end gap-3">
+  <%= render "layouts/shared/list_search", placeholder: "Search actions, people and targets…" %>
+</div>
+
+<section class="<%= ui(:panel, "overflow-x-auto") %>">
+  <table class="data-table <%= ui(:table) %>">
+    <thead>
+      <tr>
+        <th class="<%= ui(:th) %>">When</th>
+        <th class="<%= ui(:th) %>">Actor</th>
+        <th class="<%= ui(:th) %>">Action</th>
+        <th class="<%= ui(:th) %>">Target</th>
+        <th class="<%= ui(:th) %>">Detail</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @entries.each do |entry| %>
+        <%# herb:key entry.id %>
+        <tr id="<%= dom_id(entry) %>" class="hover:bg-gray-50" data-filter-target="item">
+          <td class="<%= ui(:td) %>"><span class="text-xs whitespace-nowrap text-gray-500"><%= time_ago_tag entry.created_at %></span></td>
+          <td class="<%= ui(:td) %>">
+            <div class="text-gray-900"><%= entry.actor_label.presence || "system" %></div>
+            <% if entry.ip.present? %>
+              <div class="font-mono text-xs text-gray-500"><%= entry.ip %></div>
+            <% end %>
+          </td>
+          <td class="<%= ui(:td) %>"><%= status_tag entry.current_action, highlight: false %></td>
+          <td class="<%= ui(:td) %>">
+            <% if entry.target_label.present? %>
+              <%= audit_target_link(entry) %>
+              <% if entry.target_type.present? %>
+                <span class="text-xs text-gray-500">(<%= entry.target_type %>)</span>
+              <% end %>
+            <% else %>
+              <span class="text-gray-500">—</span>
+            <% end %>
+          </td>
+          <td class="<%= ui(:td) %>"><span class="font-mono text-xs text-gray-500"><%= audit_metadata(entry.metadata) %></span></td>
+        </tr>
+      <% end %>
+      <%= table_empty_row("No entries match.", columns: 5) if @entries.none? %>
+    </tbody>
+  </table>
+</section>
+
+<%= pagination_nav @pagination %>

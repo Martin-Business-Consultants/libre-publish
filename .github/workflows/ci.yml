@@ -1,0 +1,32 @@
+# The same checks as bin/ci (config/ci.rb), on every push to main and every pull request.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # libvips, as the Dockerfile installs: the Media plugin (a default
+      # plugin) loads image_processing's vips at boot.
+      - run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libvips
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      # bin/setup installs the default plugins (config/default_plugins.yml),
+      # which adds their gems to the bundle: a frozen (deployment) bundle,
+      # as bundler-cache leaves it, refuses that. bin/install doesn't freeze
+      # it either, for the same reason.
+      - run: bundle config set --local deployment false && bundle config set --local frozen false
+
+      - run: bin/ci

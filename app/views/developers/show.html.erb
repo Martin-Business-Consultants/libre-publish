@@ -1,0 +1,139 @@
+<% @page_title = "Developers" %>
+<%= render "layouts/shared/page_header", title: "Developers", icon: "code" %>
+
+<% cms_url = request.base_url %>
+<% code_classes = "block rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 font-mono text-xs leading-relaxed whitespace-pre-wrap break-all text-gray-800" %>
+<% inline_code_classes = "rounded-sm bg-gray-100 px-1 py-0.5 font-mono text-xs text-gray-800" %>
+<% facts_classes = "grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm" %>
+<div class="grid items-start gap-6 lg:grid-cols-3">
+  <div class="space-y-6 lg:col-span-2">
+    <%# The CMS's real surfaces, first: the admin is for doing things by hand. %>
+    <div class="grid gap-4">
+      <section class="<%= ui(:panel, "space-y-3 p-5") %>">
+        <h2 class="<%= ui(:heading, "flex items-center gap-2") %>"><%= icon_tag "link", class: "size-4 text-gray-400" %> API</h2>
+        <p class="text-sm text-gray-700">JSON over HTTP at <code class="<%= inline_code_classes %>">/api</code>, with a bearer token. What the site builds from, and what every other surface stands on.</p>
+        <code class="<%= code_classes %>">curl -H "Authorization: Bearer $TOKEN" <%= cms_url %>/api/manifest</code>
+        <p class="<%= ui(:help) %>">Tokens: <%= link_to "yours", settings_api_token_path, class: ui(:link) %> (your role) or a <%= link_to "service token", settings_service_tokens_path, class: ui(:link) %> (a site's, a job's).</p>
+      </section>
+      <section class="<%= ui(:panel, "space-y-3 p-5") %>">
+        <h2 class="<%= ui(:heading, "flex items-center gap-2") %>"><%= icon_tag "code", class: "size-4 text-gray-400" %> CLI</h2>
+        <p class="text-sm text-gray-700"><code class="<%= inline_code_classes %>">cms</code> does everything the admin does to content, structure and operations, with next steps in every answer. Connects in your browser.</p>
+        <div class="flex items-center gap-2">
+          <code class="<%= code_classes %> min-w-0 flex-1">curl -fsSL <%= cms_url %>/agent/install.sh | sh</code>
+          <%= copy_button "curl -fsSL #{cms_url}/agent/install.sh | sh" %>
+        </div>
+        <p class="<%= ui(:help) %>">Then <code class="<%= inline_code_classes %>">cms doctor</code>, <code class="<%= inline_code_classes %>">cms manifest</code>, <code class="<%= inline_code_classes %>">cms commands --json</code>.</p>
+      </section>
+      <section class="<%= ui(:panel, "space-y-3 p-5") %>">
+        <h2 class="<%= ui(:heading, "flex items-center gap-2") %>"><%= icon_tag "ai", class: "size-4 text-gray-400" %> MCP</h2>
+        <p class="text-sm text-gray-700">The same commands as MCP tools, for Claude Code or any MCP client, once the CLI is installed.</p>
+        <div class="flex items-center gap-2">
+          <code class="<%= code_classes %> min-w-0 flex-1">claude mcp add cms -- cms mcp</code>
+          <%= copy_button "claude mcp add cms -- cms mcp" %>
+        </div>
+        <p class="<%= ui(:help) %>">Every answer comes wrapped with what to call next.</p>
+      </section>
+    </div>
+
+    <%= postbox "developers-astro", "Connect an Astro site" do %>
+      <p class="text-gray-700">Run this in the site's project (its root or its <code class="<%= inline_code_classes %>">src/</code>). It installs the <code class="<%= inline_code_classes %>">@librepublish/astro</code> integration and gets the site a read-only token of its own, approved in your browser.</p>
+      <div class="flex items-center gap-2">
+        <code class="<%= code_classes %> min-w-0 flex-1">curl -fsSL <%= cms_url %>/frontend/install.sh | sh</code>
+        <%= copy_button "curl -fsSL #{cms_url}/frontend/install.sh | sh" %>
+      </div>
+      <div class="space-y-2">
+        <p class="text-gray-700">Then add <code class="<%= inline_code_classes %>">cms()</code> to <code class="<%= inline_code_classes %>">astro.config</code>. From then on, every <code class="<%= inline_code_classes %>">astro dev</code> and <code class="<%= inline_code_classes %>">astro build</code>:</p>
+        <ul class="list-disc space-y-1 pl-5 text-gray-700">
+          <li>loads pages, entries and globals through content collections, and types them from this CMS's schema;</li>
+          <li>writes <code class="<%= inline_code_classes %>">AGENTS.md</code> in the site's repo: how the site works with this CMS, and the Site health checks it's held to (<%= link_to "read it", frontend_agents_md_path, class: ui(:link), target: "_blank", rel: "noopener" %>);</li>
+          <li>after a build, writes <code class="<%= inline_code_classes %>">_redirects</code>, <code class="<%= inline_code_classes %>">sitemap.xml</code> and <code class="<%= inline_code_classes %>">robots.txt</code>, checks Site health, and reports the build here.</li>
+        </ul>
+      </div>
+      <details class="rounded-lg border border-gray-200">
+        <summary class="cursor-pointer px-3 py-2 text-sm font-medium text-gray-900">Or by hand</summary>
+        <div class="space-y-2 border-t border-gray-200 p-3">
+          <pre class="<%= code_classes %>">npm install @librepublish/astro@github:Martin-Business-Consultants/libre-cms-astro</pre>
+          <pre class="<%= code_classes %>">// astro.config.mjs
+import cms from "@librepublish/astro";
+export default defineConfig({ integrations: [cms()] });</pre>
+          <code class="<%= code_classes %>">CMS_BASE_URL=<%= cms_url %>  CMS_API_TOKEN=&lt;a service token&gt;</code>
+          <p class="<%= ui(:help) %>">Forms, Media and Commerce come with it. The source: github.com/Martin-Business-Consultants/libre-cms-astro.</p>
+        </div>
+      </details>
+    <% end %>
+
+    <%= postbox "developers-how", "How it fits together" do %>
+      <ol class="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+        <li class="flex flex-col gap-0.5 rounded-lg bg-gray-50 p-3"><strong class="font-medium text-gray-900">Agents and people</strong><span class="text-xs text-gray-500">change content through the CLI, MCP, API — or this admin</span></li>
+        <li class="flex flex-col gap-0.5 rounded-lg bg-gray-50 p-3"><strong class="font-medium text-gray-900">The CMS</strong><span class="text-xs text-gray-500">stores it and serves live content as JSON at <code class="font-mono">/api/v1</code></span></li>
+        <li class="flex flex-col gap-0.5 rounded-lg bg-gray-50 p-3"><strong class="font-medium text-gray-900">Your site</strong><span class="text-xs text-gray-500">(an Astro app) loads it at build time, or on demand on Cloudflare, and renders HTML</span></li>
+        <li class="flex flex-col gap-0.5 rounded-lg bg-gray-50 p-3"><strong class="font-medium text-gray-900">Visitors</strong><span class="text-xs text-gray-500">get the site, never the CMS</span></li>
+      </ol>
+      <p class="text-gray-500">
+        Publishing rebuilds a static site, or purges what changed from one rendered on demand (Settings › <%= link_to "Deploy", settings_deploy_path, class: ui(:link) %>).
+        Every page, entry and global has a <strong class="font-medium text-gray-900">JSON</strong> tab in its editor, and every screen names its <code class="<%= inline_code_classes %>">cms</code> command.
+      </p>
+    <% end %>
+
+    <%= postbox "developers-api", "The JSON" do %>
+      <p class="text-gray-500">Every read takes <code class="<%= inline_code_classes %>">Authorization: Bearer &lt;token&gt;</code> and answers <code class="<%= inline_code_classes %>">{data, meta, included}</code>, live content only.</p>
+      <div class="overflow-x-auto rounded-lg border border-gray-200">
+        <table class="<%= ui(:table) %>">
+          <thead><tr><th class="<%= ui(:th) %>">Endpoint</th><th class="<%= ui(:th) %>">What it returns</th></tr></thead>
+          <tbody>
+            <% DevelopersController::ENDPOINTS.each do |verb, path, what| %>
+              <%# herb:key path %>
+              <tr class="hover:bg-gray-50"><td class="<%= ui(:td, "font-mono text-xs whitespace-nowrap") %>"><%= verb %> <%= path %></td><td class="<%= ui(:td) %>"><%= what %></td></tr>
+            <% end %>
+            <% @plugin_endpoints.each do |plugin, endpoint| %>
+              <%# herb:key endpoint[:path] %>
+              <tr class="hover:bg-gray-50"><td class="<%= ui(:td, "font-mono text-xs whitespace-nowrap") %>"><%= endpoint[:path] %></td><td class="<%= ui(:td) %>"><%= endpoint[:description] %> <span class="text-gray-500">(<%= plugin %>)</span></td></tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+  </div>
+
+  <aside class="space-y-6">
+    <%= postbox "developers-frontend", "Your frontend" do %>
+      <% if @build %>
+        <p class="flex flex-wrap items-center gap-2 text-gray-700"><%= status_tag "connected" %> Built <%= time_ago_tag @build[:built_at] %></p>
+        <dl class="<%= facts_classes %>">
+          <% if @build[:framework] %>
+            <dt class="text-gray-500">Framework</dt><dd class="text-gray-900"><%= [ @build[:framework], @build[:framework_version] ].compact.join(" ") %></dd>
+          <% end %>
+          <% if @build[:integration] %>
+            <dt class="text-gray-500">Integration</dt><dd class="text-gray-900"><%= [ @build[:integration], @build[:integration_version] ].compact.join(" ") %></dd>
+          <% end %>
+          <% if @build[:pages] %>
+            <dt class="text-gray-500">Pages built</dt><dd class="text-gray-900"><%= number_with_delimiter(@build[:pages]) %></dd>
+          <% end %>
+        </dl>
+      <% else %>
+        <div class="space-y-1.5">
+          <p class="flex flex-wrap items-center gap-2 text-gray-700"><%= status_tag "not connected" %> No build has reported yet.</p>
+          <p class="<%= ui(:help) %>">A site with the Astro integration reports each build here.</p>
+        </div>
+      <% end %>
+      <dl class="<%= facts_classes %>">
+        <dt class="text-gray-500">Site</dt><dd class="min-w-0 break-all text-gray-900"><%= Frontend.site_url ? external_link(Frontend.site_url, link_class: ui(:link)) : link_to("Set it", settings_general_path, class: ui(:link)) %></dd>
+        <dt class="text-gray-500">Repo</dt><dd class="min-w-0 break-all text-gray-900"><%= Frontend.repo ? tag.span(Frontend.repo, class: "font-mono") : link_to("Set it", settings_github_path, class: ui(:link)) %></dd>
+        <dt class="text-gray-500">Rebuilds</dt><dd class="text-gray-900"><%= @deploys ? "On publish" : link_to("Not set up", settings_deploy_path, class: ui(:link)) %></dd>
+        <dt class="text-gray-500">Service tokens</dt><dd><%= link_to @service_tokens, settings_service_tokens_path, class: ui(:link) %></dd>
+        <dt class="text-gray-500">Webhooks</dt><dd><%= link_to @webhooks, webhooks_path, class: ui(:link) %></dd>
+      </dl>
+    <% end %>
+
+    <%= postbox "developers-model", "Content model" do %>
+      <dl class="<%= facts_classes %>">
+        <% @counts.each do |kind, count| %>
+          <%# herb:key kind %>
+          <dt class="text-gray-500"><%= kind.to_s.humanize %></dt><dd class="text-gray-900 tabular-nums"><%= number_with_delimiter(count) %></dd>
+        <% end %>
+      </dl>
+      <p class="<%= ui(:help) %>">Its full shape — every field and block type's JSON schema — is <code class="font-mono">GET /api/v1/schema</code>, which a connected site turns into its types.</p>
+    <% end %>
+  </aside>
+</div>
+<%= render "content_form/postbox_state" %>

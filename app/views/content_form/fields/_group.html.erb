@@ -1,0 +1,5 @@
+<%# locals: (field:, value:, scope:, depth:) %>
+<fieldset class="rounded-lg border border-gray-200 px-4 pb-4 pt-2">
+  <legend class="<%= ui(:label, "px-1") %>"><%= content_field_label(field) %></legend>
+  <%= render "content_form/fields", fields: field["of"], values: (value.is_a?(Hash) ? value : {}), scope: scope, depth: depth %>
+</fieldset>

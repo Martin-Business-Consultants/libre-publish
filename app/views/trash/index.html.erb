@@ -1,0 +1,56 @@
+<% @page_title = "Trash" %>
+<% can_write = Current.user.can?("trash:write") %>
+
+<%= render "layouts/shared/page_header", title: @page_title %>
+
+<%= render "layouts/shared/status_links", param: :kind, current: @kind.to_s, options: trash_kind_links(@counts) %>
+
+<%# The trash as a list table; picking an item opens what it was in a sheet
+    (trash#show, into the trash_item frame), where it's restored or deleted. %>
+<div class="contents" data-controller="dialog" data-dialog-modal-value="true" data-action="keydown.esc->dialog#close:stop">
+  <section class="<%= ui(:panel, "overflow-x-auto") %>">
+    <table class="data-table <%= ui(:table) %>">
+      <thead>
+        <tr>
+          <th class="<%= ui(:th) %>">Title</th>
+          <th class="<%= ui(:th) %>">Type</th>
+          <th class="<%= ui(:th) %>">Details</th>
+          <th class="<%= ui(:th) %>">Deleted</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @entries.each do |kind, record| %>
+          <%# herb:key "#{kind}-#{record.id}" %>
+          <% label = AuditLog.describe_target(record).to_s.presence || "Untitled " + kind %>
+          <tr id="trash_<%= kind %>_<%= record.id %>" class="hover:bg-gray-50" data-filter-target="item">
+            <td class="<%= ui(:td) %>">
+              <%= link_to label, trash_item_path(kind, record.id), class: "font-medium text-gray-900 hover:underline",
+                    data: { turbo_frame: "trash_item", action: "dialog#open" } %>
+              <%= render "layouts/shared/row_links",
+                    links: [ [ "View", trash_item_path(kind, record.id) ] ],
+                    buttons: ([ [ "Restore", trash_item_restoration_path(kind, record.id) ] ] if can_write),
+                    delete_path: (trash_item_path(kind, record.id) if can_write), delete_name: label,
+                    delete_label: "Delete permanently", delete_message: "It’s deleted for good. This can’t be undone." %>
+            </td>
+            <td class="<%= ui(:td) %>"><%= status_tag Trash.labels.fetch(kind, kind.humanize).singularize %></td>
+            <td class="<%= ui(:td) %>"><span class="font-mono text-xs text-gray-500"><%= trash_detail(kind, record) %></span></td>
+            <td class="<%= ui(:td) %>"><span class="text-xs whitespace-nowrap text-gray-500"><%= time_ago_tag record.deleted_at %></span></td>
+          </tr>
+        <% end %>
+        <%= table_empty_row("Nothing in the trash.", columns: 4) if @entries.none? %>
+      </tbody>
+    </table>
+  </section>
+  <%= pagination_nav @pagination %>
+
+  <dialog class="<%= ui(:sheet) %>" data-dialog-target="dialog"
+          aria-label="In the trash" closedby="any">
+    <header class="flex items-center justify-between gap-4">
+      <h2 class="text-lg font-semibold text-gray-900">In the trash</h2>
+      <button type="button" class="<%= ui(:button, :small) %>" data-action="dialog#close">Close</button>
+    </header>
+    <turbo-frame id="trash_item">
+      <p class="text-sm text-gray-500">Loading…</p>
+    </turbo-frame>
+  </dialog>
+</div>

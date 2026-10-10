@@ -1,0 +1,34 @@
+<%# locals: (field:, value:, scope:) %>
+<%# An asset id. With a media library (MediaLibrary), chosen in its picker,
+    which the library renders once a page in the content_form slot and which
+    answers an "asset-picker:picked" event; without one, typed by hand. %>
+<% asset = content_asset(value) %>
+<%= render "content_form/label", field: field, for_id: (scope.dom_id unless MediaLibrary.available?) %>
+<% if MediaLibrary.available? %>
+  <div class="flex items-center gap-4 rounded-lg border border-gray-200 p-3" data-controller="asset-field" data-asset-field-id-value="<%= scope.dom_id %>">
+    <%= hidden_field_tag scope.name, value, id: scope.dom_id, data: { asset_field_target: "input" } %>
+    <div class="content-asset__preview h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-md bg-gray-100 text-gray-400" data-asset-field-target="preview">
+      <% if asset %>
+        <%= media_thumbnail asset, size: 160 %>
+      <% end %>
+    </div>
+    <div class="flex min-w-0 flex-col gap-2">
+      <span class="truncate text-sm font-medium text-gray-900" data-asset-field-target="name">
+        <% if asset %>
+          <%= asset.title %>
+        <% elsif value.present? %>
+          Asset <%= value %> (missing)
+        <% else %>
+          No file chosen
+        <% end %>
+      </span>
+      <div class="flex gap-2">
+        <button type="button" class="<%= ui(:button, :small) %>" data-action="asset-field#choose">Choose…</button>
+        <button type="button" class="<%= ui(:button, :plain, :small) %>" data-action="asset-field#clear">Clear</button>
+      </div>
+    </div>
+  </div>
+<% else %>
+  <%= text_field_tag scope.name, value, id: scope.dom_id, class: "w-full font-mono", placeholder: "Asset id", autocomplete: "off" %>
+  <span class="<%= ui(:help) %>">No media library is installed, so give the asset’s id.</span>
+<% end %>

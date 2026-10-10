@@ -1,0 +1,22 @@
+<% @page_title = "GitHub" %>
+
+<%= render "layouts/shared/page_header", title: "GitHub" %>
+<% content_for :settings_aside do %>
+  <%= render "settings/save_box", form: "settings_form" %>
+<% end %>
+
+<section class="<%= ui(:panel, "space-y-5 p-6") %>">
+  <p class="text-sm text-gray-500">Personal access token used by features that talk to GitHub — currently the Astro importer. Public repos work without a token but hit GitHub’s anonymous rate limit (60 requests an hour).</p>
+
+  <%= form_with url: settings_github_path, id: "settings_form", method: :patch, scope: :settings do |form| %>
+    <%= tag.fieldset class: "space-y-5", disabled: !Current.user.can?("settings:write") do %>
+      <%= settings_field "Personal access token" do %>
+        <%= form.password_field :token, autocomplete: "off", placeholder: (@token_hint ? "Already set · ends in " + @token_hint : "ghp_…"), class: "w-full font-mono", data: { "1p-ignore": true } %>
+      <% end %>
+      <p class="<%= ui(:help) %>">Needs the <code>repo</code> scope. Create one at <a href="https://github.com/settings/tokens" class="<%= ui(:link) %>" target="_blank" rel="noreferrer">github.com/settings/tokens</a>. Leave blank to keep the existing value.</p>
+      <%= settings_field "Frontend repo", hint: "owner/name — the Astro site this workspace publishes." do %>
+        <%= form.text_field :frontend_github_repo, value: @frontend_github_repo, placeholder: "acme/acme-site", class: "w-full font-mono" %>
+      <% end %>
+    <% end %>
+  <% end %>
+</section>

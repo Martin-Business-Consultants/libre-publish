@@ -1,0 +1,12 @@
+<% @page_title = @guide.title %>
+<%= parent_page "Docs", docs_path %>
+<%= render "layouts/shared/page_header", title: @guide.title %>
+
+<div class="grid items-start gap-6 lg:grid-cols-3">
+  <article class="<%= ui(:panel, "docs-article lexxy-content min-w-0 p-6 lg:col-span-2") %>">
+    <%= sanitize @guide.html(cms_url: request.base_url), tags: Markdown::TAGS, attributes: Markdown::ATTRIBUTES %>
+  </article>
+  <aside class="space-y-6">
+    <%= render "docs/nav", guides: @guides, current: @guide.slug %>
+  </aside>
+</div>

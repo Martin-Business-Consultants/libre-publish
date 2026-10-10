@@ -1,0 +1,7 @@
+<%# locals: (field:, value:, scope:) %>
+<%# url fields are text inputs: a relative path like /contact is a valid value
+    that type="url" would refuse. %>
+<% url = field["type"] == "url" %>
+<%= render "content_form/label", field: field, for_id: scope.dom_id %>
+<%= text_field_tag scope.name, value, id: scope.dom_id, class: class_names("w-full", "font-mono": url),
+      inputmode: (url ? "url" : nil), autocomplete: "off" %>

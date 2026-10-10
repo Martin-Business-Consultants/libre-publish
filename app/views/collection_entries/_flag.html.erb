@@ -1,0 +1,12 @@
+<%# locals: (collection:, entry:, field:, can_write:) %>
+<%# A yes/no field switched from the table without opening the entry. %>
+<% on = entry.flag?(field["name"]) %>
+<% if can_write %>
+  <%= button_to (on ? "On" : "Off"), collection_entry_flag_path(collection.slug, entry.slug), method: :patch,
+        params: { field: field["name"], value: !on }, form_class: "contents",
+        class: class_names("inline-flex h-6 items-center justify-center rounded-md border px-2 text-xs font-medium",
+          on ? "border-blue-200 bg-blue-50 text-blue-700" : "border-gray-300 bg-white text-gray-600 hover:bg-gray-50"),
+        "aria-pressed": on.to_s, title: field_label_text(field) + " for " + entry.title %>
+<% else %>
+  <span class="text-sm"><%= on ? "On" : "Off" %></span>
+<% end %>

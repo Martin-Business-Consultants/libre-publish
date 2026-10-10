@@ -1,0 +1,86 @@
+/* The content editors' boxes and tabs (content_form_helper#postbox,
+   content_form/_publish_box, _editor_tabs): what their classes can't say. */
+@layer components {
+  /* A box: its header a summary that collapses it, on a hairline above the
+     body while open, the caret turned to point at the title while closed. */
+  .postbox[open] > .postbox__header {
+    border-block-end: 1px solid var(--color-gray-200);
+  }
+
+  .postbox__toggle {
+    transition: rotate 100ms ease;
+
+    .postbox:not([open]) > .postbox__header & {
+      rotate: -90deg;
+    }
+  }
+
+  /* An "Edit" that opens its field in place (the Publish box's status and
+     schedule): the field joins the line's flow, and the Edit goes away. */
+  .inline-edit {
+    display: contents;
+
+    > summary {
+      display: inline;
+    }
+
+    &[open] > summary {
+      display: none;
+    }
+  }
+
+  /* An editor's Edit, SEO and JSON tabs (tabs_controller sets aria-selected). */
+  .editor-tabs__tab {
+    border-color: transparent;
+    color: var(--color-gray-500);
+
+    &:hover {
+      color: var(--color-gray-900);
+    }
+
+    &[aria-selected="true"] {
+      border-color: var(--color-gray-900);
+      color: var(--color-gray-900);
+    }
+  }
+}
+
+/* Docs: a guide's article (docs/show), Markdown rendered to HTML that can't
+   carry classes, so its code, tables and rhythm are set here. */
+@layer components {
+  .docs-article {
+    line-height: 1.65;
+    max-inline-size: 80ch;
+
+    pre {
+      background: var(--color-gray-50);
+      border: 1px solid var(--color-gray-200);
+      border-radius: var(--radius-lg);
+      font-size: var(--text-xs);
+      overflow-x: auto;
+      padding: calc(var(--spacing) * 3) calc(var(--spacing) * 4);
+    }
+
+    table {
+      border-collapse: collapse;
+      display: block;
+      font-size: var(--text-sm);
+      margin-block: calc(var(--spacing) * 4);
+      overflow-x: auto;
+    }
+
+    th,
+    td {
+      border-block-end: 1px solid var(--color-gray-200);
+      padding: calc(var(--spacing) * 2) calc(var(--spacing) * 4) calc(var(--spacing) * 2) 0;
+      text-align: start;
+      vertical-align: top;
+    }
+
+    th {
+      color: var(--color-gray-500);
+      font-weight: var(--font-weight-medium);
+      padding-block-start: 0;
+    }
+  }
+}

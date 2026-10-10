@@ -1,0 +1,29 @@
+<% @page_title = "Greetings" %>
+
+<%= render "layouts/shared/page_header", title: @page_title %>
+
+<section class="<%= ui(:panel, "max-w-2xl space-y-5 p-6") %>">
+
+  <% if Current.user.can?("hello:write") %>
+    <%= render "layouts/shared/errors", record: @greeting %>
+    <%= form_with model: @greeting, url: hello_greetings_path, scope: :greeting, class: "flex gap-2" do |form| %>
+      <%= form.text_field :message, class: "min-w-0 flex-1", maxlength: 200, aria: { label: "Greeting" } %>
+      <button type="submit" class="<%= ui(:button, :primary) %>">Say it</button>
+    <% end %>
+  <% end %>
+
+  <% if @greetings.any? %>
+    <ul class="divide-y divide-gray-100">
+      <% @greetings.each do |greeting| %>
+        <%# herb:key greeting.id %>
+        <li id="<%= dom_id(greeting) %>" class="flex items-baseline justify-between gap-4 py-2.5 text-sm text-gray-900" data-filter-target="item">
+          <%= greeting.message %>
+          <span class="shrink-0 text-xs text-gray-500"><%= time_ago_tag greeting.created_at %></span>
+        </li>
+      <% end %>
+    </ul>
+    <%= pagination_nav @pagination %>
+  <% else %>
+    <p class="py-12 text-center text-sm text-gray-500">Nobody has said hello yet.</p>
+  <% end %>
+</section>

@@ -1,0 +1,68 @@
+# frozen_string_literal: true
+
+# The public website: whatever the CMS has at an address, drawn by the theme
+# (Website.theme). A page renders website/pages/show; an entry renders
+# website/entries/<collection>, when the theme has one (a collection it
+# doesn't draw has no pages); anything else is the theme's
+# website/not_found, after Tools › Redirects has had its say.
+#
+# Not an ApplicationController: visitors aren't signed in, aren't held to the
+# admin's modern-browsers rule, and see only published content. An editor who
+# is signed in can add ?preview to see drafts, uncached.
+class Website::PagesController < ActionController::Base
+  layout "website"
+
+  # A page's ETag is its content and the theme (below), never the visitor's
+  # flash or session, so every visitor shares one cached copy.
+  self.etaggers = []
+
+  before_action { prepend_view_path Website.theme.views }
+
+  def show
+    # One address per page: "/about/" is "/about". (The router has already
+    # dropped the slash from request.path; the original keeps it.)
+    path = request.original_fullpath.split("?").first
+    return redirect_to(path.chomp("/") + request.query_string.then { it.empty? ? "" : "?#{it}" }, status: :moved_permanently) if path.length > 1 && path.end_with?("/")
+
+    address = Website::Address.new(request.path, drafts: previewing?)
+    case address.record
+    when Page then render_record "website/pages/show", page: address.record
+    when CollectionEntry then render_record "website/entries/#{address.record.collection.slug}", entry: address.record
+    else not_found(address)
+    end
+  end
+
+  private
+
+  # A published page can be cached anywhere (the browser, Thruster,
+  # Cloudflare) and revalidates against the content and the theme; a preview
+  # never is.
+  def render_record(template, **locals)
+    return not_found(Website::Address.new(request.path)) unless template_exists?(template)
+
+    if previewing?
+      response.headers["Cache-Control"] = "private, no-store"
+      render template, locals:
+    else
+      expires_in 1.minute, public: true, stale_while_revalidate: 1.day
+      render(template, locals:) if stale?(etag: [Website.cache_version, locals.values.first], public: true)
+    end
+  end
+
+  def not_found(address)
+    if (found = address.redirect)
+      redirect_to found[:destination], status: found[:status], allow_other_host: true
+    elsif template_exists?("website/not_found")
+      render "website/not_found", status: :not_found
+    else
+      head :not_found
+    end
+  end
+
+  # Only for someone signed in to the admin, and only when they ask.
+  def previewing?
+    return @previewing if defined?(@previewing)
+
+    @previewing = params.key?(:preview) && Session.find_by_id(cookies.signed[:session_token]).then { it && !it.expired? }
+  end
+end

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<%# Signed-out pages: sign in, sign up, password reset. No navigation, just the site's logo. %>
+<html lang="en">
+  <%= render "layouts/shared/head" %>
+
+  <body class="public flex flex-col bg-gray-50 text-gray-900">
+    <div id="global-container">
+      <header class="relative px-4 pb-2 pt-12" id="header">
+        <a href="#main" class="<%= ui(:button, "admin__skip-link") %>" data-turbo="false">Skip to main content</a>
+        <nav class="flex items-center justify-center gap-3">
+          <span class="text-xl font-bold tracking-tight"><%= render "layouts/shared/logo" %></span>
+          <%= render "layouts/shared/theme_toggle" %>
+        </nav>
+
+        <%= yield :header %>
+      </header>
+
+      <%= render "layouts/shared/flash" %>
+
+      <main id="main" class="flex-1 px-4 py-8">
+        <%= yield %>
+      </main>
+    </div>
+
+    <footer id="footer">
+      <%= yield :footer %>
+    </footer>
+  </body>
+</html>

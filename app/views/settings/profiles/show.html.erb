@@ -1,0 +1,196 @@
+<% @page_title = "Account" %>
+<%# Your account on one page (Settings::AccountScreen): a section per form,
+    each at its own anchor, and a sidebar with where things stand and links
+    down the page. @failed names the section a failed save came from, so only
+    it shows the errors. %>
+<% remaining = @totp.recovery_code_digests.is_a?(Array) ? @totp.recovery_code_digests.size : 0 %>
+<% errors_for = ->(section) { render "layouts/shared/errors", record: @user if @failed == section } %>
+
+<% section_classes = "scroll-mt-20 space-y-5 p-6" %>
+<% on_page_link_classes = "block rounded-md px-2 py-1 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900" %>
+
+<%= render "layouts/shared/page_header", title: "Account" %>
+<% content_for :settings_aside do %>
+  <%= postbox "account-summary", "Your account" do %>
+    <ul class="space-y-2 text-sm">
+      <li class="flex items-center justify-between gap-2"><span class="text-gray-500">Email</span> <%= status_tag(@user.verified? ? "Verified" : "Not verified") %></li>
+      <li class="flex items-center justify-between gap-2"><span class="text-gray-500">Two-factor</span> <%= status_tag(@totp.totp_enabled? ? "Enabled" : "Off") %></li>
+      <li class="flex items-center justify-between gap-2"><span class="text-gray-500">Signed in on</span> <strong class="font-medium text-gray-900"><%= pluralize(@sessions.size, "device") %></strong></li>
+    </ul>
+    <nav aria-label="On this page">
+      <ul>
+        <% [["Profile", "profile"], ["Email", "email"], ["Password", "password"], ["Two-factor", "two-factor"], ["Sessions", "sessions"], ["Delete account", "delete"]].each do |label, anchor| %>
+          <%# herb:key anchor %>
+          <li><a href="#<%= anchor %>" class="<%= on_page_link_classes %>"><%= label %></a></li>
+        <% end %>
+      </ul>
+    </nav>
+  <% end %>
+<% end %>
+
+<section id="profile" class="<%= ui(:panel, section_classes) %>">
+  <h2 class="<%= ui(:heading) %>">Profile</h2>
+  <%= errors_for.("profile") %>
+  <%= form_with url: settings_profile_path, method: :patch, class: "space-y-5" do |form| %>
+    <%= settings_field "Name" do %>
+      <%= form.text_field :name, value: @user.name, required: true, autocomplete: "name", placeholder: "Full name", class: "w-full" %>
+    <% end %>
+    <div><button type="submit" class="<%= ui(:button) %>">Save name</button></div>
+  <% end %>
+</section>
+
+<section id="email" class="<%= ui(:panel, section_classes) %>">
+  <div class="space-y-1">
+    <h2 class="<%= ui(:heading) %>">Email</h2>
+    <p class="text-sm text-gray-500">The address you sign in with. A new address has to be verified.</p>
+  </div>
+  <%= errors_for.("email") %>
+  <%= form_with url: settings_email_path, method: :patch, class: "space-y-5" do |form| %>
+    <%= settings_field "Email address" do %>
+      <%= form.email_field :email, value: @user.email, required: true, autocomplete: "email", class: "w-full" %>
+    <% end %>
+    <%= settings_field "Current password", hint: "To confirm it’s you." do %>
+      <%= form.password_field :password_challenge, required: true, autocomplete: "current-password", class: "w-full" %>
+    <% end %>
+    <div><button type="submit" class="<%= ui(:button) %>">Save email</button></div>
+  <% end %>
+  <% unless @user.verified? %>
+    <div class="flex flex-wrap items-center gap-2 text-sm">
+      <span class="text-gray-500">Your email address isn’t verified yet.</span>
+      <%= button_to "Resend the verification email", identity_email_verification_path, class: ui(:link, "text-sm") %>
+    </div>
+  <% end %>
+</section>
+
+<section id="password" class="<%= ui(:panel, section_classes) %>">
+  <div class="space-y-1">
+    <h2 class="<%= ui(:heading) %>">Password</h2>
+    <p class="text-sm text-gray-500">Use a long, random password to keep your account secure.</p>
+  </div>
+  <%= errors_for.("password") %>
+  <%= form_with url: settings_password_path, method: :patch, class: "space-y-5" do |form| %>
+    <%= settings_field "Current password" do %>
+      <%= form.password_field :password_challenge, required: true, autocomplete: "current-password", class: "w-full" %>
+    <% end %>
+    <%= settings_field "New password", hint: "At least 8 characters." do %>
+      <%= form.password_field :password, required: true, autocomplete: "new-password", class: "w-full" %>
+    <% end %>
+    <%= settings_field "Confirm new password" do %>
+      <%= form.password_field :password_confirmation, required: true, autocomplete: "new-password", class: "w-full" %>
+    <% end %>
+    <div><button type="submit" class="<%= ui(:button) %>">Save password</button></div>
+  <% end %>
+</section>
+
+<section id="two-factor" class="<%= ui(:panel, section_classes) %>">
+  <div class="space-y-1">
+    <h2 class="<%= ui(:heading) %>">Two-factor authentication</h2>
+    <p class="text-sm text-gray-500">Adds a second step at sign-in: a code from an authenticator app (1Password, Authy, Google Authenticator…).</p>
+  </div>
+
+  <% if @recovery_codes.present? %>
+    <div class="space-y-3 rounded-lg border border-yellow-200 bg-yellow-50 p-4">
+      <h3 class="text-sm font-semibold text-gray-900">Save your recovery codes</h3>
+      <p class="text-sm text-gray-700">Each code works once, in place of an authenticator code. Store them somewhere safe — this is the only time they’re shown.</p>
+      <ul class="grid grid-cols-2 gap-2">
+        <% @recovery_codes.each do |code| %>
+          <%# herb:key code %>
+          <li class="<%= settings_code_classes %>"><%= code %></li>
+        <% end %>
+      </ul>
+      <div><%= copy_button @recovery_codes.join("\n"), label: "Copy all" %></div>
+    </div>
+  <% end %>
+
+  <% if @totp.totp_enabled? %>
+    <p class="flex flex-wrap items-center gap-2 text-sm">
+      <%= status_tag "Enabled" %>
+      <% if @totp.totp_enabled_at %>
+        <span class="text-gray-500">since <%= l(@totp.totp_enabled_at, format: :long) %></span>
+      <% end %>
+    </p>
+    <p class="text-sm text-gray-700"><%= pluralize(remaining, "recovery code") %> left.</p>
+
+    <div class="flex flex-wrap items-start gap-2">
+      <details>
+        <summary class="<%= ui(:button, :small) %>">Regenerate recovery codes…</summary>
+        <div class="mt-3 space-y-2">
+          <p class="text-sm text-gray-700">Your old codes stop working immediately.</p>
+          <%= button_to "Generate new codes", settings_two_factor_recovery_codes_path, class: ui(:button, :small), form: { data: { turbo: false } } %>
+        </div>
+      </details>
+      <%= render "layouts/shared/confirm_dialog", label: "Disable two-factor", title: "Disable two-factor authentication?",
+            message: "Your account will be protected by its password alone.", path: settings_two_factor_path, method: :delete,
+            button: "Disable", negative: true %>
+    </div>
+  <% elsif @totp.totp_secret.present? %>
+    <ol class="list-decimal space-y-5 pl-5 text-sm text-gray-700">
+      <li class="space-y-2">
+        <p>Add this account to your authenticator app — open the link on your phone, or enter the secret by hand.</p>
+        <p class="<%= ui(:label) %>">Secret</p>
+        <div class="flex items-center gap-2">
+          <code class="<%= settings_code_classes("min-w-0 flex-1") %>"><%= @totp.totp_secret %></code>
+          <%= copy_button @totp.totp_secret %>
+        </div>
+        <p class="<%= ui(:label) %>">otpauth link</p>
+        <div class="flex items-center gap-2">
+          <code class="<%= settings_code_classes("min-w-0 flex-1") %>"><%= @totp.totp_provisioning_uri %></code>
+          <%= copy_button @totp.totp_provisioning_uri %>
+        </div>
+      </li>
+      <li>
+        <%= form_with url: settings_two_factor_activation_path, class: "space-y-3", data: { turbo: false } do |form| %>
+          <% if @code_error %>
+            <p class="text-sm text-red-600"><%= @code_error %></p>
+          <% end %>
+          <%= settings_field "Enter the 6-digit code from the app" do %>
+            <%= form.text_field :code, required: true, inputmode: "numeric", autocomplete: "one-time-code", pattern: "[0-9 ]{6,7}", placeholder: "000000", class: "w-40 font-mono" %>
+          <% end %>
+          <div><button type="submit" class="<%= ui(:button, :primary) %>">Verify and enable</button></div>
+        <% end %>
+      </li>
+    </ol>
+  <% end %>
+</section>
+
+<section id="sessions" class="<%= ui(:panel, "scroll-mt-20 space-y-2 p-6") %>">
+  <div class="space-y-1">
+    <h2 class="<%= ui(:heading) %>">Sessions</h2>
+    <p class="text-sm text-gray-500">Everywhere you’re signed in. Signing a session out ends it on that device.</p>
+  </div>
+  <ul class="divide-y divide-gray-100">
+    <% @sessions.each do |session| %>
+      <%# herb:key session.id %>
+      <li id="<%= dom_id(session) %>" class="flex items-center justify-between gap-4 py-3">
+        <div class="flex min-w-0 flex-col text-sm">
+          <span class="truncate font-medium text-gray-900"><%= session.user_agent.presence || "Unknown device" %></span>
+          <span class="text-gray-500">
+            <%= session.ip_address.presence || "Unknown address" %> · signed in <%= time_ago_tag session.created_at %>
+          </span>
+        </div>
+        <% if session == Current.session %>
+          <%= status_tag "This device" %>
+        <% else %>
+          <%= button_to "Sign out", session_path(session), method: :delete, class: ui(:button, :small) %>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+</section>
+
+<section id="delete" class="scroll-mt-20 space-y-5 rounded-xl border border-red-200 bg-white p-6">
+  <div class="space-y-1">
+    <h2 class="text-base font-semibold text-red-700">Delete account</h2>
+    <p class="text-sm text-gray-500">Deletes your account and everything that belongs to it. This can’t be undone.</p>
+  </div>
+  <%= errors_for.("delete") %>
+  <%= tag.details open: @failed == "delete" do %>
+    <summary class="<%= ui(:button, :danger, :small) %>">Delete my account…</summary>
+    <%= form_with url: settings_profile_path, method: :delete, class: "mt-4 space-y-5" do |form| %>
+      <%= settings_field "Your password", hint: "To confirm it’s you." do %>
+        <%= form.password_field :password_challenge, required: true, autocomplete: "current-password", class: "w-full" %>
+      <% end %>
+      <button type="submit" class="<%= ui(:button, :danger) %>">Delete account</button>
+    <% end %>
+  <% end %>
+</section>

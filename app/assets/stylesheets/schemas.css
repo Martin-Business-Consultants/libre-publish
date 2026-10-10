@@ -1,0 +1,17 @@
+@layer components {
+  /* The schema editor (app/views/schemas): one row per field. A row's type
+     decides which of its settings show, read straight off its own select —
+     the direct-child combinators keep a nested row's type from deciding for
+     its parent. The settings set only their direction in the markup, so
+     their display is this rule's to give. */
+  .schema-field > [data-for] {
+    display: none;
+  }
+
+  .schema-field:has(> .schema-field__main .schema-field__type option[value="select"]:checked) > [data-for="select"],
+  .schema-field:has(> .schema-field__main .schema-field__type :is(option[value="record_ref"], option[value="record_refs"]):checked) > [data-for="reference"],
+  .schema-field:has(> .schema-field__main .schema-field__type option[value="blocks"]:checked) > [data-for="blocks"],
+  .schema-field:has(> .schema-field__main .schema-field__type :is(option[value="repeater"], option[value="group"]):checked) > [data-for="nested"] {
+    display: flex;
+  }
+}

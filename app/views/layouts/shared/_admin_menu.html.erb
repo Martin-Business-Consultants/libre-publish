@@ -1,0 +1,65 @@
+<%# locals: () %>
+<%# The admin menu (NavigationHelper#admin_menu): groups of top-level items,
+    the current one open with its submenu, the others' submenus flying out on
+    hover and keyboard focus. Folds to icons, and below the tablet width it is
+    a drawer the admin bar's menu button opens (admin_menu_controller). Where
+    it sits, how wide it is and when submenus show is admin.css's; the rest is
+    here. %>
+<% submenu_link_classes = "admin-menu__submenu-link flex items-center gap-2 rounded-md py-1.5 pr-2.5 text-sm" %>
+<% branding = current_branding %>
+<nav id="admin-menu" class="admin-menu flex flex-col border-r border-gray-200 bg-gray-50 text-sm" aria-label="Admin menu">
+  <% if branding[:logo_url_small].present? %>
+    <%= link_to dashboard_path, class: "block px-4 pt-4", title: "Dashboard" do %>
+      <%= image_tag branding[:logo_url_small], alt: branding[:site_title].presence || "Home", class: "admin-menu__brand-logo block h-auto w-auto max-w-full" %>
+      <% if branding[:favicon_url].present? %>
+        <%= image_tag branding[:favicon_url], alt: "", class: "admin-menu__brand-favicon mx-auto size-8" %>
+      <% end %>
+    <% end %>
+  <% end %>
+  <ul class="flex-1 space-y-0.5 px-3 py-4">
+    <% admin_menu.each_with_index do |(group, entries), index| %>
+      <%# herb:key group.to_s %>
+      <% if index.positive? %>
+        <li class="mx-2.5 my-3 border-t border-gray-200" aria-hidden="true"></li>
+      <% end %>
+      <% entries.each do |entry| %>
+        <%# herb:key entry.id %>
+        <% current_link = entry.submenu.find(&:current) %>
+        <li class="<%= class_names("admin-menu__item", "admin-menu__item--current": entry.current) %>" data-menu-group="<%= group %>">
+          <%= link_to entry.url, class: class_names("admin-menu__link flex items-center gap-3 rounded-md px-2.5 py-2 font-medium",
+                entry.current ? "bg-blue-50 text-blue-700" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"),
+                aria: { current: ("page" if entry.current && current_link.nil?) } do %>
+            <%= icon_tag entry.icon, class: class_names("admin-menu__icon size-5", entry.current ? "text-blue-600" : "text-gray-400") %>
+            <span class="admin-menu__label truncate"><%= entry.label %></span>
+          <% end %>
+          <% if entry.submenu.any? %>
+            <ul class="admin-menu__submenu space-y-0.5 py-1" aria-label="<%= entry.label %>">
+              <li class="admin-menu__submenu-head px-2.5 pb-1 pt-0.5 text-xs font-semibold uppercase tracking-wide text-gray-500" aria-hidden="true"><%= entry.label %></li>
+              <% entry.submenu.each do |link| %>
+                <%# herb:key link.url %>
+                <li>
+                  <% link_classes = class_names(submenu_link_classes, link.current ? "font-medium text-blue-700" : "text-gray-500 hover:bg-gray-100 hover:text-gray-900") %>
+                  <% if link.icon %>
+                    <%= link_to link.url, class: link_classes, aria: { current: ("page" if link.current) } do %>
+                      <%= icon_tag link.icon, class: "size-4 text-gray-400" %>
+                      <span><%= link.label %></span>
+                    <% end %>
+                  <% else %>
+                    <%= link_to link.label, link.url, class: link_classes, aria: { current: ("page" if link.current) } %>
+                  <% end %>
+                </li>
+              <% end %>
+            </ul>
+          <% end %>
+        </li>
+      <% end %>
+    <% end %>
+  </ul>
+
+  <button type="button" class="admin-menu__collapse flex items-center gap-3 border-t border-gray-200 px-5 py-3 text-left text-gray-500 hover:bg-gray-100 hover:text-gray-900"
+    data-admin-menu-target="foldToggle" data-action="admin-menu#toggleFold" aria-pressed="false">
+    <%= icon_tag "collapse-menu", class: "admin-menu__icon size-5" %>
+    <span class="admin-menu__label">Collapse menu</span>
+  </button>
+</nav>
+<div class="admin-menu__backdrop" data-action="click->admin-menu#closeDrawer"></div>

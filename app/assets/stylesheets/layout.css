@@ -1,0 +1,12 @@
+@layer base {
+  /* Required for the card column page on mobile, but not needed otherwise */
+  :where(#global-container) {
+    display: contents;
+  }
+
+  :is(#header, #footer) {
+    @media print {
+      display: none;
+    }
+  }
+}

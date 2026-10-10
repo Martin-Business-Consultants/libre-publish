@@ -1,0 +1,81 @@
+<% @page_title = "General" %>
+
+<%= render "layouts/shared/page_header", title: "General" %>
+<% content_for :settings_aside do %>
+  <%= render "settings/save_box", form: "settings_form" %>
+<% end %>
+
+<%= form_with url: settings_general_path, id: "settings_form", method: :patch, scope: :settings do |form| %>
+  <%= tag.fieldset class: "space-y-6", disabled: !Current.user.can?("settings:write") do %>
+    <section class="<%= ui(:panel, "space-y-5 p-6") %>">
+      <div class="space-y-1">
+        <h2 class="<%= ui(:heading) %>">Identity</h2>
+        <p class="text-sm text-gray-500">Site title and description used as defaults across SEO, headers, and emails.</p>
+      </div>
+      <%= settings_field "Business name" do %>
+        <%= form.text_field :title, value: @settings["title"], class: "w-full" %>
+      <% end %>
+      <%= settings_field "Tagline / description" do %>
+        <%= form.text_area :description, value: @settings["description"], rows: 2, class: "w-full" %>
+      <% end %>
+      <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <%= settings_field "Default locale" do %>
+          <%= form.text_field :default_locale, value: @settings["default_locale"], placeholder: "en", class: "w-full" %>
+        <% end %>
+        <%= settings_field "Time zone", hint: "The admin shows and reads every time in this zone: schedules, board cards, timestamps. Blank uses the server's (" + Site.server_time_zone.tzinfo.name + ")." do %>
+          <%= form.select :timezone, options_for_select(site_time_zone_options(@settings["timezone"]), @settings["timezone"]), { include_blank: "Server's zone" }, class: "w-full" %>
+        <% end %>
+      </div>
+      <%= settings_field "Site base URL", hint: "Canonical public-site origin (no trailing slash). Used for sitemap.xml and anywhere absolute URLs are needed. Falls back to the request host when blank." do %>
+        <%= form.url_field :site_base_url, value: @settings["site_base_url"], placeholder: "https://www.example.com", class: "w-full" %>
+      <% end %>
+      <%= settings_field "Additional public origins", hint: "One origin per line. Used to allow CORS for form submissions from these domains (preview, www/apex, staging). The Site base URL above is always allowed." do %>
+        <%= form.text_area :public_origins_raw, value: @settings["public_origins"].join("\n"), rows: 3, placeholder: "https://www.example.com\nhttps://preview.example.com", class: "w-full font-mono" %>
+      <% end %>
+    </section>
+
+    <section class="<%= ui(:panel, "space-y-5 p-6") %>">
+      <div class="space-y-1">
+        <h2 class="<%= ui(:heading) %>">Contact</h2>
+        <p class="text-sm text-gray-500">Surfaces on the public site footer, contact pages, and SEO structured data.</p>
+      </div>
+      <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <%= settings_field "Phone" do %>
+          <%= form.telephone_field :phone, value: @settings["phone"], placeholder: "(269) 555-1234", class: "w-full" %>
+        <% end %>
+        <%= settings_field "Email" do %>
+          <%= form.email_field :email, value: @settings["email"], placeholder: "hello@example.com", class: "w-full" %>
+        <% end %>
+      </div>
+      <%= settings_field "Address" do %>
+        <%= form.text_field :address_line1, value: @settings["address_line1"], placeholder: "717 E. Bridge Street", class: "w-full" %>
+      <% end %>
+      <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
+        <%= settings_field "City" do %>
+          <%= form.text_field :city, value: @settings["city"], class: "w-full" %>
+        <% end %>
+        <%= settings_field "State" do %>
+          <%= form.text_field :state, value: @settings["state"], class: "w-full" %>
+        <% end %>
+        <%= settings_field "Zip" do %>
+          <%= form.text_field :zip, value: @settings["zip"], class: "w-full" %>
+        <% end %>
+      </div>
+    </section>
+
+    <section class="<%= ui(:panel, "space-y-5 p-6") %>">
+      <div class="space-y-1">
+        <h2 class="<%= ui(:heading) %>">Email sender</h2>
+        <p class="text-sm text-gray-500">Who the CMS's notification emails (collection events) come from. Blank uses the Forms plugin's sender, then the install's default.</p>
+      </div>
+      <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <%= settings_field "From name" do %>
+          <%= form.text_field :email_from_name, value: @settings["email_from_name"], placeholder: "Acme", class: "w-full" %>
+        <% end %>
+        <%= settings_field "From address" do %>
+          <%= form.email_field :email_from_address, value: @settings["email_from_address"], placeholder: "notifications@example.com", class: "w-full" %>
+        <% end %>
+      </div>
+    </section>
+  <% end %>
+<% end %>

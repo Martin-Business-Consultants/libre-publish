@@ -1,0 +1,9 @@
+<% @page_title = "Add New " + @collection.name.singularize %>
+<%= parent_page @collection.name, collection_entries_path(@collection.slug) %>
+
+<%= render "layouts/shared/page_header", title: @page_title %>
+
+<%= render "layouts/shared/errors", record: @entry %>
+<div class="mt-6">
+  <%= render "collection_entries/form", collection: @collection, entry: @entry, invalid_json: @invalid_json %>
+</div>

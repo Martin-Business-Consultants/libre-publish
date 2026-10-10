@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<%# The admin, laid out like WordPress's: the admin bar across the top, the
+    admin menu down the left, the page beside it. Signed-out pages use
+    layouts/public. %>
+<html lang="en">
+  <%= render "layouts/shared/head" %>
+
+  <body class="<%= class_names("bg-white text-gray-900", @body_class) %>" data-controller="keyboard admin-menu">
+    <a href="#main" class="<%= ui(:button, "admin__skip-link") %>" data-turbo="false">Skip to main content</a>
+    <div id="global-container" data-controller="filter">
+      <% if Current.user %>
+        <%= render "layouts/shared/admin_bar" %>
+        <%= render "layouts/shared/admin_menu" %>
+      <% end %>
+
+      <div class="admin__content min-w-0">
+        <main id="main" class="mx-auto max-w-7xl">
+          <%= content_for?(:content) ? yield(:content) : yield %>
+        </main>
+      </div>
+    </div>
+
+    <%= render "layouts/shared/flash" %>
+
+    <footer id="footer">
+      <%= yield :footer %>
+    </footer>
+  </body>
+</html>

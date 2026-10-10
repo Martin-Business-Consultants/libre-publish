@@ -1,0 +1,23 @@
+<%# locals: (version:, restore_path:, can_restore:) %>
+<%# What restoring a version would change: the record as it is now, and what
+    the version would bring back. %>
+<% diff = version.changes_from_current %>
+<p class="text-sm text-gray-700">
+  Saved <%= site_time_tag version.created_at %><% if version.author %> by <strong class="font-semibold text-gray-900"><%= version.author.name.presence || version.author.email %></strong><% end %>.
+  <% if diff[:fields].empty? %>
+    It matches the content as it is now.
+  <% else %>
+    Below, “before” is the content now and “after” is this version.
+  <% end %>
+</p>
+
+<% diff[:fields].each do |field| %>
+  <%# herb:key field[:key] %>
+  <%= render "versions/field", field: field %>
+<% end %>
+
+<% if can_restore && diff[:fields].any? %>
+  <%= form_with url: restore_path, class: "flex justify-end border-t border-gray-200 pt-5" do %>
+    <button type="submit" class="<%= ui(:button, :primary) %>">Restore this version</button>
+  <% end %>
+<% end %>

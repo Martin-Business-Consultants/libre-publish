@@ -1,0 +1,14 @@
+<%# locals: (scope:, item:, refs:, title: nil) %>
+<li class="flex items-center gap-2" data-sortable-list-target="item">
+  <span class="cursor-grab select-none px-1 text-gray-400" title="Drag to reorder" data-action="mousedown->sortable-list#grab touchstart->sortable-list#grab">⠿</span>
+  <% if refs %>
+    <%= hidden_field_tag scope.name, item, id: nil %>
+    <span class="flex min-w-0 flex-1 flex-col rounded-md border border-gray-200 px-3 py-1.5">
+      <span class="truncate text-sm text-gray-900"><%= title.presence || item %></span>
+      <span class="truncate font-mono text-xs text-gray-500"><%= item %></span>
+    </span>
+  <% else %>
+    <%= text_field_tag scope.name, (item == "__VALUE__" ? nil : item), id: nil, class: "min-w-0 flex-1", autocomplete: "off", aria: { label: "Item" } %>
+  <% end %>
+  <%= render "content_form/row_moves", noun: "item" %>
+</li>

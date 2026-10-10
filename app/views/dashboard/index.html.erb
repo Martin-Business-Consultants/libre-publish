@@ -1,0 +1,19 @@
+<% @page_title = "Dashboard" %>
+<%= render "layouts/shared/page_header", title: @page_title %>
+
+<div class="max-w-6xl space-y-8">
+  <%= render "dashboard/content" %>
+
+  <% if Current.user.can?("pages:read") %>
+    <div class="grid items-start gap-6 lg:grid-cols-2">
+      <%= render "dashboard/api_use" %>
+      <%= render "dashboard/frontend" %>
+    </div>
+  <% end %>
+
+  <% if Current.user.can?("audit_log:read") %>
+    <%= render "dashboard/activity" %>
+  <% end %>
+
+  <%= plugin_slots(:dashboard) %>
+</div>

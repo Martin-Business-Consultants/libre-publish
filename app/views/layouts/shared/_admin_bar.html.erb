@@ -1,0 +1,81 @@
+<%# locals: () %>
+<%# The admin bar: the site, "+ New", the update notice, plugins' items, the
+    "/" filter, search across everything, screen options, the theme and the
+    signed-in person. Its menus open on hover
+    and on keyboard focus (admin.css), with no JavaScript. %>
+<% site_url = public_site_url %>
+<% new_items = admin_new_items %>
+<%# .admin-bar__item lays an item out (admin.css), so the drawer toggle can hide on wide screens. %>
+<% item_classes = "admin-bar__item items-center gap-2 rounded-md px-2.5 hover:bg-gray-100" %>
+<% muted_item_classes = class_names(item_classes, "text-gray-600 hover:text-gray-900") %>
+<% menu_classes = ui(:menu, "admin-bar__menu w-56") %>
+<% menu_link_classes = ui(:menu_item) %>
+<header class="admin-bar flex items-stretch gap-1 border-b border-gray-200 bg-white px-2 py-2 text-sm" id="header">
+  <button type="button" class="<%= class_names(muted_item_classes, "admin-bar__drawer-toggle") %>" aria-controls="admin-menu" aria-expanded="false"
+    data-admin-menu-target="drawerToggle" data-action="admin-menu#toggleDrawer">
+    <%= icon_tag "menu", class: "size-5" %>
+    <span class="sr-only">Menu</span>
+  </button>
+
+  <div class="admin-bar__dropdown relative flex">
+    <%= link_to dashboard_path, class: class_names(item_classes, "font-semibold text-gray-900"), title: "Dashboard (g h)", data: { keys: "g h" } do %>
+      <span class="flex h-7 w-7 items-center justify-center rounded-md bg-blue-600 text-on-accent"><%= icon_tag "home", class: "size-4" %></span>
+      <span class="admin-bar__label"><%= current_branding[:site_title].presence || Site.key %></span>
+    <% end %>
+    <% if site_url %>
+      <ul class="<%= menu_classes %>">
+        <li><%= link_to "View site", site_url, class: menu_link_classes, target: "_blank", rel: "noopener" %></li>
+      </ul>
+    <% end %>
+  </div>
+
+  <% if new_items.any? %>
+    <div class="admin-bar__dropdown relative flex">
+      <%= link_to new_items.first.last, class: muted_item_classes, title: "New (n)" do %>
+        <%= icon_tag "add", class: "size-4" %>
+        <span class="admin-bar__label font-medium">New</span>
+      <% end %>
+      <ul class="<%= menu_classes %>">
+        <% new_items.each do |label, url| %>
+          <%# herb:key label %>
+          <li><%= link_to label, url, class: menu_link_classes %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <% if UpdateCheck.update_available? && Current.user.can?("settings:read") %>
+    <%= link_to settings_updates_path, class: class_names(item_classes, "admin-bar__update font-medium text-blue-600"), title: "A newer version is available" do %>
+      <%= icon_tag "refresh", class: "size-4" %>
+      <span class="admin-bar__label">Version <%= UpdateCheck.latest_version %> available</span>
+    <% end %>
+  <% end %>
+
+  <div class="flex items-center gap-2 px-2 text-gray-500">
+    <%= plugin_slots(:nav_actions) %>
+  </div>
+
+  <div class="ml-auto flex items-center gap-1">
+    <% unless content_for?(:list_search) %>
+      <%= render "layouts/shared/nav_filter" %>
+    <% end %>
+    <%= link_to search_path, class: ui(:button, :plain, :icon), title: "Search everything" do %>
+      <%= icon_tag "search", class: "size-4" %>
+      <span class="sr-only">Search everything</span>
+    <% end %>
+    <%= render "layouts/shared/screen_options" %>
+    <%= render "layouts/shared/theme_toggle" %>
+    <div class="admin-bar__dropdown admin-bar__dropdown--end relative flex">
+      <%= link_to settings_profile_path, class: muted_item_classes do %>
+        <span class="admin-bar__label">Howdy, <%= Current.user.name.to_s.split.first.presence || Current.user.email %></span>
+        <span class="flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 text-gray-600"><%= icon_tag "person", class: "size-4" %></span>
+      <% end %>
+      <ul class="<%= menu_classes %>">
+        <li class="truncate border-b border-gray-100 px-3 pb-2 pt-1.5 text-xs text-gray-500"><%= Current.user.email %></li>
+        <li class="pt-1"><%= link_to "Edit profile", settings_profile_path, class: menu_link_classes %></li>
+        <li><%= link_to "Settings", settings_path, class: menu_link_classes, data: { keys: "g s" } %></li>
+        <li><%= button_to "Sign out", session_path(Current.session), method: :delete, class: menu_link_classes, form_class: "contents" %></li>
+      </ul>
+    </div>
+  </div>
+</header>

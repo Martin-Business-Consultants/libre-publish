@@ -1,0 +1,23 @@
+<%# locals: (entries:) %>
+<% if entries.empty? %>
+  <span class="text-xs text-gray-500">No keys changed.</span>
+<% else %>
+  <div class="flex flex-col gap-3">
+    <% entries.each do |entry| %>
+      <%# herb:key entry[:key] %>
+      <div class="flex flex-col gap-1">
+        <span class="text-xs text-gray-700"><code><%= entry[:key] %></code> <span class="text-gray-500"><%= entry[:op] %></span></span>
+        <% if entry[:op] == "added" %>
+          <%= render "versions/value", text: entry[:after], tone: "add" %>
+        <% elsif entry[:op] == "removed" %>
+          <%= render "versions/value", text: entry[:before], tone: "del" %>
+        <% else %>
+          <div class="grid gap-2 sm:grid-cols-2">
+            <%= render "versions/value", text: entry[:before], tone: "del" %>
+            <%= render "versions/value", text: entry[:after], tone: "add" %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+<% end %>

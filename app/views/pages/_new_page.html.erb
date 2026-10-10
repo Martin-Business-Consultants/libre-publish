@@ -1,0 +1,54 @@
+<%# locals: (page:, templates:) %>
+<%# The New page sheet: a title, a slug, and optionally a template whose
+    blocks the page starts with. It opens by itself when a submit came back
+    with errors. %>
+<% open = page.errors.any? %>
+<% template_classes = "flex items-start gap-3 rounded-lg border border-gray-200 px-3 py-2.5 text-sm hover:bg-gray-50" %>
+<div class="contents" data-controller="dialog" data-dialog-modal-value="true" data-dialog-auto-open-value="<%= open %>" data-action="keydown.esc->dialog#close:stop">
+  <button type="button" class="<%= ui(:button) %>" data-keys="n" data-action="dialog#open">
+    <%= icon_tag "add", class: "size-4" %>
+    <span class="truncate">New page</span>
+    <kbd class="hidden md:inline">N</kbd>
+  </button>
+  <dialog class="<%= ui(:sheet) %>" data-dialog-target="dialog" aria-label="New page" closedby="any">
+    <h2 class="text-lg font-semibold text-gray-900">New page</h2>
+    <%= render "layouts/shared/errors", record: page %>
+    <%= form_with model: page, url: pages_path, scope: :page, class: "flex flex-col gap-5", data: { controller: "slug" } do |form| %>
+      <%= hidden_field_tag :from, "dialog", id: nil %>
+      <%= form.hidden_field :status, value: "draft" %>
+      <%= form.hidden_field :locale, value: page.locale.presence || "en" %>
+      <label class="flex flex-col gap-1.5">
+        <span class="<%= ui(:label) %>">Title</span>
+        <%= form.text_field :title, class: "w-full", placeholder: "About us", autocomplete: "off", data: { slug_target: "source", action: "slug#fill" } %>
+      </label>
+      <label class="flex flex-col gap-1.5">
+        <span class="<%= ui(:label) %>">Slug</span>
+        <%= form.text_field :slug, class: "w-full font-mono", placeholder: "about", autocomplete: "off", spellcheck: false, data: { slug_target: "slug", action: "slug#take" } %>
+        <span class="<%= ui(:help) %>">Made from the title as you type it; change it to choose your own.</span>
+      </label>
+      <% if templates.any? %>
+        <fieldset class="flex flex-col gap-2">
+          <legend class="<%= ui(:label, "mb-2") %>">Start from</legend>
+          <label class="<%= template_classes %>">
+            <%= radio_button_tag :template, "", params[:template].blank?, id: nil, class: "mt-0.5" %>
+            <span>A blank page</span>
+          </label>
+          <% templates.each do |template| %>
+            <%# herb:key template["key"] %>
+            <label class="<%= template_classes %>">
+              <%= radio_button_tag :template, template["key"], params[:template] == template["key"], id: nil, class: "mt-0.5" %>
+              <span class="flex flex-col">
+                <strong class="font-medium text-gray-900"><%= template["title"] %></strong>
+                <span class="<%= ui(:help) %>"><%= template["description"] %> · <%= pluralize(template["blocks"].size, "block") %></span>
+              </span>
+            </label>
+          <% end %>
+        </fieldset>
+      <% end %>
+      <div class="dialog__actions flex justify-end gap-2">
+        <button type="button" class="<%= ui(:button) %>" data-action="dialog#close">Cancel</button>
+        <%= form.button "Create page", class: ui(:button, :primary) %>
+      </div>
+    <% end %>
+  </dialog>
+</div>

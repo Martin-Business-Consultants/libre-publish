@@ -1,0 +1,129 @@
+/* The content editor (content_form/*): what its classes can't say. A list
+   row's open state and dragging, the link field showing the control for its
+   kind, the asset preview hiding while empty, the block picker dialog and the
+   Markdown field's tabs. */
+@layer components {
+  /* A block or repeater item (content_form/_block, _repeater_item), after
+     Payload's blocks field: open, its header sits on a hairline above the
+     fields; closed, the caret turns to point at the title. */
+  .content-row[open] > .content-row__header {
+    border-block-end: 1px solid var(--color-gray-200);
+  }
+
+  .content-row__toggle {
+    transition: rotate 100ms ease;
+
+    .content-row:not([open]) > .content-row__header & {
+      rotate: -90deg;
+    }
+  }
+
+  /* sortable_list_controller marks the row being dragged. */
+  .content-row--dragging {
+    opacity: 0.5;
+  }
+
+  /* A link field shows the control for the kind it's set to. */
+  .content-link__url,
+  .content-link__page,
+  .content-link__entry {
+    display: none;
+    flex: 1 1 16ch;
+  }
+
+  .content-link:has(.content-link__kind option[value="url"]:checked) .content-link__url,
+  .content-link:has(.content-link__kind option[value="page"]:checked) .content-link__page,
+  .content-link:has(.content-link__kind option[value="entry"]:checked) .content-link__entry {
+    display: block;
+  }
+
+  /* An asset field's thumbnail, hidden until there's a picture in it
+     (asset_field_controller fills it). */
+  .content-asset__preview {
+    display: flex;
+
+    &:not(:has(*)) {
+      display: none;
+    }
+
+    img {
+      block-size: 100%;
+      inline-size: 100%;
+      object-fit: cover;
+    }
+  }
+
+  /* The "Add block" picker: a flex column only while open, so its gap spaces
+     the header, the filter and the groups (a `flex` class would also show the
+     dialog when closed); never wider than the window less a margin. */
+  .content-picker {
+    inline-size: min(48rem, calc(100vw - 2rem));
+    max-block-size: min(80dvh, 48rem);
+
+    &[open] {
+      display: flex;
+    }
+  }
+
+  /* A reference or link field's results (picker_controller), chosen with the
+     arrow keys as well as the pointer. */
+  .picker__choice:focus-visible {
+    background-color: var(--color-gray-100);
+    color: var(--color-gray-900);
+    outline: none;
+  }
+
+  /* A Markdown field's Write and Preview tabs (markdown_editor_controller). */
+  .markdown-editor__tab {
+    color: var(--color-gray-500);
+
+    &:hover {
+      color: var(--color-gray-900);
+    }
+
+    &[aria-selected="true"] {
+      background-color: var(--color-gray-100);
+      color: var(--color-gray-900);
+    }
+  }
+}
+
+/* Not the content editors': the two-column layout that Settings
+   (layouts/settings), Developers, Docs, Roles and Users still use, and the
+   utility the dashboard and Docs' checklist still use. Delete once those
+   screens lay themselves out with utilities. */
+@layer components {
+  .content-form {
+    align-items: start;
+    display: grid;
+    gap: calc(var(--spacing) * 6);
+    grid-template-columns: minmax(0, 1fr) min(20rem, 100%);
+    inline-size: 100%;
+    text-align: start;
+
+    @media (max-width: 60rem) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  .content-form--thirds {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+
+    @media (max-width: 60rem) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  .content-form__aside {
+    inset-block-start: calc(var(--spacing) * 6);
+    position: sticky;
+
+    @media (max-width: 60rem) {
+      position: static;
+    }
+  }
+}
+
+@layer utilities {
+  .min-width-0 { min-inline-size: 0; }
+}

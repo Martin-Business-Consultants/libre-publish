@@ -1,0 +1,29 @@
+<%# locals: (allowed_types: nil) %>
+<%# The block types a list may add, grouped by category, with the "/"-style
+    filter. Picking one asks the server for its row (sortable-list#insert). %>
+<dialog class="dialog content-picker flex-col gap-5 overflow-y-auto rounded-xl border border-gray-200 bg-white p-6 text-left shadow-overlay" data-sortable-list-target="picker"
+        aria-label="Add a block">
+  <header class="flex items-center justify-between gap-4">
+    <h2 class="text-lg font-semibold text-gray-900">Add a block</h2>
+    <button type="button" class="<%= ui(:button, :small) %>" data-action="sortable-list#closePicker">Close</button>
+  </header>
+  <input type="search" class="w-full" placeholder="Filter block types…" autocomplete="off" aria-label="Filter block types"
+         data-action="input->sortable-list#filterPicker">
+  <div class="flex flex-col gap-5">
+    <% content_block_type_groups(allowed_types).each do |category, types| %>
+      <%# herb:key category %>
+      <section class="flex flex-col gap-2">
+        <h3 class="text-xs font-medium text-gray-500"><%= category %></h3>
+        <%= render "content_form/picker_types", types: types %>
+      </section>
+    <% end %>
+    <% deprecated = content_deprecated_block_types(allowed_types) %>
+    <% if deprecated.any? %>
+      <details class="content-picker__deprecated space-y-2">
+        <summary class="text-xs font-medium text-gray-500">Deprecated (<%= deprecated.size %>)</summary>
+        <p class="<%= ui(:help) %>">Kept for content that already uses them. They're still added like any other, but a newer type usually does the same job.</p>
+        <%= render "content_form/picker_types", types: deprecated %>
+      </details>
+    <% end %>
+  </div>
+</dialog>

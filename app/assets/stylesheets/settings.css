@@ -1,0 +1,35 @@
+/* A branding image field (settings/brandings/_image_dropzone): a dashed zone
+/* that takes a dropped image or a click. Its colors change while it's hovered,
+/* focused or dragged over (image_dropzone_controller toggles
+/* image-dropzone--over), so they live here rather than in the markup; the
+/* prompt shrinks once it holds an image (image-dropzone--filled). */
+@layer components {
+  .image-dropzone {
+    background-color: var(--color-white);
+    border-color: var(--color-gray-300);
+    transition: border-color 150ms, background-color 150ms;
+
+    &:hover,
+    &:focus-within,
+    &.image-dropzone--over {
+      background-color: var(--color-blue-50);
+      border-color: var(--color-blue-500);
+    }
+  }
+
+  .image-dropzone__preview img {
+    max-block-size: 6rem;
+    max-inline-size: 100%;
+    object-fit: contain;
+  }
+
+  .image-dropzone__prompt {
+    font-size: var(--text-sm);
+    line-height: var(--text-sm--line-height);
+
+    .image-dropzone--filled & {
+      font-size: var(--text-xs);
+      line-height: var(--text-xs--line-height);
+    }
+  }
+}

@@ -1,0 +1,12 @@
+<%# locals: (form:, button: "Save changes", note: nil, capability: "settings:write") %>
+<%# A settings page's Save box, in its sidebar (content_for :settings_aside):
+    the button submits the page's form (by id) from outside it. It's off for
+    a role without `capability`, as the form's fields are. %>
+<%= postbox "settings-save", "Save" do %>
+  <div class="space-y-3">
+    <% if note %>
+      <p class="text-sm text-gray-500"><%= note %></p>
+    <% end %>
+    <%= tag.button button, type: "submit", form: form, class: ui(:button, :primary, "w-full"), disabled: !Current.user.can?(capability) %>
+  </div>
+<% end %>

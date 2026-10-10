@@ -1,0 +1,46 @@
+<%# The browser half of `cms login`. Short, because someone is reading it with a
+    terminal open beside them. %>
+<% @page_title = "Connect a machine" %>
+<div class="mx-auto w-full max-w-md">
+  <div class="<%= ui(:panel, "space-y-4 p-6") %>">
+    <h1 class="text-xl font-semibold tracking-tight text-gray-900"><%= @page_title %></h1>
+
+    <% if @authorization&.pending? %>
+      <% if @authorization.site? %>
+        <p class="text-sm text-gray-500">
+          The Astro site <strong class="font-semibold text-gray-900"><%= @authorization.label.presence || "a site" %></strong>
+          (on <%= @authorization.hostname.presence || "a machine" %>) is asking for a read-only token of its own,
+          to build from this CMS's content. It gets the Production site role, and a service token you can revoke under Settings › Service tokens.
+        </p>
+        <% unless @authorization.approvable_by?(Current.user) %>
+          <p class="text-sm text-red-600">Your role can't issue service tokens. Ask someone who manages settings to approve it.</p>
+        <% end %>
+      <% else %>
+        <p class="text-sm text-gray-500">
+          <%= @authorization.hostname.presence || "A machine" %> is asking to act as you in this CMS.
+          It will be able to do whatever your role allows — no more.
+        </p>
+      <% end %>
+
+      <%= form_with url: connect_path, method: :post, class: "flex gap-2" do %>
+        <%= hidden_field_tag :code, @authorization.user_code, id: nil %>
+        <button name="decision" value="approve" class="<%= ui(:button, :primary) %>">Approve</button>
+        <button name="decision" value="deny" class="<%= ui(:button) %>">Deny</button>
+      <% end %>
+    <% else %>
+      <p class="text-sm text-gray-500">Enter the code your terminal is showing.</p>
+
+      <%= form_with url: connect_path, method: :get, class: "flex gap-2" do %>
+        <%= text_field_tag :code, @code, placeholder: "ABCD-EFGH", autocomplete: "off", class: "min-w-0 flex-1 font-mono uppercase", autofocus: true,
+              aria: { label: "Code" } %>
+        <button type="submit" class="<%= ui(:button, :primary) %>">Continue</button>
+      <% end %>
+
+      <% if @code.present? %>
+        <p class="text-sm text-red-600">
+          That code has expired or doesn’t exist. Run <code>cms login</code> again.
+        </p>
+      <% end %>
+    <% end %>
+  </div>
+</div>

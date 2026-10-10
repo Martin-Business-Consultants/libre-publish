@@ -1,0 +1,14 @@
+/* Keyboard navigation (keyboard_controller): the item j / k landed on, ringed
+/* like focus; a list row is tinted with the selection's color too. */
+@layer components {
+  [data-keyboard-current] {
+    outline: var(--focus-ring);
+    outline-offset: 2px;
+  }
+
+  tr[data-keyboard-current],
+  li[data-keyboard-current] {
+    background-color: var(--color-blue-50);
+    outline-offset: -2px;
+  }
+}

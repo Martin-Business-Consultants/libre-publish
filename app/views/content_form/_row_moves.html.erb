@@ -1,0 +1,33 @@
+<%# locals: (noun:, duplicate: nil, add_below: nil) %>
+<%# The move / duplicate / remove buttons of a list row. `:prevent` keeps a
+    click in a <summary> from also opening or closing the row. %>
+<% move_classes = ui(:button, :plain, :icon) %>
+<% remove_classes = "inline-flex size-8 items-center justify-center rounded-md text-gray-500 hover:bg-red-50 hover:text-red-700" %>
+<span class="flex shrink-0 items-center">
+  <button type="button" class="<%= move_classes %>" title="Move up" data-action="sortable-list#moveUp:prevent">
+    <%= icon_tag "arrow-up", class: "size-4" %>
+    <span class="sr-only">Move <%= noun %> up</span>
+  </button>
+  <button type="button" class="<%= move_classes %>" title="Move down" data-action="sortable-list#moveDown:prevent">
+    <%= icon_tag "arrow-up", class: "size-4 rotate-180" %>
+    <span class="sr-only">Move <%= noun %> down</span>
+  </button>
+  <span class="hidden sm:flex">
+    <% if add_below %>
+      <button type="button" class="<%= move_classes %>" title="Add a block below" data-action="sortable-list#openPicker:prevent">
+        <%= icon_tag "add", class: "size-4" %>
+        <span class="sr-only">Add a block below</span>
+      </button>
+    <% end %>
+    <% if duplicate %>
+      <button type="button" class="<%= move_classes %>" title="Duplicate" data-action="sortable-list#duplicate:prevent">
+        <%= icon_tag "copy-paste", class: "size-4" %>
+        <span class="sr-only">Duplicate <%= noun %></span>
+      </button>
+    <% end %>
+  </span>
+  <button type="button" class="<%= remove_classes %>" title="Remove" data-action="sortable-list#remove:prevent">
+    <%= icon_tag "trash", class: "size-4" %>
+    <span class="sr-only">Remove <%= noun %></span>
+  </button>
+</span>

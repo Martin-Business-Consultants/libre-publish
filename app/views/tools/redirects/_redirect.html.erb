@@ -1,0 +1,19 @@
+<%# locals: (redirect:, can_delete:) %>
+<tr id="<%= dom_id(redirect) %>" class="hover:bg-gray-50" data-filter-target="item">
+  <% if can_delete %>
+    <td class="<%= ui(:td, "data-table__check w-9") %>">
+      <input type="checkbox" data-select-all-target="box" data-action="select-all#sync" name="ids[]" value="<%= redirect.id %>" form="redirects_bulk_deletion" aria-label="Select <%= redirect.source_path %>">
+    </td>
+  <% end %>
+  <td class="<%= ui(:td) %>">
+    <%= link_to redirect.source_path, edit_tools_redirect_path(redirect), class: "font-mono font-medium text-gray-900 hover:underline",
+          data: { turbo_frame: "redirect_sheet", action: "dialog#open" } %>
+    <%= render "layouts/shared/row_links", name: redirect.source_path,
+        delete_path: (tools_redirect_path(redirect) if can_delete),
+        delete_message: "Anyone visiting " + redirect.source_path + " will get a 404 instead." %>
+  </td>
+  <td class="<%= ui(:td) %>"><span class="font-mono text-xs text-gray-500"><%= redirect.destination_url %></span></td>
+  <td class="<%= ui(:td, "font-mono") %>" title="<%= Redirect::STATUS_LABELS[redirect.status_code] %>"><%= redirect.status_code %></td>
+  <td class="<%= ui(:td) %>"><%= status_tag redirect.active ? "Active" : "Disabled" %></td>
+  <td class="<%= ui(:td, "text-right tabular-nums") %>"><%= redirect.hit_count %></td>
+</tr>

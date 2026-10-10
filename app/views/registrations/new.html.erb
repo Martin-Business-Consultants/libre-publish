@@ -1,0 +1,43 @@
+<% @page_title = "Set up this CMS" %>
+
+<div class="mx-auto w-full max-w-sm">
+  <div class="<%= ui(:panel, "p-6") %>">
+    <div class="mb-6 space-y-1.5">
+      <h1 class="text-xl font-semibold tracking-tight text-gray-900">Create the owner account</h1>
+      <p class="text-sm text-gray-500">The first account runs this CMS. Everyone after it is added from Access › Users.</p>
+    </div>
+
+    <%= render "layouts/shared/errors", record: @user %>
+
+    <%= form_with url: sign_up_path, class: "space-y-5", data: { controller: "form" } do |form| %>
+      <label class="flex flex-col gap-1.5">
+        <span class="<%= ui(:label) %>">Name</span>
+        <%= form.text_field :name, required: true, autofocus: true, autocomplete: "name", class: "w-full", placeholder: "Full name", value: @user.name %>
+      </label>
+
+      <label class="flex flex-col gap-1.5">
+        <span class="<%= ui(:label) %>">Email address</span>
+        <%= form.email_field :email, required: true, autocomplete: "email", class: "w-full", placeholder: "email@example.com", value: @user.email %>
+      </label>
+
+      <label class="flex flex-col gap-1.5">
+        <span class="<%= ui(:label) %>">Password</span>
+        <%= form.password_field :password, required: true, autocomplete: "new-password", class: "w-full", placeholder: "Password" %>
+      </label>
+
+      <label class="flex flex-col gap-1.5">
+        <span class="<%= ui(:label) %>">Confirm password</span>
+        <%= form.password_field :password_confirmation, required: true, autocomplete: "new-password", class: "w-full", placeholder: "Confirm password" %>
+      </label>
+
+      <button type="submit" class="<%= ui(:button, :primary, "w-full") %>" data-form-target="submit">
+        <span>Create account</span>
+        <%= icon_tag "arrow-right", class: "size-4" %>
+      </button>
+    <% end %>
+  </div>
+
+  <p class="mt-6 text-center text-sm text-gray-500">
+    Already have an account? <%= link_to "Log in", sign_in_path, class: ui(:link) %>
+  </p>
+</div>

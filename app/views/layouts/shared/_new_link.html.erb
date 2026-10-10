@@ -1,0 +1,10 @@
+<%# locals: (text:, path:, icon: nil, key: nil) %>
+<%# A title row's "Add New": a secondary button (the screen's primary action
+    is on the screen itself), n by default. %>
+<% icon ||= "add"
+   key ||= "n" %>
+<a href="<%= path %>" class="<%= ui(:button) %>" data-keys="<%= key %>">
+  <%= icon_tag icon, class: "size-4" %>
+  <span class="truncate"><%= text %></span>
+  <kbd><%= key.upcase %></kbd>
+</a>

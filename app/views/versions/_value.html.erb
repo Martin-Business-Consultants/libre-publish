@@ -1,0 +1,6 @@
+<%# locals: (text:, tone: nil) %>
+<% if text.blank? %>
+  <span class="text-xs text-gray-500">(empty)</span>
+<% else %>
+  <pre class="<%= class_names("m-0 whitespace-pre-wrap break-words rounded-md p-3 font-mono text-xs", tone.to_s == "add" ? "bg-green-50 text-green-800" : (tone.to_s == "del" ? "bg-red-50 text-red-800" : "bg-gray-50 text-gray-700")) %>"><%= text %></pre>
+<% end %>

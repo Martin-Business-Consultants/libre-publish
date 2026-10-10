@@ -1,0 +1,28 @@
+<%# locals: (title:, param:, options:, current:) %>
+<%# A Fizzy quick filter: a select-like button showing the current choice,
+    opening a menu of the others (.popup, popup.css, under the button). Each
+    choice is a link that swaps one query param, so filters are bookmarkable. %>
+<div class="relative" data-controller="dialog" data-action="keydown.esc->dialog#close click@document->dialog#closeOnClickOutside">
+  <button type="button" class="<%= ui(:button, "max-w-xs") %>" title="<%= title %>" aria-haspopup="true" data-action="click->dialog#toggle:stop">
+    <span class="truncate"><%= options.to_h.invert.fetch(current, options.first.first) %></span>
+    <%= icon_tag "caret-down", class: "size-3 text-gray-400" %>
+  </button>
+
+  <dialog class="<%= ui(:menu, "popup w-56 text-sm") %>" aria-label="<%= title %>" data-dialog-target="dialog">
+    <p class="px-2.5 pb-1 pt-1.5 text-xs font-medium text-gray-500"><%= title %></p>
+    <ul class="space-y-0.5" role="listbox">
+      <% options.each do |text, value| %>
+        <%# herb:key value %>
+        <% chosen = value == current %>
+        <li role="option" aria-selected="<%= chosen %>">
+          <%= link_to url_for(request.query_parameters.merge(param.to_s => value)), class: ui(:menu_item, class_names("justify-between", "font-medium": chosen)), data: { turbo_action: "replace" } do %>
+            <span class="truncate"><%= text %></span>
+            <% if chosen %>
+              <%= icon_tag "check", class: "size-4 text-blue-600" %>
+            <% end %>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  </dialog>
+</div>

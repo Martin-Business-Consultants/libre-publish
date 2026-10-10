@@ -1,0 +1,20 @@
+<%# locals: (label:, title:, path:, method: nil, message: nil, button: nil, negative: nil, primary: nil, trigger_class: nil, params: nil) %>
+<%# A button that asks once in a modal before it acts (restore, purge, approve…).
+    The delete-with-a-trash-icon case is layouts/shared/delete_dialog.
+    The trigger is a small secondary button, red when negative; primary: the
+    screen's one primary button instead, full size. trigger_class: layout
+    classes for the trigger. %>
+<% trigger_style = primary ? [:primary, :regular] : [(negative ? :danger : :secondary), :small] %>
+<div class="contents" data-controller="dialog" data-dialog-modal-value="true" data-action="keydown.esc->dialog#close:stop">
+  <button type="button" class="<%= ui(:button, *trigger_style, *trigger_class) %>" data-action="dialog#open"><%= label %></button>
+  <dialog class="<%= ui(:dialog, "dialog dialog--action") %>" data-dialog-target="dialog">
+    <h3 class="text-lg font-semibold text-gray-900"><%= title %></h3>
+    <% if message %>
+      <p class="text-sm text-gray-600"><%= message %></p>
+    <% end %>
+    <div class="mt-2 flex justify-end gap-2">
+      <button type="button" class="<%= ui(:button) %>" data-action="dialog#close">Cancel</button>
+      <%= button_to(button || label, path, method: method || :post, params: params || {}, class: ui(:button, negative ? :danger : :primary), data: { turbo_frame: "_top" }) %>
+    </div>
+  </dialog>
+</div>

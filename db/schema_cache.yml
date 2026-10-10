@@ -1,0 +1,3768 @@
+--- !ruby/object:ActiveRecord::ConnectionAdapters::SchemaCache
+columns:
+  active_storage_attachments:
+  - &7 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: blob_id
+    cast_type: &1 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3Adapter::SQLite3Integer
+      precision:
+      scale:
+      limit:
+      max: 9223372036854775808
+      min: -9223372036854775808
+    sql_type_metadata: &2 !ruby/object:ActiveRecord::ConnectionAdapters::SqlTypeMetadata
+      sql_type: bigint
+      type: :integer
+      limit:
+      precision:
+      scale:
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - &5 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: created_at
+    cast_type: &8 !ruby/object:ActiveRecord::Type::DateTime
+      precision: 6
+      scale:
+      limit:
+      timezone:
+    sql_type_metadata: &9 !ruby/object:ActiveRecord::ConnectionAdapters::SqlTypeMetadata
+      sql_type: datetime(6)
+      type: :datetime
+      limit:
+      precision: 6
+      scale:
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - &6 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment: true
+    name: id
+    cast_type: &12 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3Adapter::SQLite3Integer
+      precision:
+      scale:
+      limit:
+      max: 9223372036854775808
+      min: -9223372036854775808
+    sql_type_metadata: &13 !ruby/object:ActiveRecord::ConnectionAdapters::SqlTypeMetadata
+      sql_type: INTEGER
+      type: :integer
+      limit:
+      precision:
+      scale:
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - &29 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: name
+    cast_type: &3 !ruby/object:ActiveModel::Type::String
+      true: t
+      false: f
+      precision:
+      scale:
+      limit:
+    sql_type_metadata: &4 !ruby/object:ActiveRecord::ConnectionAdapters::SqlTypeMetadata
+      sql_type: varchar
+      type: :string
+      limit:
+      precision:
+      scale:
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: record_id
+    cast_type: *1
+    sql_type_metadata: *2
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: record_type
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  active_storage_blobs:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: byte_size
+    cast_type: *1
+    sql_type_metadata: *2
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: checksum
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: content_type
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - *5
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: filename
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - *6
+  - &14 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: key
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: metadata
+    cast_type: &10 !ruby/object:ActiveRecord::Type::Text
+      true: t
+      false: f
+      precision:
+      scale:
+      limit:
+    sql_type_metadata: &11 !ruby/object:ActiveRecord::ConnectionAdapters::SqlTypeMetadata
+      sql_type: TEXT
+      type: :text
+      limit:
+      precision:
+      scale:
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: service_name
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  active_storage_variant_records:
+  - *7
+  - *6
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: variation_digest
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  api_tokens:
+  - *5
+  - *6
+  - &59 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: last_used_at
+    cast_type: *8
+    sql_type_metadata: *9
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - &60 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: last_used_ip
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - &61 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: prefix
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - &62 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: token
+    cast_type: *10
+    sql_type_metadata: *11
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - &63 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: token_digest
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - &15 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: updated_at
+    cast_type: *8
+    sql_type_metadata: *9
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - &65 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: user_id
+    cast_type: *12
+    sql_type_metadata: *13
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  ar_internal_metadata:
+  - *5
+  - *14
+  - *15
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: value
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  assets:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: alt
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: caption
+    cast_type: *10
+    sql_type_metadata: *11
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - *5
+  - &23 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: deleted_at
+    cast_type: *8
+    sql_type_metadata: *9
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - &58 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: description
+    cast_type: *10
+    sql_type_metadata: *11
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: focal_x
+    cast_type: &16 !ruby/object:ActiveModel::Type::Float
+      precision:
+      scale:
+      limit:
+    sql_type_metadata: &17 !ruby/object:ActiveRecord::ConnectionAdapters::SqlTypeMetadata
+      sql_type: float
+      type: :float
+      limit:
+      precision:
+      scale:
+    'null': false
+    default: 0.5
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: focal_y
+    cast_type: *16
+    sql_type_metadata: *17
+    'null': false
+    default: 0.5
+    default_function:
+    collation:
+    comment:
+  - &22 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: folder
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default: "/"
+    default_function:
+    collation:
+    comment:
+  - *6
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: name
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - *15
+  audit_logs:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: action
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: actor_id
+    cast_type: *1
+    sql_type_metadata: *2
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: actor_label
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default: ''
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: actor_type
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - *5
+  - *6
+  - &32 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: ip
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: metadata
+    cast_type: &18 !ruby/object:ActiveRecord::Type::Json
+      precision:
+      scale:
+      limit:
+    sql_type_metadata: &19 !ruby/object:ActiveRecord::ConnectionAdapters::SqlTypeMetadata
+      sql_type: json
+      type: :json
+      limit:
+      precision:
+      scale:
+    'null': false
+    default: "{}"
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: target_id
+    cast_type: *1
+    sql_type_metadata: *2
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: target_label
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default: ''
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: target_type
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - &64 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: user_agent
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  block_types:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: built_in
+    cast_type: &20 !ruby/object:ActiveModel::Type::Boolean
+      precision:
+      scale:
+      limit:
+    sql_type_metadata: &21 !ruby/object:ActiveRecord::ConnectionAdapters::SqlTypeMetadata
+      sql_type: boolean
+      type: :boolean
+      limit:
+      precision:
+      scale:
+    'null': false
+    default: false
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: category
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - *5
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: defaults
+    cast_type: *18
+    sql_type_metadata: *19
+    'null': false
+    default: "{}"
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: deprecated
+    cast_type: *20
+    sql_type_metadata: *21
+    'null': false
+    default: false
+    default_function:
+    collation:
+    comment:
+  - &37 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: description
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - &33 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: fields
+    cast_type: *18
+    sql_type_metadata: *19
+    'null': false
+    default: "[]"
+    default_function:
+    collation:
+    comment:
+  - &28 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: icon
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - *6
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: label
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - &24 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: slug
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - *15
+  - &39 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: version
+    cast_type: *12
+    sql_type_metadata: *13
+    'null': false
+    default: 1
+    default_function:
+    collation:
+    comment:
+  bulk_uploads:
+  - *5
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: errors_log
+    cast_type: *18
+    sql_type_metadata: *19
+    'null': false
+    default: "[]"
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: failed
+    cast_type: *12
+    sql_type_metadata: *13
+    'null': false
+    default: 0
+    default_function:
+    collation:
+    comment:
+  - *22
+  - *6
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: processed
+    cast_type: *12
+    sql_type_metadata: *13
+    'null': false
+    default: 0
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: skipped
+    cast_type: *12
+    sql_type_metadata: *13
+    'null': false
+    default: 0
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: status
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default: pending
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: succeeded
+    cast_type: *12
+    sql_type_metadata: *13
+    'null': false
+    default: 0
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: total
+    cast_type: *12
+    sql_type_metadata: *13
+    'null': false
+    default: 0
+    default_function:
+    collation:
+    comment:
+  - *15
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: user_id
+    cast_type: *1
+    sql_type_metadata: *2
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  collection_entries:
+  - &25 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: blocks
+    cast_type: *18
+    sql_type_metadata: *19
+    'null': false
+    default: "[]"
+    default_function:
+    collation:
+    comment:
+  - &26 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: body_markdown
+    cast_type: *10
+    sql_type_metadata: *11
+    'null': false
+    default: ''
+    default_function:
+    collation:
+    comment:
+  - &45 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: category_entry_id
+    cast_type: *12
+    sql_type_metadata: *13
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: collection_id
+    cast_type: *12
+    sql_type_metadata: *13
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - *5
+  - *23
+  - &27 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: frontmatter
+    cast_type: *18
+    sql_type_metadata: *19
+    'null': false
+    default: "{}"
+    default_function:
+    collation:
+    comment:
+  - *6
+  - &46 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: locale
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default: en
+    default_function:
+    collation:
+    comment:
+  - &47 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: publish_at
+    cast_type: *8
+    sql_type_metadata: *9
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - &48 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: published_at
+    cast_type: *8
+    sql_type_metadata: *9
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - &49 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: seo
+    cast_type: *18
+    sql_type_metadata: *19
+    'null': false
+    default: "{}"
+    default_function:
+    collation:
+    comment:
+  - *24
+  - &34 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: status
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default: draft
+    default_function:
+    collation:
+    comment:
+  - &35 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: title
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - &50 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: translation_group_id
+    cast_type: *12
+    sql_type_metadata: *13
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - &51 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: unpublish_at
+    cast_type: *8
+    sql_type_metadata: *9
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - *15
+  collection_entry_versions:
+  - &43 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: author_id
+    cast_type: *12
+    sql_type_metadata: *13
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - *25
+  - *26
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: collection_entry_id
+    cast_type: *12
+    sql_type_metadata: *13
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - &44 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: comment
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - *5
+  - *27
+  - *6
+  collections:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: build_config
+    cast_type: *18
+    sql_type_metadata: *19
+    'null': false
+    default: "{}"
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: categories_collection_id
+    cast_type: *12
+    sql_type_metadata: *13
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - *5
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: enable_blocks
+    cast_type: *20
+    sql_type_metadata: *21
+    'null': false
+    default: false
+    default_function:
+    collation:
+    comment:
+  - *28
+  - *6
+  - *29
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: notification_emails
+    cast_type: *10
+    sql_type_metadata: *11
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: notification_events
+    cast_type: *18
+    sql_type_metadata: *19
+    'null': false
+    default: "[]"
+    default_function:
+    collation:
+    comment:
+  - &38 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: schema
+    cast_type: *18
+    sql_type_metadata: *19
+    'null': false
+    default: "{}"
+    default_function:
+    collation:
+    comment:
+  - *24
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: tags_collection_id
+    cast_type: *12
+    sql_type_metadata: *13
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - *15
+  content_references:
+  - *5
+  - *6
+  - &30 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: kind
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: owner_id
+    cast_type: *12
+    sql_type_metadata: *13
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: owner_type
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: position
+    cast_type: *12
+    sql_type_metadata: *13
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: ref_id
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: ref_type
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  device_authorizations:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: approved_at
+    cast_type: *8
+    sql_type_metadata: *9
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - *5
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: denied_at
+    cast_type: *8
+    sql_type_metadata: *9
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: device_code
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: expires_at
+    cast_type: *8
+    sql_type_metadata: *9
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: hostname
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - *6
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: label
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: purpose
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default: user
+    default_function:
+    collation:
+    comment:
+  - *15
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: user_code
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - &40 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: user_id
+    cast_type: *12
+    sql_type_metadata: *13
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  form_emails:
+  - *25
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: body
+    cast_type: *10
+    sql_type_metadata: *11
+    'null': false
+    default: ''
+    default_function:
+    collation:
+    comment:
+  - *5
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: enabled
+    cast_type: *20
+    sql_type_metadata: *21
+    'null': false
+    default: true
+    default_function:
+    collation:
+    comment:
+  - &31 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: form_id
+    cast_type: *12
+    sql_type_metadata: *13
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: from_field
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - *6
+  - *30
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: recipients
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: site_template
+    cast_type: *10
+    sql_type_metadata: *11
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: site_template_digest
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: site_template_received_at
+    cast_type: *8
+    sql_type_metadata: *9
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: subject
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default: ''
+    default_function:
+    collation:
+    comment:
+  - *15
+  form_submissions:
+  - *5
+  - &36 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: data
+    cast_type: *18
+    sql_type_metadata: *19
+    'null': false
+    default: "{}"
+    default_function:
+    collation:
+    comment:
+  - *31
+  - *6
+  - *32
+  - &56 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: meta
+    cast_type: *18
+    sql_type_metadata: *19
+    'null': false
+    default: "{}"
+    default_function:
+    collation:
+    comment:
+  - *15
+  forms:
+  - *5
+  - *23
+  - *33
+  - *6
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: notify_webhook_url
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - *24
+  - *34
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: submit_label
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default: Submit
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: submit_url
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: success_message
+    cast_type: *10
+    sql_type_metadata: *11
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - *35
+  - *15
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: webhook_body
+    cast_type: *18
+    sql_type_metadata: *19
+    'null': false
+    default: "{}"
+    default_function:
+    collation:
+    comment:
+  globals:
+  - *5
+  - *36
+  - *23
+  - *37
+  - *28
+  - *6
+  - *29
+  - *38
+  - *24
+  - *15
+  - *39
+  hello_greetings:
+  - *5
+  - *6
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: message
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - *15
+  - *40
+  invoices:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: billing_address
+    cast_type: *10
+    sql_type_metadata: *11
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - &52 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: company
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - *5
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: currency
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default: USD
+    default_function:
+    collation:
+    comment:
+  - &53 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: customer_email
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - &54 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: customer_name
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - &55 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: customer_phone
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: due_on
+    cast_type: &41 !ruby/object:ActiveRecord::Type::Date
+      precision:
+      scale:
+      limit:
+      timezone:
+    sql_type_metadata: &42 !ruby/object:ActiveRecord::ConnectionAdapters::SqlTypeMetadata
+      sql_type: date
+      type: :date
+      limit:
+      precision:
+      scale:
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - *6
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: issued_on
+    cast_type: *41
+    sql_type_metadata: *42
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: line_items
+    cast_type: *18
+    sql_type_metadata: *19
+    'null': false
+    default: "[]"
+    default_function:
+    collation:
+    comment:
+  - &57 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: notes
+    cast_type: *10
+    sql_type_metadata: *11
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: number
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: paid_at
+    cast_type: *8
+    sql_type_metadata: *9
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: payment_link
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: quote_request_id
+    cast_type: *12
+    sql_type_metadata: *13
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: sent_at
+    cast_type: *8
+    sql_type_metadata: *9
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: shipping_cents
+    cast_type: *12
+    sql_type_metadata: *13
+    'null': false
+    default: 0
+    default_function:
+    collation:
+    comment:
+  - *34
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: subtotal_cents
+    cast_type: *12
+    sql_type_metadata: *13
+    'null': false
+    default: 0
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: tax_cents
+    cast_type: *12
+    sql_type_metadata: *13
+    'null': false
+    default: 0
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: terms
+    cast_type: *10
+    sql_type_metadata: *11
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: token
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: total_cents
+    cast_type: *12
+    sql_type_metadata: *13
+    'null': false
+    default: 0
+    default_function:
+    collation:
+    comment:
+  - *15
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: voided_at
+    cast_type: *8
+    sql_type_metadata: *9
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  page_versions:
+  - *43
+  - *25
+  - *44
+  - *5
+  - *6
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: page_id
+    cast_type: *12
+    sql_type_metadata: *13
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  pages:
+  - *25
+  - *45
+  - *5
+  - *23
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: depth
+    cast_type: *12
+    sql_type_metadata: *13
+    'null': false
+    default: 0
+    default_function:
+    collation:
+    comment:
+  - *27
+  - *6
+  - *46
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: parent_id
+    cast_type: *12
+    sql_type_metadata: *13
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: path
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - *47
+  - *48
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: schema
+    cast_type: *18
+    sql_type_metadata: *19
+    'null': false
+    default: '{"fields":[]}'
+    default_function:
+    collation:
+    comment:
+  - *49
+  - *24
+  - *34
+  - *35
+  - *50
+  - *51
+  - *15
+  quote_requests:
+  - *52
+  - *5
+  - *53
+  - *54
+  - *55
+  - *6
+  - *32
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: items
+    cast_type: *18
+    sql_type_metadata: *19
+    'null': false
+    default: "[]"
+    default_function:
+    collation:
+    comment:
+  - &66 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: message
+    cast_type: *10
+    sql_type_metadata: *11
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - *56
+  - *57
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: page_url
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: source
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default: site
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: status
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default: new
+    default_function:
+    collation:
+    comment:
+  - *15
+  redirects:
+  - &67 !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: active
+    cast_type: *20
+    sql_type_metadata: *21
+    'null': false
+    default: true
+    default_function:
+    collation:
+    comment:
+  - *5
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: destination_url
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: hit_count
+    cast_type: *12
+    sql_type_metadata: *13
+    'null': false
+    default: 0
+    default_function:
+    collation:
+    comment:
+  - *6
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: last_hit_at
+    cast_type: *8
+    sql_type_metadata: *9
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - *57
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: source_path
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: status_code
+    cast_type: *12
+    sql_type_metadata: *13
+    'null': false
+    default: 301
+    default_function:
+    collation:
+    comment:
+  - *15
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: wildcard
+    cast_type: *20
+    sql_type_metadata: *21
+    'null': false
+    default: false
+    default_function:
+    collation:
+    comment:
+  roles:
+  - *5
+  - *37
+  - *6
+  - *29
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: permissions
+    cast_type: *18
+    sql_type_metadata: *19
+    'null': false
+    default: "[]"
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: system
+    cast_type: *20
+    sql_type_metadata: *21
+    'null': false
+    default: false
+    default_function:
+    collation:
+    comment:
+  - *15
+  schema_migrations:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: version
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  service_tokens:
+  - *5
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: created_by_id
+    cast_type: *12
+    sql_type_metadata: *13
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - *58
+  - *6
+  - *59
+  - *60
+  - *29
+  - *61
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: revoked_at
+    cast_type: *8
+    sql_type_metadata: *9
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: role_id
+    cast_type: *12
+    sql_type_metadata: *13
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - *62
+  - *63
+  - *15
+  sessions:
+  - *5
+  - *6
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: ip_address
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - *15
+  - *64
+  - *65
+  settings:
+  - *5
+  - *36
+  - *6
+  - *14
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: secrets
+    cast_type: *10
+    sql_type_metadata: *11
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - *15
+  taggings:
+  - *5
+  - *6
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: position
+    cast_type: *12
+    sql_type_metadata: *13
+    'null': false
+    default: 0
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: tag_entry_id
+    cast_type: *12
+    sql_type_metadata: *13
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: taggable_id
+    cast_type: *12
+    sql_type_metadata: *13
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: taggable_type
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - *15
+  translation_groups:
+  - *5
+  - *6
+  - *30
+  - *15
+  upgrades:
+  - *5
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: external_id
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: external_url
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: finished_at
+    cast_type: *8
+    sql_type_metadata: *9
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: from_version
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - *6
+  - *66
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: requested_by_id
+    cast_type: *12
+    sql_type_metadata: *13
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: status
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default: running
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: to_version
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - *15
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: via
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  users:
+  - *5
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: email
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - *6
+  - *29
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: password_digest
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: recovery_code_digests
+    cast_type: *18
+    sql_type_metadata: *19
+    'null': false
+    default: "[]"
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: role_id
+    cast_type: *12
+    sql_type_metadata: *13
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: totp_enabled
+    cast_type: *20
+    sql_type_metadata: *21
+    'null': false
+    default: false
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: totp_enabled_at
+    cast_type: *8
+    sql_type_metadata: *9
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: totp_secret
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - *15
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: verified
+    cast_type: *20
+    sql_type_metadata: *21
+    'null': false
+    default: false
+    default_function:
+    collation:
+    comment:
+  webhook_deliveries:
+  - *5
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: duration_ms
+    cast_type: *12
+    sql_type_metadata: *13
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: error
+    cast_type: *10
+    sql_type_metadata: *11
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: event
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - *6
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: payload
+    cast_type: *10
+    sql_type_metadata: *11
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: response_body
+    cast_type: *10
+    sql_type_metadata: *11
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: response_status
+    cast_type: *12
+    sql_type_metadata: *13
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: success
+    cast_type: *20
+    sql_type_metadata: *21
+    'null': false
+    default: false
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: webhook_id
+    cast_type: *12
+    sql_type_metadata: *13
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  webhooks:
+  - *67
+  - *5
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: event_filters
+    cast_type: *18
+    sql_type_metadata: *19
+    'null': false
+    default: "{}"
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: events
+    cast_type: *18
+    sql_type_metadata: *19
+    'null': false
+    default: "[]"
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: failure_count
+    cast_type: *12
+    sql_type_metadata: *13
+    'null': false
+    default: 0
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: headers
+    cast_type: *18
+    sql_type_metadata: *19
+    'null': false
+    default: "{}"
+    default_function:
+    collation:
+    comment:
+  - *6
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: last_delivery_at
+    cast_type: *8
+    sql_type_metadata: *9
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: last_status
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - *29
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: secret
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+  - *15
+  - !ruby/object:ActiveRecord::ConnectionAdapters::SQLite3::Column
+    auto_increment:
+    name: url
+    cast_type: *3
+    sql_type_metadata: *4
+    'null': false
+    default:
+    default_function:
+    collation:
+    comment:
+primary_keys:
+  active_storage_attachments: id
+  active_storage_blobs: id
+  active_storage_variant_records: id
+  api_tokens: id
+  ar_internal_metadata: key
+  assets: id
+  audit_logs: id
+  block_types: id
+  bulk_uploads: id
+  collection_entries: id
+  collection_entry_versions: id
+  collections: id
+  content_references: id
+  device_authorizations: id
+  form_emails: id
+  form_submissions: id
+  forms: id
+  globals: id
+  hello_greetings: id
+  invoices: id
+  page_versions: id
+  pages: id
+  quote_requests: id
+  redirects: id
+  roles: id
+  schema_migrations: version
+  service_tokens: id
+  sessions: id
+  settings: id
+  taggings: id
+  translation_groups: id
+  upgrades: id
+  users: id
+  webhook_deliveries: id
+  webhooks: id
+data_sources:
+  active_storage_attachments: true
+  active_storage_blobs: true
+  active_storage_variant_records: true
+  api_tokens: true
+  ar_internal_metadata: true
+  assets: true
+  audit_logs: true
+  block_types: true
+  bulk_uploads: true
+  collection_entries: true
+  collection_entry_versions: true
+  collections: true
+  content_references: true
+  device_authorizations: true
+  form_emails: true
+  form_submissions: true
+  forms: true
+  globals: true
+  hello_greetings: true
+  invoices: true
+  page_versions: true
+  pages: true
+  quote_requests: true
+  redirects: true
+  roles: true
+  schema_migrations: true
+  service_tokens: true
+  sessions: true
+  settings: true
+  taggings: true
+  translation_groups: true
+  upgrades: true
+  users: true
+  webhook_deliveries: true
+  webhooks: true
+indexes:
+  active_storage_attachments:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: active_storage_attachments
+    name: index_active_storage_attachments_on_blob_id
+    unique: false
+    columns:
+    - blob_id
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: active_storage_attachments
+    name: index_active_storage_attachments_uniqueness
+    unique: true
+    columns:
+    - record_type
+    - record_id
+    - name
+    - blob_id
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  active_storage_blobs:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: active_storage_blobs
+    name: index_active_storage_blobs_on_key
+    unique: true
+    columns:
+    - key
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  active_storage_variant_records:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: active_storage_variant_records
+    name: index_active_storage_variant_records_uniqueness
+    unique: true
+    columns:
+    - blob_id
+    - variation_digest
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  api_tokens:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: api_tokens
+    name: index_api_tokens_on_prefix
+    unique: false
+    columns:
+    - prefix
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: api_tokens
+    name: index_api_tokens_on_token_digest
+    unique: true
+    columns:
+    - token_digest
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: api_tokens
+    name: index_api_tokens_on_user_id
+    unique: true
+    columns:
+    - user_id
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  ar_internal_metadata: []
+  assets:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: assets
+    name: index_assets_on_deleted_at
+    unique: false
+    columns:
+    - deleted_at
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: assets
+    name: index_assets_on_folder
+    unique: false
+    columns:
+    - folder
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  audit_logs:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: audit_logs
+    name: idx_audit_actor
+    unique: false
+    columns:
+    - actor_type
+    - actor_id
+    - created_at
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: audit_logs
+    name: idx_audit_target
+    unique: false
+    columns:
+    - target_type
+    - target_id
+    - created_at
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: audit_logs
+    name: index_audit_logs_on_action_and_created_at
+    unique: false
+    columns:
+    - action
+    - created_at
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: audit_logs
+    name: index_audit_logs_on_created_at
+    unique: false
+    columns:
+    - created_at
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  block_types:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: block_types
+    name: index_block_types_on_category
+    unique: false
+    columns:
+    - category
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: block_types
+    name: index_block_types_on_slug
+    unique: true
+    columns:
+    - slug
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  bulk_uploads:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: bulk_uploads
+    name: index_bulk_uploads_on_status
+    unique: false
+    columns:
+    - status
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: bulk_uploads
+    name: index_bulk_uploads_on_user_id
+    unique: false
+    columns:
+    - user_id
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  collection_entries:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: collection_entries
+    name: index_collection_entries_on_category_entry_id
+    unique: false
+    columns:
+    - category_entry_id
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: collection_entries
+    name: index_collection_entries_on_collection_id
+    unique: false
+    columns:
+    - collection_id
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: collection_entries
+    name: index_collection_entries_on_collection_id_and_slug
+    unique: true
+    columns:
+    - collection_id
+    - slug
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: collection_entries
+    name: index_collection_entries_on_deleted_at
+    unique: false
+    columns:
+    - deleted_at
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: collection_entries
+    name: index_collection_entries_on_publish_at
+    unique: false
+    columns:
+    - publish_at
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: collection_entries
+    name: index_collection_entries_on_published_at
+    unique: false
+    columns:
+    - published_at
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: collection_entries
+    name: index_collection_entries_on_status
+    unique: false
+    columns:
+    - status
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: collection_entries
+    name: index_collection_entries_on_translation_group_id
+    unique: false
+    columns:
+    - translation_group_id
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: collection_entries
+    name: index_collection_entries_on_unpublish_at
+    unique: false
+    columns:
+    - unpublish_at
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  collection_entry_versions:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: collection_entry_versions
+    name: idx_on_collection_entry_id_created_at_4ebebe55a3
+    unique: false
+    columns:
+    - collection_entry_id
+    - created_at
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: collection_entry_versions
+    name: index_collection_entry_versions_on_author_id
+    unique: false
+    columns:
+    - author_id
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: collection_entry_versions
+    name: index_collection_entry_versions_on_collection_entry_id
+    unique: false
+    columns:
+    - collection_entry_id
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  collections:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: collections
+    name: index_collections_on_categories_collection_id
+    unique: false
+    columns:
+    - categories_collection_id
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: collections
+    name: index_collections_on_slug
+    unique: true
+    columns:
+    - slug
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: collections
+    name: index_collections_on_tags_collection_id
+    unique: false
+    columns:
+    - tags_collection_id
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  content_references:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: content_references
+    name: index_content_references_on_owner
+    unique: false
+    columns:
+    - owner_type
+    - owner_id
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: content_references
+    name: index_content_references_on_owner_type_and_owner_id_and_kind
+    unique: false
+    columns:
+    - owner_type
+    - owner_id
+    - kind
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: content_references
+    name: index_content_references_on_ref_type_and_ref_id
+    unique: false
+    columns:
+    - ref_type
+    - ref_id
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  device_authorizations:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: device_authorizations
+    name: index_device_authorizations_on_device_code
+    unique: true
+    columns:
+    - device_code
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: device_authorizations
+    name: index_device_authorizations_on_user_code
+    unique: true
+    columns:
+    - user_code
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: device_authorizations
+    name: index_device_authorizations_on_user_id
+    unique: false
+    columns:
+    - user_id
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  form_emails:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: form_emails
+    name: index_form_emails_on_form_id
+    unique: false
+    columns:
+    - form_id
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: form_emails
+    name: index_form_emails_on_form_id_and_kind
+    unique: true
+    columns:
+    - form_id
+    - kind
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  form_submissions:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: form_submissions
+    name: index_form_submissions_on_form_id
+    unique: false
+    columns:
+    - form_id
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: form_submissions
+    name: index_form_submissions_on_form_id_and_created_at
+    unique: false
+    columns:
+    - form_id
+    - created_at
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  forms:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: forms
+    name: index_forms_on_deleted_at
+    unique: false
+    columns:
+    - deleted_at
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: forms
+    name: index_forms_on_slug
+    unique: true
+    columns:
+    - slug
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  globals:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: globals
+    name: index_globals_on_deleted_at
+    unique: false
+    columns:
+    - deleted_at
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: globals
+    name: index_globals_on_slug
+    unique: true
+    columns:
+    - slug
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  hello_greetings:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: hello_greetings
+    name: index_hello_greetings_on_user_id
+    unique: false
+    columns:
+    - user_id
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  invoices:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: invoices
+    name: index_invoices_on_number
+    unique: true
+    columns:
+    - number
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: invoices
+    name: index_invoices_on_quote_request_id
+    unique: false
+    columns:
+    - quote_request_id
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: invoices
+    name: index_invoices_on_status_and_created_at
+    unique: false
+    columns:
+    - status
+    - created_at
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: invoices
+    name: index_invoices_on_token
+    unique: true
+    columns:
+    - token
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  page_versions:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: page_versions
+    name: index_page_versions_on_author_id
+    unique: false
+    columns:
+    - author_id
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: page_versions
+    name: index_page_versions_on_page_id
+    unique: false
+    columns:
+    - page_id
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: page_versions
+    name: index_page_versions_on_page_id_and_created_at
+    unique: false
+    columns:
+    - page_id
+    - created_at
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  pages:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: pages
+    name: index_pages_on_category_entry_id
+    unique: false
+    columns:
+    - category_entry_id
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: pages
+    name: index_pages_on_deleted_at
+    unique: false
+    columns:
+    - deleted_at
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: pages
+    name: index_pages_on_locale
+    unique: false
+    columns:
+    - locale
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: pages
+    name: index_pages_on_parent_id
+    unique: false
+    columns:
+    - parent_id
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: pages
+    name: index_pages_on_parent_id_and_slug
+    unique: true
+    columns:
+    - parent_id
+    - slug
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: pages
+    name: index_pages_on_path
+    unique: true
+    columns:
+    - path
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: pages
+    name: index_pages_on_publish_at
+    unique: false
+    columns:
+    - publish_at
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: pages
+    name: index_pages_on_published_at
+    unique: false
+    columns:
+    - published_at
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: pages
+    name: index_pages_on_status
+    unique: false
+    columns:
+    - status
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: pages
+    name: index_pages_on_translation_group_id
+    unique: false
+    columns:
+    - translation_group_id
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: pages
+    name: index_pages_on_unpublish_at
+    unique: false
+    columns:
+    - unpublish_at
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  quote_requests:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: quote_requests
+    name: index_quote_requests_on_customer_email
+    unique: false
+    columns:
+    - customer_email
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: quote_requests
+    name: index_quote_requests_on_status_and_created_at
+    unique: false
+    columns:
+    - status
+    - created_at
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  redirects:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: redirects
+    name: index_redirects_on_active_and_wildcard
+    unique: false
+    columns:
+    - active
+    - wildcard
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: redirects
+    name: index_redirects_on_source_path
+    unique: true
+    columns:
+    - source_path
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  roles:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: roles
+    name: index_roles_on_name
+    unique: true
+    columns:
+    - name
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  schema_migrations: []
+  service_tokens:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: service_tokens
+    name: index_service_tokens_on_created_by_id
+    unique: false
+    columns:
+    - created_by_id
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: service_tokens
+    name: index_service_tokens_on_revoked_at
+    unique: false
+    columns:
+    - revoked_at
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: service_tokens
+    name: index_service_tokens_on_role_id
+    unique: false
+    columns:
+    - role_id
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: service_tokens
+    name: index_service_tokens_on_token_digest
+    unique: true
+    columns:
+    - token_digest
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  sessions:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: sessions
+    name: index_sessions_on_user_id
+    unique: false
+    columns:
+    - user_id
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  settings:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: settings
+    name: index_settings_on_key
+    unique: true
+    columns:
+    - key
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  taggings:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: taggings
+    name: index_taggings_on_tag_entry_id
+    unique: false
+    columns:
+    - tag_entry_id
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: taggings
+    name: index_taggings_on_taggable
+    unique: false
+    columns:
+    - taggable_type
+    - taggable_id
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: taggings
+    name: index_taggings_uniq
+    unique: true
+    columns:
+    - taggable_type
+    - taggable_id
+    - tag_entry_id
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  translation_groups: []
+  upgrades:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: upgrades
+    name: index_upgrades_on_requested_by_id
+    unique: false
+    columns:
+    - requested_by_id
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: upgrades
+    name: index_upgrades_on_status
+    unique: false
+    columns:
+    - status
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  users:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: users
+    name: index_users_on_email
+    unique: true
+    columns:
+    - email
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: users
+    name: index_users_on_role_id
+    unique: false
+    columns:
+    - role_id
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  webhook_deliveries:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: webhook_deliveries
+    name: index_webhook_deliveries_on_event_and_created_at
+    unique: false
+    columns:
+    - event
+    - created_at
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: webhook_deliveries
+    name: index_webhook_deliveries_on_webhook_id
+    unique: false
+    columns:
+    - webhook_id
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: webhook_deliveries
+    name: index_webhook_deliveries_on_webhook_id_and_created_at
+    unique: false
+    columns:
+    - webhook_id
+    - created_at
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+  webhooks:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: webhooks
+    name: index_webhooks_on_active
+    unique: false
+    columns:
+    - active
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using:
+    include:
+    nulls_not_distinct:
+    comment:
+    valid: true
+version: 20261006120000

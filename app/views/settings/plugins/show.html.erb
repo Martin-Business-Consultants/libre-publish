@@ -1,0 +1,42 @@
+<% @page_title = @plugin.name %>
+<%= parent_page "Plugins", settings_plugins_path %>
+<% additions = Cms::Plugins.additions(@plugin.key) %>
+<% fact_label_classes = "text-xs font-medium text-gray-500" %>
+<% fact_value_classes = "mt-0.5 text-sm text-gray-900" %>
+
+<%= render "layouts/shared/page_header", title: @plugin.name %>
+
+<section class="<%= ui(:panel, "space-y-5 p-6") %>">
+  <p class="text-sm text-gray-700"><%= @plugin.description %></p>
+
+  <dl class="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+    <div><dt class="<%= fact_label_classes %>">Version</dt><dd class="<%= fact_value_classes %>"><%= @plugin.version %></dd></div>
+    <div><dt class="<%= fact_label_classes %>">Source</dt><dd class="<%= fact_value_classes %>"><%= @plugin.bundled ? "Bundled with the CMS" : "Installed in plugins/" %></dd></div>
+    <% if @plugin.author.present? %>
+      <div><dt class="<%= fact_label_classes %>">Author</dt><dd class="<%= fact_value_classes %>"><%= @plugin.author %></dd></div>
+    <% end %>
+    <% if @plugin.requires.present? %>
+      <div><dt class="<%= fact_label_classes %>">Needs CMS</dt><dd class="<%= fact_value_classes %>"><%= @plugin.requires %> (this is <%= cms_version %>)</dd></div>
+    <% end %>
+    <% if @plugin.depends_on.any? %>
+      <div><dt class="<%= fact_label_classes %>">Needs plugins</dt><dd class="<%= fact_value_classes %>"><%= @plugin.depends_on.map { |dependency| Cms::Plugins.manifests[dependency]&.name || dependency.to_s }.to_sentence %></dd></div>
+    <% end %>
+    <% if @plugin.homepage.present? %>
+      <div><dt class="<%= fact_label_classes %>">Homepage</dt><dd class="<%= fact_value_classes %>"><%= link_to @plugin.homepage, @plugin.homepage, class: ui(:link), rel: "noopener" %></dd></div>
+    <% end %>
+  </dl>
+</section>
+
+<section class="<%= ui(:panel, "space-y-3 p-6") %>">
+  <h2 class="<%= ui(:heading) %>">What it adds</h2>
+  <% if additions.any? %>
+    <ul class="list-disc space-y-1 pl-5 text-sm text-gray-700">
+      <% additions.each do |addition| %>
+        <%# herb:key addition %>
+        <li><%= addition %></li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="text-sm text-gray-500">Nothing the core shows.</p>
+  <% end %>
+</section>

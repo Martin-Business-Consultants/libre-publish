@@ -1,0 +1,6 @@
+<%# locals: () %>
+<button type="button" class="<%= ui(:button, :plain, :icon, "theme-toggle") %>" data-controller="theme" data-action="theme#toggle" title="Switch between light and dark">
+  <%= icon_tag "moon", class: "theme-toggle__moon size-4" %>
+  <%= icon_tag "sun", class: "theme-toggle__sun size-4" %>
+  <span class="sr-only">Switch between light and dark</span>
+</button>

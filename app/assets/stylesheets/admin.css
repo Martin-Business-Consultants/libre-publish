@@ -1,0 +1,413 @@
+/* The admin's frame (layouts/application, layouts/shared/_admin_bar and
+/* _admin_menu): what the markup's classes can't say. The bar fixed across
+/* the top, the menu fixed down the left, folded to icons
+/* (html[data-menu="folded"]) or, on a narrow screen, a drawer
+/* (html[data-menu-open]); admin_menu_controller sets both. Menus that open on
+/* hover and keyboard focus, and the flash's toasts. */
+@layer components {
+  :root {
+    --admin-bar-height: 3rem;
+    --admin-menu-width: 15rem;
+    --admin-menu-folded-width: 4rem;
+    --admin-gutter: clamp(1rem, 3vw, 2rem);
+  }
+
+  .admin__skip-link {
+    inset: 0.5rem auto auto 0.5rem;
+    position: fixed;
+    transform: translateY(-200%);
+    z-index: var(--z-nav-open);
+
+    &:focus-visible {
+      transform: none;
+    }
+  }
+
+  .admin__content {
+    padding-block: calc(var(--admin-bar-height) + 1.5rem) 3rem;
+    padding-inline: calc(var(--admin-menu-width) + var(--admin-gutter)) var(--admin-gutter);
+
+    :root[data-menu="folded"] & {
+      padding-inline-start: calc(var(--admin-menu-folded-width) + var(--admin-gutter));
+    }
+
+    @media (max-width: 782px) {
+      :root & {
+        padding-inline: var(--admin-gutter);
+      }
+    }
+  }
+}
+
+/* The admin bar. */
+@layer components {
+  .admin-bar {
+    block-size: var(--admin-bar-height);
+    inset: 0 0 auto 0;
+    position: fixed;
+    /* Above the admin menu, so the bar's dropdowns open over it. */
+    z-index: calc(var(--z-nav) + 1);
+  }
+
+  .admin-bar__item {
+    display: flex;
+    white-space: nowrap;
+  }
+
+  .admin-bar__drawer-toggle {
+    display: none;
+
+    @media (max-width: 782px) {
+      display: flex;
+    }
+  }
+
+  /* A dropdown under a bar item, open while the item is hovered or holds
+     focus. Flush with the bar's bottom edge, the item's own padding bridging
+     the gap, so the hover that keeps it open isn't dropped on the way down. */
+  .admin-bar__menu {
+    display: none;
+    inset: calc(100% + 0.5rem) auto auto 0;
+    list-style: none;
+    margin: 0;
+    position: absolute;
+
+    .admin-bar__dropdown:is(:hover, :focus-within) > & {
+      display: block;
+    }
+
+    .admin-bar__dropdown--end > & {
+      inset-inline: auto 0;
+    }
+
+    &::before {
+      content: "";
+      inset: -0.6rem 0 auto 0;
+      block-size: 0.6rem;
+      position: absolute;
+    }
+  }
+
+  @media (max-width: 782px) {
+    .admin-bar .admin-bar__label {
+      display: none;
+    }
+  }
+}
+
+/* The admin menu. */
+@layer components {
+  /* Fixed down the left: scrolling the page never moves it. Taller than the
+     window, it scrolls on its own. The column behind it keeps its gray down
+     the window. On a narrow screen it's a drawer (no fly-outs there). */
+  .admin-menu {
+    inline-size: var(--admin-menu-width);
+    inset: var(--admin-bar-height) auto 0 0;
+    position: fixed;
+    z-index: var(--z-nav);
+
+    :root[data-menu="folded"] & {
+      inline-size: var(--admin-menu-folded-width);
+    }
+
+    /* Fixed while the page scrolls, and scrolling on its own only when it's
+       taller than the window (.admin-menu--scrolls, admin_menu_controller's):
+       Safari clips even fixed fly-outs to a scrolling menu, so one that
+       fits mustn't scroll. */
+    @media (min-width: 783px) {
+      &.admin-menu--scrolls {
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        scrollbar-width: thin;
+      }
+    }
+
+    @media (max-width: 782px) {
+      :root & {
+        inline-size: min(var(--admin-menu-width), 85vw);
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        scrollbar-width: thin;
+        transform: translateX(-100%);
+        transition: transform 150ms ease;
+      }
+
+      :root[data-menu-open] & {
+        box-shadow: var(--shadow-overlay);
+        transform: none;
+      }
+    }
+  }
+
+  @media (min-width: 783px) {
+    #global-container:has(#admin-menu)::before {
+      background-color: var(--color-gray-50);
+      border-inline-end: 1px solid var(--color-gray-200);
+      content: "";
+      inline-size: var(--admin-menu-width);
+      inset: var(--admin-bar-height) auto 0 0;
+      position: fixed;
+      z-index: calc(var(--z-nav) - 1);
+
+      :root[data-menu="folded"] & {
+        inline-size: var(--admin-menu-folded-width);
+      }
+    }
+  }
+
+  .admin-menu__item {
+    position: relative;
+  }
+
+  /* While an item's fly-out is open, a bridge from the item across the
+     menu's padding to the fly-out, which overlaps the menu's edge, so moving
+     the pointer straight over stays in the item. On the item, not the
+     fly-out, which scrolls and so would clip it. Which fly-out is open is
+     admin_menu_controller's (.admin-menu__item--open), so a pointer crossing
+     other items on its way to one doesn't close it; focus opens one too. */
+  @media (min-width: 783px) {
+    .admin-menu__item:has(> .admin-menu__submenu):is(.admin-menu__item--open, :focus-within)::after {
+      content: "";
+      inset-block: 0;
+      inset-inline-end: -1.5rem;
+      inline-size: 1.5rem;
+      position: absolute;
+    }
+  }
+
+  /* An item keeps its hover look while the pointer is anywhere in it, its
+     fly-out included, so it's clear which item the fly-out belongs to. */
+  .admin-menu__item:not(.admin-menu__item--current):is(:hover, .admin-menu__item--open, :focus-within) > .admin-menu__link {
+    background-color: var(--color-gray-100);
+    color: var(--color-gray-900);
+  }
+
+  @media (min-width: 783px) {
+    :root[data-menu="folded"] :is(.admin-menu__link, .admin-menu__collapse) > .admin-menu__label {
+      display: none;
+    }
+
+    :root[data-menu="folded"] .admin-menu__link {
+      justify-content: center;
+    }
+  }
+
+  /* A submenu: open inline under the current item, its links indented under
+     the item's label; flying out to the right of any other item while it's
+     hovered or holds focus, as a card. */
+  .admin-menu__submenu {
+    display: none;
+    list-style: none;
+    margin: 0;
+  }
+
+  .admin-menu__submenu-head {
+    display: none;
+  }
+
+  .admin-menu__submenu-link {
+    padding-inline-start: 2.75rem;
+  }
+
+  .admin-menu__item--current > .admin-menu__submenu {
+    display: block;
+  }
+
+  @media (min-width: 783px) {
+    .admin-menu__item:not(.admin-menu__item--current):is(.admin-menu__item--open, :focus-within) > .admin-menu__submenu,
+    :root[data-menu="folded"] .admin-menu__item:is(.admin-menu__item--open, :focus-within) > .admin-menu__submenu {
+      background-color: var(--color-white);
+      border: 1px solid var(--color-gray-200);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-overlay);
+      display: block;
+      /* Beside the menu, at the item's height (--flyout-top, set by
+         admin_menu_controller, which also shifts it up to fit the window). */
+      inset: var(--flyout-top, var(--admin-bar-height)) auto auto calc(var(--admin-menu-width) - 0.5rem);
+      max-block-size: calc(100dvh - var(--admin-bar-height));
+      min-inline-size: 13rem;
+      overflow-y: auto;
+      padding: 0.375rem;
+      position: fixed;
+      z-index: 1;
+
+      :root[data-menu="folded"] & {
+        inset-inline-start: calc(var(--admin-menu-folded-width) - 0.5rem);
+      }
+
+      .admin-menu__submenu-link {
+        padding-inline-start: 0.625rem;
+      }
+
+    }
+
+    /* Folded, the current item's submenu flies out too, headed by its name. */
+    :root[data-menu="folded"] .admin-menu__item--current > .admin-menu__submenu {
+      display: none;
+    }
+
+    :root[data-menu="folded"] .admin-menu__item:is(.admin-menu__item--open, :focus-within) > .admin-menu__submenu {
+      display: block;
+
+      .admin-menu__submenu-head {
+        display: block;
+      }
+    }
+  }
+
+  .admin-menu__collapse {
+    margin-block-start: auto;
+
+    :root[data-menu="folded"] & {
+      justify-content: center;
+      padding-inline: 0;
+    }
+
+    :root[data-menu="folded"] & .admin-menu__icon {
+      transform: scaleX(-1);
+    }
+
+    @media (max-width: 782px) {
+      display: none;
+    }
+  }
+
+  /* Behind the open drawer, a shade that closes it when tapped. */
+  .admin-menu__backdrop {
+    display: none;
+
+    @media (max-width: 782px) {
+      :root[data-menu-open] & {
+        background-color: rgb(0 0 0 / 0.4);
+        display: block;
+        inset: var(--admin-bar-height) 0 0 0;
+        position: fixed;
+        z-index: calc(var(--z-nav) - 1);
+      }
+    }
+  }
+}
+
+/* The flash's toasts (layouts/shared/_flash): stacked at the bottom right,
+   above the page. A notice holds for a few seconds, then fades out and is
+   removed (animationend); an alert stays until it's dismissed. */
+@layer components {
+  .toasts {
+    align-items: end;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    inset-block-end: calc(1rem + env(safe-area-inset-bottom, 0px));
+    inset-inline-end: 1rem;
+    max-inline-size: min(26rem, calc(100vw - 2rem));
+    pointer-events: none;
+    position: fixed;
+    z-index: var(--z-flash);
+  }
+
+  .toast {
+    pointer-events: auto;
+    transition: opacity 200ms ease-out, translate 200ms ease-out;
+
+    @starting-style {
+      opacity: 0;
+      translate: 0 1rem;
+    }
+
+    /* A delay, not a duration, so it still holds when reduced motion cuts
+       animations short. */
+    &.notice--success {
+      animation: toast-out 300ms ease-in 5s both;
+    }
+
+    &:hover,
+    &:focus-within {
+      animation-play-state: paused;
+    }
+  }
+
+  @keyframes toast-out {
+    to { opacity: 0; translate: 0 0.5rem; }
+  }
+}
+
+/* The actions beside a page's title (layouts/shared/_page_header): a button
+   that opens a popup sits level with the rest. */
+@layer components {
+  .page-title__actions {
+    details:has(> summary),
+    details[open] > summary {
+      margin-block-end: 0;
+    }
+
+    kbd {
+      display: none;
+    }
+  }
+}
+
+/* List tables, as WordPress lays them out (layouts/shared/_status_links,
+/* _bulk_actions, _row_links; the markup's classes draw them): the row
+/* actions under a row's title show while the row is hovered or holds focus,
+/* and always on a touch screen. */
+@layer components {
+  .row-actions {
+    visibility: hidden;
+
+    tr:is(:hover, :focus-within) &,
+    &:has(dialog[open]) {
+      visibility: visible;
+    }
+
+    @media (any-hover: none) {
+      visibility: visible;
+    }
+  }
+
+  /* A list table's tick-box column (screen_options_controller passes over it). */
+  .data-table__check {
+    inline-size: calc(var(--spacing) * 10);
+  }
+}
+
+/* WordPress's Screen Options tab (layouts/shared/_screen_options,
+/* screen_options_controller): space below it only on a screen that shows it,
+/* its caret turned up while it's open, and the column choices the controller
+/* builds. */
+@layer components {
+  .screen-options__tab[aria-expanded="true"] .icon {
+    rotate: 180deg;
+  }
+
+  .screen-options__choice {
+    align-items: center;
+    display: inline-flex;
+    gap: calc(var(--spacing) * 2);
+  }
+}
+
+/* The site's logo at the top of the admin menu, left-aligned and at most
+   50px tall (scaled down to the menu's width if it's wider); folded to icons,
+   its favicon instead (layouts/shared/_admin_menu). */
+@layer components {
+  .admin-menu__brand-logo {
+    max-height: 50px;
+  }
+
+  .admin-menu__brand-favicon {
+    display: none;
+  }
+
+  @media (min-width: 783px) {
+    :root[data-menu="folded"] {
+      .admin-menu__brand-logo:has(+ .admin-menu__brand-favicon) {
+        display: none;
+      }
+
+      .admin-menu__brand-favicon {
+        display: block;
+      }
+    }
+  }
+}
+

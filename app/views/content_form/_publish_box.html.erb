@@ -1,0 +1,103 @@
+<%# locals: (record:, form:, scope:, prefix:, trash_name:, trash_path: nil, trash_form: nil, statuses: nil) %>
+<%# The editor's first box, WordPress's Publish box: Save Draft; the status,
+    schedule and revisions, each with an Edit that opens it in place; Move to
+    Trash on the left and the one primary action on the right
+    (publish_action). A record without a status (a global) has only Update.
+    Without the publish capability there's no primary action, and a note says
+    why (ContentEditing refuses the save). %>
+<% can_publish = can_publish_content?(prefix) %>
+<% statusful = record.respond_to?(:status) %>
+<% label, sets_status = statusful ? publish_action(record, can_publish: can_publish) : [ ("Update" if can_publish), nil ] %>
+<% status = statusful ? (record.status.presence || "draft") : nil %>
+<% revisions = record.persisted? && record.respond_to?(:versions) ? record.versions.size : 0 %>
+<% lines = statusful || revisions.positive? || !can_publish %>
+<% line_classes = "flex items-start gap-2 text-gray-700" %>
+<% icon_classes = "mt-0.5 size-4 text-gray-400" %>
+<% field_classes = "mt-2 flex flex-col gap-3" %>
+<%= postbox "publish", "Publish", flush: true do %>
+  <div data-controller="publish-box">
+    <% if statusful && status == "draft" %>
+      <div class="px-5 pt-4">
+        <button type="submit" class="<%= ui(:button, :small) %>" data-action="publish-box#submit" data-publish-box-status-param="draft">Save Draft</button>
+      </div>
+    <% end %>
+
+    <% if lines %>
+      <div class="flex flex-col gap-3 px-5 py-4">
+        <% if statusful %>
+          <div class="<%= line_classes %>">
+            <%= icon_tag "pinned", class: icon_classes %>
+            <div class="min-w-0 flex-1">
+              <span>Status: <strong class="font-semibold text-gray-900"><%= status.humanize %></strong></span>
+              <details class="inline-edit">
+                <summary class="<%= ui(:link) %>">Edit</summary>
+                <label class="<%= field_classes %>">
+                  <span class="sr-only">Status</span>
+                  <%= form.select :status, statuses, {}, class: "w-full", data: { publish_box_target: "status" } %>
+                </label>
+              </details>
+            </div>
+          </div>
+
+          <div class="<%= line_classes %>">
+            <%= icon_tag "history", class: icon_classes %>
+            <div class="min-w-0 flex-1">
+              <span>
+                <% if record.publish_at.present? && record.publish_at > Time.current && status != "published" %>
+                  Scheduled for <strong class="font-semibold text-gray-900"><%= site_time_tag(record.publish_at) %></strong>
+                <% elsif status == "published" && record.respond_to?(:published_at) && record.published_at.present? %>
+                  Published on <strong class="font-semibold text-gray-900"><%= site_time_tag(record.published_at) %></strong>
+                <% else %>
+                  Publish <strong class="font-semibold text-gray-900">immediately</strong>
+                <% end %>
+              </span>
+              <details class="inline-edit">
+                <summary class="<%= ui(:link) %>">Edit</summary>
+                <div class="<%= field_classes %>">
+                  <%= render "content_form/schedule", record: record, scope: scope %>
+                </div>
+              </details>
+            </div>
+          </div>
+          <% if record.unpublish_at.present? && record.unpublish_at > Time.current && status == "published" %>
+            <p class="<%= ui(:notice, :yellow) %>"><span>Will unpublish <%= site_time_tag(record.unpublish_at) %>.</span></p>
+          <% end %>
+        <% end %>
+
+        <% if revisions.positive? %>
+          <div class="<%= line_classes %>">
+            <%= icon_tag "refresh", class: icon_classes %>
+            <div class="min-w-0 flex-1">
+              <span>Revisions: <strong class="font-semibold text-gray-900"><%= revisions %></strong></span>
+              <% if (browse = versions_path_for(record)) %>
+                <%= link_to "Browse", browse, class: ui(:link) %>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+
+        <% unless can_publish %>
+          <p class="<%= ui(:notice, :yellow) %>">
+            <% if statusful && status == "draft" %>
+              Your role can't publish. Save it as a draft, and someone who can publishes it.
+            <% elsif record.persisted? %>
+              This <%= record.model_name.human.downcase %> is live, and your role can't publish, so it can't be changed here.
+            <% end %>
+          </p>
+        <% end %>
+      </div>
+    <% end %>
+
+    <% if trash_path || label %>
+      <div class="<%= class_names("flex items-center justify-between gap-2 rounded-b-xl bg-gray-50 px-5 py-3", lines ? "border-t border-gray-200" : nil) %>">
+        <% if trash_path %>
+          <%= render "layouts/shared/delete_dialog", name: trash_name, path: trash_path, trigger_text: "Move to Trash", form: trash_form,
+                message: "It goes to the trash, where it can be restored." %>
+        <% end %>
+        <% if label %>
+          <button type="submit" class="<%= ui(:button, :primary, "ms-auto") %>" data-action="publish-box#submit" data-publish-box-status-param="<%= sets_status %>"><%= label %></button>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+<% end %>

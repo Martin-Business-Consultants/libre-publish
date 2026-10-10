@@ -1,0 +1,23 @@
+/* The sitemap's Quick edit (sitemaps/index): the last row action, opening
+   the row's sitemap settings in place on a line of its own. */
+@layer components {
+  /* Inline, so a closed Quick edit sits on the actions' line after its "|". */
+  .quick-edit > summary {
+    display: inline;
+    list-style: none;
+
+    &::-webkit-details-marker { display: none; }
+  }
+
+  /* Open, it takes a line of its own under the other actions, without the
+     separator it had beside them. */
+  .row-actions > .quick-edit[open] {
+    flex-basis: 100%;
+
+    &::before { content: none; }
+  }
+
+  .row-actions:has(.quick-edit[open]) {
+    visibility: visible;
+  }
+}

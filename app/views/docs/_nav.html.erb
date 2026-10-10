@@ -1,0 +1,17 @@
+<%# locals: (guides:, current:) %>
+<%# The guides and site health, down the Docs sidebar. %>
+<% items = [ [ "All docs", docs_path, :index ] ] + guides.map { [ it.title, doc_path(it.slug), it.slug ] } + [ [ "Site health", site_health_docs_path, :site_health ] ] %>
+<%= postbox "docs-nav", "Docs" do %>
+  <nav aria-label="Docs">
+    <ul class="-mx-2 space-y-0.5">
+      <% items.each do |title, path, key| %>
+        <%# herb:key path %>
+        <li>
+          <%= link_to title, path, class: class_names("block rounded-md px-2.5 py-1.5", current == key ? "bg-gray-100 font-medium text-gray-900" : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"),
+                aria: { current: ("page" if current == key) } %>
+        </li>
+      <% end %>
+    </ul>
+  </nav>
+  <p class="<%= ui(:help) %>">From the CLI or MCP: <code class="font-mono text-gray-700">cms docs</code>, <code class="font-mono text-gray-700">cms site-health</code>.</p>
+<% end %>

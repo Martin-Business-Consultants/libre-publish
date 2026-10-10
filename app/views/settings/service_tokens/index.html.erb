@@ -1,0 +1,66 @@
+<% @page_title = "Service tokens" %>
+<% can_manage = Current.user.can?("settings:write") %>
+
+<%= render "layouts/shared/page_header", title: "Service tokens" %>
+
+<section class="<%= ui(:panel, "space-y-4 p-6") %>">
+  <p class="text-sm text-gray-500">Credentials for machines — a published site, a build, an agent. They belong to this workspace rather than to a person, so rotating your own token or changing your role can’t take production down.</p>
+
+  <div class="space-y-2 text-sm text-gray-700">
+    <strong class="font-semibold text-gray-900">Which token goes where</strong>
+    <ul class="list-disc space-y-1.5 pl-5">
+      <li>The published site — its <code>CMS_API_TOKEN</code>. Issue it against <strong>Production site</strong> (read-only): the site renders, it never edits, so a leaked secret reads only what the site already shows the world.</li>
+      <li><code>USER_AGENT_TOKEN</code> — agents and scripts. Issue it against <strong>Agent</strong> (writes drafts, never publishes): changing live content or publishing is refused, and with the Approvals plugin every change waits for a person.</li>
+    </ul>
+  </div>
+
+  <% unless can_manage %>
+    <p class="text-sm text-gray-500">Your role can see these tokens but not issue, reveal or change them (that needs settings:write).</p>
+  <% end %>
+</section>
+
+<% if can_manage %>
+  <section class="<%= ui(:panel, "space-y-5 p-6") %>">
+    <h2 class="<%= ui(:heading) %>">Issue a token</h2>
+    <%= form_with url: settings_service_tokens_path, class: "space-y-5" do |form| %>
+      <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <%= settings_field "Name" do %>
+          <%= form.text_field :name, required: true, placeholder: "Production site", class: "w-full" %>
+        <% end %>
+        <%= settings_field "Role" do %>
+          <%= form.select :role_id, @roles.map { |role| [role.name, role.id] }, { include_blank: "Pick a role" }, required: true, class: "w-full" %>
+        <% end %>
+      </div>
+      <%= settings_field "What it’s for (optional)" do %>
+        <%= form.text_field :description, placeholder: "Cloudflare — robinsonfirm.com", class: "w-full" %>
+      <% end %>
+      <div><button type="submit" class="<%= ui(:button, :primary) %>">Issue token</button></div>
+    <% end %>
+  </section>
+<% end %>
+
+<section class="<%= ui(:panel, "space-y-2 p-6") %>">
+  <h2 class="<%= ui(:heading) %>">Live</h2>
+  <% if @live.any? %>
+    <ul class="divide-y divide-gray-100">
+      <% @live.each do |token| %>
+        <%# herb:key token.id %>
+        <%= render "settings/service_tokens/service_token", service_token: token, can_manage: can_manage %>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="py-12 text-center text-sm text-gray-500">No service tokens yet.</p>
+  <% end %>
+</section>
+
+<% if @revoked.any? %>
+  <section class="<%= ui(:panel, "space-y-2 p-6") %>">
+    <h2 class="<%= ui(:heading) %>">Revoked</h2>
+    <ul class="divide-y divide-gray-100">
+      <% @revoked.each do |token| %>
+        <%# herb:key token.id %>
+        <%= render "settings/service_tokens/service_token", service_token: token, can_manage: can_manage %>
+      <% end %>
+    </ul>
+  </section>
+<% end %>

@@ -1,0 +1,14 @@
+<%# locals: (reference:) %>
+<%# How the API and the `cms` CLI name this record, with a copy button. %>
+<div class="flex items-center gap-2 rounded-md border border-gray-200 bg-gray-50 py-1.5 pl-3 pr-1">
+  <span class="flex min-w-0 flex-1 flex-col">
+    <span class="text-xs text-gray-500">Reference</span>
+    <code class="truncate text-xs text-gray-900"><%= reference %></code>
+  </span>
+  <button type="button" class="<%= ui(:button, :plain, :icon) %>" title="Copy the reference"
+          data-controller="copy-to-clipboard" data-copy-to-clipboard-content-value="<%= reference %>"
+          data-copy-to-clipboard-success-class="btn--success" data-action="copy-to-clipboard#copy">
+    <%= icon_tag "copy-paste", class: "size-4" %>
+    <span class="sr-only">Copy the reference</span>
+  </button>
+</div>

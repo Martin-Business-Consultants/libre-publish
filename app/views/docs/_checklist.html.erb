@@ -1,0 +1,30 @@
+<%# locals: (checks:, groups:, key:) %>
+<%# A checklist's checks (Checklist::Check), a box per group: each one's mark
+(passes, to do, or ? — yours to judge), what it's about, where to fix it
+and its cms command, for Site health. %>
+<% groups.each do |group| %>
+  <%# herb:key group %>
+  <% in_group = checks.select { it.group == group } %>
+  <% next if in_group.empty? %>
+  <%= postbox key + "-" + group.parameterize, group do %>
+    <ul class="space-y-4">
+      <% in_group.each do |check| %>
+        <%# herb:key check.key %>
+        <% tone_classes = check.ok.nil? ? "bg-gray-100 text-gray-500" : (check.ok ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700") %>
+        <li class="flex items-start gap-3" id="check_<%= check.key %>">
+          <span class="<%= class_names("flex h-6 w-6 shrink-0 items-center justify-center rounded-full", tone_classes) %>" aria-label="<%= check.ok.nil? ? "Check yourself" : (check.ok ? "Passes" : "To do") %>">
+            <%= icon_tag(check.ok ? "check" : (check.ok.nil? ? "help-circle" : "close"), class: "size-3") %>
+          </span>
+          <span class="flex min-w-0 flex-col gap-0.5">
+            <strong class="text-sm font-medium text-gray-900"><%= check.title %></strong>
+            <span class="text-xs text-gray-500"><%= check.detail %></span>
+            <span class="flex flex-wrap items-center gap-2 text-xs">
+              <% if check.href %><%= link_to (check.ok ? "Open" : "Fix it"), check.href, class: ui(:link) %><% end %>
+              <% if check.cli %><code class="rounded-sm bg-gray-100 px-1 py-0.5 font-mono text-gray-700"><%= check.cli %></code><% end %>
+            </span>
+          </span>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+<% end %>

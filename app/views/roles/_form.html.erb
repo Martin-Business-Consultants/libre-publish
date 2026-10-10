@@ -1,0 +1,73 @@
+<%# locals: (role:) %>
+<%# A role, laid out like the editors: its name, description and the
+    capabilities it grants in the wider column; who holds it, and saving (or
+    deleting it) in the narrower one. A system role is shown but locked. %>
+<% locked = role.system? %>
+<% removable = role.persisted? && !locked && Current.user.can?("roles:delete") %>
+<%= render "layouts/shared/errors", record: role %>
+
+<%= form_with model: role, id: "role_form", class: "record-form mt-5 grid grid-cols-1 items-start gap-6 lg:grid-cols-3",
+      data: { controller: "form", action: "keydown.esc->form#cancel" } do |form| %>
+  <div class="min-w-0 space-y-6 lg:col-span-2">
+    <%= postbox "role-details", "Role" do %>
+      <div class="space-y-5">
+        <%= settings_field "Name" do %>
+          <%= form.text_field :name, required: true, disabled: locked, class: "w-full", autofocus: role.new_record?, autocomplete: "off", placeholder: "Editor" %>
+        <% end %>
+        <%= settings_field "Description" do %>
+          <%= form.text_area :description, rows: 2, disabled: locked, class: "w-full", placeholder: "What this role is for." %>
+        <% end %>
+      </div>
+    <% end %>
+
+    <%= postbox "role-permissions", "Permissions" do %>
+      <%= tag.fieldset class: "space-y-4", disabled: locked do %>
+        <legend class="sr-only">Permissions</legend>
+        <p class="text-sm text-gray-500">Pick which capabilities this role grants. Users with this role can do only what’s ticked.</p>
+        <%= hidden_field_tag "role[permissions][]", "", id: nil %>
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <% Permissions.catalog.each do |group, capabilities| %>
+            <%# herb:key group %>
+            <div class="<%= ui(:panel, "p-4") %>">
+              <fieldset class="space-y-2" data-controller="select-all">
+                <legend class="w-full">
+                  <label class="flex items-center gap-2 text-sm font-semibold text-gray-900">
+                    <input type="checkbox" aria-label="Every <%= group %> capability" data-select-all-target="all" data-action="select-all#toggle">
+                    <span><%= group %></span>
+                  </label>
+                </legend>
+                <% capabilities.each do |capability| %>
+                  <%# herb:key capability %>
+                  <label class="flex items-center gap-2">
+                    <%= check_box_tag "role[permissions][]", capability, role.admin? || role.permissions.include?(capability), id: "role_permission_" + capability.tr(":", "_"), data: { select_all_target: "box", action: "select-all#sync" } %>
+                    <span class="font-mono text-xs text-gray-700"><%= capability %></span>
+                    <span class="ml-auto text-xs text-gray-500"><%= capability_action_label(capability) %></span>
+                  </label>
+                <% end %>
+              </fieldset>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+
+  <aside class="flex min-w-0 flex-col gap-4 top-16 lg:sticky">
+    <% note = capture do %>
+      <% if locked %>
+        <p class="text-sm text-gray-500">A system role. It can’t be edited or deleted.</p>
+      <% end %>
+    <% end %>
+    <%= render "layouts/shared/save_box", key: "role-save", title: (role.new_record? ? "Add role" : "Save"),
+          button: (locked ? nil : (role.new_record? ? "Add role" : "Save changes")),
+          lines: (role.persisted? ? [ [ "everyone", "Users", role.users.count ] ] : nil), extra: (note if locked),
+          trash_name: role.name, trash_path: (role_path(role) if removable), trash_form: ("role_delete_form" if removable),
+          trash_message: "Users holding it are left with no role." %>
+  </aside>
+
+  <%= link_to "Cancel and go back", roles_path, data: { form_target: "cancel" }, hidden: true %>
+<% end %>
+<% if removable %>
+  <%= render "layouts/shared/delete_form", id: "role_delete_form", path: role_path(role) %>
+<% end %>
+<%= render "content_form/postbox_state" %>

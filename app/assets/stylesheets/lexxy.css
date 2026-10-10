@@ -1,0 +1,298 @@
+@import url("lexxy-variables.css") layer(base);
+@import url("lexxy-content.css") layer(base);
+@import url("lexxy-editor.css") layer(base);
+
+/* Lexxy, the rich text editor (content_form/fields/_rich_text), draws its own
+   DOM, so it's styled here rather than in the markup: its colors read
+   Litewind's gray and accent, which the dark theme re-points (_global.css),
+   so the editor turns over with the rest of the admin. */
+:root {
+  --lexxy-color-ink: var(--color-gray-900);
+  --lexxy-color-ink-medium: var(--color-gray-600);
+  --lexxy-color-ink-light: var(--color-gray-400);
+  --lexxy-color-ink-lighter: var(--color-gray-200);
+  --lexxy-color-ink-lightest: var(--color-gray-100);
+  --lexxy-color-ink-inverted: var(--color-white);
+
+  --lexxy-color-canvas: var(--color-white);
+  --lexxy-color-text: var(--color-gray-900);
+  --lexxy-color-text-subtle: var(--color-gray-500);
+
+  --lexxy-color-accent-dark: var(--color-blue-600);
+  --lexxy-color-accent-medium: var(--color-blue-400);
+  --lexxy-color-accent-light: var(--color-blue-200);
+  --lexxy-color-accent-lightest: var(--color-blue-50);
+  --lexxy-color-link: var(--color-blue-600);
+
+  --lexxy-color-red: var(--color-red-600);
+  --lexxy-color-green: var(--color-green-600);
+  --lexxy-color-blue: var(--color-blue-500);
+  --lexxy-color-purple: var(--color-blue-700);
+
+  --lexxy-color-code-bg: var(--color-gray-100);
+  --lexxy-color-code-token-att: var(--color-red-600);
+  --lexxy-color-code-token-comment: var(--color-gray-500);
+  --lexxy-color-code-token-function: var(--color-blue-700);
+  --lexxy-color-code-token-operator: var(--color-red-600);
+  --lexxy-color-code-token-property: var(--color-blue-600);
+  --lexxy-color-code-token-punctuation: var(--color-gray-700);
+  --lexxy-color-code-token-selector: var(--color-green-700);
+  --lexxy-color-code-token-variable: var(--color-yellow-700);
+
+  --lexxy-color-selected: var(--color-blue-100);
+  --lexxy-color-selected-hover: var(--color-blue-200);
+  --lexxy-color-selected-dark: var(--color-blue-500);
+
+  --lexxy-color-table-header-bg: var(--color-gray-50);
+  --lexxy-color-table-cell-border: var(--color-gray-200);
+  --lexxy-color-table-cell-selected-bg: var(--color-blue-100);
+  --lexxy-color-table-cell-toggle: var(--color-blue-100);
+  --lexxy-color-table-cell-remove: var(--color-red-50);
+
+  --lexxy-font-base: var(--font-sans);
+  --lexxy-font-mono: var(--font-mono);
+  --lexxy-radius: var(--radius-md);
+  --lexxy-shadow: var(--shadow-overlay);
+  --lexxy-focus-ring-color: var(--color-blue-500);
+  --lexxy-focus-ring-offset: 2px;
+}
+
+@layer components {
+  /* The editor as a form field, after Payload's rich text: a bordered box,
+     the toolbar on a gray-50 strip across its top, the border darkening
+     while the editor holds focus as a text field's does (base.css). */
+  .content-rich-text lexxy-editor.lexxy-content {
+    --lexxy-editor-padding: calc(var(--spacing) * 3) calc(var(--spacing) * 3.5);
+    --lexxy-toolbar-button-size: calc(var(--spacing) * 7);
+    --lexxy-toolbar-gap: 1px;
+    --lexxy-toolbar-padding: calc(var(--spacing) * 1);
+
+    background-color: var(--color-white);
+    border: 1px solid var(--color-gray-300);
+    border-radius: var(--radius-md);
+    display: block;
+    padding: 0;
+
+    &:hover:not(:focus-within) {
+      border-color: var(--color-gray-400);
+    }
+
+    &:focus-within {
+      border-color: var(--color-gray-900);
+      outline: none;
+    }
+
+    lexxy-toolbar {
+      background-color: var(--color-gray-50);
+      border-block-end: 1px solid var(--color-gray-200);
+      border-start-end-radius: var(--radius-md);
+      border-start-start-radius: var(--radius-md);
+      inline-size: auto;
+      margin: 0;
+      max-inline-size: none;
+    }
+
+    .lexxy-editor__content {
+      min-block-size: 10lh;
+    }
+  }
+
+  lexxy-toolbar {
+    color: var(--color-gray-600);
+
+    svg {
+      fill: currentColor;
+    }
+  }
+
+  /* Toolbar buttons: quiet until hovered, a gray fill while their format is
+     on. The link dropdown's own action buttons keep the look below. */
+  .lexxy-editor__toolbar-button:not(.lexxy-editor__toolbar-dropdown-actions *) {
+    background: transparent;
+    border-radius: var(--radius-sm);
+
+    @media (any-hover: hover) {
+      &:hover:not([aria-pressed="true"], [aria-disabled="true"]) {
+        background-color: var(--color-gray-200);
+        color: var(--color-gray-900);
+      }
+    }
+
+    &[aria-pressed="true"],
+    &[aria-expanded="true"] {
+      background-color: var(--color-gray-200);
+      color: var(--color-gray-900);
+    }
+  }
+
+  .lexxy-editor__toolbar-button--chevron::after {
+    block-size: 0.3rem;
+    inline-size: 0.3rem;
+  }
+
+  /* The link dropdown: Link as the primary button, Unlink outlined. */
+  lexxy-link-dropdown {
+    [data-dropdown-panel] {
+      --lexxy-toolbar-spacing: 1.5ch;
+
+      background-color: var(--color-white);
+      border: 1px solid var(--color-gray-200);
+      border-radius: var(--radius-xl);
+    }
+
+    .lexxy-editor__toolbar-dropdown-actions .lexxy-editor__toolbar-button {
+      border-radius: var(--radius-md);
+
+      &[value="link"] {
+        background-color: var(--color-gray-900);
+        color: var(--color-white);
+
+        &:hover {
+          background-color: var(--color-gray-800);
+        }
+      }
+
+      &[value="unlink"] {
+        background-color: var(--color-white);
+        border: 1px solid var(--color-gray-300);
+        color: var(--color-gray-900);
+      }
+    }
+  }
+
+  .lexxy-code-language-picker {
+    border-radius: var(--radius-md);
+  }
+
+  lexxy-table-tools {
+    font-size: var(--text-xs);
+  }
+
+  [data-lexical-cursor] {
+    animation: blink 1s step-end infinite;
+    block-size: 1lh;
+    border-inline-start: 1px solid currentColor;
+    line-height: inherit;
+    margin-block: 1em;
+  }
+
+  .lexxy-prompt-menu {
+    max-inline-size: min(35ch, calc(100% - var(--lexxy-prompt-offset-x)));
+  }
+
+  /* Rich text as it reads: in the editor, in a Markdown field's preview
+     (markdown_previews/_preview) and in Docs. */
+  .lexxy-content {
+    --lexxy-content-margin: 0.5lh;
+
+    color: currentColor;
+
+    h1, h2, h3, h4, h5, h6 {
+      font-weight: var(--font-weight-semibold);
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+      overflow-wrap: break-word;
+      text-wrap: balance;
+    }
+
+    p:has(+ p) {
+      margin: 0;
+    }
+
+    /* Lexxy wraps each list item's text in a paragraph: no paragraph gaps
+       inside a list, so a list reads as tight on the page as in the editor. */
+    li > p {
+      margin: 0;
+      padding: 0;
+    }
+
+    li > ul, li > ol {
+      margin-block: 0;
+    }
+
+    ol, ul {
+      &:not(.lexxy-prompt-menu) {
+        padding-inline-start: 1.25em;
+      }
+    }
+
+    ul:not(.lexxy-prompt-menu) {
+      list-style: disc;
+    }
+
+    ol {
+      list-style: decimal;
+    }
+
+    a {
+      color: var(--color-blue-600);
+      text-decoration: underline;
+    }
+
+    blockquote {
+      border-inline-start: 3px solid var(--color-gray-300);
+      color: var(--color-gray-600);
+      padding-block: 0;
+    }
+
+    code:not(pre code) {
+      background: var(--color-gray-100);
+      border: 1px solid var(--color-gray-200);
+      border-radius: var(--radius-sm);
+    }
+
+    .horizontal-divider {
+      padding-block: var(--lexxy-content-margin);
+
+      hr { margin: 0; }
+    }
+
+    hr {
+      border: 0;
+      border-block-end: 1px solid var(--color-gray-300);
+      inline-size: 100%;
+      margin: calc(var(--lexxy-content-margin) * 2) 0;
+    }
+
+    table {
+      th, td {
+        font-size: var(--text-sm);
+        padding-block: 0.75ch;
+      }
+
+      tr:not([data-action="delete"]) {
+        th:not([class*="selected"], [data-action="delete"], [data-action="toggle"]) { background-color: var(--color-gray-50); }
+        td:not([class*="selected"], [data-action="delete"], [data-action="toggle"]) { background-color: var(--color-white); }
+      }
+    }
+
+    .attachment {
+      margin-inline: auto;
+    }
+  }
+
+  .attachment-gallery {
+    .attachment {
+      display: inline-block;
+      inline-size: calc(33.333% - 0.8ch);
+    }
+
+    &.attachment-gallery--2,
+    &.attachment-gallery--4 {
+      .attachment {
+        inline-size: calc(50% - 0.8ch);
+      }
+    }
+  }
+
+  action-text-attachment[content-type^='application/vnd.actiontext'] {
+    lexxy-node-delete-button {
+      inset-inline-start: -0.25ch;
+
+      .lexxy-floating-controls__group {
+        background-color: var(--color-blue-600);
+        border-radius: 50%;
+      }
+    }
+  }
+}

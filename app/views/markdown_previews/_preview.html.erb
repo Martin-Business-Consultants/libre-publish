@@ -1,0 +1,8 @@
+<%# locals: (text:) %>
+<div class="lexxy-content">
+  <% if text.present? %>
+    <%= sanitize Markdown.to_html(text), tags: Markdown::TAGS, attributes: Markdown::ATTRIBUTES %>
+  <% else %>
+    <p class="text-gray-500">Nothing to preview.</p>
+  <% end %>
+</div>

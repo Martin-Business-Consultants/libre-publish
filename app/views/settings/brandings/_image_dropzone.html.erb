@@ -1,0 +1,28 @@
+<%# locals: (form:, kind:, label:, hint:, asset:) %>
+<%# A branding image (logo, favicon) as a drop zone: drop an image on it or
+    click to choose one, and it's saved to the media library (folder
+    /branding) with the form. <kind>_id keeps the current one; Remove clears
+    it (image_dropzone_controller). settings.css colors the zone by state. %>
+<div class="flex flex-col gap-1.5">
+  <span class="<%= ui(:label) %>"><%= label %></span>
+  <div class="<%= class_names("image-dropzone relative flex min-h-36 flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-4 text-center", "image-dropzone--filled": asset) %>" data-controller="image-dropzone"
+       data-action="dragover->image-dropzone#over dragleave->image-dropzone#leave drop->image-dropzone#dropped">
+    <%= form.hidden_field "#{kind}_id", value: asset&.id, data: { image_dropzone_target: "id" } %>
+    <div class="image-dropzone__preview contents" data-image-dropzone-target="preview">
+      <% if asset %>
+        <%= media_thumbnail asset, size: 320 %>
+      <% end %>
+    </div>
+    <span class="image-dropzone__prompt inline-flex items-center gap-1.5 text-gray-500">
+      <%= icon_tag "image", class: "size-4" %>
+      Drop an image here, or click to choose
+    </span>
+    <%= form.file_field "#{kind}_file", accept: "image/*", class: "absolute inset-0 cursor-pointer opacity-0", aria: { label: label },
+          data: { image_dropzone_target: "file", action: "change->image-dropzone#chosen" } %>
+  </div>
+  <div class="flex items-center justify-between gap-2">
+    <span class="<%= ui(:help) %>"><%= hint %></span>
+    <%= tag.button "Remove", type: "button", class: ui(:button, :plain, :small), hidden: asset.nil?,
+          data: { image_dropzone_target: "remove", action: "image-dropzone#remove" } %>
+  </div>
+</div>

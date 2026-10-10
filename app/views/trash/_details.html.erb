@@ -1,0 +1,43 @@
+<%# locals: (kind:, record:, deletion:) %>
+<%# What a trashed item was, when it went and who sent it, and bringing it
+    back or deleting it for good (both leave the sheet: turbo_frame _top). %>
+<% can_write = Current.user.can?("trash:write") %>
+<% label = AuditLog.describe_target(record).to_s.presence || "Untitled " + kind %>
+<div class="flex flex-col gap-5">
+  <div class="flex flex-col items-start gap-2">
+    <%= status_tag Trash.labels.fetch(kind, kind.humanize).singularize %>
+    <strong class="text-lg font-semibold text-gray-900"><%= label %></strong>
+  </div>
+
+  <% if record.respond_to?(:image?) && record.image? %>
+    <div class="trash-item__preview flex min-h-36 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 p-3"><%= media_thumbnail record, size: 640 %></div>
+  <% end %>
+
+  <dl class="grid grid-cols-3 gap-x-4 gap-y-2 text-sm">
+    <% trash_facts(kind, record).each do |name, value| %>
+      <%# herb:key name %>
+      <dt class="text-gray-500"><%= name %></dt><dd class="col-span-2 break-all text-gray-900"><%= value %></dd>
+    <% end %>
+    <dt class="text-gray-500">Deleted</dt>
+    <dd class="col-span-2 text-gray-900">
+      <%= time_ago_tag record.deleted_at %>
+      <% if deletion&.actor_label.present? %>
+        by <%= deletion.actor_label %>
+      <% end %>
+    </dd>
+  </dl>
+
+  <% if can_write %>
+    <div class="flex flex-wrap items-center gap-2">
+      <%= button_to trash_item_restoration_path(kind, record.id), class: ui(:button, :primary), form_class: "contents", data: { turbo_frame: "_top" } do %>
+        <%= icon_tag "refresh", class: "size-4" %>
+        <span>Restore</span>
+      <% end %>
+      <%= render "layouts/shared/delete_dialog", name: label, path: trash_item_path(kind, record.id),
+            message: "It’s deleted for good. This can’t be undone.", trigger_text: "Delete permanently" %>
+    </div>
+    <% if Trash.publish_capability(record) && record.try(:status) == "published" && !Current.user.can?(Trash.publish_capability(record)) %>
+      <p class="<%= ui(:help) %>">It was live; restored by you, it comes back as a draft for someone who can publish.</p>
+    <% end %>
+  <% end %>
+</div>

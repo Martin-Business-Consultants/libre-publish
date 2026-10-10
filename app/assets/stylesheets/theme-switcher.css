@@ -1,0 +1,44 @@
+/* Settings › Branding's Appearance choices: a card per theme around a radio
+/* (settings/brandings/show), marked while its radio is checked. Its colors
+/* change with that state, so they're set here rather than in the markup. */
+@layer components {
+  .theme-switcher__btn {
+    background-color: var(--color-white);
+    border-color: var(--color-gray-200);
+    color: var(--color-gray-700);
+
+    &:hover {
+      background-color: var(--color-gray-50);
+    }
+
+    &:has(input:checked) {
+      background-color: var(--color-blue-50);
+      border-color: var(--color-blue-500);
+      color: var(--color-blue-700);
+    }
+
+    &:has(input:focus-visible) {
+      outline: var(--focus-ring);
+      outline-offset: 2px;
+    }
+  }
+
+  /* The header's one-button toggle (layouts/shared/_theme_toggle): a moon
+  /* while light, a sun while dark, whether the look comes from the saved
+  /* choice or the OS. */
+  .theme-toggle__sun {
+    display: none;
+  }
+
+  html[data-theme="dark"] .theme-toggle {
+    .theme-toggle__moon { display: none; }
+    .theme-toggle__sun { display: inline-block; }
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html:not([data-theme]) .theme-toggle {
+      .theme-toggle__moon { display: none; }
+      .theme-toggle__sun { display: inline-block; }
+    }
+  }
+}

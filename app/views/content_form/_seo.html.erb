@@ -1,0 +1,21 @@
+<%# locals: (record:, scope:, invalid_json: nil) %>
+<%# The SEO panel: SeoFields as ordinary content fields, so ContentForm reads
+    them back like any object. A saved record shows it under the editor's SEO
+    tab (content_form/editor_tabs) in place of the content, still inside the
+    form so it saves with it; a new one shows it below. A JSON-LD box that
+    didn't parse shows what was typed (`invalid_json`). %>
+<% seo = record.seo.is_a?(Hash) ? record.seo : {} %>
+<% seo = seo.merge("json_ld" => invalid_json["json_ld"]) if invalid_json&.key?("json_ld") %>
+<% seo_scope = content_scope(scope)["seo"] %>
+<%= tag.section class: ui(:panel), data: ({ tab: "seo", tabs_target: "panel" } if record.persisted?), hidden: record.persisted? do %>
+  <h2 class="<%= ui(:heading, "border-b border-gray-200 px-5 py-3.5") %>">SEO</h2>
+  <div class="divide-y divide-gray-200">
+    <% [ [ "Search", SeoFields::SEARCH ], [ "Social sharing", SeoFields::SOCIAL ], [ "Structured data", SeoFields::STRUCTURED ] ].each do |title, fields| %>
+      <%# herb:key title %>
+      <section class="flex flex-col gap-4 p-5">
+        <h3 class="text-xs font-medium text-gray-500"><%= title %></h3>
+        <%= render "content_form/fields", fields: fields, values: seo, scope: seo_scope, depth: 1 %>
+      </section>
+    <% end %>
+  </div>
+<% end %>

@@ -1,0 +1,101 @@
+<%# locals: (field:, prefix:, key:, field_types:, collection_slugs:, block_slugs: nil) %>
+<% name = prefix + "[" + key + "]" %>
+<% control_classes = "flex min-w-0 flex-col gap-1.5" %>
+<% control_label_classes = "text-xs font-medium text-gray-700" %>
+<% check_classes = "flex items-center gap-2 whitespace-nowrap text-sm text-gray-700" %>
+<% setting_classes = "flex-col gap-1.5" %>
+<% move_classes = ui(:button, :plain, :icon) %>
+<li class="schema-field flex flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4" data-schema-editor-target="row">
+  <div class="schema-field__main grid grid-cols-2 items-end gap-3 md:flex">
+    <label class="<%= class_names(control_classes, "md:flex-1") %>">
+      <span class="<%= control_label_classes %>">Name</span>
+      <%= text_field_tag name + "[name]", field["name"], id: nil, class: "w-full font-mono", placeholder: "title",
+            autocomplete: "off", spellcheck: false, pattern: "[a-z][a-z0-9_]*",
+            title: "Lowercase letters, digits and underscores, starting with a letter", data: { schema_editor_target: "name" } %>
+    </label>
+    <label class="<%= class_names(control_classes, "md:flex-1") %>">
+      <span class="<%= control_label_classes %>">Label</span>
+      <%= text_field_tag name + "[label]", field["label"], id: nil, class: "w-full", placeholder: "Title", autocomplete: "off" %>
+    </label>
+    <label class="<%= class_names(control_classes, "md:flex-1") %>">
+      <span class="<%= control_label_classes %>">Type</span>
+      <%= select_tag name + "[type]", options_for_select(field_type_options(field_types), field["type"]),
+            id: nil, class: "schema-field__type w-full" %>
+    </label>
+    <label class="<%= class_names(check_classes, "h-8") %>">
+      <%= check_box_tag name + "[required]", "1", field["required"] == true, id: nil %>
+      <span>Required</span>
+    </label>
+    <div class="flex items-center justify-end">
+      <button type="button" class="<%= move_classes %>" title="Move up" data-action="schema-editor#moveUp">
+        <%= icon_tag "arrow-up", class: "size-4" %>
+        <span class="sr-only">Move up</span>
+      </button>
+      <button type="button" class="<%= move_classes %>" title="Move down" data-action="schema-editor#moveDown">
+        <%= icon_tag "arrow-up", class: "size-4 rotate-180" %>
+        <span class="sr-only">Move down</span>
+      </button>
+      <button type="button" class="inline-flex size-8 items-center justify-center rounded-md text-gray-500 hover:bg-red-50 hover:text-red-700" title="Remove this field" data-action="schema-editor#remove">
+        <%= icon_tag "trash", class: "size-4" %>
+        <span class="sr-only">Remove this field</span>
+      </button>
+    </div>
+  </div>
+
+  <label class="<%= setting_classes %>" data-for="select">
+    <span class="<%= control_label_classes %>">Choices, one per line</span>
+    <%= text_area_tag name + "[options]", SchemaFields.options_text(field), id: nil, rows: 3, class: "w-full" %>
+  </label>
+
+  <label class="<%= setting_classes %>" data-for="reference">
+    <span class="<%= control_label_classes %>">Pick from collection</span>
+    <%= select_tag name + "[of_collection]", options_for_select(reference_collection_options(collection_slugs, field["of_collection"]), field["of_collection"]),
+          include_blank: "Any collection", id: nil, class: "max-w-md" %>
+  </label>
+
+  <% if block_slugs %>
+    <fieldset class="<%= setting_classes %>" data-for="blocks">
+      <legend class="<%= class_names(control_label_classes, "mb-1.5") %>">Allowed blocks (none ticked means any)</legend>
+      <div class="flex flex-wrap gap-x-4 gap-y-2">
+        <% block_slugs.each do |slug| %>
+          <%# herb:key slug %>
+          <label class="<%= check_classes %>">
+            <%= check_box_tag name + "[allowed_types][]", slug, Array(field["allowed_types"]).include?(slug), id: nil %>
+            <span class="font-mono text-xs"><%= slug %></span>
+          </label>
+        <% end %>
+      </div>
+    </fieldset>
+  <% end %>
+
+  <div class="<%= class_names(setting_classes, "border-l-2 border-gray-200 pl-4") %>" data-for="nested">
+    <span class="<%= control_label_classes %>">Sub-fields</span>
+    <%= render "schemas/list", fields: field["of"], prefix: name + "[of]", field_types: field_types,
+          collection_slugs: collection_slugs, block_slugs: block_slugs %>
+  </div>
+
+  <details>
+    <summary class="text-xs font-medium text-gray-500 hover:text-gray-900">More settings</summary>
+    <div class="grid gap-3 pt-3 sm:grid-cols-2">
+      <label class="<%= control_classes %>">
+        <span class="<%= control_label_classes %>">Help text</span>
+        <%= text_field_tag name + "[help]", field["help"], id: nil, class: "w-full" %>
+      </label>
+      <label class="<%= control_classes %>">
+        <span class="<%= control_label_classes %>">Tab</span>
+        <%= text_field_tag name + "[tab]", field["tab"], id: nil, class: "w-full", placeholder: "Group fields under a tab" %>
+      </label>
+      <label class="<%= check_classes %>">
+        <%= check_box_tag name + "[sidebar]", "1", field["sidebar"] == true, id: nil %>
+        <span>Show in the sidebar</span>
+      </label>
+      <label class="<%= control_classes %>">
+        <span class="<%= control_label_classes %>">Show only if (JSON)</span>
+        <%= text_field_tag name + "[show_if]", SchemaFields.show_if_text(field), id: nil, class: "w-full font-mono",
+              placeholder: "{\"field\": \"kind\", \"equals\": \"event\"}", spellcheck: false %>
+      </label>
+    </div>
+  </details>
+
+  <%= hidden_field_tag name + "[extra]", SchemaFields.extra_json(field), id: nil %>
+</li>

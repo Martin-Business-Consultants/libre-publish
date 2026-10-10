@@ -1,0 +1,17 @@
+<%# locals: (types:) %>
+<%# The block types a picker offers, one button each (sortable-list#insert);
+    the filter matches each item's data-picker-text. %>
+<ul class="grid gap-2 sm:grid-cols-2">
+  <% types.each do |block_type| %>
+    <%# herb:key block_type.slug %>
+    <li data-picker-text="<%= [ block_type.slug, block_type.label, block_type.description ].compact.join(" ").downcase %>">
+      <button type="button" class="flex h-full w-full flex-col items-start gap-0.5 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-left hover:border-gray-400 hover:bg-gray-50" data-type="<%= block_type.slug %>"
+              data-action="sortable-list#insert">
+        <span class="text-sm font-medium text-gray-900"><%= block_type.label.presence || block_type.slug %></span>
+        <% if block_type.description.present? %>
+          <span class="text-xs text-gray-500"><%= block_type.description %></span>
+        <% end %>
+      </button>
+    </li>
+  <% end %>
+</ul>

@@ -1,0 +1,34 @@
+<%# locals: (collection:, entries:, can_move:) %>
+<%# Fizzy's board, two columns wide: a card dropped on a column posts to that
+    column's placement URL (drag-and-drop controller), which answers with this
+    partial morphed back in. %>
+<% field = collection.build_field["name"] %>
+<% labels = collection.build_column_labels %>
+<% on_cards, off_cards = entries.partition { it.flag?(field) } %>
+<div id="build_board" class="grid grid-cols-1 gap-4 md:grid-cols-2"
+  data-controller="drag-and-drop"
+  data-drag-and-drop-dragged-item-class="drag-and-drop__dragged-item"
+  data-drag-and-drop-hover-container-class="drag-and-drop__hover-container"
+  data-action="dragstart->drag-and-drop#dragStart dragover->drag-and-drop#dragOver drop->drag-and-drop#drop dragend->drag-and-drop#dragEnd">
+  <% [ [ "off", labels["off"], off_cards ], [ "on", labels["on"], on_cards ] ].each do |column, label, cards| %>
+    <%# herb:key column %>
+    <section class="board-column flex min-h-64 flex-col gap-3 rounded-xl border border-gray-200 p-3" data-drag-and-drop-target="container"
+      data-drag-and-drop-url="<%= collection_entry_placement_path(collection.slug, "__id__", column: column) %>"
+      aria-label="<%= label %>">
+      <header class="flex items-center gap-2 px-1">
+        <span class="<%= class_names("h-2 w-2 shrink-0 rounded-full", column == "on" ? "bg-green-500" : "bg-gray-300") %>" aria-hidden="true"></span>
+        <h2 class="text-sm font-semibold text-gray-900"><%= label %></h2>
+        <span class="<%= ui(:badge, :gray, "tabular-nums") %>" data-drag-and-drop-counter><%= cards.size %></span>
+      </header>
+      <div class="flex flex-col gap-2" data-drag-drop-item-container>
+        <% cards.each do |entry| %>
+          <%# herb:key entry.id %>
+          <%= render "collections/boards/card", collection: collection, entry: entry, column: column, can_move: can_move %>
+        <% end %>
+      </div>
+      <% if cards.empty? %>
+        <p class="px-4 py-8 text-center text-sm text-gray-400">Drag entries here</p>
+      <% end %>
+    </section>
+  <% end %>
+</div>

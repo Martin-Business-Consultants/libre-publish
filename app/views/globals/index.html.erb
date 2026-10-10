@@ -1,0 +1,55 @@
+<% @page_title = "Globals" %>
+<% can_write = Current.user.can?("globals:write") %>
+<% can_delete = Current.user.can?("globals:delete") %>
+
+<% content_for :page_actions do %>
+  <% if can_write %>
+    <%= render "globals/new_global", global: @new_global || Global.new, open: @new_global.present? %>
+  <% end %>
+<% end %>
+<%= render "layouts/shared/page_header", title: @page_title %>
+
+<% if can_delete && @globals.any? %>
+  <%= render "layouts/shared/bulk_actions", id: "globals_bulk", noun: "global", deletion_path: globals_bulk_deletions_path %>
+<% end %>
+
+<section class="<%= ui(:panel, "overflow-x-auto") %>" data-controller="select-all">
+  <table class="data-table <%= ui(:table) %>">
+    <thead>
+      <tr>
+        <% if can_delete %>
+          <th class="<%= ui(:th, "data-table__check") %>"><% if @globals.any? %><input type="checkbox" aria-label="Select every row" data-select-all-target="all" data-action="select-all#toggle"><% end %></th>
+        <% end %>
+        <th class="<%= ui(:th) %>">Name</th>
+        <th class="<%= ui(:th) %>">Slug</th>
+        <th class="<%= ui(:th, "text-right") %>">Fields</th>
+        <th class="<%= ui(:th) %>">Updated</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @globals.each do |global| %>
+        <%# herb:key global.id %>
+        <tr id="<%= dom_id(global) %>" class="hover:bg-gray-50" data-filter-target="item">
+          <% if can_delete %>
+            <td class="<%= ui(:td, "data-table__check") %>"><input type="checkbox" data-select-all-target="box" data-action="select-all#sync" name="slugs[]" value="<%= global.slug %>" form="globals_bulk" aria-label="Select <%= global.name %>"></td>
+          <% end %>
+          <td class="<%= ui(:td) %>">
+            <%= link_to global.name, (can_write ? edit_global_path(global.slug) : global_schema_path(global.slug)), class: "font-medium text-gray-900 hover:underline" %>
+            <% if global.description.present? %>
+              <div class="text-xs text-gray-500"><%= global.description %></div>
+            <% end %>
+            <%= render "layouts/shared/row_links",
+                  links: [ ([ "Edit", edit_global_path(global.slug) ] if can_write), ([ "Schema", global_schema_path(global.slug) ] if can_write) ].compact,
+                  delete_path: (global_path(global.slug) if can_delete), delete_name: global.name, delete_label: "Trash",
+                  delete_message: "It goes to the trash, where it can be restored." %>
+          </td>
+          <td class="<%= ui(:td) %>"><span class="font-mono text-xs text-gray-500"><%= global.slug %></span></td>
+          <td class="<%= ui(:td, "text-right tabular-nums") %>"><%= global.fields.size %></td>
+          <td class="<%= ui(:td) %>"><span class="whitespace-nowrap text-xs text-gray-500"><%= time_ago_tag global.updated_at %></span></td>
+        </tr>
+      <% end %>
+      <%= table_empty_row("No globals yet.", columns: can_delete ? 5 : 4) if @globals.none? %>
+    </tbody>
+  </table>
+</section>
+<%= pagination_nav @pagination %>

@@ -1,0 +1,122 @@
+<% @page_title = "Branding" %>
+<%# How things look and sound, on one page (Settings::BrandingScreen): this
+    browser's appearance, then — for a role with settings:read — the
+    workspace's identity, color, type and brand context. Each form saves on
+    its own; the sidebar links down the page. %>
+<% writable = Current.user.can?("settings:write") %>
+<% sections = [["Appearance", "appearance"]] %>
+<% sections += [["Identity", "identity"], ["Color", "color"], ["Type and surface", "type"], ["Brand context", "brand-context"]] if @workspace %>
+
+<% section_classes = "scroll-mt-20 space-y-5 p-6" %>
+<% on_page_link_classes = "block rounded-md px-2 py-1 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900" %>
+<% theme_choice_classes = "theme-switcher__btn flex flex-1 cursor-pointer flex-col items-center gap-1.5 rounded-lg border px-4 py-3 text-sm font-medium" %>
+
+<%= render "layouts/shared/page_header", title: "Branding" %>
+<% content_for :settings_aside do %>
+  <%= postbox "branding-sections", "On this page" do %>
+    <nav aria-label="On this page">
+      <ul>
+        <% sections.each do |label, anchor| %>
+          <%# herb:key anchor %>
+          <li><a href="#<%= anchor %>" class="<%= on_page_link_classes %>"><%= label %></a></li>
+        <% end %>
+      </ul>
+    </nav>
+  <% end %>
+<% end %>
+
+<section id="appearance" class="<%= ui(:panel, section_classes) %>">
+  <div class="space-y-1">
+    <h2 class="<%= ui(:heading) %>">Appearance</h2>
+    <p class="text-sm text-gray-500">Light, dark, or follow the system. Applies to this browser only.</p>
+  </div>
+  <div class="flex flex-col gap-3 sm:flex-row" data-controller="theme">
+    <label class="<%= theme_choice_classes %>">
+      <%= icon_tag "sun", class: "size-5" %>
+      <span>Light</span>
+      <input type="radio" name="theme" value="light" class="sr-only" data-theme-target="lightButton" data-action="theme#setLight">
+    </label>
+    <label class="<%= theme_choice_classes %>">
+      <%= icon_tag "moon", class: "size-5" %>
+      <span>Dark</span>
+      <input type="radio" name="theme" value="dark" class="sr-only" data-theme-target="darkButton" data-action="theme#setDark">
+    </label>
+    <label class="<%= theme_choice_classes %>">
+      <%= icon_tag "monitor", class: "size-5" %>
+      <span>System</span>
+      <input type="radio" name="theme" value="auto" class="sr-only" data-theme-target="autoButton" data-action="theme#setAuto">
+    </label>
+  </div>
+</section>
+
+<% if @workspace %>
+  <%= form_with url: settings_branding_path, method: :patch, scope: :branding do |form| %>
+    <%= tag.fieldset class: "space-y-6", disabled: !writable do %>
+      <section id="identity" class="<%= ui(:panel, section_classes) %>">
+        <div class="space-y-1">
+          <h2 class="<%= ui(:heading) %>">Identity</h2>
+          <p class="text-sm text-gray-500">The logo, color and type flow into the public site. The admin uses the color and font too.</p>
+        </div>
+        <% if MediaLibrary.available? %>
+          <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <%= render "settings/brandings/image_dropzone", form: form, kind: "logo", label: "Logo",
+                  hint: "SVG or PNG, saved to the media library.", asset: MediaLibrary.find(@branding[:logo_id]) %>
+            <%= render "settings/brandings/image_dropzone", form: form, kind: "favicon", label: "Favicon",
+                  hint: "Square works best; resized for browsers.", asset: MediaLibrary.find(@branding[:favicon_id]) %>
+          </div>
+        <% else %>
+          <p class="text-sm text-gray-500">A logo and favicon need a media library to keep them in: install the Media plugin.</p>
+        <% end %>
+      </section>
+
+      <section id="color" class="<%= ui(:panel, section_classes) %>">
+        <h2 class="<%= ui(:heading) %>">Color</h2>
+        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <%= settings_field "Primary color", hint: "Buttons, links, focus and what’s current. Black when blank." do %>
+            <%= form.text_field :primary_color, value: @branding[:primary_color], pattern: "#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})", placeholder: "#b45309", class: "w-full font-mono" %>
+          <% end %>
+          <%= settings_field "Secondary color", hint: "Tints the grays: surfaces, lines and text. Neutral when blank." do %>
+            <%= form.text_field :secondary_color, value: @branding[:secondary_color], pattern: "#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})", placeholder: "#1c1917", class: "w-full font-mono" %>
+          <% end %>
+        </div>
+      </section>
+
+      <section id="type" class="<%= ui(:panel, section_classes) %>">
+        <h2 class="<%= ui(:heading) %>">Type and surface</h2>
+        <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
+          <%= settings_field "Font", hint: "Every word in the admin." do %>
+            <%= form.select :font, Branding::FONTS.invert.to_a, { include_blank: "Default", selected: @branding[:font] }, class: "w-full" %>
+          <% end %>
+          <%= settings_field "Corners", hint: "Buttons, fields, panels and menus." do %>
+            <%= form.select :border_radius, Branding::RADII.map { |value| [value.humanize, value] }, { include_blank: "Default", selected: @branding[:border_radius] }, class: "w-full" %>
+          <% end %>
+          <%= settings_field "Shadow", hint: "Under panels, and under what floats: menus, dialogs." do %>
+            <%= form.select :box_shadow, Branding::SHADOWS.map { |value| [value.humanize, value] }, { include_blank: "Default", selected: @branding[:box_shadow] }, class: "w-full" %>
+          <% end %>
+        </div>
+        <div><button type="submit" class="<%= ui(:button, :primary) %>">Save branding</button></div>
+      </section>
+    <% end %>
+  <% end %>
+
+  <section id="brand-context" class="<%= ui(:panel, section_classes) %>">
+    <div class="space-y-1">
+      <h2 class="<%= ui(:heading) %>">Brand context</h2>
+      <p class="text-sm text-gray-500">A short brief describing how this workspace writes. Nothing in the CMS renders it — it’s published in <code>/api/manifest</code> so an agent working through the API or the <code>cms</code> CLI writes in your voice instead of a generic one. Leave a field blank to omit it.</p>
+    </div>
+    <% if @record %>
+      <%= render "layouts/shared/errors", record: @record %>
+    <% end %>
+    <%= form_with url: settings_brand_path, method: :patch, scope: :settings do |form| %>
+      <%= tag.fieldset class: "space-y-5", disabled: !writable do %>
+        <% Settings::BrandsController::LABELS.each do |field, (field_label, hint)| %>
+          <%# herb:key field %>
+          <%= settings_field field_label, hint: hint do %>
+            <%= form.text_area field, value: @brand_context[field], rows: 4, class: "w-full" %>
+          <% end %>
+        <% end %>
+        <div><button type="submit" class="<%= ui(:button) %>">Save brand context</button></div>
+      <% end %>
+    <% end %>
+  </section>
+<% end %>

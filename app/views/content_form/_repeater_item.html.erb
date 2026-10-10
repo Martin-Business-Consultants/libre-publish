@@ -1,0 +1,22 @@
+<%# locals: (field:, item:, scope:, depth:, index: nil) %>
+<% summary = content_summary(item, field["of"]) %>
+<li class="rounded-lg border border-gray-200 bg-white" data-sortable-list-target="item">
+  <%= content_tag :details, class: "content-row", open: index.nil? do %>
+    <summary class="content-row__header flex items-center gap-2 py-1.5 pl-2 pr-1.5">
+      <span class="cursor-grab select-none px-1 text-gray-400" title="Drag to reorder" data-action="mousedown->sortable-list#grab touchstart->sortable-list#grab">⠿</span>
+      <%= icon_tag "caret-down", class: "content-row__toggle size-4 text-gray-400" %>
+      <span class="min-w-0 flex-1 truncate text-sm font-medium text-gray-900">
+        <% if summary %>
+          <%= summary %>
+        <% else %>
+          <span class="text-gray-500">Item <%= index ? index + 1 : "" %></span>
+        <% end %>
+      </span>
+      <%= render "content_form/row_moves", noun: "item" %>
+    </summary>
+    <div class="p-4">
+      <%= hidden_field_tag scope[ContentForm::ORIGINAL].name, (item.is_a?(Hash) && item.any? ? item.to_json : nil), id: nil %>
+      <%= render "content_form/fields", fields: field["of"], values: item, scope: scope, depth: depth + 1 %>
+    </div>
+  <% end %>
+</li>

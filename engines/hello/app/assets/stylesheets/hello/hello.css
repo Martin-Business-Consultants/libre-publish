@@ -1,0 +1,4 @@
+/* A plugin stylesheet: linked on every admin page while Hello is on
+   (Cms::Plugins.stylesheet). Hello's screens are drawn with the admin's
+   utility classes (STYLE.md, Styling: Litewind), so it holds nothing yet; a
+   plugin puts here only what classes can't say. */

@@ -1,0 +1,64 @@
+<% @page_title = "Backup" %>
+
+<%# The automatic backups as a list table; taking one now is a sheet off the
+    title row: what it will hold, and the download. %>
+<div class="contents" data-controller="dialog" data-dialog-modal-value="true" data-action="keydown.esc->dialog#close:stop">
+<% content_for :page_actions do %>
+  <button type="button" class="<%= ui(:button) %>" data-keys="n" data-action="dialog#open">
+    <%= icon_tag "package", class: "size-4" %>
+    <span>Download a backup</span>
+  </button>
+<% end %>
+<%= render "layouts/shared/page_header", title: "Backup" %>
+
+<% if @archives.any? %>
+  <section class="<%= ui(:panel, "overflow-x-auto") %>">
+    <table class="data-table <%= ui(:table) %>">
+      <thead>
+        <tr>
+          <th class="<%= ui(:th) %>">Automatic backup</th>
+          <th class="<%= ui(:th) %>">Taken</th>
+          <th class="<%= ui(:th, "text-right") %>">Size</th>
+          <th class="<%= ui(:th) %>"><span class="sr-only">Download</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @archives.each do |archive| %>
+          <%# herb:key archive.name %>
+          <tr id="archive_<%= archive.name.parameterize %>" class="hover:bg-gray-50">
+            <td class="<%= ui(:td, "font-mono text-xs") %>"><%= archive.name %></td>
+            <td class="<%= ui(:td) %>"><span class="text-xs whitespace-nowrap text-gray-500"><%= time_ago_tag archive.taken_at %></span></td>
+            <td class="<%= ui(:td, "text-right tabular-nums whitespace-nowrap") %>"><%= number_to_human_size(archive.byte_size) %></td>
+            <td class="<%= ui(:td, "text-right") %>"><%= link_to "Download", tools_backup_archive_path(archive.name), class: ui(:button, :small), data: { turbo: false } %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </section>
+<% else %>
+  <div class="<%= ui(:panel, "px-6 py-12 text-center text-sm text-gray-500") %>">
+    No automatic backups yet. <code class="rounded-sm bg-gray-100 px-1 py-0.5 font-mono text-xs text-gray-700">bin/update</code> takes one before it migrates; the newest few are kept.
+  </div>
+<% end %>
+
+<dialog class="<%= ui(:sheet) %>" data-dialog-target="dialog" aria-label="Download a backup" closedby="any">
+  <header class="flex items-center justify-between gap-4">
+    <h2 class="text-lg font-semibold text-gray-900">Download a backup</h2>
+    <button type="button" class="<%= ui(:button, :small) %>" data-action="dialog#close">Close</button>
+  </header>
+  <p class="text-sm text-gray-700">The site’s database and every uploaded file, as one .tar.gz. It will hold:</p>
+  <ul class="divide-y divide-gray-100 rounded-lg border border-gray-200 text-sm">
+    <% @contents.each do |kind, count| %>
+      <%# herb:key kind %>
+      <li class="px-3 py-2 text-gray-700"><%= number_with_delimiter(count) %> <%= kind.to_s.humanize(capitalize: false) %></li>
+    <% end %>
+  </ul>
+  <p class="<%= ui(:help) %>">Restoring one is done on the server — see <code class="font-mono text-gray-700">docs/install.md</code>.</p>
+  <div class="dialog__actions flex justify-end gap-2">
+    <button type="button" class="<%= ui(:button) %>" data-action="dialog#close">Cancel</button>
+    <%= button_to tools_backup_path, class: ui(:button, :primary), form_class: "contents", data: { turbo: false } do %>
+      <span>Download backup</span>
+    <% end %>
+  </div>
+</dialog>
+</div>

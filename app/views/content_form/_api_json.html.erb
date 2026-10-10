@@ -1,0 +1,37 @@
+<%# locals: (preview:) %>
+<%# A record as its site gets it: where to fetch it, how, and the JSON that
+    comes back. This CMS is headless — it keeps content and serves it as this;
+    the site (the Astro app) renders it. %>
+<% url = request.base_url + preview.path %>
+<% code_classes = "block overflow-x-auto whitespace-pre rounded-md border border-gray-200 bg-gray-50 px-3 py-2 font-mono text-xs text-gray-800" %>
+<div class="flex flex-col gap-6 text-left">
+  <p class="text-sm text-gray-500">
+    This is exactly what the site receives for this record, as last saved. The CMS never renders it: the site fetches this JSON and draws it with its own components.
+    <%= link_to "How frontends work with the CMS", developers_path, class: ui(:link), data: { turbo_frame: "_top" } %>
+  </p>
+
+  <div class="flex flex-col gap-1.5">
+    <span class="<%= ui(:label) %>">Endpoint</span>
+    <div class="flex items-center gap-2">
+      <code class="<%= class_names(code_classes, "min-w-0 flex-1") %>">GET <%= url %></code>
+      <%= copy_button url %>
+    </div>
+  </div>
+
+  <details open>
+    <summary class="<%= ui(:label) %>">Fetch it</summary>
+    <pre class="<%= class_names(code_classes, "mt-2") %>"><%= api_json_cli_call(preview.path) %>   # the cms CLI, or the same tool over MCP</pre>
+    <pre class="<%= class_names(code_classes, "mt-2") %>">curl -H "Authorization: Bearer $CMS_API_TOKEN" "<%= url %>"</pre>
+    <pre class="<%= class_names(code_classes, "mt-2") %>">// In an Astro site with @librepublish/astro: published content only
+// (Astro.locals.cms on a page rendered on demand, or createClient from /client)
+<%= api_json_client_call(preview.path) %></pre>
+  </details>
+
+  <div class="flex flex-col gap-1.5">
+    <div class="flex items-center justify-between gap-4">
+      <span class="<%= ui(:label) %>">Response</span>
+      <%= copy_button preview.json %>
+    </div>
+    <pre class="api-json__body max-h-screen overflow-auto rounded-md border border-gray-200 bg-gray-50 px-4 py-3 font-mono text-xs text-gray-800"><code><%= preview.json %></code></pre>
+  </div>
+</div>

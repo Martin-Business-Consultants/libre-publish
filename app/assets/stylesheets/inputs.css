@@ -1,0 +1,83 @@
+/* Native controls are styled where they're defined (base.css) and laid out
+/* by their classes; this holds the two controls built from more than one
+/* element, whose look follows state the markup doesn't carry. */
+
+/* A toggle switch: a checkbox drawn as a track and knob, blue while on.
+/*   <span class="switch"><input type="checkbox" class="switch__input"><span class="switch__btn"></span></span>
+/* (settings_helper#settings_switch), inside the <label> that names it. */
+@layer components {
+  .switch {
+    block-size: calc(var(--spacing) * 5);
+    display: inline-flex;
+    flex-shrink: 0;
+    inline-size: calc(var(--spacing) * 9);
+    position: relative;
+  }
+
+  .switch__input {
+    block-size: 0;
+    inline-size: 0;
+    opacity: 0;
+    position: absolute;
+  }
+
+  .switch__btn {
+    background-color: var(--color-gray-300);
+    border-radius: 9999px;
+    cursor: pointer;
+    inset: 0;
+    position: absolute;
+    transition: background-color 150ms ease;
+
+    &::before {
+      background-color: var(--color-white);
+      block-size: calc(var(--spacing) * 4);
+      border-radius: 9999px;
+      box-shadow: 0 1px 2px rgb(0 0 0 / 0.2);
+      content: "";
+      inline-size: calc(var(--spacing) * 4);
+      inset: calc(var(--spacing) * 0.5) auto auto calc(var(--spacing) * 0.5);
+      position: absolute;
+      transition: translate 150ms ease, background-color 150ms ease;
+    }
+
+    @media (any-hover: hover) {
+      &:hover {
+        background-color: var(--color-gray-400);
+      }
+    }
+
+    .switch__input:focus-visible + & {
+      outline: var(--focus-ring);
+      outline-offset: 2px;
+    }
+
+    .switch__input:checked + & {
+      background-color: var(--color-blue-600);
+
+      &::before {
+        background-color: var(--on-accent);
+        translate: calc(var(--spacing) * 4) 0;
+      }
+    }
+
+    .switch__input:disabled + & {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+  }
+}
+
+/* A secret (application_helper#secret_field): the field with an eye at its
+/* end; reveal_controller sets .secret-field--shown while the value shows,
+/* and the eye's two icons swap. */
+@layer components {
+  .secret-field .secret-field__hide,
+  .secret-field--shown .secret-field__show {
+    display: none;
+  }
+
+  .secret-field--shown .secret-field__hide {
+    display: inline-block;
+  }
+}

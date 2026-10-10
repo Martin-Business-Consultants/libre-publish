@@ -1,0 +1,45 @@
+<%# locals: (plugin:) %>
+<% enabled = Cms::Plugins.enabled?(plugin.key) %>
+<% switched_on = Cms::Plugins.switched_on?(plugin) %>
+<% missing = Cms::Plugins.missing_dependencies(plugin.key) %>
+<% settings_page = Cms::Plugins.settings_pages[plugin.key] %>
+<% source = InstalledPlugins.metadata(plugin.key.to_s)["repo"] %>
+<li id="plugin_<%= plugin.key %>" class="space-y-1 py-4">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div class="flex min-w-0 flex-col gap-0.5">
+      <span class="text-sm font-semibold text-gray-900">
+        <%= link_to plugin.name, settings_plugin_path(plugin.key), class: "hover:underline" %>
+        <span class="ml-1 text-xs font-normal text-gray-500"><%= plugin.version %> · <%= plugin.bundled ? "bundled" : (source || "installed") %></span>
+      </span>
+      <span class="text-sm text-gray-500"><%= plugin.description %></span>
+    </div>
+    <div class="flex shrink-0 items-center gap-2">
+      <%= status_tag enabled ? "Active" : (switched_on ? "Waiting" : "Off") %>
+      <% if enabled && settings_page %>
+        <%= link_to instance_exec(&settings_page.path), class: ui(:button, :plain, :icon), title: plugin.name + " settings" do %>
+          <%= icon_tag "settings-outline", class: "size-4" %>
+          <span class="sr-only"><%= plugin.name %> settings</span>
+        <% end %>
+      <% end %>
+      <% if Current.user.can?("settings:write") %>
+        <% if switched_on %>
+          <%= button_to "Switch off", settings_plugin_activation_path(plugin.key), method: :delete, class: ui(:button, :small) %>
+        <% elsif plugin.compatible? %>
+          <%= button_to "Switch on", settings_plugin_activation_path(plugin.key), class: ui(:button, :small) %>
+        <% end %>
+      <% end %>
+      <% if source && Current.user.admin? %>
+        <%= button_to "Update", settings_plugin_upgrade_path(plugin.key), class: ui(:button, :small),
+              title: "Install " + source + "’s latest release in place of this one" %>
+        <%= render "layouts/shared/delete_dialog", name: plugin.name, path: settings_plugin_path(plugin.key),
+              message: "Its code comes off this server and the CMS restarts. Its tables and data stay, so installing it again brings them back." %>
+      <% end %>
+    </div>
+  </div>
+  <% unless plugin.compatible? %>
+    <p class="text-xs text-red-600">Needs CMS <%= plugin.requires %>; this is <%= cms_version %>.</p>
+  <% end %>
+  <% if missing.any? %>
+    <p class="text-xs text-red-600">Needs <%= missing.map { |dependency| Cms::Plugins.manifests[dependency]&.name || dependency.to_s }.to_sentence %> switched on.</p>
+  <% end %>
+</li>

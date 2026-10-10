@@ -1,0 +1,37 @@
+<%# locals: (name:, path:, message: nil, trigger_class: nil, keys: nil, trigger_text: nil, form: nil) %>
+<%# Fizzy's delete: a trash button opening a modal that names what goes and asks once.
+    trigger_text: a red text link instead of the button (a list table's row
+    actions, a Publish box's Move to Trash), sized by what's around it.
+    trigger_class: layout classes for the trigger.
+    form: the id of a delete form rendered elsewhere (layouts/shared/delete_form),
+    for a dialog that sits inside another form; a form can't nest, and a
+    nested one's _method=delete would join the outer form. %>
+<% title = "Delete " + name + "?" %>
+<div class="contents" data-controller="dialog" data-dialog-modal-value="true" data-action="keydown.esc->dialog#close:stop">
+  <% if trigger_text %>
+    <button type="button" class="<%= class_names("text-red-600 hover:text-red-700 hover:underline", trigger_class) %>" title="<%= title %>" data-action="dialog#open"><%= trigger_text %></button>
+  <% else %>
+    <button type="button" class="<%= ui(:button, :danger, :icon, *trigger_class) %>" title="<%= title %>" data-keys="<%= keys %>" data-action="dialog#open">
+      <%= icon_tag "trash", class: "size-4" %>
+      <span class="sr-only"><%= title %></span>
+    </button>
+  <% end %>
+  <dialog class="<%= ui(:dialog, "dialog dialog--action") %>" data-dialog-target="dialog">
+    <h3 class="text-lg font-semibold text-gray-900"><%= title %></h3>
+    <p class="text-sm text-gray-600"><%= message || "This can’t be undone." %></p>
+    <div class="mt-2 flex justify-end gap-2">
+      <button type="button" class="<%= ui(:button) %>" data-action="dialog#close">Cancel</button>
+      <% if form %>
+        <button type="submit" form="<%= form %>" class="<%= ui(:button, :destructive) %>">
+          <%= icon_tag "trash", class: "size-4" %>
+          <span>Delete</span>
+        </button>
+      <% else %>
+        <%= button_to path, method: :delete, class: ui(:button, :destructive), data: { turbo_frame: "_top" } do %>
+          <%= icon_tag "trash", class: "size-4" %>
+          <span>Delete</span>
+        <% end %>
+      <% end %>
+    </div>
+  </dialog>
+</div>

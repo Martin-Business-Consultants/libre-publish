@@ -1,0 +1,14 @@
+<% @page_title = "Hello" %>
+
+<%= render "layouts/shared/page_header", title: "Hello" %>
+
+<section class="<%= ui(:panel, "max-w-3xl space-y-5 p-6") %>">
+  <p class="text-sm text-gray-500">A plugin's settings page. Pages published since the plugin was switched on: <%= @settings["pages_published"].to_i %>.</p>
+
+  <%= form_with url: hello_settings_path, method: :patch, scope: :settings, class: "space-y-5" do |form| %>
+    <%= settings_field "Default greeting", hint: "What the Greetings form starts with." do %>
+      <%= form.text_field :default_message, value: @settings["default_message"], class: "w-full", maxlength: 200 %>
+    <% end %>
+    <div><button type="submit" class="<%= ui(:button, :primary) %>">Save</button></div>
+  <% end %>
+</section>

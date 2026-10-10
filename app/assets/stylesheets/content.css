@@ -1,0 +1,19 @@
+@layer components {
+  /* Content › Pages: a page sits under its parent, indented by its depth
+     (data-depth, 0 to 6) and marked with an arrow. */
+  .page-tree__title {
+    display: inline-block;
+  }
+
+  .page-tree__title[data-depth="1"] { padding-inline-start: calc(var(--spacing) * 5); }
+  .page-tree__title[data-depth="2"] { padding-inline-start: calc(var(--spacing) * 10); }
+  .page-tree__title[data-depth="3"] { padding-inline-start: calc(var(--spacing) * 15); }
+  .page-tree__title[data-depth="4"] { padding-inline-start: calc(var(--spacing) * 20); }
+  .page-tree__title[data-depth="5"] { padding-inline-start: calc(var(--spacing) * 25); }
+  .page-tree__title[data-depth="6"] { padding-inline-start: calc(var(--spacing) * 30); }
+
+  .page-tree__title:not([data-depth="0"])::before {
+    color: var(--color-gray-400);
+    content: "↳ ";
+  }
+}

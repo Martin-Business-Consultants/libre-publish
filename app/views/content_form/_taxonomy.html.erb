@@ -1,0 +1,31 @@
+<%# locals: (record:, scope:) %>
+<%# The category and tags a page or entry takes from its pools (a collection
+    each). Without a pool the picker isn't offered, as the model requires. %>
+<% category_pool = record.category_pool %>
+<% tag_pool = record.tag_pool %>
+<% if category_pool %>
+  <div class="flex flex-col gap-1.5">
+    <label class="<%= ui(:label) %>" for="<%= scope + "_category_entry_id" %>">Category</label>
+    <%= select_tag scope + "[category_entry_id]",
+          options_from_collection_for_select(category_pool.entries.where(status: "published").order(:title), :id, :title, record.category_entry_id),
+          include_blank: "None", id: scope + "_category_entry_id", class: "w-full" %>
+    <p class="<%= ui(:help) %>">From <%= category_pool.name %></p>
+  </div>
+<% end %>
+<% if tag_pool %>
+  <fieldset class="flex flex-col gap-2">
+    <legend class="<%= ui(:label, "mb-2") %>">Tags</legend>
+    <%= hidden_field_tag scope + "[tag_ids][]", "", id: nil %>
+    <% chosen = record.tag_ids %>
+    <div class="flex flex-wrap gap-x-4 gap-y-2">
+      <% tag_pool.entries.where(status: "published").order(:title).each do |tag_entry| %>
+        <%# herb:key tag_entry.id %>
+        <label class="flex items-center gap-2 text-sm text-gray-700">
+          <%= check_box_tag scope + "[tag_ids][]", tag_entry.id, chosen.include?(tag_entry.id), id: nil %>
+          <span><%= tag_entry.title %></span>
+        </label>
+      <% end %>
+    </div>
+    <p class="<%= ui(:help) %>">From <%= tag_pool.name %></p>
+  </fieldset>
+<% end %>

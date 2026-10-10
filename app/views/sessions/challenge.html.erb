@@ -1,0 +1,27 @@
+<% @page_title = "Two-factor verification" %>
+
+<div class="mx-auto w-full max-w-sm">
+  <div class="<%= ui(:panel, "p-6") %>">
+    <div class="mb-6 space-y-1.5">
+      <h1 class="text-xl font-semibold tracking-tight text-gray-900">Two-factor verification</h1>
+      <p class="text-sm text-gray-500">Enter the 6-digit code from your authenticator, or one of your single-use recovery codes.</p>
+    </div>
+
+    <%= form_with url: sessions_challenge_path, class: "space-y-5", data: { controller: "form" } do |form| %>
+      <label class="flex flex-col gap-1.5">
+        <span class="<%= ui(:label) %>">Code</span>
+        <%= form.text_field :code, required: true, autofocus: true, autocomplete: "one-time-code", inputmode: "text", class: "w-full text-center font-mono text-lg tracking-widest", placeholder: "000000" %>
+        <span class="<%= ui(:help) %>">Recovery codes are 16 characters; codes from an authenticator are 6 digits.</span>
+      </label>
+
+      <button type="submit" class="<%= ui(:button, :primary, "w-full") %>" data-form-target="submit">
+        <span>Verify</span>
+        <%= icon_tag "arrow-right", class: "size-4" %>
+      </button>
+    <% end %>
+  </div>
+
+  <p class="mt-6 text-center text-sm text-gray-500">
+    <%= link_to "Cancel and sign in as someone else", sign_in_path, class: ui(:link) %>
+  </p>
+</div>

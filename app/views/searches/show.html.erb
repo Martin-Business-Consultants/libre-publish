@@ -1,0 +1,44 @@
+<% @page_title = "Search" %>
+
+<%= render "layouts/shared/page_header", title: @page_title %>
+
+<%= form_with url: search_path, method: :get, class: "mb-6 flex max-w-2xl gap-2", role: "search" do |form| %>
+  <%= form.search_field :q, value: @search.term, class: "min-w-0 flex-1", placeholder: "Search pages, entries, globals, users…",
+        autofocus: true, autocomplete: "off", aria: { label: "Search everything" } %>
+  <button type="submit" class="<%= ui(:button, :primary) %>">Search</button>
+<% end %>
+
+<% if @search.term.present? && !@search.searchable? %>
+  <p class="text-sm text-gray-500">Type at least <%= SearchIndexed::MIN_LENGTH %> characters.</p>
+<% elsif @search.searchable? %>
+  <section class="<%= ui(:panel, "overflow-x-auto") %>">
+    <table class="data-table <%= ui(:table) %>">
+      <thead>
+        <tr>
+          <th class="<%= ui(:th) %>">Found</th>
+          <th class="<%= ui(:th) %>">Kind</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @results.each do |record| %>
+          <%# herb:key "#{record.class.name}-#{record.id}" %>
+          <% snippet = record.hit.highlight(:body) %>
+          <tr class="hover:bg-gray-50">
+            <td class="<%= ui(:td) %>">
+              <%= link_to search_result_path(record), class: "font-medium text-gray-900 hover:underline" do %>
+                <%= record.search_document[:title].presence || "Untitled" %>
+              <% end %>
+              <% if snippet.present? %>
+                <p class="mt-0.5 text-xs text-gray-500"><%= sanitize snippet, tags: %w[mark] %></p>
+              <% end %>
+            </td>
+            <td class="<%= ui(:td) %>"><span class="<%= ui(:badge, :gray) %>"><%= GlobalSearch.kind_label(record) %></span></td>
+          </tr>
+        <% end %>
+        <%= table_empty_row("Nothing holds “" + @search.term + "”.", columns: 2) if @results.empty? %>
+      </tbody>
+    </table>
+  </section>
+
+  <%= pagination_nav @pagination %>
+<% end %>
