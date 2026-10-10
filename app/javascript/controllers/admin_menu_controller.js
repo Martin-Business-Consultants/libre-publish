@@ -13,6 +13,10 @@ import { Controller } from "@hotwired/stimulus"
 // one opens at once when none is, stays open CLOSE_DELAY after the pointer
 // leaves it, and gives way to another item's after SWITCH_DELAY, so passing
 // over an item on the way doesn't take over.
+//
+// An open fly-out is shown as a popover, in the browser's top layer: above
+// everything on the page and clipped by nothing, whatever a page or a
+// browser does with stacking and scrolling (#show).
 const CLOSE_DELAY = 400
 const SWITCH_DELAY = 300
 
@@ -29,6 +33,8 @@ export default class extends Controller {
     this.#menu?.addEventListener("mouseover", this.hover)
     this.#menu?.addEventListener("mouseleave", this.leave)
     this.#menu?.addEventListener("focusin", this.placeFlyout)
+    this.focusOut = this.focusOut.bind(this)
+    this.#menu?.addEventListener("focusout", this.focusOut)
     this.#menu?.addEventListener("scroll", this.replaceFlyout, { passive: true })
     this.#watchHeight()
     this.#sync()
@@ -41,6 +47,7 @@ export default class extends Controller {
     this.#menu?.removeEventListener("mouseover", this.hover)
     this.#menu?.removeEventListener("mouseleave", this.leave)
     this.#menu?.removeEventListener("focusin", this.placeFlyout)
+    this.#menu?.removeEventListener("focusout", this.focusOut)
     this.#menu?.removeEventListener("scroll", this.replaceFlyout)
   }
 
@@ -67,6 +74,7 @@ export default class extends Controller {
 
   #openFlyout(item) {
     this.open?.classList.remove("admin-menu__item--open")
+    this.#hide(this.open)
     this.open = item
     if (!item) return
 
@@ -82,6 +90,7 @@ export default class extends Controller {
     const flyout = item?.querySelector(":scope > .admin-menu__submenu")
     if (!flyout) return
 
+    this.#show(flyout)
     const { top, bottom } = item.getBoundingClientRect()
     // Never above the menu's top, under the admin bar (an item scrolled up there).
     const bar = this.#menu.getBoundingClientRect().top
@@ -92,6 +101,27 @@ export default class extends Controller {
         flyout.style.setProperty("--flyout-top", `${Math.max(bar, bottom - flyout.offsetHeight)}px`)
       }
     })
+  }
+
+  // Keyboard focus left an item: its fly-out closes, unless the pointer holds it open.
+  focusOut(event) {
+    const item = event.target.closest(".admin-menu__item")
+    if (item && item !== this.open && !item.contains(event.relatedTarget)) this.#hide(item)
+  }
+
+  // Into the top layer, when the CSS makes it a fly-out (not the current
+  // item's submenu, open inline under it).
+  #show(flyout) {
+    if (!flyout.showPopover || getComputedStyle(flyout).position !== "fixed") return
+    flyout.popover = "manual"
+    if (!flyout.matches(":popover-open")) flyout.showPopover()
+  }
+
+  #hide(item) {
+    const flyout = item?.querySelector(":scope > .admin-menu__submenu[popover]")
+    if (!flyout) return
+    if (flyout.matches(":popover-open")) flyout.hidePopover()
+    flyout.removeAttribute("popover")
   }
 
   // Scrolling the menu moves the open item; keep its fly-out beside it.

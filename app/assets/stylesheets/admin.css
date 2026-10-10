@@ -230,6 +230,8 @@
       max-block-size: calc(100dvh - var(--admin-bar-height));
       min-inline-size: 13rem;
       overflow-y: auto;
+      color: inherit;
+      margin: 0;
       padding: 0.375rem;
       position: fixed;
       z-index: 1;
