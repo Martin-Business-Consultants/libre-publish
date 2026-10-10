@@ -4,7 +4,8 @@
 # (Website.theme). A page renders website/pages/show; an entry renders
 # website/entries/<collection>, when the theme has one (a collection it
 # doesn't draw has no pages); anything else is the theme's
-# website/not_found, after Tools › Redirects has had its say.
+# website/not_found, after Tools › Redirects has had its say and an address
+# the admin had before it moved under /cms (/pages) has gone there.
 #
 # Not an ApplicationController: visitors aren't signed in, aren't held to the
 # admin's modern-browsers rule, and see only published content. An editor who
@@ -16,9 +17,11 @@ class Website::PagesController < ActionController::Base
   # flash or session, so every visitor shares one cached copy.
   self.etaggers = []
 
-  before_action { prepend_view_path Website.theme.views }
+  before_action { prepend_view_path Website.theme.views if Website.enabled? }
 
   def show
+    return headless unless Website.enabled?
+
     # One address per page: "/about/" is "/about". (The router has already
     # dropped the slash from request.path; the original keeps it.)
     path = request.original_fullpath.split("?").first
@@ -49,15 +52,29 @@ class Website::PagesController < ActionController::Base
     end
   end
 
+  # A headless install has no site: an old admin address goes to /cms, and
+  # anything else is the plain 404 it always was.
+  def headless
+    if (moved = Website::Address.new(request.path).admin_path)
+      redirect_to moved_with_query(moved), status: :moved_permanently
+    else
+      render file: Rails.public_path.join("404.html"), status: :not_found, layout: false
+    end
+  end
+
   def not_found(address)
     if (found = address.redirect)
       redirect_to found[:destination], status: found[:status], allow_other_host: true
+    elsif (moved = address.admin_path)
+      redirect_to moved_with_query(moved), status: :moved_permanently
     elsif template_exists?("website/not_found")
       render "website/not_found", status: :not_found
     else
       head :not_found
     end
   end
+
+  def moved_with_query(path) = request.query_string.empty? ? path : "#{path}?#{request.query_string}"
 
   # Only for someone signed in to the admin, and only when they ask.
   def previewing?

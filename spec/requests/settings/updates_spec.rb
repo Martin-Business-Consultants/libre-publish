@@ -53,7 +53,7 @@ RSpec.describe "Settings: the version and updates", type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("Updates", "CMS 99.0.0", "Faster pages.", "cms updates")
-      expect(response.body).to match(%r{href="/settings/updates"[^>]*admin-bar__update|admin-bar__update[^>]*href="/settings/updates"})
+      expect(response.body).to match(%r{href="/cms/settings/updates"[^>]*admin-bar__update|admin-bar__update[^>]*href="/cms/settings/updates"})
     end
 
     it "shows the command to run when updating from here isn't set up" do

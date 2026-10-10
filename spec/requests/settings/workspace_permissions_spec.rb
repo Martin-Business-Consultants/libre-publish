@@ -41,7 +41,7 @@ RSpec.describe "Workspace settings permissions", type: :request do
   it "keeps a role without settings:read out of every workspace page" do
     sign_in_as writer
 
-    %w[/settings/general /settings/brand /settings/github /settings/deploy].each do |path|
+    %w[/cms/settings/general /cms/settings/brand /cms/settings/github /cms/settings/deploy].each do |path|
       get path
       expect(response).to have_http_status(:redirect), path
     end
@@ -58,7 +58,7 @@ RSpec.describe "Workspace settings permissions", type: :request do
   it "keeps your own account's pages open to anyone signed in" do
     sign_in_as writer
 
-    %w[/settings/profile /settings/api_token /settings/branding].each do |path|
+    %w[/cms/settings/profile /cms/settings/api_token /cms/settings/branding].each do |path|
       get path
       expect(response).to have_http_status(:ok), path
     end

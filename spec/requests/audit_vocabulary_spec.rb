@@ -25,7 +25,7 @@ RSpec.describe "Audit vocabulary", type: :request do
     %w[one two].each { BlockType.create!(slug: it, label: it, fields: [], defaults: {}, version: 1) }
 
     from_api = rows_from { delete "/api/block_types/one", headers: api }
-    from_admin = admin_rows { delete "/block_types/two" }
+    from_admin = admin_rows { delete "/cms/block_types/two" }
 
     expect(from_api.map(&:first)).to eq(["block_type.deleted"])
     expect(from_admin.map(&:first)).to eq(["block_type.deleted"])
@@ -38,7 +38,7 @@ RSpec.describe "Audit vocabulary", type: :request do
     %w[a b].each { collection.entries.create!(slug: it, title: it, status: "draft", locale: "en", frontmatter: {"active" => false}) }
 
     from_api = rows_from { patch "/api/collections/specials/entries/a/move", params: {on: true}, headers: api, as: :json }
-    from_admin = admin_rows { post "/collections/specials/entries/b/placement", params: {column: "on"} }
+    from_admin = admin_rows { post "/cms/collections/specials/entries/b/placement", params: {column: "on"} }
 
     expect(from_api.map { [it[0], it[1].except("slug")] }).to eq(from_admin.map { [it[0], it[1].except("slug")] })
     expect(from_api.first).to eq(["entry.published", {"collection" => "specials", "slug" => "a", "fields" => ["active"], "to" => true, "from" => "draft"}])
@@ -50,8 +50,8 @@ RSpec.describe "Audit vocabulary", type: :request do
       post "/api/deploy/trigger", headers: api
     end
     from_admin = admin_rows do
-      patch "/settings/deploy", params: {settings: {url: "https://hooks.example.test/b", provider: "build_hook", paused: "0"}}
-      post "/settings/deploy/trigger"
+      patch "/cms/settings/deploy", params: {settings: {url: "https://hooks.example.test/b", provider: "build_hook", paused: "0"}}
+      post "/cms/settings/deploy/trigger"
     end
 
     expect(from_api).to eq(from_admin)
@@ -63,7 +63,7 @@ RSpec.describe "Audit vocabulary", type: :request do
     page = Page.create!(slug: "about", title: "About", status: "published", locale: "en")
 
     from_api = rows_from { patch "/api/sitemap/page/#{page.id}", params: {entry: {sitemap_priority: 0.4}}, headers: api, as: :json }
-    from_admin = admin_rows { patch "/sitemap/page/#{page.id}", params: {entry: {sitemap_priority: 0.6}} }
+    from_admin = admin_rows { patch "/cms/sitemap/page/#{page.id}", params: {entry: {sitemap_priority: 0.6}} }
 
     expect(from_api).to eq(from_admin)
     expect(from_admin).to eq([["sitemap.entry_updated", {"source" => "page"}]])

@@ -66,9 +66,12 @@ RSpec.describe "Website", type: :request do
     # As in production: no detailed exception pages, so the API answers its own 404.
     allow(Rails.application).to receive(:env_config).and_return(Rails.application.env_config.merge("action_dispatch.show_detailed_exceptions" => false))
 
-    get "/sign_in"
+    get "/cms/sign_in"
     expect(response).to have_http_status(:ok)
     expect(response.body).not_to include("Not here")
+
+    get "/sign_in"
+    expect(response).to redirect_to("/cms/sign_in")
 
     get "/api/no-such-thing"
     expect(response.media_type).to eq("application/json")
@@ -125,10 +128,10 @@ RSpec.describe "Website", type: :request do
       example.run
     end
 
-    it "keeps / for the admin, as a headless install always has" do
+    it "sends / to the admin, at /cms" do
       get "/"
 
-      expect(response).to redirect_to(sign_in_path)
+      expect(response).to redirect_to("/cms")
     end
   end
 end

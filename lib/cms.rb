@@ -8,6 +8,11 @@ module Cms
 
   def self.version = Gem::Version.new(VERSION)
 
+  # Where Libre Publish lives on its host: /cms. "/" is the website (a
+  # theme's, docs/themes.md); the API, the agent and frontend bootstraps,
+  # /sitemap.xml and /up stay at the root, where sites and tools call them.
+  PATH = "cms"
+
   # Where this install keeps its databases and uploads (CMS_DATA_DIR, as
   # config/database.yml and config/storage.yml read it), so whatever else it
   # writes there is backed up with them.

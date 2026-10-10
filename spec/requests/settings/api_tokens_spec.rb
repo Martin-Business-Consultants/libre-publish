@@ -32,7 +32,7 @@ RSpec.describe "Settings::ApiTokens", type: :request do
 
   describe "GET /settings/api_token" do
     it "renders without putting the plaintext in the page" do
-      get "/settings/api_token"
+      get "/cms/settings/api_token"
 
       expect(response).to have_http_status(:success)
       expect(response.body).to include(token.prefix)
@@ -42,7 +42,7 @@ RSpec.describe "Settings::ApiTokens", type: :request do
     it "mints a token for a user who somehow has none" do
       token.destroy!
 
-      expect { get "/settings/api_token" }
+      expect { get "/cms/settings/api_token" }
         .to change { ApiToken.count }.by(1)
       expect(response).to have_http_status(:success)
     end
@@ -51,7 +51,7 @@ RSpec.describe "Settings::ApiTokens", type: :request do
   describe "POST /settings/api_token/reveal" do
     it "swaps the plaintext into the page's secret frame and records the reveal" do
       expect {
-        post "/settings/api_token/reveal"
+        post "/cms/settings/api_token/reveal"
       }.to change { AuditLog.where(action: "api_token.revealed").count }.by(1)
 
       expect(response).to have_http_status(:ok)
@@ -59,7 +59,7 @@ RSpec.describe "Settings::ApiTokens", type: :request do
     end
 
     it "returns the plaintext as JSON when asked for JSON" do
-      post "/settings/api_token/reveal", as: :json
+      post "/cms/settings/api_token/reveal", as: :json
 
       expect(JSON.parse(response.body)["token"]).to eq(token.reload.token)
     end
@@ -67,7 +67,7 @@ RSpec.describe "Settings::ApiTokens", type: :request do
     it "410s for a token minted before plaintext was stored" do
       token.update_columns(token: nil)
 
-      post "/settings/api_token/reveal", as: :json
+      post "/cms/settings/api_token/reveal", as: :json
 
       expect(response).to have_http_status(:gone)
       expect(JSON.parse(response.body)["error"]).to eq("rotation_required")
@@ -76,7 +76,7 @@ RSpec.describe "Settings::ApiTokens", type: :request do
     it "reveals the signed-in user's token, not someone else's" do
       other = find_or_create_user("someone-else@#{SETTINGS_TOKEN_SUBDOMAIN}.example.com")
 
-      post "/settings/api_token/reveal", as: :json
+      post "/cms/settings/api_token/reveal", as: :json
 
       revealed = JSON.parse(response.body)["token"]
       expect(revealed).to eq(token.reload.token)
@@ -88,10 +88,10 @@ RSpec.describe "Settings::ApiTokens", type: :request do
     it "replaces the secret in place, keeping one token per user" do
       old = token.reload.token
 
-      expect { post "/settings/api_token/rotation" }
+      expect { post "/cms/settings/api_token/rotation" }
         .not_to change { ApiToken.count }
 
-      expect(response).to redirect_to("/settings/api_token")
+      expect(response).to redirect_to("/cms/settings/api_token")
       expect(token.reload.token).not_to eq(old)
       expect(ApiToken.authenticate(old)).to be_nil
     end

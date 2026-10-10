@@ -51,6 +51,6 @@ time.
 
 ## Where to go next
 
-- [Working with an Astro site](/docs/astro)
-- [Working with AI](/docs/ai)
-- [Site health](/docs/site-health)
+- [Working with an Astro site](/cms/docs/astro)
+- [Working with AI](/cms/docs/ai)
+- [Site health](/cms/docs/site-health)

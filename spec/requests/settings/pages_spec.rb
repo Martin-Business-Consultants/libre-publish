@@ -35,16 +35,16 @@ RSpec.describe "Settings pages", type: :request do
 
     it "renders every section for an admin" do
       sign_in_as admin
-      %w[/settings /settings/general /settings/profile /settings/api_token /settings/service_tokens /settings/branding
-        /settings/github /settings/deploy].each do |path|
+      %w[/cms/settings /cms/settings/general /cms/settings/profile /cms/settings/api_token /cms/settings/service_tokens /cms/settings/branding
+        /cms/settings/github /cms/settings/deploy].each do |path|
         get path
         expect(response).to have_http_status(:ok), "#{path} returned #{response.status}"
       end
 
       # Folded into Account and Branding; the old addresses land on their sections.
-      {"/settings/email" => "/settings/profile#email", "/settings/password" => "/settings/profile#password",
-       "/settings/two_factor" => "/settings/profile#two-factor", "/settings/sessions" => "/settings/profile#sessions",
-       "/settings/brand" => "/settings/branding#brand-context", "/settings/appearance" => "/settings/branding#appearance"}.each do |old, new|
+      {"/cms/settings/email" => "/cms/settings/profile#email", "/cms/settings/password" => "/cms/settings/profile#password",
+       "/cms/settings/two_factor" => "/cms/settings/profile#two-factor", "/cms/settings/sessions" => "/cms/settings/profile#sessions",
+       "/cms/settings/brand" => "/cms/settings/branding#brand-context", "/cms/settings/appearance" => "/cms/settings/branding#appearance"}.each do |old, new|
         get old
         expect(response).to redirect_to("http://www.example.com#{new}"), old
       end

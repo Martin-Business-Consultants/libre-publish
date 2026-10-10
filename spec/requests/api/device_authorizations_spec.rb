@@ -16,7 +16,7 @@ RSpec.describe "Api::DeviceAuthorizations", type: :request do
       expect(response).to have_http_status(:created)
       expect(json["user_code"]).to match(/\A[0-9A-Z]{4}-[0-9A-Z]{4}\z/)
       expect(json["device_code"]).to start_with("cmsd_")
-      expect(json["verification_url"]).to include("/connect")
+      expect(json["verification_url"]).to include("/cms/connect")
       expect(json["interval"]).to be_positive
       expect(json["expires_in"]).to be_positive
     end
@@ -128,7 +128,7 @@ RSpec.describe "Api::DeviceAuthorizations", type: :request do
       code = json["user_code"]
 
       sign_in_as user
-      get "/connect", params: {code: code}
+      get "/cms/connect", params: {code: code}
 
       expect(response.body).to include("alice-laptop")
     end
@@ -138,7 +138,7 @@ RSpec.describe "Api::DeviceAuthorizations", type: :request do
       code = json["user_code"]
 
       sign_in_as user
-      post "/connect", params: {code: code, decision: "approve"}
+      post "/cms/connect", params: {code: code, decision: "approve"}
 
       expect(DeviceAuthorization.last.user).to eq(user)
       expect(DeviceAuthorization.last).to be_approved
@@ -151,7 +151,7 @@ RSpec.describe "Api::DeviceAuthorizations", type: :request do
       code = json["user_code"]
 
       sign_in_as user
-      post "/connect", params: {code: code.delete("-").downcase, decision: "approve"}
+      post "/cms/connect", params: {code: code.delete("-").downcase, decision: "approve"}
 
       expect(DeviceAuthorization.last).to be_approved
     end
@@ -161,7 +161,7 @@ RSpec.describe "Api::DeviceAuthorizations", type: :request do
       code = json["user_code"]
 
       sign_in_as user
-      post "/connect", params: {code: code, decision: "deny"}
+      post "/cms/connect", params: {code: code, decision: "deny"}
 
       expect(DeviceAuthorization.last).to be_denied
       expect(DeviceAuthorization.last.user).to be_nil
@@ -169,7 +169,7 @@ RSpec.describe "Api::DeviceAuthorizations", type: :request do
 
     it "says so when the code is wrong rather than failing silently" do
       sign_in_as user
-      post "/connect", params: {code: "ZZZZ-ZZZZ", decision: "approve"}
+      post "/cms/connect", params: {code: "ZZZZ-ZZZZ", decision: "approve"}
 
       expect(flash[:alert]).to include("expired")
     end

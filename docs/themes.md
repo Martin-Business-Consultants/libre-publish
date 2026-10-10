@@ -6,10 +6,12 @@ Rails engine, like a plugin, in `themes/<name>`: a layout, a template per
 page kind, a partial per block type, a stylesheet and a few scripts. Plain
 ERB, plain CSS, an importmap: nothing is built.
 
-Without a theme the CMS is headless, as it always was: `/` is the admin's,
-and the delivery API serves the site. With one, `/` and every address the
-CMS gives a page or entry are the site's; editors still sign in at
-`/sign_in` and work in the admin where they always have.
+Libre Publish always lives under `/cms` (`Cms::PATH`), and `/` is the
+website's. With a theme, `/` and every address the CMS gives a page or entry
+are the site; editors sign in at `/cms/sign_in`. Without one the CMS is
+headless: the delivery API serves a site built elsewhere, and `/` goes to
+`/cms`. The API (`/api`), the agent and frontend bootstraps, `/sitemap.xml`
+and `/up` stay at the root, where sites and tools call them.
 
 The reference is healingearthdesignbysarah.com's,
 [healing-theme](https://github.com/Martin-Business-Consultants/healing-theme).
@@ -32,7 +34,7 @@ a Docker build's `CMS_THEME` secret, bin/fetch-theme).
 | `Website::Address` | What's at a path: `/` the home page, `/about` a page by its path, `/<collection>/<slug>` an entry. Live records only, unless an editor previews |
 | `Website::PagesController` | Draws it: a page with the theme's `website/pages/show`, an entry with `website/entries/<collection>` (no template, no pages for that collection), anything else Tools › Redirects, then the theme's `website/not_found`. `/about/` is `/about` |
 | `WebsiteHelper` | What templates read content through (below) |
-| Routes | `/` (`config/routes.rb`) and a catch-all drawn after every plugin's routes (`config/initializers/website.rb`), so it never hides one; `/api`, `/rails` and `/assets` answer for themselves |
+| Routes | `/` (`config/routes.rb`) and a catch-all drawn after every plugin's routes (`config/initializers/website.rb`), so it never hides one; `/api`, `/rails` and `/assets` answer for themselves. An address the admin had before `/cms` (`/pages`) redirects there |
 
 ### Reading content: `WebsiteHelper`
 
