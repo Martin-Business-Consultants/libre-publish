@@ -144,9 +144,12 @@ module WebsiteHelper
     Nokogiri::HTML5.fragment(value.to_s.gsub(%r{</p>\s*<p>}, " ")).text.squish
   end
 
-  # The <head> a record's SEO panel describes: title, description,
-  # canonical, robots, Open Graph, Twitter and its JSON-LD. The keywords
-  # fill what the panel leaves blank.
+  # The <head> a record's SEO panel describes, complete: title,
+  # description, canonical, robots, Open Graph (its overrides, the image's
+  # size and alt, an entry's dates), Twitter, the record's translations
+  # (hreflang), its Markdown for AI readers, and its structured data — the
+  # panel's JSON-LD, or one made from the content (website_structured_data).
+  # The keywords fill what the panel leaves blank.
   def website_seo_tags(record = nil, title: nil, description: nil, image: nil, noindex: false)
     seo = record.respond_to?(:seo) ? record.seo.to_h.stringify_keys : {}
     values = Cms::Hooks.apply("website.seo", {
@@ -154,26 +157,132 @@ module WebsiteHelper
       description: seo["meta_description"].presence || description,
       canonical: seo["canonical_url"].presence || website_url(request.path),
       image: seo["og_image_id"].presence || image,
-      robots: ("noindex, nofollow" if noindex || seo["noindex"])
+      # Asked for (a 404), neither indexed nor followed; hidden in the SEO
+      # panel, not indexed but its links still followed, unless it says so.
+      robots: website_robots(noindex: noindex || website_truthy?(seo["noindex"]), nofollow: noindex || website_truthy?(seo["nofollow"]))
     }, record: record)
     title, description, canonical, robots = values.values_at(:title, :description, :canonical, :robots)
     image = website_image(values[:image])
+    og_title = seo["og_title"].presence || title
+    og_description = seo["og_description"].presence || description
+    article = record.is_a?(CollectionEntry)
 
     safe_join([
       tag.title(title),
       (tag.meta(name: "description", content: description) if description.present?),
       tag.link(rel: "canonical", href: canonical),
-      (tag.meta(name: "robots", content: robots) if robots),
-      tag.meta(property: "og:type", content: "website"),
+      tag.meta(name: "robots", content: robots),
+      *website_hreflang_tags(record),
+      (tag.link(rel: "alternate", type: "text/markdown", href: website_url(website_markdown_path(record))) if record.respond_to?(:public_path) && !robots.include?("noindex")),
+      tag.meta(property: "og:type", content: seo["og_type"].presence || (article ? "article" : "website")),
       tag.meta(property: "og:site_name", content: website_settings["title"]),
-      tag.meta(property: "og:title", content: title),
-      (tag.meta(property: "og:description", content: description) if description.present?),
+      tag.meta(property: "og:title", content: og_title),
+      (tag.meta(property: "og:description", content: og_description) if og_description.present?),
       tag.meta(property: "og:url", content: canonical),
-      (tag.meta(property: "og:image", content: website_url(image[:src])) if image),
-      tag.meta(name: "twitter:card", content: image ? "summary_large_image" : "summary"),
-      (website_json_ld(seo["json_ld"]) if seo["json_ld"].present?)
-    ].compact, "\n")
+      (tag.meta(property: "og:locale", content: record.locale.to_s.tr("-", "_")) if record.respond_to?(:locale) && record.locale.present?),
+      *(image ? [tag.meta(property: "og:image", content: website_url(image[:src])),
+        (tag.meta(property: "og:image:width", content: image[:width]) if image[:width]),
+        (tag.meta(property: "og:image:height", content: image[:height]) if image[:height]),
+        (tag.meta(property: "og:image:alt", content: image[:alt]) if image[:alt].present?)] : []),
+      *(article ? [(tag.meta(property: "article:published_time", content: record.published_at.iso8601) if record.published_at),
+        tag.meta(property: "article:modified_time", content: record.updated_at.iso8601)] : []),
+      tag.meta(name: "twitter:card", content: seo["twitter_card"].presence || (image ? "summary_large_image" : "summary")),
+      tag.meta(name: "twitter:title", content: og_title),
+      (tag.meta(name: "twitter:description", content: og_description) if og_description.present?),
+      (website_json_ld(seo["json_ld"]) if seo["json_ld"].present?),
+      website_json_ld(website_structured_data(record, title: og_title, description: og_description, canonical: canonical, image: image,
+        custom: seo["json_ld"].present?))
+    ].flatten.compact, "\n")
   end
+
+  # The robots meta: an indexable page also lets search show a large image
+  # preview and the full snippet (what Google Discover and AI overviews use).
+  def website_robots(noindex:, nofollow:)
+    return [noindex ? "noindex" : "index", nofollow ? "nofollow" : "follow"].join(", ") if noindex
+
+    [nofollow ? "index, nofollow" : "index, follow", "max-image-preview:large", "max-snippet:-1"].join(", ")
+  end
+
+  # The record's translations, and itself, as hreflang links, with the
+  # default locale's as x-default.
+  def website_hreflang_tags(record)
+    group = record.try(:translation_group) or return []
+    members = group.members.select { it.try(:status) == "published" || it == record }
+    return [] if members.size < 2
+
+    default = members.find { it.locale.to_s == record.class.default_locale.to_s }
+    members.map { tag.link(rel: "alternate", hreflang: it.locale, href: website_url(it.public_path)) } +
+      [(tag.link(rel: "alternate", hreflang: "x-default", href: website_url(default.public_path)) if default)]
+  end
+
+  def website_markdown_path(record)
+    path = record.public_path
+    (path == "/") ? "/index.md" : "#{path}.md"
+  end
+
+  # Structured data made from the content (schema.org, one @graph): the
+  # organization behind the site (Settings › General and Search), the site,
+  # this page — as the SEO panel's schema.org type, an Article for an entry,
+  # or a WebPage — and its breadcrumbs. With the panel's own JSON-LD, only the
+  # organization, the site and the breadcrumbs, beside it.
+  def website_structured_data(record, title:, description:, canonical:, image:, custom: false)
+    general = website_settings
+    search = SearchSettings.get
+    home = website_url("/")
+    organization = {
+      "@type" => search["organization"], "@id" => "#{home}#organization",
+      "name" => general["title"].presence, "url" => home, "description" => general["description"].presence,
+      "email" => general["email"].presence, "telephone" => general["phone"].presence,
+      "logo" => website_logo_url, "sameAs" => search["same_as"].presence
+    }
+    if search["organization"] == "LocalBusiness" && general["address_line1"].present?
+      organization["address"] = {"@type" => "PostalAddress", "streetAddress" => general["address_line1"],
+        "addressLocality" => general["city"].presence, "addressRegion" => general["state"].presence, "postalCode" => general["zip"].presence}.compact
+    end
+    site = {"@type" => "WebSite", "@id" => "#{home}#website", "url" => home, "name" => general["title"].presence,
+            "publisher" => {"@id" => "#{home}#organization"}, "inLanguage" => record.try(:locale).presence}
+    graph = [organization.compact, site.compact]
+    return {"@context" => "https://schema.org", "@graph" => graph} unless record
+
+    unless custom
+      type = record.seo.to_h["schema_type"].presence || (record.is_a?(CollectionEntry) ? "Article" : "WebPage")
+      node = {"@type" => type, "@id" => "#{canonical}#main", "url" => canonical, "name" => title, "description" => description.presence,
+              "isPartOf" => {"@id" => "#{home}#website"}, "inLanguage" => record.try(:locale).presence,
+              "image" => (website_url(image[:src]) if image), "dateModified" => record.updated_at&.iso8601,
+              "datePublished" => record.try(:published_at)&.iso8601}
+      if type.in?(%w[Article BlogPosting NewsArticle])
+        node.merge!("headline" => title.to_s.truncate(110), "author" => {"@id" => "#{home}#organization"},
+          "publisher" => {"@id" => "#{home}#organization"}, "mainEntityOfPage" => canonical)
+      end
+      node["breadcrumb"] = {"@id" => "#{canonical}#breadcrumb"}
+      graph << node.compact
+    end
+    crumbs = website_breadcrumbs(record)
+    graph << {"@type" => "BreadcrumbList", "@id" => "#{canonical}#breadcrumb", "itemListElement" =>
+      crumbs.each_with_index.map { |(name, path), index| {"@type" => "ListItem", "position" => index + 1, "name" => name, "item" => website_url(path)} }}
+    {"@context" => "https://schema.org", "@graph" => graph}
+  end
+
+  # Home, then a page's parents (or an entry's collection), then the record.
+  def website_breadcrumbs(record)
+    trail = [["Home", "/"]]
+    case record
+    when Page
+      record.ancestors.each { trail << [it.title, it.public_path] } if record.respond_to?(:ancestors)
+    when CollectionEntry
+      listing = Page.find_by(path: record.collection.slug)
+      trail << [listing.title, listing.public_path] if listing
+    end
+    trail << [record.title, record.public_path] unless record.public_path == "/"
+    trail
+  end
+
+  def website_logo_url
+    logo = Setting.get("branding")["logo_id"].presence
+    MediaLibrary.find(logo).try(:absolute_url) if logo
+  end
+
+  def website_truthy?(value) = value == true || value.to_s.in?(%w[true 1])
 
   def website_json_ld(data)
     data = JSON.parse(data) if data.is_a?(String)

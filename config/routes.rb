@@ -173,6 +173,7 @@ Rails.application.routes.draw do
 
     namespace :settings do
       resource :general, only: [:show, :update], controller: "generals"
+      resource :search, only: [:show, :update], controller: "searches"
       resource :profile, only: [:show, :update, :destroy]
       resource :password, only: [:show, :update]
       resource :email, only: [:show, :update]
@@ -429,6 +430,9 @@ Rails.application.routes.draw do
   # plugin's routes, and sends old admin addresses (/pages) to /cms.
   get "/", to: "website/pages#show", constraints: ->(_) { Website.enabled? }
   get "site.webmanifest", to: "website/manifests#show", format: false, constraints: ->(_) { Website.enabled? }
+  # For search engines and AI (Settings › Search).
+  get "robots.txt", to: "website/pages#robots", format: false
+  get "llms.txt", to: "website/pages#llms", format: false
   root to: redirect("/#{Cms::PATH}")
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
