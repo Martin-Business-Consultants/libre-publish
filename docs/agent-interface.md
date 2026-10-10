@@ -95,6 +95,22 @@ it always was, so nothing that writes today breaks; anything that edits from
 what it read (an agent rewriting a page's blocks) should send it. The
 admin's forms always do, and say so in the form instead of overwriting.
 
+## Changing part of an object
+
+An update replaces `seo`, `frontmatter` and `blocks` whole, as sent: a
+key left out is a key removed. To change one thing (a page's meta
+description, in an SEO audit), read the record, change that key, and send
+the whole object back, with the `lock_version` you read:
+
+```
+GET   /api/pages/about                        → "seo": {"meta_title": "…", "meta_description": "…", "og_image_id": "4"}
+PATCH /api/pages/about {"page": {"seo": {"meta_title": "…", "meta_description": "New words", "og_image_id": "4"}, "lock_version": 4}}
+```
+
+With the Approvals plugin on, a token's change waits for a person, who sees
+what's live beside what's proposed, key by key; anything left out shows as
+removed, before it goes live.
+
 ## `cms doctor`
 
 The hardest question to ask over an API is "can this machine actually do work?"
