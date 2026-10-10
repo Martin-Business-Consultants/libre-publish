@@ -11,11 +11,31 @@ export default class extends Controller {
 
   connect() {
     this.receive = this.receive.bind(this)
+    this.submitted = this.submitted.bind(this)
     window.addEventListener("message", this.receive)
+    document.addEventListener("turbo:submit-end", this.submitted)
   }
 
   disconnect() {
     window.removeEventListener("message", this.receive)
+    document.removeEventListener("turbo:submit-end", this.submitted)
+  }
+
+  // A save started from the preview, finished. The page comes back morphed
+  // (the frame kept as it was), so the preview is drawn again with what was
+  // saved; one that didn't save says so, and the Edit tab shows why.
+  submitted(event) {
+    if (!this.saving || event.target.id !== this.formValue) return
+    this.saving = false
+
+    if (event.detail.success) {
+      this.justSaved = true
+      document.addEventListener("turbo:render", () => this.refresh(), { once: true })
+      setTimeout(() => { if (this.justSaved) this.refresh() }, 1500)
+    } else {
+      this.frameTarget.contentWindow?.postMessage({ type: "lp-inline-save-failed" }, window.location.origin)
+      this.element.querySelector("a[data-tab=edit]")?.click()
+    }
   }
 
   // An edit from the preview: "title", or "blocks.<row>.<field>" for a
@@ -33,15 +53,28 @@ export default class extends Controller {
   }
 
   save() {
-    document.getElementById(this.formValue)?.requestSubmit()
+    const form = document.getElementById(this.formValue)
+    if (!form) return
+    // A field the form holds in another tab that isn't filled in as it
+    // should be stops the save before it starts: show it.
+    if (!form.checkValidity()) {
+      this.frameTarget.contentWindow?.postMessage({ type: "lp-inline-save-failed" }, window.location.origin)
+      this.element.querySelector("a[data-tab=edit]")?.click()
+      form.reportValidity()
+      return
+    }
+    this.saving = true
+    form.requestSubmit()
+  }
+
+  refresh() {
+    const saved = this.justSaved
+    this.justSaved = false
+    this.#post(this.frameTarget.name, saved)
   }
 
   shown(event) {
     if (event.detail.name === "preview") this.refresh()
-  }
-
-  refresh() {
-    this.#post(this.frameTarget.name)
   }
 
   openTab(event) {
@@ -63,12 +96,13 @@ export default class extends Controller {
     return scopeName ? form.elements[`${scopeName}[data][${name}]`] : null
   }
 
-  #post(target) {
+  #post(target, saved = false) {
     const form = document.getElementById(this.formValue)
     if (!form) return
 
     const url = new URL(form.action, window.location.href)
     url.searchParams.set("website_preview", "1")
+    if (saved) url.searchParams.set("saved", "1")
     const button = document.createElement("button")
     button.type = "submit"
     button.hidden = true

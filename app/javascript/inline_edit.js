@@ -78,6 +78,20 @@
   document.body.append(save)
   const edited = new Set()
 
+  // Drawn again after a save: say it went through, briefly.
+  if (new URLSearchParams(window.location.search).has("saved")) {
+    save.disabled = true
+    save.firstChild.textContent = "Saved ✓ "
+    save.classList.add("lp-save--shown")
+    setTimeout(() => save.classList.remove("lp-save--shown"), 2000)
+  }
+
+  window.addEventListener("message", event => {
+    if (event.origin !== window.location.origin || event.data?.type !== "lp-inline-save-failed") return
+    save.disabled = false
+    save.firstChild.textContent = "Not saved: see the Edit tab "
+  })
+
   // A link around editable text doesn't follow while it's being edited.
   document.addEventListener("click", event => {
     if (event.target.closest(".lp-editable")) event.preventDefault()
