@@ -143,9 +143,40 @@ RSpec.describe "The website for search and AI", type: :request do
         "sameAs" => ["https://www.instagram.com/greenthumb"], "address" => include("addressLocality" => "Asheville"))
       expect(article).to include("@type" => "Article", "headline" => "Raised beds", "datePublished" => start_with("2026-04-02"))
 
+      # The headline is the entry's title, not its SEO title for results.
+      posts.entries.find_by!(slug: "raised-beds").update!(seo: {"meta_title" => "Raised beds | Green Thumb"})
+      article = json_ld(head_of("/posts/raised-beds")).first["@graph"].find { it["@type"] == "Article" }
+      expect(article["headline"]).to eq("Raised beds")
+
       secret = head_of("/secret")
       expect(secret.at("meta[name=robots]")["content"]).to eq("noindex, follow")
       expect(secret.at("link[type='text/markdown']")).to be_nil
+    end
+  end
+
+  describe "one address" do
+    it "sends www. to the site's own address, and leaves other hosts be" do
+      host! "www.greenthumb.test"
+      get "/services?x=1"
+      expect(response).to redirect_to("https://greenthumb.test/services?x=1")
+      expect(response).to have_http_status(:moved_permanently)
+
+      host! "cms.example.net"
+      get "/services"
+      expect(response).to have_http_status(:ok)
+    end
+  end
+
+  describe "an entry's Markdown" do
+    it "carries its own fields, and leaves a block's settings out" do
+      posts.update!(schema: {"fields" => [{"name" => "summary", "label" => "Summary", "type" => "string"},
+        {"name" => "layout", "label" => "Layout", "type" => "select", "options" => %w[wide narrow]}]})
+      posts.entries.find_by!(slug: "raised-beds").update!(frontmatter: {"summary" => "Why we build them", "layout" => "wide"})
+
+      get "/posts/raised-beds.md"
+
+      expect(response.body).to include("**Summary:** Why we build them")
+      expect(response.body).not_to include("wide")
     end
   end
 end

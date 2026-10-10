@@ -41,7 +41,10 @@ class Api::AssetsController < Api::BaseController
   end
 
   def update
-    @asset.update!(params.permit(:name, :folder, :alt, :caption, :description, :focal_x, :focal_y))
+    # Top-level, as the media API always took them, or under asset: like the
+    # pages and entries APIs.
+    @asset.update!((params[:asset].is_a?(ActionController::Parameters) ? params.require(:asset) : params)
+      .permit(:name, :folder, :alt, :caption, :description, :focal_x, :focal_y))
     @asset.track_update
     render :show
   end

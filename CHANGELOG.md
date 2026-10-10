@@ -6,16 +6,32 @@ section below. An install is brought to one with `bin/update v1.0.0`, or a
 Kamal site with `kamal deploy -d <site>`. Settings shows when a newer one is
 out.
 
-## 1.18.1
+## 1.18.2
 
 ### Fixed
-- **Collapsing the menu.** Folded to icons, the menu left its full-width gray
-  column behind, covering the left of the page; the column now folds with it.
 - **Saving from the preview** looked stuck on "Saving…": the save went
   through, but the page came back with the preview as it was. Now the
   preview is drawn again with what was saved and says "Saved ✓"; a save that
   can't go through (a required field left empty) says so and opens the Edit
   tab to show why.
+- **One address for the website.** A visit to www.example.com when
+  Settings › General says example.com (or the other way round) is
+  redirected there (301), so search engines see one copy of the site.
+- **AI readers get the words, not the settings.** A page's Markdown copy
+  (`/about.md`, llms.txt's links) leaves out its blocks' settings (layouts,
+  image positions, choices, internal labels), and an entry's carries its own
+  fields, labelled.
+- **An article's structured data** names it by its title, not its SEO title
+  for results.
+- **The media API** takes an asset's changes under `asset:`, as the pages and
+  entries APIs take theirs, as well as at the top level. Before, `asset:` was
+  answered 200 and ignored.
+
+## 1.18.1
+
+### Fixed
+- **Collapsing the menu.** Folded to icons, the menu left its full-width gray
+  column behind, covering the left of the page; the column now folds with it.
 
 ## 1.18.0
 

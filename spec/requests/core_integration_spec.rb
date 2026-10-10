@@ -145,4 +145,15 @@ RSpec.describe "Media in the core", type: :request do
     expect(from_api.first).to eq(["asset_folder.renamed", {"from" => "/brand/logos", "to" => "/brand/marks", "moved" => 1}])
     expect(from_admin.first).to eq(["asset_folder.renamed", {"from" => "/brand/marks", "to" => "/brand/logos", "moved" => 1}])
   end
+
+  it "changes an asset's alt text over the API, given at the top level or under asset:" do
+    asset = Asset.create!(folder: "/", file: fixture_file_upload(Rails.root.join("public/icon.png"), "image/png"), name: "Logo")
+
+    patch "/api/assets/#{asset.id}", params: {alt: "The logo"}, headers: api, as: :json
+    expect(asset.reload.alt).to eq("The logo")
+
+    patch "/api/assets/#{asset.id}", params: {asset: {alt: "The site's logo"}}, headers: api, as: :json
+    expect(response).to have_http_status(:ok)
+    expect(asset.reload.alt).to eq("The site's logo")
+  end
 end
