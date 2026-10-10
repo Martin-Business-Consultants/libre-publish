@@ -117,16 +117,21 @@ RSpec.describe Upgrade::InPlace do
     expect(upgrade.message).to include("v99.0.0 didn't start", "went back to #{Cms::VERSION}", "NoMethodError: it broke")
   end
 
-  it "won't leave behind a plugin the image carries that the bundle doesn't" do
-    allow(Rails.root).to receive(:glob).and_call_original
-    allow(Rails.root).to receive(:glob).with("plugins/*/*.gemspec").and_return([Pathname("/rails/plugins/cms-seo/seo.gemspec")])
+  it "carries a plugin or theme only the image has into the data directory, where the release finds it" do
+    image = Pathname(Dir.mktmpdir("image")).join("themes/healing").tap(&:mkpath)
+    image.join("healing.gemspec").write(%(spec.version = "0.3.0"))
+    image.join(".cms-plugin.json").write({repo: "acme/healing-theme", version: "0.3.0"}.to_json)
+    allow(InstalledPlugins).to receive_messages(loaded: {"healing" => image}, origins: {"healing" => :image})
     release(plugins: [])
 
     described_class.new(upgrade).install
 
-    expect(upgrade.reload).to be_failed
-    expect(upgrade.message).to include("carries seo (CMS_PLUGINS)", "Settings › Plugins", "Nothing was changed")
-    expect(releases.join("current")).not_to exist
+    carried = data_dir.join("plugins/healing")
+    expect(carried.join("healing.gemspec")).to exist
+    expect(JSON.parse(carried.join(".cms-plugin.json").read)).to include("repo" => "acme/healing-theme")
+    expect(releases.join("current")).to exist
+  ensure
+    FileUtils.rm_rf(image.parent.parent) if image
   end
 
   it "redeploys through a strategy that can when the release needs a new base, or says how" do

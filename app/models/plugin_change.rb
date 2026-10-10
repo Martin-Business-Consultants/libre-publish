@@ -11,8 +11,10 @@
 # boots with the plugin loaded at that release (or gone); an update that won't
 # load puts the previous release back.
 #
-# Plugins in plugins/ (CMS_PLUGINS, bin/rails plugins:install) and engines/
-# are bundled with the install's image or checkout and aren't changed here.
+# A plugin the image brought (plugins/, themes/: the defaults, CMS_PLUGINS,
+# CMS_THEME) updates the same way: its newer release goes in the data
+# directory and wins over the image's copy (InstalledPlugins), and removing
+# that puts the image's copy back.
 class PluginChange < ApplicationRecord
   include Eventable
 
@@ -53,6 +55,8 @@ class PluginChange < ApplicationRecord
   end
 
   def self.remove(key, by:)
+    raise Refused, "#{key} comes with this install's image; switch it off instead." unless InstalledPlugins.present.key?(key.to_s)
+
     start(action: "remove", key: key.to_s, repo: installed_repo(key), from_version: InstalledPlugins.versions[key.to_s], by: by)
   end
 
@@ -71,8 +75,8 @@ class PluginChange < ApplicationRecord
   def self.reconcile = running.find_each(&:reconcile)
 
   def self.installed_repo(key)
-    InstalledPlugins.metadata(key.to_s)["repo"] or
-      raise Refused, "#{key} wasn't installed from Settings › Plugins, so it's updated and removed by hand."
+    InstalledPlugins.repo(key.to_s) or
+      raise Refused, "Nothing says which GitHub repository #{key} came from, so it's updated by hand."
   end
 
   # Run by PluginChangeJob. True once the change is in place and waits on the restart.
@@ -140,7 +144,8 @@ class PluginChange < ApplicationRecord
 
   def done?
     if action == "remove"
-      !InstalledPlugins.loaded.key?(key)
+      # Gone, or the image's copy running again.
+      InstalledPlugins.origins[key] != :installed
     else
       InstalledPlugins.loaded.key?(key) && InstalledPlugins.versions[key] == to_version
     end
@@ -162,8 +167,7 @@ class PluginChange < ApplicationRecord
     name = gemspec.basename(".gemspec").to_s
     raise Failed, "#{repo} names its plugin #{name}, which isn't a plain lowercase name." unless name.match?(NAME_FORMAT)
     raise Failed, "#{repo} holds the #{name} plugin, not #{key}." if key && key != name
-    raise Failed, "#{name} is already installed. Update or remove it instead." if action == "install" && InstalledPlugins.present.key?(name)
-    raise Failed, "#{name} comes with this install (plugins/ or engines/), so it's changed there." if Gem.loaded_specs.key?(name)
+    raise Failed, "#{name} is already installed. Update it instead." if action == "install" && (InstalledPlugins.present.key?(name) || InstalledPlugins.loaded.key?(name))
 
     update!(key: name)
     unpacked.join(InstalledPlugins::METADATA).write({repo: repo, version: to_version, tag: tag, installed_at: Time.current.iso8601}.to_json)
@@ -180,11 +184,13 @@ class PluginChange < ApplicationRecord
     Cms::Plugins.switch!(key, on: false) if Cms::Plugins.manifests.key?(key.to_sym)
   end
 
+  # The release before goes back; for an image's plugin updated here the
+  # first time, there's none, and the image's copy runs again.
   def roll_back
-    return unless action == "update" && previous.exist?
+    return unless action == "update"
 
     FileUtils.rm_rf(target)
-    File.rename(previous, target)
+    File.rename(previous, target) if previous.exist?
     Cms::Restart.later
   end
 end

@@ -46,7 +46,7 @@ RUN apt-get update -qq && \
 # Install application gems
 COPY vendor/* ./vendor/
 COPY Gemfile Gemfile.lock ./
-# Plugins are gems the Gemfile globs, so they're needed before bundling.
+# Plugins and the theme: the image's own, then those the secrets below name.
 COPY engines ./engines
 COPY plugins ./plugins
 COPY themes ./themes
@@ -60,19 +60,15 @@ RUN --mount=type=secret,id=CMS_PLUGINS,required=false bin/fetch-plugins
 COPY bin/fetch-theme ./bin/
 RUN --mount=type=secret,id=CMS_THEME,required=false bin/fetch-theme
 
-# A plugin's gems aren't in the repository's Gemfile.lock, so with any
-# installed the lock is resolved here (the core's gems stay at their locked
-# versions) and kept aside for `COPY . .`, which would put the original back.
-RUN if ls plugins/*/*.gemspec themes/*/*.gemspec 2> /dev/null | grep -q .; then BUNDLE_DEPLOYMENT=0 BUNDLE_FROZEN=0 bundle lock; fi && \
-    cp Gemfile.lock /tmp/Gemfile.lock && \
-    bundle install && \
+# Plugins aren't gems in the bundle (config/installed_plugins.rb loads them),
+# so the repository's Gemfile.lock is the lock.
+RUN bundle install && \
     rm -rf ~/.bundle/ "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git && \
     # -j 1 disable parallel compilation to avoid a QEMU bug: https://github.com/rails/bootsnap/issues/495
     bundle exec bootsnap precompile -j 1 --gemfile
 
 # Copy application code
 COPY . .
-RUN cp /tmp/Gemfile.lock Gemfile.lock
 
 # Precompile bootsnap code for faster boot times.
 # -j 1 disable parallel compilation to avoid a QEMU bug: https://github.com/rails/bootsnap/issues/495

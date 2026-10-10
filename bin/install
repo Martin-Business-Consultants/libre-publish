@@ -43,8 +43,6 @@ FileUtils.chdir APP_ROOT do
   puts "Ruby #{RUBY_VERSION} (this release was built with #{File.read(".ruby-version").strip})"
 
   step "Installing gems (production only)"
-  # Not `deployment`: installing a plugin changes the Gemfile, which a frozen
-  # bundle would refuse.
   system! "bundle", "config", "set", "--local", "without", "development test"
   system! "bundle", "install"
 

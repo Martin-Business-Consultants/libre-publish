@@ -21,6 +21,7 @@ RSpec.describe PluginChange do
     InstalledPlugins.loaded.clear
     InstalledPlugins.failed.clear
     InstalledPlugins.versions.clear
+    InstalledPlugins.origins.clear
   end
 
   after do
@@ -28,6 +29,7 @@ RSpec.describe PluginChange do
     InstalledPlugins.loaded.clear
     InstalledPlugins.failed.clear
     InstalledPlugins.versions.clear
+    InstalledPlugins.origins.clear
   end
 
   def release(files)
@@ -90,10 +92,11 @@ RSpec.describe PluginChange do
       expect(again.reload.message).to match(/already installed/)
 
       FileUtils.rm_rf(installed)
+      InstalledPlugins.loaded["hello"] = Rails.root.join("engines/hello")
       plugin_release("hello")
       bundled = described_class.install("acme/cms-thing", by: admin)
       perform_enqueued_jobs
-      expect(bundled.reload.message).to match(/comes with this install/)
+      expect(bundled.reload.message).to match(/already installed/)
     end
 
     it "is one change at a time, and wants a repository" do
@@ -192,8 +195,54 @@ RSpec.describe PluginChange do
       expect(Cms::Restart).to have_received(:later)
     end
 
-    it "leaves plugins it didn't install to be changed by hand" do
-      expect { described_class.remove("hello", by: admin) }.to raise_error(described_class::Refused, /by hand/)
+    it "leaves the image's plugins in it: they're switched off, not removed" do
+      expect { described_class.remove("hello", by: admin) }.to raise_error(described_class::Refused, /switch it off/)
+    end
+
+    it "is done removing once the image's copy runs again" do
+      change = described_class.create!(action: "remove", repo: "acme/cms-thing", key: "thing")
+      InstalledPlugins.loaded["thing"] = Rails.root.join("plugins/thing")
+      InstalledPlugins.origins["thing"] = :image
+
+      change.reconcile
+
+      expect(change.reload).to be_succeeded
+    end
+  end
+
+  describe "updating a plugin the image brought" do
+    let(:image) { Pathname(Dir.mktmpdir("image")).join("thing").tap(&:mkpath) }
+
+    before do
+      image.join("thing.gemspec").write(%(spec.version = "1.1.0"))
+      image.join(InstalledPlugins::METADATA).write({repo: "acme/cms-thing", version: "1.1.0"}.to_json)
+      InstalledPlugins.loaded["thing"] = image
+      InstalledPlugins.versions["thing"] = "1.1.0"
+      InstalledPlugins.origins["thing"] = :image
+    end
+
+    after { FileUtils.rm_rf(image.parent) }
+
+    it "puts the newer release in the data directory, beside the image's copy" do
+      plugin_release
+
+      change = described_class.update_plugin("thing", by: admin)
+      perform_enqueued_jobs
+
+      expect(change.reload).to have_attributes(status: "running", from_version: "1.1.0", to_version: "1.2.0")
+      expect(installed.join("lib/thing.rb")).to exist
+      expect(image.join("thing.gemspec")).to exist
+    end
+
+    it "goes back to the image's copy when the release won't load" do
+      change = described_class.create!(action: "update", repo: "acme/cms-thing", key: "thing", from_version: "1.1.0", to_version: "1.2.0")
+      installed.join("lib").mkpath
+      InstalledPlugins.failed["thing"] = "NameError: boom"
+
+      change.reconcile
+
+      expect(change.reload).to be_failed
+      expect(installed).not_to exist
     end
   end
 end

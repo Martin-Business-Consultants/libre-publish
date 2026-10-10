@@ -1,9 +1,10 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-# Clones an install's plugins into plugins/ for the Docker build, before
-# bundling (docs/plugins.md). A Kamal install, whatever runs it, clones the
-# repository fresh for every deploy, so plugins installed with
+# Clones an install's plugins into plugins/ for the Docker build
+# (docs/plugins.md), each with where it came from (.cms-plugin.json) so
+# Settings › Plugins can update it. A Kamal install, whatever runs it, clones
+# the repository fresh for every deploy, so plugins installed with
 # `plugins:install` would not survive it; this list is how they do.
 #
 # Every install gets the default plugins (config/default_plugins.yml), plus
@@ -20,6 +21,7 @@
 #   bin/fetch-plugins                    # reads CMS_PLUGINS, or /run/secrets/CMS_PLUGINS in a build
 #   bin/fetch-plugins --list "url#ref"   # the same, from the argument
 require "fileutils"
+require "json"
 require "yaml"
 
 APP_ROOT = File.expand_path("..", __dir__)
@@ -37,6 +39,14 @@ end
 
 # The URL without its credentials, for the log.
 def redact(url) = url.sub(%r{//[^/@]+@}, "//")
+
+# Where it came from, for Settings › Plugins to update it from (InstalledPlugins.metadata).
+def write_metadata(directory, url, ref)
+  repo = url[%r{github\.com[:/]([\w.-]+/[\w.-]+?)(?:\.git)?\z}, 1]
+  gemspec = Dir.glob(File.join(directory, "*.gemspec")).first
+  version = File.read(gemspec)[/\.version\s*=\s*["']([^"']+)["']/, 1]
+  File.write(File.join(directory, ".cms-plugin.json"), JSON.generate({repo: repo, ref: ref, version: version}.compact))
+end
 
 listed = plugin_list.split(/[\s,]+/).reject(&:empty?)
 defaults = listed.include?("none") ? {} : (YAML.safe_load_file(File.join(APP_ROOT, "config/default_plugins.yml")) || {})
@@ -70,4 +80,5 @@ entries.each do |name, entry|
   # No history, and no remote URL holding a token, in the image.
   FileUtils.rm_rf File.join(directory, ".git")
   abort "#{name} isn't a CMS plugin: no gemspec at its top level." if Dir.glob(File.join(directory, "*.gemspec")).empty?
+  write_metadata(directory, url, ref)
 end

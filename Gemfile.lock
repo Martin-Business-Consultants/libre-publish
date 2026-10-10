@@ -1,9 +1,3 @@
-PATH
-  remote: engines/hello
-  specs:
-    hello (0.1.0)
-      rails (>= 8.1)
-
 GEM
   remote: https://rubygems.org/
   specs:
@@ -481,7 +475,6 @@ DEPENDENCIES
   debug (~> 1.11)
   factory_bot_rails (~> 6.5)
   fugit (~> 1.13)
-  hello!
   herb (~> 0.11.0)
   image_processing (~> 1.2)
   importmap-rails (~> 2.2)
