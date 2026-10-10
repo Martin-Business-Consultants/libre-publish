@@ -228,6 +228,8 @@ Rails.application.routes.draw do
       namespace :plugins do
         resources :installations, only: :create
       end
+      # The plugins that are themes (Website.themes), with installing one.
+      resources :themes, only: :index
       resources :plugins, only: [:index, :show, :destroy], param: :key do
         scope module: :plugins do
           resource :activation, only: [:create, :destroy]

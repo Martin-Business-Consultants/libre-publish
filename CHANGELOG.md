@@ -8,6 +8,13 @@ out.
 
 ## 1.12.0
 
+### Added
+- **Settings › Themes**, under Plugins in the menu. It lists the themes
+  apart from the plugins: which one draws the site, its version and source,
+  a newer release when there is one, and Switch on/off and Update. A theme
+  can be added there by its GitHub repository. Settings › Plugins no longer
+  lists themes.
+
 ### Changed
 - **Media is part of the core.** The media library (`/cms/media`, the
   picker asset fields open, `/api/assets`, `/api/asset_folders`,

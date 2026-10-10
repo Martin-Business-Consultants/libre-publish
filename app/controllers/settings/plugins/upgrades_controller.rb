@@ -10,8 +10,8 @@ class Settings::Plugins::UpgradesController < Settings::BaseController
 
   def create
     change = PluginChange.update_plugin(params[:plugin_key], by: Current.user)
-    redirect_to settings_plugins_path, notice: "#{change.summary}. The CMS restarts when it's done; this page shows how it went."
+    redirect_to plugins_page, notice: "#{change.summary}. The CMS restarts when it's done; this page shows how it went."
   rescue PluginChange::Refused, ActiveRecord::RecordInvalid => error
-    redirect_to settings_plugins_path, alert: error.message
+    redirect_to plugins_page, alert: error.message
   end
 end

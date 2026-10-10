@@ -9,8 +9,8 @@ class Settings::Plugins::InstallationsController < Settings::BaseController
 
   def create
     change = PluginChange.install(params[:repo], by: Current.user)
-    redirect_to settings_plugins_path, notice: "#{change.summary}. The CMS restarts when it's done; then switch it on here."
+    redirect_to plugins_page, notice: "#{change.summary}. The CMS restarts when it's done; then switch it on here."
   rescue PluginChange::Refused, ActiveRecord::RecordInvalid => error
-    redirect_to settings_plugins_path, alert: error.message
+    redirect_to plugins_page, alert: error.message
   end
 end
