@@ -11,5 +11,7 @@ class Settings::ThemesController < Settings::BaseController
     PluginChange.reconcile
     @themes = Website.themes.values.sort_by(&:name)
     @change = PluginChange.current
+    @directory = PluginDirectory.themes
+    PluginDirectoryJob.perform_later unless PluginDirectory.checked_at
   end
 end

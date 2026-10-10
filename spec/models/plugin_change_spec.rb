@@ -38,6 +38,7 @@ RSpec.describe PluginChange do
     files.each { |name, body| top.join(name).tap { it.dirname.mkpath }.write(body) }
     archive = dir.join("release.tar.gz")
     system("tar", "-czf", archive.to_s, "-C", dir.to_s, top.basename.to_s, exception: true)
+    @archive = archive
     allow(github).to receive(:download) do |url, path|
       expect(url).to eq("https://api.github.com/repos/acme/cms-thing/tarball/v1.2.0")
       FileUtils.cp(archive, path)
@@ -105,6 +106,37 @@ RSpec.describe PluginChange do
       expect { described_class.install("acme/other", by: admin) }.to raise_error(described_class::Refused, /under way/)
       described_class.running.update_all(status: "succeeded")
       expect { described_class.install("not a repo", by: admin) }.to raise_error(ActiveRecord::RecordInvalid, /owner\/name/)
+    end
+  end
+
+  describe "from the plugin directory" do
+    let(:listed) do
+      PluginDirectory::Entry.new(key: "thing", kind: "plugin", name: "Thing", description: "x", repo: "acme/cms-thing", author: nil,
+        homepage: nil, version: "1.3.0", commit: "c" * 40, requires: nil)
+    end
+
+    before { allow(PluginDirectory).to receive(:find_by_repo).and_return(nil) }
+
+    it "installs the commit the directory pinned, not the latest release, and says so" do
+      allow(PluginDirectory).to receive(:find_by_repo).with("acme/cms-thing").and_return(listed)
+      release("thing.gemspec" => "", "lib/thing.rb" => "module Thing; end")
+      allow(github).to receive(:download) do |url, path|
+        expect(url).to eq("https://api.github.com/repos/acme/cms-thing/tarball/#{"c" * 40}")
+        FileUtils.cp(@archive, path)
+        path
+      end
+
+      change = described_class.install("acme/cms-thing", by: admin)
+      perform_enqueued_jobs
+
+      expect(change.reload).to have_attributes(pinned_commit: "c" * 40, to_version: "1.3.0", status: "running")
+      expect(InstalledPlugins.metadata("thing")).to include("commit" => "c" * 40, "directory" => true, "version" => "1.3.0")
+    end
+
+    it "refuses one the directory says needs a newer CMS" do
+      allow(PluginDirectory).to receive(:find_by_repo).and_return(listed.with(requires: ">= 99"))
+
+      expect { described_class.install("acme/cms-thing", by: admin) }.to raise_error(described_class::Refused, /needs CMS >= 99/)
     end
   end
 

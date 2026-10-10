@@ -44,11 +44,14 @@
   </section>
 
   <% if Current.user.admin? %>
+    <%= render "settings/plugins/directory", entries: @directory, kind: "plugin" %>
+
     <section class="<%= ui(:panel, "space-y-3 p-6") %>">
-      <h2 class="<%= ui(:heading) %>">Add a plugin</h2>
+      <h2 class="<%= ui(:heading) %>">Or any plugin, by its repository</h2>
       <p class="text-sm text-gray-500">
-        By its GitHub repository: the CMS installs its latest release on this server, where it stays through deploys
-        and updates, and restarts.
+        Its GitHub repository: the CMS installs its latest release on this server, where it stays through deploys
+        and updates, and restarts. One the directory doesn’t list hasn’t been reviewed: install only code you trust,
+        since a plugin runs with the CMS’s full access.
       </p>
       <%= form_with url: settings_plugins_installations_path, class: "flex flex-wrap gap-2" do |form| %>
         <%= form.text_field :repo, class: "min-w-0 flex-1", placeholder: "owner/cms-thing", autocomplete: "off", required: true,

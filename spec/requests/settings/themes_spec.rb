@@ -24,7 +24,7 @@ RSpec.describe "Settings › Themes", type: :request do
     sign_in_as admin
 
     get settings_themes_path
-    expect(response.body).to include("Fixture", "acme/fixture-theme", "1.1.0 available", "Active", "Add a theme")
+    expect(response.body).to include("Fixture", "acme/fixture-theme", "1.1.0 available", "Active", "Or any theme")
     expect(response.body).to include(%(href="#{settings_themes_path}"))
 
     get settings_plugins_path
