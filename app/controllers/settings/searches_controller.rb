@@ -12,7 +12,7 @@ class Settings::SearchesController < Settings::BaseController
   end
 
   def update
-    SearchSettings.update(params.fetch(:search, {}).permit(:ai_search, :ai_training, :organization, :same_as, :robots_extra))
+    SearchSettings.update(params.fetch(:search, {}).permit(:ai_search, :ai_training, :organization, :same_as, :robots_extra, :indexnow))
     redirect_to settings_search_path, notice: "Search settings saved."
   end
 end

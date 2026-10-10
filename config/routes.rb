@@ -246,6 +246,7 @@ Rails.application.routes.draw do
 
     namespace :tools do
       resource :search_replace, only: [:show, :create], path: "search-replace"
+      resource :seo_audit, only: :show, path: "seo-audit"
       namespace :redirects do
         resource :export, only: :show
         resource :import, only: :create

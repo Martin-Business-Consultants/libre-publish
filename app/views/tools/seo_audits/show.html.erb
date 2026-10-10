@@ -1,0 +1,33 @@
+<% @page_title = "SEO audit" %>
+
+<%= render "layouts/shared/page_header", title: "SEO audit",
+      description: "What stands between the site and search engines and AI answers, most important first." %>
+
+<div class="max-w-4xl space-y-6">
+  <% if @issues.empty? %>
+    <section class="<%= ui(:panel, "px-6 py-12 text-center text-sm text-gray-500") %>">
+      Nothing to fix: every page has its title and description, links lead somewhere, and the site says who it is.
+    </section>
+  <% else %>
+    <% { problem: "Fix these", warning: "Worth fixing", tip: "Tips" }.each do |severity, heading| %>
+      <%# herb:key severity %>
+      <% found = @issues.select { |issue| issue.severity == severity } %>
+      <% next if found.empty? %>
+      <section class="<%= ui(:panel, "space-y-3 p-6") %>">
+        <h2 class="<%= ui(:heading) %>"><%= heading %> (<%= found.size %>)</h2>
+        <ul class="divide-y divide-gray-100 text-sm">
+          <% found.each_with_index do |issue, index| %>
+            <%# herb:key index %>
+            <li class="flex flex-col gap-0.5 py-2.5">
+              <% if issue.record %>
+                <%= render "tools/seo_audits/issue_link", record: issue.record %>
+              <% end %>
+              <span class="text-gray-700"><%= issue.message %></span>
+            </li>
+          <% end %>
+        </ul>
+      </section>
+    <% end %>
+  <% end %>
+  <p class="text-xs text-gray-500">See Settings › Search for AI crawlers and who the site is, and docs/seo.md for what the CMS does for search.</p>
+</div>

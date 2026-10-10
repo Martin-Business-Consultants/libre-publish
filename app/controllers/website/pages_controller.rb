@@ -28,6 +28,8 @@ class Website::PagesController < ActionController::Base
     return redirect_to(path.chomp("/") + request.query_string.then { it.empty? ? "" : "?#{it}" }, status: :moved_permanently) if path.length > 1 && path.end_with?("/")
 
     return markdown(path.delete_suffix(".md")) if path.end_with?(".md")
+    return feed(path.delete_prefix("/").delete_suffix("/feed.xml")) if path.end_with?("/feed.xml")
+    return render(plain: IndexNow.key) if path == "/#{SearchSettings.get["indexnow_key"]}.txt" && SearchSettings.get["indexnow_key"].present?
 
     address = Website::Address.new(request.path, drafts: previewing?)
     case address.record
@@ -66,6 +68,19 @@ class Website::PagesController < ActionController::Base
     expires_in 1.minute, public: true, stale_while_revalidate: 1.day unless previewing?
     if previewing? || stale?(etag: [Website.cache_version, record, :markdown], public: true)
       render plain: helpers.website_markdown_document(record), content_type: "text/markdown"
+    end
+  end
+
+  # /<collection>/feed.xml: its newest published entries, as RSS, for a
+  # collection the theme draws.
+  def feed(slug)
+    collection = Collection.find_by(slug: slug)
+    return head(:not_found) unless collection && lookup_context.exists?("website/entries/#{slug}", [], false, [], formats: [:html])
+
+    entries = collection.entries.live.order(published_at: :desc, id: :desc).limit(20).to_a
+    expires_in 5.minutes, public: true
+    if stale?(etag: [Website.cache_version, :feed, slug], public: true)
+      render plain: helpers.website_feed_xml(collection, entries), content_type: "application/rss+xml"
     end
   end
 

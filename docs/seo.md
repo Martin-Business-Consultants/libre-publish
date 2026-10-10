@@ -46,6 +46,20 @@ and Settings, with nothing for a theme to add beyond calling
   the home page): its title, description, body and blocks, in order,
   without the design. A page hidden from search has none.
 
+## Telling search engines, and checking
+
+- **IndexNow**: a published, changed or removed page or entry is announced
+  to IndexNow's search engines (Bing, Yandex, Seznam, Naver…) the moment it
+  happens, with the key the site serves at `/<key>.txt`. Only for a website
+  on a public address (Settings › General's site URL); Settings › Search
+  turns it off. Google doesn't take IndexNow; it reads the sitemap.
+- **Feeds**: `/<collection>/feed.xml` for each collection the theme draws,
+  linked from every page's `<head>`.
+- **Tools › SEO audit** lists what to fix across the site, and each page's
+  SEO tab its own: missing or poorly sized descriptions, long titles,
+  duplicates, links to pages that don't exist, images without alt text,
+  and the site-wide details.
+
 ## What makes the difference
 
 The machinery is here; what search and AI reward is still the content:

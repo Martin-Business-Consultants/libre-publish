@@ -48,6 +48,13 @@
     </section>
 
     <section class="<%= ui(:panel, "space-y-5 p-6") %>">
+      <label class="flex items-start gap-2 text-sm text-gray-900">
+        <%= form.check_box :indexnow, { checked: @search["indexnow"] != false }, "1", "0" %>
+        <span>
+          Tell search engines the moment a page is published, changed or taken down (IndexNow: Bing, which ChatGPT
+          search draws on, Yandex and others), instead of waiting to be crawled.
+        </span>
+      </label>
       <%= settings_field "More for robots.txt", hint: "Added as written, for a crawler or a path the choices above don’t cover." do %>
         <%= form.text_area :robots_extra, value: @search["robots_extra"], rows: 4, class: "w-full font-mono text-xs", placeholder: "User-agent: SomeBot\nDisallow: /" %>
       <% end %>

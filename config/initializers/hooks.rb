@@ -1,4 +1,8 @@
 # frozen_string_literal: true
 
 # Plugins' actions (Cms::Plugins.on) hear every "<event>.cms" notification.
-Rails.application.config.after_initialize { Cms::Hooks.subscribe! }
+# Search engines hear about published changes (IndexNow).
+Rails.application.config.after_initialize do
+  Cms::Hooks.subscribe!
+  IndexNow.subscribe!
+end

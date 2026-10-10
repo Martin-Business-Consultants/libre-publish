@@ -12,6 +12,8 @@
 #   same_as       the organization's profiles elsewhere (one URL a line), so
 #                 search engines and AI tie them to it
 #   robots_extra  lines added to robots.txt as written
+#   indexnow      true | false: tell IndexNow's search engines about changes
+#                 (IndexNow); its key, indexnow_key, is made when first needed
 module SearchSettings
   SETTING_KEY = "search"
   CHOICES = %w[allow block].freeze
@@ -27,7 +29,8 @@ module SearchSettings
   AI_TRAINING_BOTS = %w[GPTBot ClaudeBot anthropic-ai Google-Extended Applebot-Extended CCBot meta-externalagent
     Bytespider Amazonbot cohere-ai Diffbot].freeze
 
-  DEFAULTS = {"ai_search" => "allow", "ai_training" => "allow", "organization" => "Organization", "same_as" => [], "robots_extra" => ""}.freeze
+  DEFAULTS = {"ai_search" => "allow", "ai_training" => "allow", "organization" => "Organization", "same_as" => [], "robots_extra" => "",
+              "indexnow" => true, "indexnow_key" => nil}.freeze
 
   module_function
 
@@ -43,7 +46,8 @@ module SearchSettings
       "ai_training" => submitted["ai_training"].presence_in(CHOICES) || "allow",
       "organization" => submitted["organization"].presence_in(ORGANIZATION_TYPES) || "Organization",
       "same_as" => submitted["same_as"].to_s.split(/\s+/).select { it.match?(%r{\Ahttps?://\S+\z}) }.uniq,
-      "robots_extra" => submitted["robots_extra"].to_s.strip
+      "robots_extra" => submitted["robots_extra"].to_s.strip,
+      "indexnow" => submitted.key?("indexnow") ? ActiveModel::Type::Boolean.new.cast(submitted["indexnow"]) : get["indexnow"]
     })
   end
 

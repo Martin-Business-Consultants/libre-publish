@@ -42,6 +42,7 @@ module NavigationHelper
         ["Developers", :developers_path, "pages:read"],
         ["Redirects", :tools_redirects_path, "redirects:read"],
         ["Search and replace", :tools_search_replace_path, "pages:read"],
+        ["SEO audit", :tools_seo_audit_path, "pages:read"],
         ["Sitemap", :sitemap_path, "pages:read"],
         ["Webhooks", :webhooks_path, "webhooks:read"],
         ["Backup", :tools_backup_path, "tools:use"]
