@@ -43,7 +43,12 @@ class Upgrade::InPlace
     return @upgrade.settle if Cms.version >= Gem::Version.new(@upgrade.to_version)
     return if needs_image?(fetch_manifest)
 
-    unpack(download)
+    archive = download
+    return unless still_wanted?
+
+    unpack(archive)
+    return unless still_wanted?
+
     switch
     prune
     Cms::Restart.container_later
@@ -64,6 +69,9 @@ class Upgrade::InPlace
   end
 
   def timing_out_since = @upgrade.created_at
+
+  # Not stopped from Settings › Updates while the download ran.
+  def still_wanted? = @upgrade.reload.running?
 
   def where_to_look = "The container's log says what happened."
 

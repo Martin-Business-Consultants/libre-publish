@@ -197,10 +197,11 @@ Rails.application.routes.draw do
         end
       end
       # This install's version and the newest release; create updates to it
-      # (Upgrade), and check asks GitHub now.
+      # (Upgrade), check asks GitHub now, and stop gives up on a running one.
       resource :updates, only: [:show, :create] do
         scope module: :updates do
           resource :check, only: :create
+          resource :stop, only: :create
         end
       end
       resources :sessions, only: [:index]

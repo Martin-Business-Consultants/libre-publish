@@ -142,6 +142,33 @@ RSpec.describe "Settings: the version and updates", type: :request do
     end
   end
 
+  describe "stopping one" do
+    let!(:upgrade) { Upgrade.create!(requested_by: admin, from_version: Cms::VERSION, to_version: "99.0.0", via: "in_place") }
+
+    it "offers an admin a Stop button while one runs, and gives it up" do
+      sign_in_as admin
+
+      get settings_updates_path
+      expect(response.body).to include("Stop this update")
+
+      post settings_updates_stop_path
+
+      expect(upgrade.reload).to have_attributes(status: "failed", message: "Stopped by #{admin.name}.")
+      expect(AuditLog.last).to have_attributes(action: "upgrade.stopped", target: upgrade)
+      expect(flash[:notice]).to include("Stopped the update to 99.0.0")
+      follow_redirect!
+      expect(response.body).not_to include("Stop this update")
+    end
+
+    it "refuses anyone who isn't an admin" do
+      sign_in_as editor
+
+      post settings_updates_stop_path
+
+      expect(upgrade.reload).to be_running
+    end
+  end
+
   describe "Check now" do
     it "asks GitHub and says what it found" do
       github_answers(release_response("v99.0.0"))

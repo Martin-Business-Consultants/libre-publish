@@ -51,6 +51,13 @@
       <% if @upgrade.external_url %>
         <p class="text-sm"><%= external_link @upgrade.external_url, upgrade_follow_text(@upgrade) %></p>
       <% end %>
+      <% if Current.user.admin? %>
+        <div>
+          <%= render "layouts/shared/confirm_dialog", label: "Stop this update", title: "Stop the update to #{@upgrade.to_version}?",
+                message: "#{cms_version} keeps running and nothing changes. Use it when the update has gone quiet; you can start it again afterwards.",
+                path: settings_updates_stop_path, button: "Stop the update", negative: true %>
+        </div>
+      <% end %>
     </section>
   <% elsif UpdateCheck.update_available? %>
     <section class="<%= ui(:panel, "space-y-4 p-6") %>">

@@ -6,6 +6,17 @@ section below. An install is brought to one with `bin/update v1.0.0`, or a
 Kamal site with `kamal deploy -d <site>`. Settings shows when a newer one is
 out.
 
+## 1.8.1
+
+### Added
+- **Stop an update.** Settings › Updates has a "Stop this update" button
+  while one runs, for an update that's gone quiet when nobody can reach the
+  server to see why: the version running keeps running, nothing changes, and
+  the update can be started again. An in-place update stopped while it
+  downloads leaves the install as it is rather than restart it on the new
+  version. Admins only, as starting one is; the audit log records it
+  (`upgrade.stopped`).
+
 ## 1.8.0
 
 ### Changed

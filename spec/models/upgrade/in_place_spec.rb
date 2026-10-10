@@ -24,7 +24,8 @@ RSpec.describe Upgrade::InPlace do
   end
 
   # The release on GitHub: its manifest, its bundle and the bundle's checksum.
-  def release(version: "99.0.0", base: "1", plugins: plugins_here, checksum: nil, assets: nil)
+  # A block hears each download's URL, as it happens.
+  def release(version: "99.0.0", base: "1", plugins: plugins_here, checksum: nil, assets: nil, &on_download)
     dir = Pathname(Dir.mktmpdir("bundle"))
     app = dir.join("app").tap(&:mkpath)
     app.join("VERSION").write("#{version}\n")
@@ -39,6 +40,7 @@ RSpec.describe Upgrade::InPlace do
     names = assets || files.keys
     allow(github).to receive(:get).with("releases/tags/v99.0.0").and_return("assets" => names.map { {"name" => it, "browser_download_url" => "https://example.test/#{it}"} })
     allow(github).to receive(:download) do |url, path|
+      on_download&.call(url)
       Pathname(path).binwrite(files.fetch(File.basename(url)))
       path
     end
@@ -64,6 +66,16 @@ RSpec.describe Upgrade::InPlace do
     expect(releases.children.map { it.basename.to_s }.sort).to eq(%w[current v2.0.0 v99.0.0])
     expect(Cms::Restart).to have_received(:container_later)
     expect(upgrade.reload).to be_running
+  end
+
+  it "leaves the install as it is when the update was stopped while it downloaded" do
+    release { |url| upgrade.stop!(by: upgrade.requested_by) if url.end_with?(".sha256") }
+
+    described_class.new(upgrade).install
+
+    expect(releases.join("current")).not_to exist
+    expect(Cms::Restart).not_to have_received(:container_later)
+    expect(upgrade.reload).to have_attributes(status: "failed", message: /Stopped by/)
   end
 
   it "leaves it be when it runs again after the restart on the new version" do

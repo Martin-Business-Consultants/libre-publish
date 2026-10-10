@@ -135,6 +135,14 @@ class Upgrade < ApplicationRecord
     update!(status: "failed", finished_at: Time.current, message: message)
   end
 
+  # Given up by someone from Settings › Updates. A runner still at work (an
+  # in-place download) sees it's no longer running and leaves the install as
+  # it is, rather than restart it on the new version.
+  def stop!(by:)
+    fail_with "Stopped by #{by.name}."
+    track_event(:stopped, from_version: from_version, to_version: to_version, via: via)
+  end
+
   def running? = status == "running"
   def succeeded? = status == "succeeded"
   def failed? = status == "failed"
