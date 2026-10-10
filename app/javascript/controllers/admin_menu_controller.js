@@ -83,11 +83,12 @@ export default class extends Controller {
     if (!flyout) return
 
     const { top, bottom } = item.getBoundingClientRect()
-    flyout.style.setProperty("--flyout-top", `${top}px`)
+    // Never above the menu's top, under the admin bar (an item scrolled up there).
+    const bar = this.#menu.getBoundingClientRect().top
+    flyout.style.setProperty("--flyout-top", `${Math.max(bar, top)}px`)
     requestAnimationFrame(() => {
       // Too tall to open downward: open upward, ending level with the item.
-      if (top + flyout.offsetHeight > window.innerHeight) {
-        const bar = this.#menu.getBoundingClientRect().top
+      if (Math.max(bar, top) + flyout.offsetHeight > window.innerHeight) {
         flyout.style.setProperty("--flyout-top", `${Math.max(bar, bottom - flyout.offsetHeight)}px`)
       }
     })

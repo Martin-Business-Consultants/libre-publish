@@ -23,7 +23,10 @@
     }
   }
 
+  /* Its own stacking context, so nothing on a page (a panel's z-index, a
+     sticky toolbar) can draw over the admin bar or the menu's fly-outs. */
   .admin__content {
+    isolation: isolate;
     padding-block: calc(var(--admin-bar-height) + 1.5rem) 3rem;
     padding-inline: calc(var(--admin-menu-width) + var(--admin-gutter)) var(--admin-gutter);
 
