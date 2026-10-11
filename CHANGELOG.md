@@ -6,6 +6,12 @@ section below. An install is brought to one with `bin/update v1.0.0`, or a
 Kamal site with `kamal deploy -d <site>`. Settings shows when a newer one is
 out.
 
+## 1.25.1
+
+### Fixed
+- The "Disable two-factor" button on Settings › Account set two text colors;
+  it's the plain danger button now.
+
 ## 1.25.0
 
 ### Security
