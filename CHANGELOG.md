@@ -6,6 +6,26 @@ section below. An install is brought to one with `bin/update v1.0.0`, or a
 Kamal site with `kamal deploy -d <site>`. Settings shows when a newer one is
 out.
 
+## 1.22.0
+
+### Added
+- **Images in the preview**: click an image a block holds, in the editor's
+  Preview tab, for **Replace** (the media picker) or **Crop & edit**: crop
+  free or to a shape (as it is, 1:1, 4:3, 3:2, 16:9, 3:4), turn, flip, and
+  change brightness, contrast and saturation. An edit is saved as a copy
+  beside the original (same folder, alt text and caption, made a light
+  WebP), so anywhere else the original is used stays as it is. The preview
+  draws the new image and Save counts it with the other changes. Any theme
+  gets it for the block images it draws with `website_image_tag`; a click
+  through a shade or text laid over a photo still finds the photo.
+
+### Fixed
+- **The update progress modal** didn't appear after pressing Update until
+  the page was reloaded: the page came back in place, and the modal only
+  looked when it was first drawn.
+- **The media picker opened from the preview** didn't show: it lived in the
+  hidden Edit tab.
+
 ## 1.21.0
 
 ### Added

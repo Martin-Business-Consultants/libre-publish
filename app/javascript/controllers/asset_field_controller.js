@@ -20,6 +20,9 @@ export default class extends Controller {
     if (!picker) return
 
     picker.dataset.forField = this.idValue
+    // Opened from the preview, the picker's place (the Edit tab) is hidden,
+    // and a dialog in a hidden place doesn't show: it moves out to the page.
+    if (picker.parentElement.closest("[hidden]")) document.body.append(picker)
     picker.showModal()
     // A lazy frame in a modal dialog isn't loaded by Turbo's visibility check.
     picker.querySelectorAll("turbo-frame[loading=lazy]").forEach(frame => { frame.loading = "eager" })

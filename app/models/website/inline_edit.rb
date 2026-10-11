@@ -10,6 +10,12 @@
 #
 # A marker is U+2063, the field's number in four zero-width characters, U+2063;
 # the value; then U+2064.
+#
+# An image (an asset field of a block) can't carry markers: its value is an
+# id the theme turns into a URL. Instead each block's image fields are noted
+# by row (image), and the <img> website_image_tag draws for one while that
+# block renders names its field (data-lp-image), for the preview's Replace
+# and Edit.
 class Website::InlineEdit
   EDITABLE_TYPES = %w[string plain_text].freeze
   START = "⁣"
@@ -20,7 +26,16 @@ class Website::InlineEdit
 
   def initialize
     @fields = []
+    @images = Hash.new { |hash, row| hash[row] = {} }
   end
+
+  # A block's image field: row, its name, the asset id it holds.
+  def image(row, name, id)
+    @images[row][id.to_s] ||= "blocks.#{row}.#{name}" if id.present?
+  end
+
+  # The field an image drawn in that block's row comes from, if it's one.
+  def image_field(row, id) = @images.fetch(row, {})[id.to_s]
 
   # A value, marked as the field at `path` ("title", "blocks.2.heading").
   def mark(path, value)

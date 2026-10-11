@@ -2,8 +2,10 @@
 // server drew each editable value between invisible markers naming its
 // field. This turns marked text into editable text, strips the markers from
 // everywhere else (attributes, the <head>, scripts), and sends each edit to
-// the editor (website_preview_controller), whose form it changes. Plain
-// script, no dependencies: it runs inside the theme's page.
+// the editor (website_preview_controller), whose form it changes. An image
+// a block's field holds (data-lp-image) gets Replace and Edit on a click,
+// which the editor carries out. Plain script, no dependencies: it runs inside
+// the theme's page.
 (() => {
   const START = "⁣"
   const DIGITS = ["​", "‌", "‍", "⁠"]
@@ -62,7 +64,15 @@
       transform: translateY(-200%); transition: transform .2s ease; }
     .lp-save.lp-save--shown { transform: none; }
     .lp-save:hover { background: rgb(29 78 216); }
-    .lp-save small { font-weight: 500; opacity: .85; }`
+    .lp-save small { font-weight: 500; opacity: .85; }
+    img[data-lp-image] { cursor: pointer; outline: 2px dashed transparent; outline-offset: -2px; transition: outline-color .15s; }
+    img[data-lp-image]:hover, img[data-lp-image].lp-image--picked { outline-color: rgb(37 99 235); }
+    .lp-image-tools { position: absolute; z-index: 2147483646; display: flex; gap: .35rem; padding: .35rem; border-radius: 999px;
+      background: rgb(17 24 39 / .9); box-shadow: 0 6px 18px rgb(0 0 0 / .3); }
+    .lp-image-tools[hidden] { display: none; }
+    .lp-image-tools button { border: 0; border-radius: 999px; padding: .45rem .85rem; background: transparent; color: #fff; cursor: pointer;
+      font: 600 13px/1 ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .lp-image-tools button:hover { background: rgb(255 255 255 / .15); }`
   document.head.append(style)
 
   // Surfaces with the first edit: how many changes wait, and saving them.
@@ -77,6 +87,59 @@
   })
   document.body.append(save)
   const edited = new Set()
+  const showEdited = () => {
+    if (!edited.size) return
+    save.querySelector("small").textContent = edited.size === 1 ? "1 change" : `${edited.size} changes`
+    save.classList.add("lp-save--shown")
+  }
+
+  // An image: a click puts Replace and Edit over it, which the editor does
+  // (the media picker; the image editor), then draws the preview again.
+  const tools = document.createElement("div")
+  tools.className = "lp-image-tools"
+  tools.hidden = true
+  tools.innerHTML = '<button type="button" data-action="replace">Replace</button><button type="button" data-action="edit">Crop &amp; edit</button>'
+  document.body.append(tools)
+  let picked = null
+  const place = () => {
+    if (!picked) return
+    const box = picked.getBoundingClientRect()
+    tools.style.left = `${Math.max(8, box.left + window.scrollX + 8)}px`
+    tools.style.top = `${Math.max(8, box.top + window.scrollY + 8)}px`
+  }
+  const pick = image => {
+    picked?.classList.remove("lp-image--picked")
+    picked = image
+    tools.hidden = !image
+    if (image) { image.classList.add("lp-image--picked"); place() }
+  }
+  // The image under a click, though a theme may lay something over it (a
+  // shade over a hero photo); not when the click is on editable text, or on
+  // a link or button drawn over the image.
+  const imageAt = event => {
+    const target = event.target
+    if (target.closest?.(".lp-editable")) return null
+    const direct = target.closest?.("img[data-lp-image]")
+    if (direct) return direct
+    if (target.closest?.("a[href], button, input, select, textarea, label")) return null
+    return document.elementsFromPoint(event.clientX, event.clientY).find(element => element.matches("img[data-lp-image]")) || null
+  }
+  window.addEventListener("scroll", place, { passive: true })
+  window.addEventListener("resize", place)
+  document.addEventListener("click", event => {
+    if (event.target.closest(".lp-image-tools")) {
+      const button = event.target.closest("button")
+      if (button && picked) window.parent.postMessage({ type: "lp-image", action: button.dataset.action, field: picked.dataset.lpImage }, window.location.origin)
+      return
+    }
+    const image = imageAt(event)
+    if (image) {
+      // An image inside a link doesn't follow it while it's being edited.
+      event.preventDefault()
+      event.stopPropagation()
+    }
+    pick(image)
+  }, true)
 
   // Drawn again after a save: say it went through, briefly.
   if (new URLSearchParams(window.location.search).has("saved")) {
@@ -87,7 +150,13 @@
   }
 
   window.addEventListener("message", event => {
-    if (event.origin !== window.location.origin || event.data?.type !== "lp-inline-save-failed") return
+    if (event.origin !== window.location.origin) return
+    // Changes the editor holds that this page, drawn afresh, didn't see made.
+    if (event.data?.type === "lp-inline-pending") {
+      for (const field of event.data.fields || []) edited.add(field)
+      return showEdited()
+    }
+    if (event.data?.type !== "lp-inline-save-failed") return
     save.disabled = false
     save.firstChild.textContent = "Not saved: see the Edit tab "
   })
@@ -123,7 +192,6 @@
     }
     window.parent.postMessage({ type: "lp-inline-edit", field: span.dataset.lpField, value }, window.location.origin)
     edited.add(span.dataset.lpField)
-    save.querySelector("small").textContent = edited.size === 1 ? "1 change" : `${edited.size} changes`
-    save.classList.add("lp-save--shown")
+    showEdited()
   })
 })()

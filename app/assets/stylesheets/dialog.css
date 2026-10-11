@@ -178,3 +178,66 @@
     to { transform: rotate(360deg); }
   }
 }
+
+/* The preview's image editor (content_form/image_editor): the image on a
+   stage, the crop a box over it that darkens what's cut away, and the tools
+   beside it. */
+@layer components {
+  .image-editor[open] {
+    inline-size: min(72rem, calc(100vw - calc(var(--spacing) * 8)));
+  }
+
+  .image-editor__body {
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: minmax(0, 1fr) 15rem;
+
+    @media (width < 48rem) { grid-template-columns: minmax(0, 1fr); }
+  }
+
+  .image-editor__stage {
+    align-items: center;
+    background: repeating-conic-gradient(var(--color-gray-100) 0 25%, var(--color-white) 0 50%) 0 0 / 16px 16px;
+    block-size: min(65vh, 40rem);
+    border-radius: 0.5rem;
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    touch-action: none;
+    user-select: none;
+  }
+
+  .image-editor__canvas { display: block; }
+
+  .image-editor__crop {
+    border: 1px solid #fff;
+    box-shadow: 0 0 0 9999px rgb(0 0 0 / 0.55);
+    cursor: move;
+    outline: 1px solid rgb(0 0 0 / 0.3);
+    position: absolute;
+
+    &[hidden] { display: none; }
+  }
+
+  .image-editor__handle {
+    background: #fff;
+    block-size: 0.875rem;
+    border: 1px solid rgb(0 0 0 / 0.4);
+    inline-size: 0.875rem;
+    position: absolute;
+
+    &[data-corner="nw"] { cursor: nwse-resize; left: -0.4375rem; top: -0.4375rem; }
+    &[data-corner="ne"] { cursor: nesw-resize; right: -0.4375rem; top: -0.4375rem; }
+    &[data-corner="sw"] { bottom: -0.4375rem; cursor: nesw-resize; left: -0.4375rem; }
+    &[data-corner="se"] { bottom: -0.4375rem; cursor: nwse-resize; right: -0.4375rem; }
+  }
+
+  .image-editor__loading { position: absolute; }
+
+  .image-editor__chip[aria-pressed="true"] {
+    background-color: var(--color-gray-900);
+    border-color: var(--color-gray-900);
+    color: var(--color-white);
+  }
+}

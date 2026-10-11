@@ -50,6 +50,9 @@
           </div>
         </div>
         <iframe name="website-preview-<%= record.id %>" class="website-preview__frame" title="Preview" data-website-preview-target="frame"></iframe>
+        <% if MediaLibrary.available? && Current.user.can?("assets:write") %>
+          <%= render "content_form/image_editor" %>
+        <% end %>
       </section>
     <% end %>
   <% end %>

@@ -54,6 +54,9 @@ class Website::Fields
     when "string_list", "record_refs" then Array(value)
     when *Website::InlineEdit::EDITABLE_TYPES
       (@inline_edit && @row) ? @inline_edit.mark("blocks.#{@row}.#{field["name"]}", value) : value
+    when "asset"
+      @inline_edit.image(@row, field["name"], value) if @inline_edit && @row
+      value
     else value
     end
   end
