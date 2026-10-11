@@ -8,6 +8,8 @@ out.
 
 ## Unreleased
 
+## 1.28.0
+
 ### Added
 - **Behind Cloudflare** (docs/install.md): `CMS_TRUSTED_PROXIES=cloudflare`,
   a variable in a deploy tool or a Kamal destination, makes the app believe
