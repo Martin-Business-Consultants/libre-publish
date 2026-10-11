@@ -34,6 +34,7 @@ InstalledPlugins.load!
 # so it's required here and kept out of autoload_lib below.
 require_relative "../lib/middleware/svg_sandbox"
 require_relative "../lib/middleware/api_exceptions"
+require_relative "../lib/middleware/admin_host"
 
 module ReactStarterKit
   class Application < Rails::Application
@@ -56,6 +57,12 @@ module ReactStarterKit
     config.active_storage.content_types_to_serve_as_binary -= ["image/svg+xml"]
     config.active_storage.content_types_allowed_inline += ["image/svg+xml"]
     config.middleware.insert_before 0, SvgSandbox
+
+    # The admin on a host of its own, when CMS_ADMIN_HOST names one
+    # (lib/middleware/admin_host.rb): the website's scripts never share an
+    # origin with a signed-in admin.
+    config.x.admin_host = ENV["CMS_ADMIN_HOST"].presence
+    config.middleware.use AdminHost
 
     # An /api request that fails before a controller answers (no route, an
     # error outside an action) gets the API's JSON error, not an HTML page.

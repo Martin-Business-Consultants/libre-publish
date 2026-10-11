@@ -327,7 +327,7 @@ module WebsiteHelper
   def website_url(path)
     return path if path.to_s.start_with?("http://", "https://")
 
-    "#{website_settings["site_base_url"].presence&.chomp("/") || request.base_url}#{path}"
+    "#{Site.public_base_url || request.base_url}#{path}"
   end
 
   # The theme's own importmap and its entry point: none of the admin's.

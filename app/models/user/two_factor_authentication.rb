@@ -20,9 +20,17 @@ module User::TwoFactorAuthentication
   end
 
   # Verify a 6-digit code against the current secret. Used both during
-  # enrollment (before `totp_enabled` is true) and at sign-in.
+  # enrollment (before `totp_enabled` is true) and at sign-in. Each code
+  # works once: its step is recorded, and a code from that step or an
+  # earlier one is refused, in one update so two requests can't both use it.
   def verify_totp_code(code)
-    TwoFactor.valid?(totp_secret, code)
+    counter = TwoFactor.matching_counter(totp_secret, code) or return false
+
+    used = self.class.where(id: id).where("totp_last_counter IS NULL OR totp_last_counter < ?", counter).update_all(totp_last_counter: counter)
+    return false unless used == 1
+
+    self.totp_last_counter = counter
+    true
   end
 
   # Enable 2FA after the user verifies they can produce valid codes.
@@ -38,7 +46,7 @@ module User::TwoFactorAuthentication
   end
 
   def disable_totp!
-    update!(totp_secret: nil, totp_enabled: false, totp_enabled_at: nil, recovery_code_digests: [])
+    update!(totp_secret: nil, totp_enabled: false, totp_enabled_at: nil, recovery_code_digests: [], totp_last_counter: nil)
   end
 
   # Single-use recovery code: returns true and removes the code's digest

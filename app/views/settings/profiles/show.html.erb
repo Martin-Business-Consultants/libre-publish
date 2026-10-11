@@ -116,12 +116,20 @@
         <summary class="<%= ui(:button, :small) %>">Regenerate recovery codes…</summary>
         <div class="mt-3 space-y-2">
           <p class="text-sm text-gray-700">Your old codes stop working immediately.</p>
-          <%= button_to "Generate new codes", settings_two_factor_recovery_codes_path, class: ui(:button, :small), form: { data: { turbo: false } } %>
+          <%= form_with url: settings_two_factor_recovery_codes_path, class: "space-y-2", data: { turbo: false } do |form| %>
+            <%= form.password_field :password_challenge, required: true, autocomplete: "current-password", placeholder: "Your password", class: "w-full", aria: { label: "Your password" } %>
+            <button type="submit" class="<%= ui(:button, :small) %>">Generate new codes</button>
+          <% end %>
         </div>
       </details>
-      <%= render "layouts/shared/confirm_dialog", label: "Disable two-factor", title: "Disable two-factor authentication?",
-            message: "Your account will be protected by its password alone.", path: settings_two_factor_path, method: :delete,
-            button: "Disable", negative: true %>
+      <details>
+        <summary class="<%= ui(:button, :small, "text-red-700") %>">Disable two-factor…</summary>
+        <%= form_with url: settings_two_factor_path, method: :delete, class: "mt-3 space-y-2" do |form| %>
+          <p class="text-sm text-gray-700">Your account will be protected by its password alone.</p>
+          <%= form.password_field :password_challenge, required: true, autocomplete: "current-password", placeholder: "Your password", class: "w-full", aria: { label: "Your password" } %>
+          <button type="submit" class="<%= ui(:button, :danger, :small) %>">Disable</button>
+        <% end %>
+      </details>
     </div>
   <% elsif @totp.totp_secret.present? %>
     <ol class="list-decimal space-y-5 pl-5 text-sm text-gray-700">
