@@ -26,12 +26,10 @@ class CollectionEventMailer < ApplicationMailer
     @payload    = (params[:payload] || {}).with_indifferent_access
     recipients  = params[:recipients]
 
-    # The core's sender (Settings › General), then the Forms plugin's, which
-    # this mailer used before there was a core one, then the defaults.
-    general    = Setting.get("general")
+    # The site's sender (Settings › Forms), then the defaults.
     forms      = Setting.get("forms_settings")
-    from_name  = general["email_from_name"].presence || forms["from_name"].presence || DEFAULT_FROM_NAME
-    from_email = general["email_from_address"].presence || forms["from_email"].presence || self.class.default_from_email
+    from_name  = forms["from_name"].presence || DEFAULT_FROM_NAME
+    from_email = forms["from_email"].presence || self.class.default_from_email
 
     @verb     = EVENT_VERBS[@event] || @event
     @entry_url = compute_entry_url

@@ -245,13 +245,13 @@ RSpec.describe "Settings pages", type: :request do
       sign_in_as admin
       Setting.set("general", {"title" => "Acme", "phone" => "555"})
 
-      patch settings_general_path, params: {settings: {title: "Acme", phone: "556", email_from_address: "news@acme.test"}}
+      patch settings_general_path, params: {settings: {title: "Acme", phone: "556", city: "Springfield"}}
 
       row = AuditLog.where(action: "settings.general_updated").last
-      expect(row.metadata["fields"]).to contain_exactly("phone", "email_from_address")
-      expect(row.metadata.to_json).not_to include("556", "news@acme.test")
+      expect(row.metadata["fields"]).to contain_exactly("phone", "city")
+      expect(row.metadata.to_json).not_to include("556", "Springfield")
 
-      expect { patch settings_general_path, params: {settings: {title: "Acme", phone: "556", email_from_address: "news@acme.test"}} }
+      expect { patch settings_general_path, params: {settings: {title: "Acme", phone: "556", city: "Springfield"}} }
         .not_to(change { AuditLog.where(action: "settings.general_updated").count })
     end
   end

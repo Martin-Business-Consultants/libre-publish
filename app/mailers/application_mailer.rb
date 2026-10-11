@@ -12,8 +12,11 @@ class ApplicationMailer < ActionMailer::Base
 
   def self.from_name = ENV["MAIL_FROM_NAME"].presence || "Libre Publish"
 
+  # The site's sender (Settings › Forms: who all its email comes from) when
+  # it's set, else the install's.
   def self.default_from
-    %("#{from_name}" <#{from_address}>)
+    sender = Setting.get("forms_settings")
+    %("#{sender["from_name"].presence || from_name}" <#{sender["from_email"].presence || from_address}>)
   end
 
   default from: -> { self.class.default_from }
@@ -22,6 +25,16 @@ class ApplicationMailer < ActionMailer::Base
   # each message is made: APP_HOST, or the site's own once it's set.
   def default_url_options = super.merge(Site.url_options)
   layout "mailer"
+
+  # Through the site's own SMTP server once Settings › Email delivery has
+  # one (MailDelivery), in place of the install's; development's letter
+  # opener and the tests' deliveries stay as they are.
+  def mail(headers = {}, &block)
+    if delivery_method == :smtp && MailDelivery.configured? && !headers.key?(:delivery_method_options)
+      headers = headers.merge(delivery_method_options: MailDelivery.smtp_options)
+    end
+    super
+  end
 
   LOGO_CID = "logo@cms"
   helper_method :email_logo_src, :email_site_name

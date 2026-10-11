@@ -1,0 +1,53 @@
+<% @page_title = "Email delivery" %>
+<% can_write = Current.user.can?("settings:write") %>
+
+<%= render "layouts/shared/page_header", title: "Email delivery" %>
+<% content_for :settings_aside do %>
+  <%= render "settings/save_box", form: "mail_delivery_form", capability: "settings:write" %>
+<% end %>
+
+<%= form_with url: settings_mail_delivery_path, id: "mail_delivery_form", method: :patch, scope: :mail_delivery do |form| %>
+  <%= tag.fieldset class: "space-y-6", disabled: !can_write do %>
+    <section class="<%= ui(:panel, "space-y-5 p-6") %>">
+      <div class="space-y-1">
+        <h2 class="<%= ui(:heading) %>">SMTP server</h2>
+        <p class="text-sm text-gray-500">The server every email from the site goes through: form notifications and confirmations, password resets, collection notifications. Leave the host empty to use this install’s own. Who email comes from is set in Settings › Forms.</p>
+      </div>
+      <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
+        <div class="sm:col-span-2">
+          <%= settings_field "Host" do %>
+            <%= form.text_field :address, value: @settings["address"], class: "w-full font-mono", placeholder: "smtp.example.com", autocomplete: "off" %>
+          <% end %>
+        </div>
+        <%= settings_field "Port", hint: "Blank uses the usual port for the encryption." do %>
+          <%= form.number_field :port, value: @settings["port"], class: "w-full", placeholder: "587", min: 1, max: 65535 %>
+        <% end %>
+      </div>
+      <%= settings_field "Encryption" do %>
+        <%= form.select :security, MailDelivery::SECURITY.invert.to_a, { selected: @settings["security"] }, class: "w-full" %>
+      <% end %>
+      <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
+        <%= settings_field "Username" do %>
+          <%= form.text_field :user_name, value: @settings["user_name"], class: "w-full", autocomplete: "off", data: { "1p-ignore": true } %>
+        <% end %>
+        <% password_placeholder = @password_set ? "Saved — leave blank to keep" : "" %>
+        <%= settings_field "Password" do %>
+          <%= form.password_field :password, class: "w-full", autocomplete: "new-password", placeholder: password_placeholder, data: { "1p-ignore": true } %>
+        <% end %>
+        <%= settings_field "Sign-in method" do %>
+          <%= form.select :authentication, MailDelivery::AUTHENTICATIONS.invert.to_a, { selected: @settings["authentication"].presence || "plain" }, class: "w-full" %>
+        <% end %>
+      </div>
+    </section>
+  <% end %>
+<% end %>
+
+<% if can_write %>
+  <section class="<%= ui(:panel, "mt-6 flex flex-wrap items-center justify-between gap-3 p-6") %>">
+    <div class="space-y-1">
+      <h2 class="<%= ui(:heading) %>">Send a test email</h2>
+      <p class="text-sm text-gray-500">To <%= Current.user.email %>, through the server saved above. Save your changes first.</p>
+    </div>
+    <%= button_to "Send test email", settings_mail_delivery_test_path, class: ui(:button) %>
+  </section>
+<% end %>

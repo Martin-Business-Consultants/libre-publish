@@ -6,6 +6,23 @@ section below. An install is brought to one with `bin/update v1.0.0`, or a
 Kamal site with `kamal deploy -d <site>`. Settings shows when a newer one is
 out.
 
+## 1.23.0
+
+### Added
+- **Settings › Email delivery**: the site's own SMTP server (host, port,
+  encryption, username, password, sign-in method) for every email it sends:
+  form notifications and confirmations, password resets, collection
+  notifications. The password is kept encrypted and never shown again; a
+  blank host uses the install's server (SMTP_* in its environment), as
+  before. **Send test email** sends one to you through it at once and, if it
+  fails, says what the server answered.
+
+### Changed
+- **The email sender is in one place**, Settings › Forms: Settings › General
+  no longer has its own From name and address. A sender saved in General
+  moves to Forms on update (where Forms has none), and every email the site
+  sends comes from it.
+
 ## 1.22.0
 
 ### Added
