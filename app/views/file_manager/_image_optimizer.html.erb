@@ -9,7 +9,7 @@
   <% end %>
 <% else %>
   <%= button_to file_manager_image_optimizations_path, class: ui(:button), title: "Make large images lighter WebPs",
-        form: { data: { turbo_confirm: "Every JPEG, PNG or WebP over 500 KB or 2560 pixels across becomes a WebP, 2560 pixels at most, in the background. Each keeps its place on the site, and its original is kept, to restore from its details. Start?" } } do %>
+        form: { data: { turbo_confirm: "Every JPEG, PNG or WebP over #{ImageLimits.max_size_label} or #{ImageLimits.max_side} pixels across becomes a WebP within those limits (Settings › Media), in the background. Each keeps its place on the site, and its original is kept, to restore from its details. Start?" } } do %>
     <%= icon_tag "bolt", class: "size-4" %>
     <span>Image Optimizer</span>
   <% end %>

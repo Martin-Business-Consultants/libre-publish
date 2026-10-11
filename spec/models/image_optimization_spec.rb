@@ -20,6 +20,7 @@ RSpec.describe ImageOptimization do
   end
 
   it "makes the large images lighter WebPs in place, keeps their originals, and leaves the rest" do
+    ImageLimits.update("max_kb" => 10_000, "max_side" => 2560, "optimize_uploads" => false)
     big = asset_from(png(3000, 1800), name: "Hero")
     small = asset_from(png(40, 40), name: "Icon")
     svg = Asset.create!(folder: "/", name: "Logo", file: {io: File.open(Rails.root.join("public/icon.svg")), filename: "icon.svg", content_type: "image/svg+xml"})
@@ -48,7 +49,30 @@ RSpec.describe ImageOptimization do
     expect(big).not_to be_optimized
   end
 
+  it "steps the quality, then the size, down while an image is still over the site's file size" do
+    ImageLimits.update("max_kb" => 400, "max_side" => 2560, "optimize_uploads" => false)
+    noisy = asset_from(png(3000, 1800), name: "Noise")
+
+    before, after = noisy.optimize!
+    noisy.reload.file.analyze
+
+    expect(after).to be < before
+    expect([noisy.file.metadata["width"], noisy.file.metadata["height"]].max).to be_between(Asset::Optimizable::MIN_STEP_SIDE, 2047)
+  end
+
+  it "makes an upload over the limits lighter as it arrives, unless the site turns that off" do
+    upload = ->(name) { Asset.create!(folder: "/", name: name, file: {io: File.open(png(3000, 1800)), filename: "#{name}.png", content_type: "image/png"}) }
+
+    perform_enqueued_jobs { upload.("Hero") }
+    expect(Asset.find_by!(name: "Hero")).to have_attributes(content_type: "image/webp", optimized?: true)
+
+    ImageLimits.update("optimize_uploads" => false)
+    perform_enqueued_jobs { upload.("Banner") }
+    expect(Asset.find_by!(name: "Banner").content_type).to eq("image/png")
+  end
+
   it "runs once, even when its job runs twice" do
+    ImageLimits.update("optimize_uploads" => false)
     asset_from(png(3000, 1800), name: "Hero")
     run = described_class.start
     2.times { run.reload.run }

@@ -1,0 +1,42 @@
+<% @page_title = "Media" %>
+<% can_write = Current.user.can?("settings:write") %>
+
+<%= render "layouts/shared/page_header", title: "Media" %>
+<% content_for :settings_aside do %>
+  <%= render "settings/save_box", form: "media_form", capability: "settings:write" %>
+<% end %>
+
+<%= form_with url: settings_media_path, id: "media_form", method: :patch, scope: :media do |form| %>
+  <%= tag.fieldset class: "space-y-6", disabled: !can_write do %>
+    <section class="<%= ui(:panel, "space-y-5 p-6") %>">
+      <div class="space-y-1">
+        <h2 class="<%= ui(:heading) %>">Image limits</h2>
+        <p class="text-sm text-gray-500">How heavy an image on the website may be. Heavy images make pages slow, most of all on phones. A JPEG, PNG or WebP over either limit is made a lighter WebP within them; its original is kept, to restore from its details. GIFs and SVGs are left as they are.</p>
+      </div>
+      <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <%= settings_field "Largest file (KB)", hint: "#{ImageLimits::DEFAULT_MAX_KB} KB suits most sites; 1000 KB is 1 MB." do %>
+          <%= form.number_field :max_kb, value: @limits["max_kb"], class: "w-full", min: ImageLimits::KB_RANGE.min, max: ImageLimits::KB_RANGE.max, step: 50 %>
+        <% end %>
+        <%= settings_field "Longest side (pixels)", hint: "#{ImageLimits::DEFAULT_MAX_SIDE} is sharp on large, high-density screens." do %>
+          <%= form.number_field :max_side, value: @limits["max_side"], class: "w-full", min: ImageLimits::SIDE_RANGE.min, max: ImageLimits::SIDE_RANGE.max, step: 10 %>
+        <% end %>
+      </div>
+      <%= settings_switch form, :optimize_uploads, "Make uploads lighter as they arrive",
+            hint: "An image over the limits is made lighter in the background, moments after it's uploaded.", checked: @limits["optimize_uploads"] %>
+    </section>
+  <% end %>
+<% end %>
+
+<section class="<%= ui(:panel, "mt-6 flex flex-wrap items-center justify-between gap-3 p-6") %>">
+  <div class="space-y-1">
+    <h2 class="<%= ui(:heading) %>">Images already in the library</h2>
+    <p class="text-sm text-gray-500">
+      <% if @over.zero? then %>
+        Every image is within the limits.
+      <% else %>
+        <%= pluralize(@over, "image") %> <%= @over == 1 ? "is" : "are" %> over the limits. The Image Optimizer in the Media Library makes them lighter.
+      <% end %>
+    </p>
+  </div>
+  <%= link_to "Open the Media Library", file_manager_path, class: ui(:button) unless @over.zero? %>
+</section>

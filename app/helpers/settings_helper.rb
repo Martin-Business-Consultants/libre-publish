@@ -29,6 +29,7 @@ module SettingsHelper
       # Your appearance, and (with settings:read) the logo, colors, type and brand context.
       ["Branding", :settings_branding_path, nil, "Appearance, logo, favicon, colors, font, corners, and brand context."],
       ["Search", :settings_search_path, "settings:read", "How search engines and AI see the site: AI crawlers, who you are, robots.txt."],
+      ["Media", :settings_media_path, "settings:read", "How heavy an image may be, and making uploads lighter."],
       ["Updates", :settings_updates_path, "settings:read", "The version this install runs, and updating to the newest release."],
       ["History", :settings_histories_path, "settings:read", "Every change to these settings, to compare and restore."]
     ],

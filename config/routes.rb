@@ -195,6 +195,8 @@ Rails.application.routes.draw do
         post :restore, on: :member
       end
       resource :search, only: [:show, :update], controller: "searches"
+      # How heavy an image may be (ImageLimits).
+      resource :media, only: [:show, :update], controller: "media"
       # The SMTP server email goes through (MailDelivery), and a test email.
       resource :mail_delivery, only: [:show, :update] do
         resource :test, only: :create, module: :mail_deliveries

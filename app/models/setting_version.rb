@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Append-only snapshot of a setting people edit (VERSIONED: General,
-# Branding, Search, Forms, Email delivery), written on every save that
+# Branding, Search, Media, Forms, Email delivery), written on every save that
 # changes it, for Settings › History. Never a secret: a key that looks like
 # one (Redactable::SECRET_KEY) isn't kept, and restoring leaves the current
 # value of such a key in place. Encrypted secrets aren't in `data` at all.
@@ -9,7 +9,7 @@ class SettingVersion < ApplicationRecord
   include VersionSnapshot
 
   SNAPSHOT_ATTRIBUTES = %w[data].freeze
-  VERSIONED = {"general" => "General", "branding" => "Branding", "search" => "Search",
+  VERSIONED = {"general" => "General", "branding" => "Branding", "search" => "Search", "media" => "Media",
                "forms_settings" => "Forms", "mail_delivery" => "Email delivery"}.freeze
 
   belongs_to :setting
