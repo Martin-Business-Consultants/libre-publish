@@ -7,6 +7,7 @@
    words on a bg-blue-* fill; shadow-surface, a panel's shadow; and
    shadow-overlay, what floats above the page (menus, dialogs, toasts). */
 @layer utilities {
+  .col-span-full { grid-column: 1 / -1; }
   .whitespace-normal { white-space: normal; }
   .whitespace-nowrap { white-space: nowrap; }
   .whitespace-pre { white-space: pre; }

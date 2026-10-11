@@ -6,6 +6,16 @@ section below. An install is brought to one with `bin/update v1.0.0`, or a
 Kamal site with `kamal deploy -d <site>`. Settings shows when a newer one is
 out.
 
+## 1.18.4
+
+### Changed
+- **The file picker** (an image field's Choose…) opens on every file,
+  newest first. Choosing a folder narrows it to that folder, and search looks
+  in the folder chosen. More files load as you scroll.
+
+### Fixed
+- **Choosing a folder or uploading in the file picker** closed it.
+
 ## 1.18.3
 
 ### Fixed

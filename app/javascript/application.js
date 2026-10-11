@@ -18,8 +18,14 @@ for (const event of [ "turbo:load", "turbo:render", "turbo:frame-load" ]) {
 // A confirm dialog whose button just submitted (delete, bulk delete) closes before the
 // page comes back. The response usually redirects to the same page, which Turbo morphs,
 // and a modal <dialog> that only loses its open attribute in the morph stays in the top
-// layer, leaving the whole page inert.
+// layer, leaving the whole page inert. A form that only changes a frame inside the dialog
+// (the asset picker's folder, search and upload) leaves it open.
 document.addEventListener("turbo:submit-end", (event) => {
   const trigger = event.detail.formSubmission?.submitter || event.target
-  trigger.closest("dialog[open]")?.close()
+  const dialog = trigger.closest("dialog[open]")
+  if (!dialog) return
+
+  const frame = event.target.dataset.turboFrame || event.target.closest("turbo-frame")?.id
+  if (frame && frame !== "_top" && dialog.querySelector(`turbo-frame#${CSS.escape(frame)}`)) return
+  dialog.close()
 })
