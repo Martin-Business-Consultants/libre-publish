@@ -16,8 +16,9 @@
     padding: var(--space-6);
   }
 
-  /* A panel that's a <details>: open, its summary stands off its contents. */
-  details.panel[open] > summary {
+  /* A padded panel that's a <details>: open, its summary stands off its
+     contents. (A postbox, also a <details>, draws its own header.) */
+  details.panel--padded[open] > summary {
     margin-block-end: var(--space-4);
   }
 

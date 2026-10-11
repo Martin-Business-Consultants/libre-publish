@@ -8,6 +8,19 @@ out.
 
 ## Unreleased
 
+### Fixed
+- **A plugin present when the database is created gets its tables.**
+  Loading `db/schema.rb` into a new database (`db:prepare` on a fresh
+  install whose image has plugins, or a test database) recorded every
+  plugin's migrations as run although their tables aren't in the schema, so
+  a plugin such as Approvals started without its table. Now only the core's
+  own migrations are recorded, and a plugin's run on top
+  (`config/initializers/plugin_migrations.rb`).
+- **The editor's boxes** (pages, entries, globals, and plugins' screens
+  drawn with `postbox`) no longer have extra space under their header when
+  open: the spacing for a `<details class="panel">` is now only for a
+  padded one (`panel--padded`).
+
 ## 1.30.0
 
 ### Added

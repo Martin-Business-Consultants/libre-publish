@@ -239,8 +239,8 @@ header comment has the details.
   (outlined red), `btn--destructive` (filled red, confirms a delete),
   `btn--plain`, `btn--sm`, `btn--icon`, `btn--block`.
 - *Boxes* (panels.css): `panel` (`panel--padded`, `panel--scroll`,
-  `panel__header`, `panel__footer`; a `<details class="panel">` stands its
-  summary off its contents), `well`, `empty-state`, `details` (a `<dl>` of
+  `panel__header`, `panel__footer`; a `<details class="panel panel--padded">`
+  stands its summary off its contents), `well`, `empty-state`, `details` (a `<dl>` of
   labels and values; `details--wide`).
 - *Status* (badges.css): `badge` and `notice`, toned `--success`,
   `--danger`, `--warning`, `--info` (a badge without a tone is neutral).
