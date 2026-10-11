@@ -6,6 +6,38 @@ section below. An install is brought to one with `bin/update v1.0.0`, or a
 Kamal site with `kamal deploy -d <site>`. Settings shows when a newer one is
 out.
 
+## 1.27.0
+
+### Added
+- **Image limits per site** (Settings › Media): the largest file an image on
+  the website may be (750 KB by default) and its longest side (2560 pixels).
+  A JPEG, PNG or WebP uploaded over either is made a lighter WebP within them
+  as it arrives, in the background, its original kept to restore (a switch
+  turns that off). The Image Optimizer uses the same limits, stepping the
+  quality, then the size (to no less than 1280 pixels), down until an image
+  fits.
+- **Version history for globals and settings**: every change to a global
+  (Revisions, from its editor) and to General, Branding, Search, Media, Forms
+  and Email delivery (Settings › History), to compare and restore. Secrets
+  are never kept.
+- **The admin in your language**: English, Español, Français or Deutsch, for
+  each person (Settings › Account), with a workspace default (Settings ›
+  General). This release translates the menu, the admin bar, Settings, sign-in,
+  page titles and the editor's Publish box; the rest shows in English until
+  it's translated. Content and the website are unaffected.
+- **For plugins**: the `website.scripts` filter (the Scripts global's items
+  before they're printed), the `content.publish_refusal` filter (a reason to
+  hold publishing or scheduling back), the `:content_aside` slot (under the
+  editor's Publish box), and `tx` for a plugin's own words (docs/plugins.md).
+  The new **Consent** (a cookie banner that holds analytics and marketing
+  scripts until a visitor agrees) and **Workflow** (reviews for people's
+  changes, comments, and publishing that can wait for an approval) plugins
+  use them; both are in Settings › Plugins' directory.
+
+### Changed
+- **New installs get Forms 1.6.0**: submissions kept for a set time, and a
+  person's data found, exported or erased by their email address.
+
 ## 1.26.0
 
 ### Added
