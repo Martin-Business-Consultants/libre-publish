@@ -6,8 +6,10 @@
 # read is of live content, so a theme never shows a draft unless the page is
 # an editor's preview.
 module WebsiteHelper
-  # The widths an image is offered at (srcset). The browser picks by `sizes`.
-  WEBSITE_IMAGE_WIDTHS = [480, 800, 1200, 1600, 2400].freeze
+  # The widths an image is offered at (srcset). The browser picks by `sizes`:
+  # the small ones are for thumbnails and narrow columns on a phone (8rem at
+  # 2x is 256 pixels), which would otherwise take the 480.
+  WEBSITE_IMAGE_WIDTHS = [240, 320, 480, 640, 800, 1200, 1600, 2400].freeze
 
   # A page's (or an entry's) blocks, each drawn by the theme's
   # website/blocks/_<type> partial with its fields as `data` (and what the

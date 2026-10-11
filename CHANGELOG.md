@@ -6,6 +6,26 @@ section below. An install is brought to one with `bin/update v1.0.0`, or a
 Kamal site with `kamal deploy -d <site>`. Settings shows when a newer one is
 out.
 
+## Unreleased
+
+### Added
+- **Behind Cloudflare** (docs/install.md): `CMS_TRUSTED_PROXIES=cloudflare`,
+  a variable in a deploy tool or a Kamal destination, makes the app believe
+  Cloudflare's `X-Forwarded-For`, so with the site's record proxied (the
+  orange cloud) rate limits, the audit log and API token use see each
+  visitor's address rather than Cloudflare's. Addresses and CIDR ranges work
+  too, separated by commas, and one it can't read stops the boot naming it.
+  The guide walks through switching it on: the variable, SSL/TLS Full
+  (strict), bots, then the DNS record.
+
+### Changed
+- **Smaller images for thumbnails and narrow columns**: the website offers
+  each image at 240, 320 and 640 pixels wide as well, so a thumbnail on a
+  phone no longer loads the 480. Each is made the first time it's asked for.
+- `config/deploy.example-site.yml` keeps `ssl: true` behind Cloudflare
+  (Full (strict)), where it said to turn it off, which meant Flexible and
+  traffic unencrypted between Cloudflare and the server.
+
 ## 1.27.0
 
 ### Added

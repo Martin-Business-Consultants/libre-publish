@@ -36,6 +36,9 @@ require_relative "../lib/middleware/svg_sandbox"
 require_relative "../lib/middleware/api_exceptions"
 require_relative "../lib/middleware/admin_host"
 
+# Proxies whose X-Forwarded-For counts (CMS_TRUSTED_PROXIES), read below.
+require_relative "trusted_proxies"
+
 module ReactStarterKit
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
@@ -63,6 +66,12 @@ module ReactStarterKit
     # origin with a signed-in admin.
     config.x.admin_host = ENV["CMS_ADMIN_HOST"].presence
     config.middleware.use AdminHost
+
+    # The visitor's address behind a CDN (CMS_TRUSTED_PROXIES=cloudflare),
+    # rather than the CDN's (config/trusted_proxies.rb).
+    if (proxies = TrustedProxies.for_rails(ENV["CMS_TRUSTED_PROXIES"]))
+      config.action_dispatch.trusted_proxies = proxies
+    end
 
     # The admin's languages (AdminLocale): its own words from
     # config/locales/admin, and English for anything a language lacks
