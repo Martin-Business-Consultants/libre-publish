@@ -52,6 +52,7 @@
   <aside class="flex shrink-0 flex-col gap-4 lg:w-80">
     <%= render "content_form/publish_box", record: entry, form: form, scope: "entry", prefix: "entries", statuses: CollectionEntry::STATUSES.sort,
           trash_name: "this entry", trash_path: (collection_entry_path(collection.slug, entry.slug) if trash), trash_form: ("entry_trash_form" if trash) %>
+    <%= plugin_slots(:content_aside, record: entry) if entry.persisted? %>
 
     <%= postbox "entry-attributes", "Entry Attributes" do %>
       <%= render "content_form/permalink", record: entry, form: form, hint: "Made from the name when blank." %>

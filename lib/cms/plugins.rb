@@ -69,7 +69,11 @@ module Cms
       webhook_filters: "Webhook filters",
       # Once on every content editor page (pages, entries, globals): a media
       # library's picker, which asset fields open (MediaLibrary).
-      content_form: "Content editor"
+      content_form: "Content editor",
+      # Under the Publish box of a saved page's or entry's editor (`record:`).
+      # Inside the editor's form: a control of the plugin's own names a form
+      # drawn outside it (in its :content_form slot) with the form attribute.
+      content_aside: "Content editor's sidebar"
     }.freeze
 
     # The built-in roles a plugin can grant capabilities to by default

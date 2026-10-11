@@ -14,6 +14,10 @@
 module PublishGated
   extend ActiveSupport::Concern
 
+  included do
+    validate :plugins_allow_publishing, if: :publishes_on_save?
+  end
+
   # Asked after the write's attributes are assigned, before saving.
   def publishing_write?
     live_in_database? || publishes_on_save?
@@ -25,6 +29,18 @@ module PublishGated
   # change the answer.
   def live_in_database?
     respond_to?(:status) ? status_in_database.to_s == "published" : persisted?
+  end
+
+  # A plugin may hold publishing or scheduling back (the
+  # content.publish_refusal filter: a reason, or nil to let it through), as
+  # Workflow does until a review approves. Asked of whoever is publishing;
+  # not of the scheduler, which has no one to ask: it was asked when the
+  # date was set.
+  def plugins_allow_publishing
+    return if Current.user.nil?
+
+    reason = Cms::Hooks.apply("content.publish_refusal", nil, record: self, user: Current.user)
+    errors.add(:base, reason.to_s) if reason.present?
   end
 
   def publishes_on_save?
