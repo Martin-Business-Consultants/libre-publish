@@ -13,11 +13,14 @@ RSpec.describe "Docs", type: :request do
     sign_in_as admin
 
     get docs_path
-    expect(response.body).to include("How this CMS works", "Working with an Astro site", "Working with AI", "Site health")
+    expect(response.body).to include("How this CMS works", "Working with AI", "Site health")
+    expect(response.body).not_to include("Working with an Astro site")
+
+    get doc_path("ai")
+    expect(response.body).not_to include("{{cms_url}}")
 
     get doc_path("astro")
-    expect(CGI.unescapeHTML(response.body)).to include("curl -fsSL http://www.example.com/frontend/install.sh | sh", ">cms docs astro</code>")
-    expect(response.body).not_to include("{{cms_url}}")
+    expect(response).to have_http_status(:not_found)
 
     get doc_path("nope")
     expect(response).to have_http_status(:not_found)
@@ -25,7 +28,7 @@ RSpec.describe "Docs", type: :request do
 
   it "serves the guides to the CLI and MCP" do
     get "/api/docs", headers: api_headers
-    expect(response.parsed_body["guides"].map { it["slug"] }).to eq(%w[how-it-works astro ai])
+    expect(response.parsed_body["guides"].map { it["slug"] }).to eq(%w[how-it-works ai])
 
     get "/api/docs/ai", headers: api_headers
     expect(response.parsed_body.dig("guide", "markdown")).to include("claude mcp add cms -- cms mcp")

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_10_160000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_11_120000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -289,6 +289,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_10_160000) do
     t.datetime "updated_at", null: false
     t.integer "user_id"
     t.index ["user_id"], name: "index_hello_greetings_on_user_id"
+  end
+
+  create_table "image_optimizations", force: :cascade do |t|
+    t.bigint "bytes_after", default: 0, null: false
+    t.bigint "bytes_before", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.json "errors_log", default: [], null: false
+    t.integer "failed", default: 0, null: false
+    t.datetime "finished_at"
+    t.integer "optimized", default: 0, null: false
+    t.integer "processed", default: 0, null: false
+    t.integer "skipped", default: 0, null: false
+    t.string "status", default: "pending", null: false
+    t.integer "total", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id"
+    t.index ["status"], name: "index_image_optimizations_on_status"
   end
 
   create_table "invoices", force: :cascade do |t|

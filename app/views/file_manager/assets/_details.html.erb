@@ -23,7 +23,7 @@
     <div class="<%= fact_classes %>"><dt class="w-24 shrink-0 text-gray-500">Uploaded</dt><dd class="min-w-0 text-gray-900"><%= time_ago_tag asset.created_at %></dd></div>
     <div class="<%= fact_classes %>"><dt class="w-24 shrink-0 text-gray-500">File name</dt><dd class="min-w-0 break-all font-mono text-xs text-gray-900"><%= asset.filename %></dd></div>
     <div class="<%= fact_classes %>"><dt class="w-24 shrink-0 text-gray-500">File type</dt><dd class="min-w-0 text-gray-900"><%= asset.content_type %></dd></div>
-    <div class="<%= fact_classes %>"><dt class="w-24 shrink-0 text-gray-500">File size</dt><dd class="min-w-0 text-gray-900"><%= number_to_human_size(asset.byte_size) %></dd></div>
+    <div class="<%= fact_classes %>"><dt class="w-24 shrink-0 text-gray-500">File size</dt><dd class="min-w-0 text-gray-900"><%= number_to_human_size(asset.byte_size) %><% if asset.optimized? then %> <span class="text-gray-500">(optimized from <%= number_to_human_size(asset.original_file.byte_size) %>)</span><% end %></dd></div>
     <% if asset.file.metadata["width"] %>
       <div class="<%= fact_classes %>"><dt class="w-24 shrink-0 text-gray-500">Dimensions</dt><dd class="min-w-0 text-gray-900"><%= asset.file.metadata["width"] %> × <%= asset.file.metadata["height"] %> pixels</dd></div>
     <% end %>
@@ -37,6 +37,11 @@
     </button>
     <%= link_to rails_blob_path(asset.file, disposition: "attachment"), class: ui(:button, :small), data: { turbo: false } do %>
       <span>Download</span>
+    <% end %>
+    <% if can_write && asset.optimized? %>
+      <%= button_to "Restore original", file_manager_asset_restoration_path(asset), class: ui(:button, :small),
+            title: "Put back the " + asset.original_file.filename.to_s + " (" + number_to_human_size(asset.original_file.byte_size) + ") the Image Optimizer replaced",
+            form: { data: { turbo_confirm: "Put the original " + asset.original_file.filename.to_s + " back in place of this WebP?" } } %>
     <% end %>
     <% if Current.user.can?("assets:delete") %>
       <%= render "layouts/shared/delete_dialog", name: asset.title, path: file_manager_asset_path(asset),

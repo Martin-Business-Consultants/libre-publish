@@ -17,6 +17,7 @@ class Asset < ApplicationRecord
   include Renditions
   include Delivery
   include Filterable
+  include Optimizable
 
   # `folder` is a virtual filesystem path used by the file manager UI.
   # Always starts with "/", never ends with "/" except for root ("/").
