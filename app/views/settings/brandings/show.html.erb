@@ -78,6 +78,9 @@
           <%= settings_field "Secondary color", hint: "Tints the grays: surfaces, lines and text. Neutral when blank." do %>
             <%= form.text_field :secondary_color, value: @branding[:secondary_color], pattern: "#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})", placeholder: "#1c1917", class: "w-full font-mono" %>
           <% end %>
+          <%= settings_field "Top bar", hint: "Dark keeps the bar along the top dark in light mode too, for a logo drawn for a dark ground." do %>
+            <%= form.select :top_bar, Branding::TOP_BARS.invert.to_a, { selected: @branding[:top_bar].presence || "match" }, class: "w-full" %>
+          <% end %>
         </div>
       </section>
 

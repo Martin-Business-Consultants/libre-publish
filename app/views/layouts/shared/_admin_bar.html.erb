@@ -10,7 +10,8 @@
 <% muted_item_classes = class_names(item_classes, "text-gray-600 hover:text-gray-900") %>
 <% menu_classes = ui(:menu, "admin-bar__menu w-56") %>
 <% menu_link_classes = ui(:menu_item) %>
-<header class="admin-bar flex items-stretch gap-1 border-b border-gray-200 bg-white px-2 py-2 text-sm" id="header">
+<% bar_classes = class_names("admin-bar flex items-stretch gap-1 border-b border-gray-200 bg-white px-2 py-2 text-sm", "admin-bar--dark" => Branding.current.dark_top_bar?) %>
+<header class="<%= bar_classes %>" id="header">
   <button type="button" class="<%= class_names(muted_item_classes, "admin-bar__drawer-toggle") %>" aria-controls="admin-menu" aria-expanded="false"
     data-admin-menu-target="drawerToggle" data-action="admin-menu#toggleDrawer">
     <%= icon_tag "menu", class: "size-5" %>

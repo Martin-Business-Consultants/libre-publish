@@ -34,6 +34,18 @@ RSpec.describe "Agent bootstrap", type: :request do
     expect(response.body).not_to include("http://agentboot.librepublish.com")
   end
 
+  it "doesn't trust whatever `ruby` is on PATH: it runs one, or fetches one checked against its checksum" do
+    get "/agent/install.sh"
+    script = response.body
+
+    # A Mac's own /usr/bin/ruby is 2.6; a mise or rbenv shim may have no Ruby behind it.
+    expect(script).to include('Gem::Version.new(RUBY_VERSION) >= Gem::Version.new("3.4")')
+    %w[arm64_big_sur el_capitan x86_64_linux arm64_linux].each { expect(script).to include(%(tag="#{it}")) }
+    expect(script.scan(/sum="\h{64}"/).size).to eq(4)
+    expect(script).to include(%(exec "$RUBY"))
+    expect(system("sh", "-n", "-c", script)).to be(true)
+  end
+
   it "serves the CLI the installer downloads" do
     get "/agent/cms"
 
