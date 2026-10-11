@@ -321,6 +321,7 @@ default).
 | `website.markdown` | Markdown drawn as HTML | `text:` |
 | `website.head` | HTML for the end of `<head>`, after the "scripts" global's | `request:` |
 | `website.body` | HTML for the end of `<body>` | `request:` |
+| `website.scripts` | The "scripts" global's items (hashes: `name`, `head`, `body`, `enabled`) before they're printed, for each part; return the list, changed or not (a consent plugin holds some back) | `part:` ("head" or "body"), `request:` |
 | `sitemap.entries` | the sitemap's rows | |
 
 HTML a filter returns is escaped unless it's marked safe, as ERB would:

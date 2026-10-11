@@ -55,6 +55,9 @@ module WebsiteHelper
   # took every page down once a script was added.
   def website_scripts(part)
     items = Array(Global.find_by(slug: "scripts")&.data.to_h["items"]).grep(Hash)
+    # A plugin may rework them first (the website.scripts filter: a consent
+    # plugin holds some back until a visitor agrees); a list of the same hashes.
+    items = Array(Cms::Hooks.apply("website.scripts", items, part: part, request: request)).grep(Hash)
     pasted = items.filter_map { it[part].to_s.html_safe if it["enabled"] != false && it[part].present? } # rubocop:disable Rails/OutputSafety
     added = website_html Cms::Hooks.apply("website.#{part}", ActiveSupport::SafeBuffer.new, request: request)
     safe_join([*pasted, (added if added.present?)].compact, "\n")
