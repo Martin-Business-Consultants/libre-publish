@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 # The site's visual identity (Settings › Branding), stored under
-# Setting["branding"]: logo, favicon, colors, font, corners, shadow.
+# Setting["branding"]: logo, favicon, colors, font, corners, shadow, and a
+# top bar that's dark whatever the appearance.
 #
 # The public site reads the raw setting. The admin reads it through here:
 # `stylesheet` turns all of it — color, type and surface — into overrides of
@@ -11,7 +12,7 @@
 class Branding
   KEY = "branding"
 
-  PERMITTED = %i[logo_id favicon_id primary_color secondary_color font border_radius box_shadow].freeze
+  PERMITTED = %i[logo_id favicon_id primary_color secondary_color font border_radius box_shadow top_bar].freeze
 
   FONTS = {
     "Inter"            => "Inter — Clean modern sans",
@@ -20,6 +21,10 @@ class Branding
     "Playfair Display" => "Playfair Display — Editorial serif",
     "Lora"             => "Lora — Calligraphic serif"
   }.freeze
+
+  # The admin's top bar: as the appearance draws everything, or dark in
+  # either (.admin-bar--dark, which takes the dark tokens, _global.css).
+  TOP_BARS = {"match" => "Match the appearance", "dark" => "Dark"}.freeze
 
   RADII   = %w[none small medium large].freeze
   SHADOWS = %w[none small medium large].freeze
@@ -71,6 +76,8 @@ class Branding
   def box_shadow
     @data["box_shadow"].presence_in(SHADOWS)
   end
+
+  def dark_top_bar? = @data["top_bar"] == "dark"
 
   def google_font_url
     "https://fonts.googleapis.com/css2?family=#{ERB::Util.url_encode(font)}:wght@400;500;600;700&display=swap" if font

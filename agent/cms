@@ -32,6 +32,10 @@ require "fileutils"
 require "stringio"
 require "openssl"
 
+# UTF-8 whatever the locale says: with no LANG (a bare shell, an MCP client)
+# Ruby would read files and replies as ASCII and fail on the first em dash.
+Encoding.default_external = Encoding::UTF_8
+
 VERSION = "2.0.0"
 
 # String#presence without ActiveSupport — used while resolving credentials below,
@@ -1175,7 +1179,7 @@ end
 command("mcp", group: "Setup",
   summary: "Speak MCP on stdio, so an editor can call the CMS directly",
   usage: "cms mcp",
-  notes: "Wire it up once: `claude mcp add cms -- #{$PROGRAM_NAME} mcp`. Every curated " \
+  notes: "Wire it up once: `claude mcp add cms -- #{ENV.fetch("CMS_BIN", $PROGRAM_NAME)} mcp`. Every curated " \
          "command becomes a tool, with the same catalogue behind it, so the two never drift.") do |_args|
   require_credentials!
   run_mcp_server

@@ -191,6 +191,19 @@ RSpec.describe "Settings pages", type: :request do
       expect(response.body).to include("--accent-600: #fde68a;", "--on-accent: #1c1917;")
     end
 
+    it "keeps the top bar dark in light mode when asked" do
+      sign_in_as admin
+
+      get settings_branding_path
+      expect(response.body).not_to include("admin-bar--dark")
+
+      patch settings_branding_path, params: {branding: {top_bar: "dark"}}
+      expect(Setting.get("branding")).to include("top_bar" => "dark")
+
+      get settings_branding_path
+      expect(Nokogiri::HTML(response.body).at_css("header#header")["class"]).to include("admin-bar--dark")
+    end
+
     it "serves the secondary color, corners and shadow as the admin's tokens too" do
       Setting.set("branding", "secondary_color" => "#1e3a5f", "border_radius" => "large", "box_shadow" => "small")
 

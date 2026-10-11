@@ -6,6 +6,26 @@ section below. An install is brought to one with `bin/update v1.0.0`, or a
 Kamal site with `kamal deploy -d <site>`. Settings shows when a newer one is
 out.
 
+## 1.18.5
+
+### Added
+- **A dark top bar** (Settings › Branding › Color › Top bar): the bar
+  along the top of the admin stays dark in light mode too, for a logo drawn
+  for a dark ground.
+
+### Fixed
+- **The agent installer on a Mac** (`curl …/agent/install.sh | sh`) failed
+  without a recent Ruby. A Mac's own Ruby is 2.6, too old for the `cms` CLI,
+  and a mise, rbenv or asdf shim can be on PATH with no Ruby behind it. The
+  installer now runs each Ruby it finds before using it, and when none is
+  3.4 or newer it fetches a self-contained one into `~/.local/share/cms`
+  (Homebrew's portable Ruby, checked against its checksum; no Homebrew or
+  admin rights needed). The `cms` command runs with that Ruby whatever PATH
+  holds later, and the installer puts `~/.local/bin` on PATH in your shell's
+  startup file (`CMS_NO_MODIFY_PATH=1` skips that).
+- **The `cms` CLI with no locale set** (a bare shell, an MCP client) failed
+  reading its own profile. It reads UTF-8 always.
+
 ## 1.18.4
 
 ### Changed
