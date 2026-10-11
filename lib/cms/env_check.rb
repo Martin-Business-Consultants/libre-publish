@@ -87,6 +87,9 @@ module Cms
       if (updates = value("CMS_UPDATES")) && !updates_allowed.include?(updates)
         @errors << "CMS_UPDATES is #{updates.inspect}: it's one of #{updates_allowed.join(", ")}."
       end
+      if (proxies = value("CMS_TRUSTED_PROXIES")) && (invalid = TrustedProxies.parse(proxies).last).any?
+        @errors << "CMS_TRUSTED_PROXIES has #{invalid.uniq.join(", ")}: it's cloudflare, or addresses and CIDR ranges, separated by commas."
+      end
       if (from = value("MAIL_FROM_ADDRESS")) && !from.match?(/\A[^@\s]+@[^@\s]+\z/)
         @errors << "MAIL_FROM_ADDRESS is #{from.inspect}: it's an email address."
       end

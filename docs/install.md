@@ -25,7 +25,8 @@ checkout with `bin/install`.
 | `CMS_BACKUP_COMMAND` | Copies each nightly backup off the server: run with the archive's path as its last argument (`rclone copyto --s3-no-check-bucket`, `aws s3 cp … s3://bucket/`, `scp … host:dir/`). Unset, backups stay on the server. |
 | `CMS_BACKUP_NIGHTLY` | `false` stops the nightly backup, for an install whose host snapshots the volume instead. |
 | `CMS_VERSIONS_KEEP` | How many versions of each page and entry to keep (100); older ones are deleted nightly. |
-| `ASSUME_SSL` | `true` behind a proxy that terminates TLS (Cloudflare, a load balancer). |
+| `ASSUME_SSL` | `true` behind a proxy that terminates TLS and forwards plain HTTP (a load balancer). Not for Cloudflare in front of kamal-proxy, which keeps its own certificate (Behind Cloudflare below). |
+| `CMS_TRUSTED_PROXIES` | The proxies in front of the install whose `X-Forwarded-For` is believed, so rate limits, the audit log and API token use see the visitor's address rather than the proxy's: `cloudflare` (its published ranges), or addresses and CIDR ranges, separated by commas. Localhost and private networks (kamal-proxy, Thruster) always are. |
 | `CMS_ALLOW_PRIVATE_WEBHOOKS` | `true` lets webhooks, build hooks and a site's purge URL point at private, loopback or link-local addresses — for an install whose receivers are on its own network. Off by default (on while developing). |
 | `CMS_FORCE_SSL` | `false` to serve the admin over plain HTTP. Otherwise, when `APP_PROTOCOL` is `https`, HTTP redirects to HTTPS (except `/up` and localhost), with Strict-Transport-Security and Secure cookies. Behind a proxy that forwards plain HTTP, set `ASSUME_SSL=true` too, or the redirect loops. |
 | `CMS_PLUGINS` | The install's plugins, for a Docker build (see Plugins below). |
@@ -60,7 +61,8 @@ destination from what you give it.
    of one app on the same server would share a volume, and with it every
    database.
 2. Give it a destination's variables (`APP_HOST`, `SITE_KEY`,
-   `MAIL_FROM_ADDRESS`, `ASSUME_SSL=true` behind a TLS-terminating proxy) and
+   `MAIL_FROM_ADDRESS`, `CMS_TRUSTED_PROXIES=cloudflare` behind Cloudflare's
+   proxy, below) and
    secrets (`SECRET_KEY_BASE`, the three `AR_ENCRYPTION_*` keys,
    `SMTP_PASSWORD`, and `CMS_PLUGINS` if it has plugins).
 3. Settings › Updates then updates the install in place (Updating, below).
@@ -73,6 +75,53 @@ types, settings and globals — never the demo seed — and an existing one is
 migrated. Open `https://<host>/cms/sign_up` to create the owner, or
 `kamal app exec -d <site> 'bin/rails cms:bootstrap[owner@acme.com]'`, which
 prints the owner's password and the site's two machine tokens once.
+
+## Behind Cloudflare
+
+A site whose DNS is on Cloudflare can have its record proxied (the orange
+cloud) rather than DNS only (grey). Cloudflare then serves the images,
+stylesheets, scripts and fonts from a data center near each visitor: every one
+is stamped and cached for a year, so the server makes each once and
+Cloudflare keeps it. Pages stay the server's unless a Cache Rule caches HTML;
+a published page may be kept for the minute it's fresh, and an editor's
+preview and the admin never are.
+
+To switch it on, in this order:
+
+1. **Tell the install it's behind Cloudflare.** Add the variable
+   `CMS_TRUSTED_PROXIES` with the value `cloudflare`: in the deploy tool's
+   variables for the site (Another deploy tool, above), or under `env.clear`
+   in a Kamal destination (`CMS_TRUSTED_PROXIES: cloudflare`). Deploy, or
+   restart the app so it reads it.
+
+   Without it, the app sees Cloudflare's address in place of each visitor's,
+   so everyone reaching the site through one Cloudflare data center shares
+   one rate limit (sign-up, password resets, the API), and the audit log
+   records Cloudflare. kamal-proxy already passes Cloudflare's
+   `X-Forwarded-For` on (`forward_headers` in `config/deploy.yml`); this is
+   the app believing it. Turned on before the record is proxied, it changes
+   nothing until Cloudflare is in front.
+
+2. **SSL/TLS › Overview › Full (strict).** kamal-proxy keeps its own Let's
+   Encrypt certificate (`ssl: true`, and `ASSUME_SSL` stays unset), which
+   Cloudflare checks and lets renew. Flexible would send visitors' traffic
+   on to the server unencrypted, and loop on the redirect to HTTPS.
+
+3. **Security › Bots: leave Bot Fight Mode and Block AI bots off.** They
+   challenge anything that isn't a browser, which stops the `cms` CLI,
+   agents, and integrations that call the API.
+
+4. **DNS: switch the site's record (and `www`, if it has one) to Proxied.**
+   Pages and images load as before, now with Cloudflare's headers
+   (`cf-cache-status`).
+
+To check it, sign out and in again at `/cms`, then open Insights › Audit log:
+your sign-in shows your own address, not one of Cloudflare's (104.16.x.x, 172.64.x.x,
+162.158.x.x and so on).
+
+Cloudflare's free plan takes uploads up to 100 MB, so a larger file (a long
+video) won't reach the media library through it. To go back, switch the
+record to DNS only; the variable can stay.
 
 ## A plain install
 

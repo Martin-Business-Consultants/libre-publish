@@ -48,6 +48,11 @@ RSpec.describe Cms::EnvCheck do
     expect(check(good.merge("CMS_UPDATES" => "deployer")).first.join).not_to include("CMS_UPDATES")
   end
 
+  it "takes cloudflare and CIDR ranges for CMS_TRUSTED_PROXIES, and names an entry it can't read" do
+    expect(check(good.merge("CMS_TRUSTED_PROXIES" => "cloudflare, 203.0.113.0/24")).first).to be_empty
+    expect(check(good.merge("CMS_TRUSTED_PROXIES" => "cloudflare, cloudflair")).first.join).to include("CMS_TRUSTED_PROXIES has cloudflair")
+  end
+
   it "warns that mail can't go out without SMTP_PASSWORD" do
     expect(check(good.except("SMTP_PASSWORD")).last.join).to include("can't send mail")
   end

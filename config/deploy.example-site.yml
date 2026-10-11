@@ -19,7 +19,11 @@ env:
     # What the API and webhooks send as `tenant`, which integrations match on.
     # Defaults to the first label of APP_HOST; keep it if the host changes.
     SITE_KEY: example-site
-    # Behind a proxy that terminates TLS (Cloudflare, a load balancer).
+    # Behind Cloudflare's proxy (orange cloud): believe its X-Forwarded-For,
+    # so rate limits and the audit log see visitors, not Cloudflare
+    # (docs/install.md, Behind Cloudflare).
+    # CMS_TRUSTED_PROXIES: cloudflare
+    # Behind a load balancer that terminates TLS and forwards plain HTTP.
     # ASSUME_SSL: "true"
   # The site's secrets (.kamal/secrets.example-site). A site moved from the
   # old shared install lists only SECRET_KEY_BASE, set to the old install's,
@@ -35,7 +39,8 @@ env:
 
 proxy:
   host: example-site.example.com
-  # kamal-proxy gets a Let's Encrypt certificate itself; false behind Cloudflare.
+  # kamal-proxy gets a Let's Encrypt certificate itself, behind Cloudflare
+  # too (its SSL/TLS mode Full (strict)).
   ssl: true
 
 volumes:
