@@ -5,6 +5,7 @@
 # can't make on its own (Frontend.record_build). `approved` is false when
 # nothing was waiting.
 class Api::Frontend::DeliveryApprovalsController < Api::BaseController
+  include Api::FrontendServed
   enforce_authorization
   requires_capability "settings:write", only: :create
 

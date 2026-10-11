@@ -5,6 +5,8 @@ require "rails_helper"
 # The delivery API (/api/v1): what a site builds from. Live content only,
 # whatever the token; one answer shape; a cursor for incremental reads.
 RSpec.describe "Delivery API v1", type: :request do
+  before { serve_over_api }
+
   let(:admin) { create(:user) }
   let(:token) { {"Authorization" => "Bearer #{admin.api_token.token}"} }
 

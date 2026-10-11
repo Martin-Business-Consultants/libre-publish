@@ -51,10 +51,11 @@ module Website
   end
 
   # A theme installed from Settings › Plugins is a plugin too, and draws the
-  # site only while it's switched on there.
+  # site only while it's switched on there, and the site isn't served
+  # headless (Serving: API only), where a frontend elsewhere draws it.
   def enabled?
     current = theme
-    !current.nil? && switched_on?(current)
+    !current.nil? && switched_on?(current) && !Serving.headless?
   end
 
   # Whether the theme has a template (website/emails/form, say), for a part

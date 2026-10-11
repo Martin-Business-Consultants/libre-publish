@@ -14,8 +14,10 @@
         <%= form.password_field :token, autocomplete: "off", placeholder: (@token_hint ? "Already set · ends in " + @token_hint : "ghp_…"), class: "w-full font-mono", data: { "1p-ignore": true } %>
       <% end %>
       <p class="<%= ui(:help) %>">Needs the <code>repo</code> scope. Create one at <a href="https://github.com/settings/tokens" class="<%= ui(:link) %>" target="_blank" rel="noreferrer">github.com/settings/tokens</a>. Leave blank to keep the existing value.</p>
-      <%= settings_field "Frontend repo", hint: "owner/name — the Astro site this workspace publishes." do %>
-        <%= form.text_field :frontend_github_repo, value: @frontend_github_repo, placeholder: "acme/acme-site", class: "w-full font-mono" %>
+      <% if Serving.api? then %>
+        <%= settings_field "Frontend repo", hint: "owner/name — the Astro site this workspace publishes." do %>
+          <%= form.text_field :frontend_github_repo, value: @frontend_github_repo, placeholder: "acme/acme-site", class: "w-full font-mono" %>
+        <% end %>
       <% end %>
     <% end %>
   <% end %>

@@ -15,6 +15,8 @@ class Settings::GeneralsController < Settings::BaseController
 
   def show
     @settings = current_settings
+    @collections = Collection.order(:name).to_a
+    @tokens_reading = Serving.recently_used_tokens
   end
 
   def update
@@ -27,6 +29,10 @@ class Settings::GeneralsController < Settings::BaseController
       incoming["public_origins"] = raw.to_s.split(/[\n,]/).map(&:strip).reject(&:empty?)
     end
 
+    serving = serving_params
+    incoming.merge!(serving.except("api_collections"))
+    serve_collections(serving["api_collections"]) if serving.key?("api_collections")
+
     before = Setting.get("general")
     Setting.set("general", incoming)
     changed = incoming.keys.reject { |key| before[key].presence == incoming[key].presence }
@@ -35,6 +41,22 @@ class Settings::GeneralsController < Settings::BaseController
   end
 
   private
+
+  # How the site is served (Serving): the mode, whether the pages (and the
+  # globals) go over the API, and which collections do. The collections'
+  # list comes with a hidden blank, so unticking every one still arrives.
+  def serving_params
+    permitted = params.require(:settings).permit(:serving, :api_pages, api_collections: []).to_h
+    permitted["serving"] = permitted["serving"].presence_in(Serving::MODES.keys) if permitted.key?("serving")
+    permitted.delete("serving") if permitted["serving"].nil? && permitted.key?("serving")
+    permitted["api_pages"] = ActiveModel::Type::Boolean.new.cast(permitted["api_pages"]) == true if permitted.key?("api_pages")
+    permitted["api_collections"] = Array(permitted["api_collections"]).compact_blank if permitted.key?("api_collections")
+    permitted
+  end
+
+  def serve_collections(slugs)
+    Collection.find_each { it.update_column(:api_enabled, slugs.include?(it.slug)) unless it.api_enabled? == slugs.include?(it.slug) }
+  end
 
   def scalar_params
     params.require(:settings).permit(*(IDENTITY_FIELDS + CONTACT_FIELDS + TIME_FIELDS))
@@ -55,7 +77,9 @@ class Settings::GeneralsController < Settings::BaseController
       "address_line1"   => data["address_line1"].to_s,
       "city"            => data["city"].to_s,
       "state"           => data["state"].to_s,
-      "zip"             => data["zip"].to_s
+      "zip"             => data["zip"].to_s,
+      "serving"         => Serving.mode,
+      "api_pages"       => data["api_pages"] == true
     }
   end
 end

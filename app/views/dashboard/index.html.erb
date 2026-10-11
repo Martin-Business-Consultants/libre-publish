@@ -7,7 +7,9 @@
   <% if Current.user.can?("pages:read") %>
     <div class="grid items-start gap-6 lg:grid-cols-2">
       <%= render "dashboard/api_use" %>
-      <%= render "dashboard/frontend" %>
+      <% if Serving.api? then %>
+        <%= render "dashboard/frontend" %>
+      <% end %>
     </div>
   <% end %>
 

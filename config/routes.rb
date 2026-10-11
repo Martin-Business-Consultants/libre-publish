@@ -453,7 +453,10 @@ Rails.application.routes.draw do
   # For search engines and AI (Settings › Search).
   get "robots.txt", to: "website/pages#robots", format: false
   get "llms.txt", to: "website/pages#llms", format: false
-  root to: redirect("/#{Cms::PATH}")
+  # Without a theme drawing it: a blank page when the site is served headless
+  # (Serving: API only), so the CMS's address shows nothing, not even where
+  # the admin is; else (a fresh install) the admin.
+  root to: "website/pages#root"
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.

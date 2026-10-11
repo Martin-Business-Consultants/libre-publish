@@ -6,6 +6,8 @@ require "rails_helper"
 # editors' JSON tab (the API's own JSON), the Developers screen, the site
 # repo's AGENTS.md, and a build reporting in.
 RSpec.describe "Headless", type: :request do
+  before { serve_over_api }
+
   let(:admin) { create(:user) }
 
   def api_headers(user = admin) = {"Authorization" => "Bearer #{user.api_token.token}"}

@@ -30,7 +30,13 @@ RSpec.describe "Settings pages", type: :request do
 
       get settings_path
 
-      expect(response.body).to include("Account", "General", "Branding", "GitHub", "Deploy", "Service tokens")
+      expect(response.body).to include("Account", "General", "Branding", "GitHub", "Service tokens")
+      # A frontend's builds: only while the site is served over the API.
+      expect(response.body).not_to include("The build hook the CMS pings on publish.")
+
+      serve_over_api("website_api")
+      get settings_path
+      expect(response.body).to include("Deploy")
     end
 
     it "renders every section for an admin" do

@@ -3,6 +3,7 @@
 # GET /api/v1/pages[?locale=fr] and /api/v1/pages/<path> — live pages, blocks
 # expanded.
 class Api::V1::PagesController < Api::V1::BaseController
+  before_action :require_pages_served
   requires_capability "pages:read", only: [:index, :show]
 
   def index

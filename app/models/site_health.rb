@@ -164,9 +164,11 @@ module SiteHealth
     [
       Check.new(key: "https", group: "Operations", title: "The site is served over HTTPS",
         detail: "Settings › General › Site base URL starts with https://.", ok: Setting.get("general")["site_base_url"].to_s.start_with?("https://"), href: "/#{Cms::PATH}/settings/general", cli: nil),
-      Check.new(key: "rebuilds", group: "Operations", title: "Publishing rebuilds the site, and the last rebuild worked",
-        detail: Deploys.current.configured? ? "The last rebuild was #{deploy["last_status"].presence || "never run"}." : "Settings › Deploy: a GitHub dispatch or a host's build hook.",
-        ok: Deploys.current.configured? && deploy["last_status"] == "success", href: "/#{Cms::PATH}/settings/deploy", cli: "cms deploy"),
+      (if Serving.api?
+         Check.new(key: "rebuilds", group: "Operations", title: "Publishing rebuilds the site, and the last rebuild worked",
+           detail: Deploys.current.configured? ? "The last rebuild was #{deploy["last_status"].presence || "never run"}." : "Settings › Deploy: a GitHub dispatch or a host's build hook.",
+           ok: Deploys.current.configured? && deploy["last_status"] == "success", href: "/#{Cms::PATH}/settings/deploy", cli: "cms deploy")
+       end),
       Check.new(key: "webhooks", group: "Operations", title: "Webhooks are delivering",
         detail: failing.empty? ? "None is failing." : "#{failing.to_sentence} #{failing.one? ? "is" : "are"} failing.",
         ok: Webhook.where(active: true).exists? ? failing.empty? : nil, href: "/#{Cms::PATH}/webhooks", cli: "cms webhooks"),

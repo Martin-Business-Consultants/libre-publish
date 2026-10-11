@@ -6,6 +6,8 @@ require "rails_helper"
 # /content body for as long as nothing it's built from changes
 # (DeliveryVersion), and a per-token rate limit.
 RSpec.describe "Delivery API v1 caching and limits", type: :request do
+  before { serve_over_api }
+
   let(:admin) { create(:user) }
   let(:token) { {"Authorization" => "Bearer #{admin.api_token.token}"} }
 

@@ -30,6 +30,9 @@ class SitemapsController < ApplicationController
   end
 
   def xml
+    # Headless, the frontend publishes its own (from /api/v1/sitemap).
+    return head(:not_found) if Serving.headless?
+
     base_url = configured_site_base_url.presence || derived_base_url
     @entries = Sitemap.new.entries
     @site_base_url = base_url.chomp("/")

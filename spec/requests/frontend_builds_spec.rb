@@ -6,6 +6,8 @@ require "rails_helper"
 # Settings › Deploy makes of it: how the site renders, where purges go, the
 # secret they're signed with.
 RSpec.describe "Frontend builds", type: :request do
+  before { serve_over_api }
+
   let(:admin) { create(:user) }
   let(:site_token) { {"Authorization" => "Bearer #{create(:user, admin: false, role: create(:role, permissions: %w[pages:read])).api_token.token}"} }
 

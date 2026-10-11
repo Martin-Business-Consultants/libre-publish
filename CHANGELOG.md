@@ -6,6 +6,33 @@ section below. An install is brought to one with `bin/update v1.0.0`, or a
 Kamal site with `kamal deploy -d <site>`. Settings shows when a newer one is
 out.
 
+## 1.26.0
+
+### Added
+- **How the site is served** (Settings › General): **Website** (the
+  default), **Website + API**, or **API only**.
+  - **Website**: the theme draws the site, and the delivery API (`/api/v1`)
+    and the frontend's endpoints are off (404). What only a frontend uses is
+    out of the admin: Settings › Deploy, the editor's JSON tab, the GitHub
+    frontend repo, the "Production site" token role, the frontend's parts of
+    the Developers screen, the dashboard and Site health.
+  - **Website + API**: the theme draws the site, and what's chosen is served
+    as JSON too: the pages with the globals (one switch), and each
+    collection that's "Available over the API" (in General, or the
+    collection's own settings).
+  - **API only**: a frontend elsewhere draws the site from `/api/v1`; the
+    theme is off, and the CMS's own address shows a blank page (robots.txt
+    disallows all, no sitemap.xml).
+  The management API (the `cms` CLI, MCP, agents) is on in every mode, as are
+  the Forms plugin's public submissions and webhooks. The section lists the
+  machine tokens that read the site in the last 30 days, so turning the API
+  off doesn't cut one off unknowingly.
+
+### Changed
+- **On update, an install keeps working as it did**: with no theme it's API
+  only; with a theme and a machine token that read it in the last 30 days,
+  Website + API with everything on; otherwise Website.
+
 ## 1.25.1
 
 ### Fixed

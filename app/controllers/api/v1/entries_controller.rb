@@ -6,6 +6,7 @@ class Api::V1::EntriesController < Api::V1::BaseController
   requires_capability "entries:read", only: [:index, :show]
 
   before_action { @collection = Collection.find_by!(slug: params[:collection_slug]) }
+  before_action { require_collection_served(@collection) }
 
   def index
     scope = @collection.entries.live.includes(:translation_group, :category, :tags).order(:id)

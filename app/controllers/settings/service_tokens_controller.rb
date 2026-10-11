@@ -20,7 +20,10 @@ class Settings::ServiceTokensController < Settings::BaseController
   def index
     tokens = ServiceToken.includes(:role, :created_by).ordered.to_a
     @live, @revoked = tokens.partition { |token| !token.revoked? }
-    @roles = Role.ordered
+    # A published site's read-only role, only while there's a site reading
+    # the API (Serving).
+    @roles = Role.ordered.to_a
+    @roles = @roles.reject { it.name == "Production site" } unless Serving.api?
   end
 
   def create

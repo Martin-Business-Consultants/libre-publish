@@ -44,6 +44,9 @@ module SettingsHelper
   def settings_sections
     sections = SETTINGS_SECTIONS.filter_map do |group, items|
       links = items.filter_map do |label, path, capability, description|
+        # Deploy is a frontend's builds: only while the site is served over the API.
+        next if path == :settings_deploy_path && !Serving.api?
+
         [label, public_send(path), description] if capability.nil? || Current.user&.can?(capability)
       end
       [group, links] if links.any?
