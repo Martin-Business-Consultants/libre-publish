@@ -123,7 +123,7 @@
         </div>
       </details>
       <details>
-        <summary class="<%= ui(:button, :small, "text-red-700") %>">Disable two-factor…</summary>
+        <summary class="<%= ui(:button, :danger, :small) %>">Disable two-factor…</summary>
         <%= form_with url: settings_two_factor_path, method: :delete, class: "mt-3 space-y-2" do |form| %>
           <p class="text-sm text-gray-700">Your account will be protected by its password alone.</p>
           <%= form.password_field :password_challenge, required: true, autocomplete: "current-password", placeholder: "Your password", class: "w-full", aria: { label: "Your password" } %>
