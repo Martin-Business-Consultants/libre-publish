@@ -145,6 +145,31 @@ Migrations have to be safe on a live install and on an older version still
 running beside a newer database: add columns and tables in one release, and
 remove or rename them only in a later one, once nothing reads them.
 
+### Without downtime
+
+A Docker install runs Puma with two workers (`WEB_CONCURRENCY`, 2 by
+default in production) from `releases/live` in the data volume, a symlink to
+the code that runs. Restarts change the workers one at a time while the
+other keeps serving, so visitors don't notice:
+
+- **A plugin or theme** installed, updated or removed from Settings: its
+  migrations run, then the workers restart onto it.
+- **The CMS, updated in place** (Settings › Updates): the release is
+  downloaded and checked, the data is backed up and migrated with the new
+  code while the running one serves, `live` is pointed at it, and the
+  workers move onto it. If they haven't come up on it five minutes later,
+  `live` goes back and the update says why. This needs the release to run
+  on the same Ruby and Puma as the running one; a release that changes
+  either restarts the container as before (a few seconds to a minute).
+- **A redeploy** (Kamal, hoster): Kamal's proxy starts the new container,
+  waits for `/up`, then sends traffic to it.
+
+Background jobs run beside the workers and restart with them; a job
+waiting for a few seconds is the only sign.
+
+Migrations only ever add (docs/compatibility.md), which is what lets the
+running code keep serving while they run.
+
 ## Backups and restoring
 
 `bin/rails cms:backup` writes `backups/cms-data-<time>.tar.gz` in the data

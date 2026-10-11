@@ -25,15 +25,16 @@ RSpec.describe Upgrade::InPlace do
 
   # The release on GitHub: its manifest, its bundle and the bundle's checksum.
   # A block hears each download's URL, as it happens.
-  def release(version: "99.0.0", base: "1", plugins: plugins_here, checksum: nil, assets: nil, &on_download)
+  def release(version: "99.0.0", base: "1", plugins: plugins_here, checksum: nil, assets: nil, ruby: RUBY_VERSION, &on_download)
     dir = Pathname(Dir.mktmpdir("bundle"))
     app = dir.join("app").tap(&:mkpath)
     app.join("VERSION").write("#{version}\n")
+    app.join("Gemfile.lock").write(Rails.root.join("Gemfile.lock").read)
     plugins.each { app.join("plugins", it).tap(&:mkpath).join("#{it}.gemspec").write("") }
     archive = dir.join(bundle_name)
     system("tar", "-czf", archive.to_s, "-C", app.to_s, ".", exception: true)
     files = {
-      "cms-v99.0.0.json" => {version:, ruby: RUBY_VERSION, base:, bundles_ruby: true}.to_json,
+      "cms-v99.0.0.json" => {version:, ruby:, base:, bundles_ruby: true}.to_json,
       bundle_name => archive.binread,
       "#{bundle_name}.sha256" => "#{checksum || Digest::SHA256.file(archive).hexdigest}  #{bundle_name}\n"
     }
@@ -66,6 +67,66 @@ RSpec.describe Upgrade::InPlace do
     expect(releases.children.map { it.basename.to_s }.sort).to eq(%w[current v2.0.0 v99.0.0])
     expect(Cms::Restart).to have_received(:container_later)
     expect(upgrade.reload).to be_running
+  end
+
+  describe "without downtime" do
+    let(:image_dir) { data_dir.join("image").tap(&:mkpath) }
+    let(:live) { releases.join("live") }
+
+    around do |example|
+      releases.mkpath
+      File.symlink(image_dir.to_s, live.to_s)
+      with_env("CMS_PUMA_CLUSTERED" => "1", "CMS_APP_DIR" => live.to_s, "CMS_IMAGE_ROOT" => image_dir.to_s) { example.run }
+    end
+
+    it "prepares the release while this one serves, then points live at it for the workers to move onto" do
+      release
+      prepared = nil
+      allow_any_instance_of(described_class).to receive(:run_preparation) { |_, env, command, _log| prepared = [env, command]; true }
+
+      described_class.new(upgrade).install
+
+      expect(prepared[1]).to eq("./bin/rails cms:backup_if_pending && ./bin/rails db:migrate")
+      expect(prepared[0]).to include("BUNDLE_GEMFILE" => releases.join("v99.0.0/Gemfile").to_s, "CMS_BUNDLED_RUBY" => RbConfig.ruby)
+      expect(live.realpath).to eq(releases.join("v99.0.0").realpath)
+      expect(releases.join("current").readlink.to_s).to eq("v99.0.0")
+      expect(releases.join("v99.0.0/tmp/restart.txt")).to exist
+      expect(Cms::Restart).not_to have_received(:container_later)
+      expect(upgrade.reload).to have_attributes(status: "running", message: a_string_matching(/no downtime/))
+    end
+
+    it "restarts the container as before for a release on another Ruby" do
+      release(ruby: "0.0.1")
+
+      described_class.new(upgrade).install
+
+      expect(live.realpath).to eq(image_dir.realpath)
+      expect(Cms::Restart).to have_received(:container_later)
+    end
+
+    it "switches nothing when the release can't be prepared" do
+      release
+      allow_any_instance_of(described_class).to receive(:run_preparation).and_return(false)
+
+      described_class.new(upgrade).install
+
+      expect(live.realpath).to eq(image_dir.realpath)
+      expect(upgrade.reload).to have_attributes(status: "failed", message: a_string_matching(/couldn't be prepared, so nothing was switched/))
+    end
+
+    it "goes back when the release's workers haven't taken over in a few minutes" do
+      release
+      allow_any_instance_of(described_class).to receive(:run_preparation).and_return(true)
+      described_class.new(upgrade).install
+
+      travel 6.minutes do
+        described_class.new(upgrade.reload).check
+      end
+
+      expect(live.realpath).to eq(image_dir.realpath)
+      expect(releases.join("current")).not_to exist
+      expect(upgrade.reload).to have_attributes(status: "failed", message: a_string_matching(/didn't come up within/))
+    end
   end
 
   it "leaves the install as it is when the update was stopped while it downloaded" do

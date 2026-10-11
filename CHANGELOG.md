@@ -6,6 +6,26 @@ section below. An install is brought to one with `bin/update v1.0.0`, or a
 Kamal site with `kamal deploy -d <site>`. Settings shows when a newer one is
 out.
 
+## 1.19.0
+
+### Changed
+- **Updates without downtime** (docs/install.md, Without downtime). A Docker
+  install runs Puma itself (`bin/web`) with two workers, restarted one at a
+  time:
+  - **plugins and themes** go live without a pause: their migrations run,
+    then the workers restart onto them one by one while the other serves;
+  - **the CMS, updated in place**, is backed up and migrated with the new
+    release while the running one serves, then the workers move onto it.
+    A release whose workers don't come up within five minutes is switched
+    back. One that needs another Ruby or Puma restarts the container as
+    before.
+  Tested under load in production mode: 11,205 requests during a switch,
+  none failed.
+- **Background jobs** run beside the workers (when `SOLID_QUEUE_IN_PUMA`)
+  and restart onto new code with them.
+- The image's command is now `./bin/thrust ./bin/web`. An image built
+  before this keeps restarting the container to update.
+
 ## 1.18.6
 
 ### Added
