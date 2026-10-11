@@ -75,7 +75,8 @@
     <% unless content_for?(:list_search) %>
       <%= render "layouts/shared/nav_filter" %>
     <% end %>
-    <%= link_to search_path, class: ui(:button, :plain, :icon), title: "Search everything" do %>
+    <%# Opens the search modal (layouts/shared/global_search); a link, so it still goes to Search without it. %>
+    <%= link_to search_path, class: ui(:button, :plain, :icon), title: "Search everything (⌘K)", data: { global_search_open: true } do %>
       <%= icon_tag "search", class: "size-4" %>
       <span class="sr-only">Search everything</span>
     <% end %>

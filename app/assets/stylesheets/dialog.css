@@ -109,3 +109,30 @@
     inline-size: max(50vw, min(36rem, 100vw));
   }
 }
+
+/* The search modal (layouts/shared/global_search): half the window each way,
+   centered; the box stays put while results come and go, and they scroll in
+   it. The picked result (arrow keys, the pointer) is shaded; letters a
+   fuzzy match found are marked. */
+@layer components {
+  .global-search[open] {
+    inline-size: 50vw;
+    block-size: 50vh;
+    min-inline-size: min(36rem, calc(100vw - calc(var(--spacing) * 8)));
+    min-block-size: min(24rem, calc(100dvh - calc(var(--spacing) * 8)));
+    overflow: hidden;
+  }
+
+  .global-search__result {
+    &[aria-selected="true"] { background-color: var(--color-gray-100); }
+
+    mark {
+      background: none;
+      color: inherit;
+      font-weight: 700;
+      text-decoration: underline;
+      text-decoration-color: var(--color-blue-500);
+      text-underline-offset: 2px;
+    }
+  }
+}
