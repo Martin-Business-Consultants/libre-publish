@@ -6,6 +6,23 @@ section below. An install is brought to one with `bin/update v1.0.0`, or a
 Kamal site with `kamal deploy -d <site>`. Settings shows when a newer one is
 out.
 
+## 1.21.0
+
+### Added
+- **Image Optimizer** (Media Library, beside Upload): makes large images
+  lighter in the background. Every JPEG, PNG or WebP over 500 KB or wider or
+  taller than 2560 pixels becomes a WebP at most 2560 pixels across, kept
+  only when it saves at least a tenth. Each image keeps its place: the same
+  asset, alt text and caption, wherever the site uses it. A page follows the
+  run: how many it looked at, made lighter or left, and how much it saved.
+  GIFs and SVGs are left alone. An optimized image keeps its original, shown
+  in its details ("optimized from 11.8 MB") with **Restore original** to put
+  it back.
+
+### Removed
+- **"Working with Astro"** from Docs: the guide, its place in the Help menu,
+  and the links to it.
+
 ## 1.20.4
 
 ### Fixed

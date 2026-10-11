@@ -8,6 +8,7 @@
 <% if can_write %>
   <% content_for :page_actions do %>
     <%= render "file_manager/uploads", folder: upload_folder %>
+    <%= render "file_manager/image_optimizer" %>
   <% end %>
 <% end %>
 <% drop_data = can_write ? { controller: "media--file-drop", action: "dragenter->media--file-drop#enter dragover->media--file-drop#over dragleave->media--file-drop#leave drop->media--file-drop#drop" } : {} %>

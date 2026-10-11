@@ -30,11 +30,16 @@ Rails.application.routes.draw do
     get "media", to: "file_manager#index", as: :file_manager
     get "file_manager(/*rest)", to: redirect { |params, request| "/#{Cms::PATH}/media#{"/" + params[:rest] if params[:rest]}#{"?" + request.query_string if request.query_string.present?}" }
     namespace :file_manager, path: "media" do
-      resources :assets, only: [:show, :create, :update, :destroy]
+      resources :assets, only: [:show, :create, :update, :destroy] do
+        # An optimized image's original back (Asset::Optimizable).
+        resource :restoration, only: :create, module: :assets
+      end
       resource :folder, only: [:create, :update, :destroy]
       resources :moves, only: :create
       resources :bulk_deletions, only: :create
       resources :bulk_uploads, only: [:create, :show]
+      # The Image Optimizer (ImageOptimization).
+      resources :image_optimizations, only: [:create, :show]
     end
     # The picker a content form's asset fields open.
     resource :asset_picker, only: [:show, :create]

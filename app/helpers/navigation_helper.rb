@@ -66,7 +66,6 @@ module NavigationHelper
     "Help" => [
       {id: :docs, label: "Docs", icon: "help-circle", path: :docs_path, capability: "pages:read", submenu: [
         ["All docs", :docs_path, "pages:read"],
-        ["Working with Astro", -> { doc_path("astro") }, "pages:read"],
         ["Site health", :site_health_docs_path, "pages:read"]
       ]}
     ],

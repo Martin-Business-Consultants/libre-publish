@@ -1076,10 +1076,10 @@ command("updates", group: "Site",
 end
 
 command("docs", group: "Site",
-  summary: "The CMS's guides: how it works, an Astro site, and more",
+  summary: "The CMS's guides: how it works, working with AI, and more",
   usage: "cms docs [slug]",
   notes: "Without a slug, the list. A guide comes back as Markdown, written for this install.",
-  nexts: ["cms docs astro", "cms site-health"]) do |args|
+  nexts: ["cms docs ai", "cms site-health"]) do |args|
   if args.empty?
     call(:get, "/docs", hint: "cms docs <slug> — one guide")
   elsif !envelope_wanted?

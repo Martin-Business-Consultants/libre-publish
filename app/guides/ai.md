@@ -36,7 +36,7 @@ In the Astro repo, the CMS's integration (`@librepublish/astro`) keeps an
 how the site works with this CMS, and the Site health checks it's held to —
 and generates the content model's types. An agent working on templates then
 knows that content comes from the CMS, what its JSON looks like, not to
-hardcode copy, and what the site must pass. [Connect the site](/cms/docs/astro) first.
+hardcode copy, and what the site must pass.
 
 ## What an agent can do
 
