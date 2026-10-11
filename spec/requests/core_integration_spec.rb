@@ -45,8 +45,14 @@ RSpec.describe "Media in the core", type: :request do
     it "lists a folder, searches every folder, and uploads into the folder" do
       Asset.create!(folder: "/", file: fixture_file_upload(Rails.root.join("public/icon.png"), "image/png"), name: "Logo")
 
+      Asset.create!(folder: "/gardens", file: fixture_file_upload(Rails.root.join("public/icon.png"), "image/png"), name: "Rose")
+
       get asset_picker_path
-      expect(response.body).to include("turbo-frame", "Logo", "media--asset-picker#pick")
+      expect(response.body).to include("turbo-frame", "Logo", "Rose", "media--asset-picker#pick")
+
+      get asset_picker_path(folder: "/gardens")
+      expect(response.body).to include("Rose")
+      expect(response.body).not_to include("Logo")
 
       get asset_picker_path(q: "logo")
       expect(response.body).to include("Logo")
@@ -55,6 +61,19 @@ RSpec.describe "Media in the core", type: :request do
         post asset_picker_path, params: {folder: "/", files: [fixture_file_upload(Rails.root.join("public/icon.svg"), "image/svg+xml")]}
       }.to change(Asset, :count).by(1)
       expect(response.body).to include("icon")
+    end
+
+    it "pages the library: a More link, and the next page's tiles on their own" do
+      stub_const("AssetPickersController::PER_PAGE", 1)
+      2.times { |i| Asset.create!(folder: "/", file: fixture_file_upload(Rails.root.join("public/icon.png"), "image/png"), name: "Tile #{i}") }
+
+      get asset_picker_path
+      expect(response.body).to include("Tile 1", "page=2")
+      expect(response.body).not_to include("Tile 0")
+
+      get asset_picker_path(page: 2)
+      expect(response.body).to include("Tile 0")
+      expect(response.body).not_to include("<turbo-frame", "page=3")
     end
   end
 
