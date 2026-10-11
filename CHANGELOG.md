@@ -8,6 +8,8 @@ out.
 
 ## Unreleased
 
+## 1.29.0
+
 ### Changed
 - **The admin's own CSS** (`app/assets/stylesheets`, STYLE.md): a small
   library written for this CMS replaces Tailwind's utility classes. The
