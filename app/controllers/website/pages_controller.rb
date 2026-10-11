@@ -140,10 +140,14 @@ class Website::PagesController < ActionController::Base
 
   def moved_with_query(path) = request.query_string.empty? ? path : "#{path}?#{request.query_string}"
 
-  # Only for someone signed in to the admin, and only when they ask.
+  # Only for someone signed in to the admin who can read content, and only
+  # when they ask: an account that can't (submissions only, say) sees the
+  # site as visitors do.
   def previewing?
     return @previewing if defined?(@previewing)
 
-    @previewing = params.key?(:preview) && Session.find_by_id(cookies.signed[:session_token]).then { it && !it.expired? }
+    @previewing = params.key?(:preview) && Session.find_by_id(cookies.signed[:session_token]).then do |session|
+      session && !session.expired? && session.user&.can?("pages:read") && session.user.can?("entries:read")
+    end || false
   end
 end

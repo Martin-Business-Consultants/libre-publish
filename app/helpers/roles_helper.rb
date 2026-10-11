@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module RolesHelper
-  CAPABILITY_ACTION_LABELS = {"read" => "Read", "write" => "Write", "delete" => "Delete", "publish" => "Publish", "use" => "Use"}.freeze
+  CAPABILITY_ACTION_LABELS = {"read" => "Read", "write" => "Write", "delete" => "Delete", "publish" => "Publish", "use" => "Use", "scripts" => "Site scripts"}.freeze
 
   # "pages:publish" → "Publish"
   def capability_action_label(capability)

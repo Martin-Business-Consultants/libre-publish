@@ -9,6 +9,10 @@
 # in the concerns under app/models/global/; this file keeps the validations
 # (in the order their errors are reported) and the webhook contract.
 class Global < ApplicationRecord
+  # The global whose items go into every page as written (website_scripts);
+  # writing it takes globals:scripts (GlobalScriptsGuard).
+  SCRIPTS_SLUG = "scripts"
+
   include ListSearchable
 
   search_on :name, :slug, :description

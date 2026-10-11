@@ -6,6 +6,9 @@
 # boot keep (Cms::DataBackup). Restoring stays an ops procedure (docs/install.md).
 class Tools::BackupsController < ApplicationController
   requires_capability "tools:use", only: [:show, :create]
+  # Downloading one takes an admin (AdminOnly); the page says so to others.
+  include AdminOnly
+  admin_only only: :create
 
   def show
     @contents = SiteBackup.contents

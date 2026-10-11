@@ -4,6 +4,8 @@
 # is looked up among the archives that exist, never built from the URL.
 class Tools::Backups::ArchivesController < ApplicationController
   requires_capability "tools:use", only: :show
+  include AdminOnly
+  admin_only only: :show
 
   def show
     archive = SiteBackup.data_archives.find { it.name == params[:name] } or raise ActiveRecord::RecordNotFound

@@ -12,7 +12,7 @@ class Identity::PasswordResetsController < ApplicationController
   # email-bombing. Keyed on IP + the email address being asked about,
   # so legitimate retries from one user don't block another.
   rate_limit to: 5, within: 1.hour, only: :create,
-    by:   -> { "password_resets:create:#{request.remote_ip}:#{params[:email]}" },
+    by:   -> { "password_resets:create:#{request.remote_ip}" },
     with: -> {
       flash[:alert] = "Too many password-reset attempts. Try again later."
       redirect_to new_identity_password_reset_path
@@ -25,12 +25,12 @@ class Identity::PasswordResetsController < ApplicationController
   end
 
   def create
-    if @user = User.find_by(email: params[:email], verified: true)
+    # The same answer whether or not the address has an account, so the form
+    # doesn't tell anyone who does.
+    if (@user = User.find_by(email: params[:email], verified: true))
       send_password_reset_email
-      redirect_to sign_in_path, notice: "Check your email for reset instructions"
-    else
-      redirect_to new_identity_password_reset_path, alert: "You can't reset your password until you verify your email"
     end
+    redirect_to sign_in_path, notice: "If that address has an account, a reset link is on its way."
   end
 
   def update

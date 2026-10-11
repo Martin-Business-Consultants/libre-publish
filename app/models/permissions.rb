@@ -23,7 +23,9 @@ module Permissions
     # have no draft state — nav, footer and brand are in front of visitors the
     # moment they change — so without the publish capability a write to one
     # is refused.
-    "Globals"      => %w[globals:read globals:write globals:publish globals:delete],
+    # `globals:scripts` is writing the Scripts global, which runs on every
+    # page as written (GlobalScriptsGuard): admins only, unless given.
+    "Globals"      => %w[globals:read globals:write globals:publish globals:delete globals:scripts],
     "Assets"       => %w[assets:read assets:write assets:delete],
     "Webhooks"     => %w[webhooks:read webhooks:write webhooks:delete],
     "Redirects"    => %w[redirects:read redirects:write redirects:delete],

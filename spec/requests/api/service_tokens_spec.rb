@@ -270,6 +270,18 @@ RSpec.describe "Api service tokens", type: :request do
       expect(response).to have_http_status(:forbidden)
     end
 
+    it "can't mint, or reveal, a token on a role it doesn't hold all of" do
+      role = create(:role, permissions: ["settings:read", "settings:write"])
+      admin_token = ServiceToken.issue(name: "Root", role: Role.system_admin, created_by: nil)
+
+      post "/api/service_tokens", params: {name: "Escalate", role_id: Role.system_admin.id}, headers: as_service(role), as: :json
+      expect(response).to have_http_status(:forbidden)
+
+      post "/api/service_tokens/#{admin_token.id}/reveal", headers: as_service(role)
+      expect(response).to have_http_status(:forbidden)
+      expect(response.body).not_to include(admin_token.token)
+    end
+
     it "can't reveal another token's secret without settings:write" do
       target = issue
       role = create(:role, permissions: ["settings:read"])
@@ -281,7 +293,7 @@ RSpec.describe "Api service tokens", type: :request do
     end
 
     it "mints with no person behind it, and the row says so" do
-      role = create(:role, permissions: ["settings:read", "settings:write"])
+      role = create(:role, permissions: ["settings:read", "settings:write", *site_role.permissions])
 
       post "/api/service_tokens", params: {name: "Minted by a machine", role_id: site_role.id},
         headers: as_service(role), as: :json

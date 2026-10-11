@@ -23,6 +23,7 @@ class Api::ServiceTokensController < Api::BaseController
   enforce_authorization
   requires_capability "settings:read",  only: [:index, :show]
   requires_capability "settings:write", only: [:create]
+  include GrantGuard
 
   # Roles ride along with the list: `--role "Production site"` is a name, and
   # the caller needs to know which names exist before it can pick one.
@@ -42,6 +43,7 @@ class Api::ServiceTokensController < Api::BaseController
     if role.nil?
       render json: {error: "role_required", message: "Pick a role for the token — one of: #{Role.ordered.pluck(:name).join(", ")}"}, status: :unprocessable_entity
     else
+      refuse_unless_role_grantable!(role)
       # created_by is nil when a service token minted this one — the model
       # allows it, and the audit row still names the actor that acted.
       @service_token = ServiceToken.issue(name: params[:name].to_s.strip, description: params[:description].presence,

@@ -7,9 +7,18 @@
 module Redactable
   extend ActiveSupport::Concern
 
-  SECRET_KEY = /\b(api[_-]?key|secret|token|password|client[_-]?secret)\b/i
+  # The word alone or as a part of a key's name (smtp_password, github_token,
+  # webhook_secret): `\b` would count "_" as part of the word.
+  SECRET_KEY = /(?:\A|[_\-.])(api[_-]?key|secret|token|password|client[_-]?secret|hook[_-]?url)(?:\z|[_\-.])/i
 
-  def redacted_data = redact(data)
+  # A setting's keys named here are masked too: a deploy hook's URL is its
+  # secret (anyone who has it can trigger builds).
+  SECRET_FIELDS = {"deploy" => %w[url]}.freeze
+
+  def redacted_data
+    hidden = SECRET_FIELDS.fetch(try(:key).to_s, [])
+    redact(data).then { |out| out.is_a?(Hash) ? out.to_h { |k, v| [k, hidden.include?(k.to_s) && v.is_a?(String) && v.present? ? mask(v) : v] } : out }
+  end
 
   private
 

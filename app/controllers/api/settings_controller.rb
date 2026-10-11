@@ -9,7 +9,13 @@ class Api::SettingsController < Api::BaseController
   requires_capability "settings:read",  only: [:index, :show]
   requires_capability "settings:write", only: [:create, :update, :destroy]
 
+  before_action :refuse_managed_key!, only: [:create, :update, :destroy]
   before_action :set_setting, only: [:show, :update, :destroy]
+
+  # Settings the CMS keeps itself, read-only here: the signed plugin
+  # directory (installing from it trusts it), what the update checks found,
+  # and which plugins are on and set up (Settings › Plugins).
+  MANAGED_KEYS = %w[plugin_directory plugin_updates updates plugins plugin_setups].freeze
 
   def index
     @settings = Setting.ordered
@@ -37,6 +43,13 @@ class Api::SettingsController < Api::BaseController
   end
 
   private
+
+  def refuse_managed_key!
+    key = (params[:key] || params.dig(:setting, :key)).to_s
+    return unless MANAGED_KEYS.include?(key)
+
+    render json: {error: "forbidden", message: "#{key} is kept by the CMS itself and can't be written over the API."}, status: :forbidden
+  end
 
   def set_setting
     @setting = Setting.find_by!(key: params[:key])
