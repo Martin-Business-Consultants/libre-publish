@@ -152,6 +152,21 @@ class Upgrade < ApplicationRecord
   # How the audit log names it.
   def title = "#{from_version} → #{to_version}"
 
+  # About how long each way takes, for the progress modal's estimate.
+  EXPECTED = {"in_place" => 2.minutes, "local" => 3.minutes, "github" => 8.minutes}.freeze
+
+  # How far along it is, for the progress modal (UpdateProgress): a percent
+  # and what it's doing. The runners don't report steps, so the percent is
+  # time against how long its way usually takes, slowing as it nears the end
+  # and never reaching it until the new version is up.
+  def progress
+    return [100, succeeded? ? "Done" : "Didn't finish"] unless running?
+
+    expected = EXPECTED.fetch(via, 5.minutes).to_f
+    elapsed = Time.current - created_at
+    [(5 + 90 * (1 - Math.exp(-elapsed / expected))).floor, message.presence || "Updating to #{to_version}"]
+  end
+
   # The runner for how this update went. One started by a plugin that has
   # since been removed has none, and settles as failed.
   def runner

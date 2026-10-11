@@ -15,4 +15,12 @@ module SearchesHelper
     when Role then edit_role_path(record)
     end
   end
+
+  # A title with the characters a fuzzy search matched marked.
+  def search_marked_title(title, marks)
+    return title if marks.empty?
+
+    marked = marks.to_set
+    safe_join(title.each_char.with_index.map { |char, at| marked.include?(at) ? tag.mark(char) : char })
+  end
 end

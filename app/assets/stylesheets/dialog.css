@@ -109,3 +109,72 @@
     inline-size: max(50vw, min(36rem, 100vw));
   }
 }
+
+/* The search modal (layouts/shared/global_search): half the window each way,
+   centered; the box stays put while results come and go, and they scroll in
+   it. The picked result (arrow keys, the pointer) is shaded; letters a
+   fuzzy match found are marked. */
+@layer components {
+  .global-search[open] {
+    inline-size: 50vw;
+    block-size: 50vh;
+    min-inline-size: min(36rem, calc(100vw - calc(var(--spacing) * 8)));
+    min-block-size: min(24rem, calc(100dvh - calc(var(--spacing) * 8)));
+    overflow: hidden;
+  }
+
+  .global-search__result {
+    &[aria-selected="true"] { background-color: var(--color-gray-100); }
+
+    mark {
+      background: none;
+      color: inherit;
+      font-weight: 700;
+      text-decoration: underline;
+      text-decoration-color: var(--color-blue-500);
+      text-underline-offset: 2px;
+    }
+  }
+}
+
+/* The update progress modal (layouts/shared/update_progress): a spinner, and
+   a bar per update that eases to where the poll says it is. */
+@layer components {
+  .update-progress[open] {
+    inline-size: min(32rem, calc(100vw - calc(var(--spacing) * 8)));
+  }
+
+  .update-progress__spinner {
+    animation: update-progress-spin 0.8s linear infinite;
+    block-size: 1.25rem;
+    border: 2px solid var(--color-gray-200);
+    border-block-start-color: var(--color-blue-600);
+    border-radius: 9999px;
+    flex: none;
+    inline-size: 1.25rem;
+
+    .update-progress--finished & { animation: none; border-color: var(--color-gray-200); }
+  }
+
+  .update-progress__bar {
+    background-color: var(--color-gray-100);
+    block-size: 0.5rem;
+    border-radius: 9999px;
+    overflow: hidden;
+
+    > span {
+      background-color: var(--color-blue-600);
+      block-size: 100%;
+      border-radius: inherit;
+      display: block;
+      inline-size: 0;
+      transition: inline-size 300ms ease-out;
+    }
+
+    .update-progress--failed & > span { background-color: var(--color-red-600); }
+  }
+
+  @keyframes update-progress-spin {
+    to { transform: rotate(360deg); }
+  }
+}
