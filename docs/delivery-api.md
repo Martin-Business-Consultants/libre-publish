@@ -8,6 +8,21 @@ management).
 Authenticate with the site's service token (Settings › Service tokens, the
 "Production site" role): `Authorization: Bearer <token>`.
 
+## On, off, or some of it
+
+It's off unless the site is served over the API: Settings › General › How
+the site is served.
+
+| Mode | The delivery API |
+| --- | --- |
+| **Website** (the default) | Off: `/api/v1` and the frontend's endpoints (`/api/frontend`, `/frontend/…`) answer 404. The theme draws the site. |
+| **Website + API** | What's chosen: each collection that's "Available over the API" (its settings, or General), and the pages with the globals, all or none. The rest answers 404. |
+| **API only** | Everything live. The theme is off, and the CMS's own address shows a blank page (`robots.txt` disallows all; `sitemap.xml` is the frontend's, from `/api/v1/sitemap`). |
+
+The management API (`/api/pages`… for the `cms` CLI, MCP and agents) is on
+in every mode, as are the Forms plugin's public submissions and webhooks. A
+404 says why to a token holder only; anyone else is refused before that.
+
 ## One answer shape
 
     {"data": …, "meta": {…}, "included": {"assets": {"<id>": {…}}}}

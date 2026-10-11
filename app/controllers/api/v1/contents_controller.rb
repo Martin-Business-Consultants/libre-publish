@@ -9,12 +9,14 @@ class Api::V1::ContentsController < Api::V1::BaseController
 
   def show
     @snapshot = ContentSnapshot.new(since: ContentSnapshot.parse_cursor(params[:since]))
-    @pages = @snapshot.pages
+    # What's served over the API (Serving): the pages and globals when they
+    # are, and the entries of the collections that are.
+    @pages = Serving.pages? ? @snapshot.pages : []
     # Entries and globals only for a token that reads them; the site's own
     # (Production site) reads all three.
     @readable = %w[entries globals].select { granted?("#{it}:read") }
-    @entries = @readable.include?("entries") ? @snapshot.entries : []
-    @globals = @readable.include?("globals") ? @snapshot.globals : []
+    @entries = @readable.include?("entries") ? @snapshot.entries.select { Serving.collection?(it.collection) } : []
+    @globals = @readable.include?("globals") && Serving.pages? ? @snapshot.globals : []
     @removed = @snapshot.removed
     @removed = @removed.merge(entries: []) unless @readable.include?("entries")
     @removed = @removed.merge(globals: []) unless @readable.include?("globals")

@@ -54,10 +54,23 @@ class Website::PagesController < ActionController::Base
     end
   end
 
+  # "/" with no theme drawing the site (the route above it takes "/" when one
+  # does): blank when it's served headless, else the admin, for a fresh
+  # install's first visit.
+  def root
+    return redirect_to("/#{Cms::PATH}") unless Serving.headless?
+
+    expires_in 1.hour, public: true
+    render html: %(<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex, nofollow"><title></title></head><body></body></html>).html_safe, layout: false
+  end
+
   # /robots.txt (Website::Robots): served with a theme or without, so the
-  # admin and the API stay out of search either way.
+  # admin and the API stay out of search either way. Headless, the CMS's
+  # address has nothing to index at all.
   def robots
     expires_in 1.hour, public: true
+    return render(plain: "User-agent: *\nDisallow: /\n") if Serving.headless?
+
     render plain: Website::Robots.new(base_url).to_s
   end
 

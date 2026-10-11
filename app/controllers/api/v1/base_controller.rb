@@ -23,11 +23,34 @@ class Api::V1::BaseController < Api::BaseController
   # minute (0 turns it off).
   RATE_LIMIT = ENV.fetch("CMS_DELIVERY_RATE_LIMIT", "1200").to_i
 
+  # Off unless the site is served over the API (Serving, Settings › General):
+  # 404, as for an address that doesn't exist, said plainly to a token holder
+  # (the token's checked first, so no one else learns there's an API to turn
+  # on).
+  before_action :require_serving
+
   rate_limit to: RATE_LIMIT, within: 1.minute, scope: "api/v1", if: -> { RATE_LIMIT.positive? },
     by: -> { Current.api_token ? "#{Current.api_token.class.name}:#{Current.api_token.id}" : request.remote_ip },
     with: -> { render_rate_limited }
 
   private
+
+  def require_serving
+    not_served("The delivery API is off: Settings › General › How the site is served.") unless Serving.api?
+  end
+
+  def not_served(message)
+    render json: {error: "not_found", message: message}, status: :not_found
+  end
+
+  # Pages and the globals come over the API only when they're chosen.
+  def require_pages_served
+    not_served("Pages aren't served over the API: Settings › General › How the site is served.") unless Serving.pages?
+  end
+
+  def require_collection_served(collection)
+    not_served("The #{collection.slug} collection isn't served over the API: its settings › Available over the API.") unless Serving.collection?(collection)
+  end
 
   def paginate(scope)
     @page_number = params[:page].to_i.clamp(1, 100_000)

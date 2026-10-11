@@ -8,7 +8,7 @@ class Api::V1::SchemasController < Api::V1::BaseController
 
   def show
     @block_types = BlockType.order(:slug).to_a
-    @collections = Collection.order(:slug).to_a
+    @collections = Collection.order(:slug).to_a.select { Serving.collection?(it) }
     @globals = Global.order(:slug).to_a
     @pages = Page.live.order(:path).select { it.fields.any? }
     cache_tags("schema")

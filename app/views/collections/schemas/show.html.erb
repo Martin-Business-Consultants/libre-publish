@@ -113,6 +113,13 @@
           <%= icon_tag @collection.admin_icon, class: "size-5 text-gray-500" %>
           <%= form.select :icon, Collection::Iconic.options, { include_blank: "No icon (stack)" }, class: "min-w-0 flex-1", aria: { label: "Icon" } %>
         </div>
+        <% if Serving.mode == "website_api" then %>
+          <%# Website + API (Serving): this collection's entries as JSON too, or not. %>
+          <label class="flex items-center gap-2 text-sm text-gray-700">
+            <%= form.check_box :api_enabled %>
+            <span>Available over the API</span>
+          </label>
+        <% end %>
         <div><%= form.button "Save", class: ui(:button, :small) %></div>
       <% end %>
       <p class="<%= ui(:help) %>">Slug: <span class="font-mono"><%= @collection.slug %></span></p>

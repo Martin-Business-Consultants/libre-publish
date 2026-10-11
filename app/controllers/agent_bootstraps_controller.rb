@@ -44,7 +44,12 @@ class AgentBootstrapsController < ApplicationController
 
   private
 
+  # The frontend's two (FRONTEND), only while the site is served over the API.
+  FRONTEND = %i[frontend_md frontend_install].freeze
+
   def serve(name)
+    return head(:not_found) if FRONTEND.include?(name) && !Serving.api?
+
     file = FILES.fetch(name)
     body = ROOT.join(file[:path]).read
 

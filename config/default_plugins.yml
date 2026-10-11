@@ -7,4 +7,4 @@
 # Each is pinned to the commit this release is tested with (CI runs their
 # specs), so a build gets the same code whenever it runs. Move a pin with
 # the release that's tested against the new commit.
-forms: https://github.com/Martin-Business-Consultants/cms-forms#a544b3444273dec28d80865f68f8c159cc9da909
+forms: https://github.com/Martin-Business-Consultants/cms-forms#820a6ce141f33cb7becb68d2ffdb623f41c1209f

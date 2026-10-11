@@ -6,12 +6,13 @@ class Api::V1::CollectionsController < Api::V1::BaseController
   requires_capability "collections:read", only: [:index, :show]
 
   def index
-    @collections = Collection.order(:slug).to_a
+    @collections = Collection.order(:slug).to_a.select { Serving.collection?(it) }
     cache_tags(@collections.map { "collection:#{it.slug}" })
   end
 
   def show
     @collection = Collection.find_by!(slug: params[:slug])
+    return require_collection_served(@collection) unless Serving.collection?(@collection)
     cache_tags("collection:#{@collection.slug}")
   end
 end

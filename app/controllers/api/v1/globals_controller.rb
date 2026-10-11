@@ -2,6 +2,7 @@
 
 # GET /api/v1/globals and /api/v1/globals/<slug> — nav, footer and the rest.
 class Api::V1::GlobalsController < Api::V1::BaseController
+  before_action :require_pages_served
   requires_capability "globals:read", only: [:index, :show]
 
   def index

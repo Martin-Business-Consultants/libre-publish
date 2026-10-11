@@ -7,6 +7,8 @@
     (website_preview), when the install has a theme that draws it. A record
     not saved yet has only the form. %>
 <% seo = record.respond_to?(:seo) %>
+<%# The JSON a frontend gets: only while this record is served over the API (Serving). %>
+<% json = Serving.record?(record) %>
 <% preview = kind.in?(%w[page entry]) && Website.enabled? %>
 <% tab_classes = "editor-tabs__tab -mb-px inline-flex items-center gap-1.5 border-b-2 px-3 pb-2.5 pt-1 text-sm font-medium" %>
 <% if record.persisted? %>
@@ -20,10 +22,12 @@
           <span>SEO</span>
         </a>
       <% end %>
-      <a href="#json" role="tab" class="<%= tab_classes %>" data-tab="json" data-tabs-target="tab" data-action="tabs#select">
-        <%= icon_tag "code", class: "size-4" %>
-        <span>JSON</span>
-      </a>
+      <% if json then %>
+        <a href="#json" role="tab" class="<%= tab_classes %>" data-tab="json" data-tabs-target="tab" data-action="tabs#select">
+          <%= icon_tag "code", class: "size-4" %>
+          <span>JSON</span>
+        </a>
+      <% end %>
       <% if preview %>
         <a href="#preview" role="tab" class="<%= tab_classes %>" data-tab="preview" data-tabs-target="tab" data-action="tabs#select">
           <%= icon_tag "eye", class: "size-4" %>
@@ -34,11 +38,13 @@
     <div data-tab="<%= seo ? "edit seo" : "edit" %>" data-tabs-target="panel">
       <%= yield %>
     </div>
-    <section class="<%= ui(:panel, "p-6") %>" data-tab="json" data-tabs-target="panel" hidden>
-      <turbo-frame id="api_preview" src="<%= api_preview_path(kind, record.id) %>" loading="lazy">
-        <p class="text-sm text-gray-500">Loading…</p>
-      </turbo-frame>
-    </section>
+    <% if json then %>
+      <section class="<%= ui(:panel, "p-6") %>" data-tab="json" data-tabs-target="panel" hidden>
+        <turbo-frame id="api_preview" src="<%= api_preview_path(kind, record.id) %>" loading="lazy">
+          <p class="text-sm text-gray-500">Loading…</p>
+        </turbo-frame>
+      </section>
+    <% end %>
     <% if preview %>
       <section class="space-y-3" data-tab="preview" data-tabs-target="panel" hidden>
         <div class="flex flex-wrap items-center justify-between gap-2">

@@ -46,7 +46,7 @@ class CollectionsController < ApplicationController
   end
 
   def update
-    if @collection.update(params.require(:collection).permit(:name, :icon))
+    if @collection.update(params.require(:collection).permit(:name, :icon, :api_enabled))
       @collection.track_update
       redirect_to collection_schema_path(@collection.slug), notice: "Collection saved"
     else

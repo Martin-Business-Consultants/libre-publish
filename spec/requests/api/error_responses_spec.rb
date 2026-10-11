@@ -7,6 +7,8 @@ require "rails_helper"
 # reach Rails' exception page. The bodies the API already answered keep
 # their bytes.
 RSpec.describe "API error responses", type: :request do
+  before { serve_over_api }
+
   let(:admin) { create(:user) }
   let(:token) { {"Authorization" => "Bearer #{admin.api_token.token}"} }
 

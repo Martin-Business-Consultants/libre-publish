@@ -7,6 +7,8 @@ require "rails_helper"
 # only the live ones unless it can write them. The site's own read-only
 # token never sees a draft's title, slug or text.
 RSpec.describe "API reads, scoped to the token", type: :request do
+  before { serve_over_api }
+
   def auth(capabilities)
     {"Authorization" => "Bearer #{create(:user, admin: false, role: create(:role, permissions: capabilities)).api_token.token}"}
   end

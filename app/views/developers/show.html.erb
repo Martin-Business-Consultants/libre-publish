@@ -35,6 +35,7 @@
       </section>
     </div>
 
+    <% if Serving.api? then %>
     <%= postbox "developers-astro", "Connect an Astro site" do %>
       <p class="text-gray-700">Run this in the site's project (its root or its <code class="<%= inline_code_classes %>">src/</code>). It installs the <code class="<%= inline_code_classes %>">@librepublish/astro</code> integration and gets the site a read-only token of its own, approved in your browser.</p>
       <div class="flex items-center gap-2">
@@ -60,6 +61,7 @@ export default defineConfig({ integrations: [cms()] });</pre>
           <p class="<%= ui(:help) %>">Forms, Media and Commerce come with it. The source: github.com/Martin-Business-Consultants/libre-cms-astro.</p>
         </div>
       </details>
+    <% end %>
     <% end %>
 
     <%= postbox "developers-how", "How it fits together" do %>
@@ -96,6 +98,7 @@ export default defineConfig({ integrations: [cms()] });</pre>
   </div>
 
   <aside class="space-y-6">
+    <% if Serving.api? then %>
     <%= postbox "developers-frontend", "Your frontend" do %>
       <% if @build %>
         <p class="flex flex-wrap items-center gap-2 text-gray-700"><%= status_tag "connected" %> Built <%= time_ago_tag @build[:built_at] %></p>
@@ -123,6 +126,7 @@ export default defineConfig({ integrations: [cms()] });</pre>
         <dt class="text-gray-500">Service tokens</dt><dd><%= link_to @service_tokens, settings_service_tokens_path, class: ui(:link) %></dd>
         <dt class="text-gray-500">Webhooks</dt><dd><%= link_to @webhooks, webhooks_path, class: ui(:link) %></dd>
       </dl>
+    <% end %>
     <% end %>
 
     <%= postbox "developers-model", "Content model" do %>
