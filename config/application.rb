@@ -64,6 +64,13 @@ module ReactStarterKit
     config.x.admin_host = ENV["CMS_ADMIN_HOST"].presence
     config.middleware.use AdminHost
 
+    # The admin's languages (AdminLocale): its own words from
+    # config/locales/admin, and English for anything a language lacks
+    # (Rails' own dates and messages too).
+    config.i18n.load_path += Dir[Rails.root.join("config/locales/admin/*.yml")]
+    config.i18n.available_locales = %i[en es fr de]
+    config.i18n.fallbacks = [:en]
+
     # An /api request that fails before a controller answers (no route, an
     # error outside an action) gets the API's JSON error, not an HTML page.
     config.exceptions_app = ApiExceptions.new

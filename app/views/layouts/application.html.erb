@@ -2,7 +2,7 @@
 <%# The admin, laid out like WordPress's: the admin bar across the top, the
     admin menu down the left, the page beside it. Signed-out pages use
     layouts/public. %>
-<html lang="en">
+<html lang="<%= I18n.locale %>">
   <%= render "layouts/shared/head" %>
 
   <body class="<%= class_names("bg-white text-gray-900", @body_class) %>" data-controller="keyboard admin-menu">

@@ -32,6 +32,8 @@ class ApplicationController < ActionController::Base
 
   before_action :set_current_request_details
   before_action :authenticate
+  # After authenticate: the language is the signed-in person's.
+  around_action :use_admin_locale, if: :admin_page_request?
 
   # Authorization runs after authentication so Current.user / Current.api_user
   # are available; declared here last so the before_action order is correct.
@@ -46,6 +48,12 @@ class ApplicationController < ActionController::Base
   # JSON keeps rendering times in UTC, as the API always has.
   def use_site_time_zone(&)
     Time.use_zone(Site.time_zone, &)
+  end
+
+  # The admin's own words in the person's language (AdminLocale); put back
+  # after, since I18n.locale outlives the request on its thread.
+  def use_admin_locale(&)
+    I18n.with_locale(AdminLocale.for(Current.user), &)
   end
 
   def admin_page_request?

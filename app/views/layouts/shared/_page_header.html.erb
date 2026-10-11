@@ -10,7 +10,7 @@
     <% if icon %>
       <%= icon_tag icon, class: "size-6 text-gray-400" %>
     <% end %>
-    <%= title %>
+    <%= title.is_a?(String) && !title.html_safe? ? tx(title) : title %>
   </h1>
   <% if content_for?(:page_actions) %>
     <div class="page-title__actions ml-auto flex flex-wrap items-center justify-end gap-2">
@@ -20,16 +20,16 @@
 </div>
 <% if (cli = cli_command_hint) %>
   <p class="mb-4 flex flex-wrap items-center gap-2 text-xs text-gray-500">
-    <span>From the CLI or MCP:</span>
+    <span><%= tx("From the CLI or MCP:") %></span>
     <code class="rounded-md bg-gray-100 px-1.5 py-0.5 font-mono text-gray-700"><%= cli %></code>
-    <button type="button" class="<%= ui(:button, :plain, :small) %>" title="Copy the command" data-controller="copy-to-clipboard"
-            data-copy-to-clipboard-content-value="<%= cli %>" data-copy-to-clipboard-success-class="btn--success" data-action="copy-to-clipboard#copy">Copy</button>
+    <button type="button" class="<%= ui(:button, :plain, :small) %>" title="<%= tx("Copy the command") %>" data-controller="copy-to-clipboard"
+            data-copy-to-clipboard-content-value="<%= cli %>" data-copy-to-clipboard-success-class="btn--success" data-action="copy-to-clipboard#copy"><%= tx("Copy") %></button>
   </p>
 <% end %>
 <% if search_term %>
   <p class="mb-4 text-sm text-gray-600">
-    Search results for “<strong><%= search_term %></strong>”
-    <%= link_to "Clear", url_for(request.query_parameters.except("s", "page")), class: ui(:link) %>
+    <%= tx("Search results for") %> “<strong><%= search_term %></strong>”
+    <%= link_to tx("Clear"), url_for(request.query_parameters.except("s", "page")), class: ui(:link) %>
   </p>
 <% end %>
 <% end %>

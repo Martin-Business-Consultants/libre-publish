@@ -165,6 +165,18 @@ RSpec.describe "Website", type: :request do
     expect(response.body).not_to include("window.pixel")
   end
 
+  it "lets a plugin rework the scripts global's items before they're printed" do
+    SiteSetup.new(name: "Acme", owner_email: "owner@example.com").call if Global.find_by(slug: "scripts").nil?
+    Global.find_by!(slug: "scripts").update!(data: {"items" => [{"name" => "GA4", "head" => "<script>ga()</script>"}]})
+    Cms::Plugins.register(:holder, name: "Holder", version: "1", description: "x", enabled_by_default: true)
+    Cms::Plugins.filter(:holder, "website.scripts") { |items, part:, **| items.map { it.merge("head" => it["head"].to_s.sub("<script>", %(<script type="text/plain">))) } }
+
+    get "/"
+    expect(response.body).to include(%(<script type="text/plain">ga()</script>))
+  ensure
+    forget_plugin(:holder)
+  end
+
   describe "plugins' filters" do
     before { Cms::Plugins.register(:seo_plus, name: "SEO+", version: "1", description: "x", enabled_by_default: true) }
     after { forget_plugin(:seo_plus) }

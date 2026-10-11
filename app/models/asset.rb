@@ -25,6 +25,8 @@ class Asset < ApplicationRecord
   FOLDER_FORMAT = %r{\A/(?:[A-Za-z0-9][A-Za-z0-9_\- ]*(?:/[A-Za-z0-9][A-Za-z0-9_\- ]*)*)?\z}
 
   has_one_attached :file
+  # After the file's own upload, which also runs on commit (Optimizable).
+  after_create_commit :lighten_later, if: :lighten_on_upload?
 
   validates :file, presence: true
   validates :folder, presence: true, format: {with: FOLDER_FORMAT}

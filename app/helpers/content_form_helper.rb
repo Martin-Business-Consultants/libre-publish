@@ -10,6 +10,7 @@ module ContentFormHelper
     case record
     when Page            then page_versions_path(record.path)
     when CollectionEntry then collection_entry_versions_path(record.collection.slug, record.slug)
+    when Global          then global_versions_path(record.slug)
     end
   end
 
@@ -167,7 +168,7 @@ module ContentFormHelper
       data: {postbox: key, controller: "postbox", action: "toggle->postbox#remember"}) do
       safe_join([
         tag.summary(class: "postbox__header flex select-none items-center justify-between gap-2 px-5 py-3.5") do
-          safe_join([tag.h2(title, class: ui(:heading)), icon_tag("caret-down", class: "postbox__toggle size-4 text-gray-400")])
+          safe_join([tag.h2(title.is_a?(String) && !title.html_safe? ? tx(title) : title, class: ui(:heading)), icon_tag("caret-down", class: "postbox__toggle size-4 text-gray-400")])
         end,
         tag.div(class: flush ? "text-sm" : "space-y-5 p-5 text-sm", &block)
       ])

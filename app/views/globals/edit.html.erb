@@ -6,6 +6,9 @@
     <%= link_to "Add New", new_global_path, class: ui(:button) %>
   <% end %>
   <%= link_to "Fields", global_schema_path(@global.slug), class: ui(:button) %>
+  <% if @global.versions.any? then %>
+    <%= link_to "Revisions (" + @global.versions.size.to_s + ")", global_versions_path(@global.slug), class: ui(:button) %>
+  <% end %>
 <% end %>
 <%= render "layouts/shared/page_header", title: @page_title %>
 

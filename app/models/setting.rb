@@ -23,6 +23,11 @@ class Setting < ApplicationRecord
   encrypts :secrets
   include ForgetsUnreadable
 
+  # The settings people edit keep every change (SettingVersion), for
+  # Settings › History; secrets never.
+  has_many :versions, class_name: "SettingVersion", dependent: :delete_all
+  after_save :snapshot_version, if: -> { SettingVersion.versioned?(key) && saved_change_to_data? }
+
   validates :key, presence: true, uniqueness: true
 
   # What a site shows from Settings › General (/api/v1/site, contact_info
@@ -118,5 +123,15 @@ class Setting < ApplicationRecord
     return if SITE_FACING_GENERAL.all? { before[it].presence == after[it].presence }
 
     Deploys.schedule_later(reason: "settings.general_updated", subject: self)
+  end
+
+  private
+
+  def snapshot_version
+    kept = SettingVersion.without_secrets(data)
+    before = SettingVersion.without_secrets(data_before_last_save)
+    return if kept == before
+
+    versions.create!(key: key, data: kept, author_id: Current.user&.id, created_at: Time.current)
   end
 end

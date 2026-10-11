@@ -7,6 +7,6 @@
     <% if note %>
       <p class="text-sm text-gray-500"><%= note %></p>
     <% end %>
-    <%= tag.button button, type: "submit", form: form, class: ui(:button, :primary, "w-full"), disabled: !Current.user.can?(capability) %>
+    <%= tag.button tx(button), type: "submit", form: form, class: ui(:button, :primary, "w-full"), disabled: !Current.user.can?(capability) %>
   </div>
 <% end %>

@@ -36,6 +36,7 @@
   <aside class="flex shrink-0 flex-col gap-4 lg:w-80">
     <%= render "content_form/publish_box", record: page, form: form, scope: "page", prefix: "pages", statuses: Page::STATUSES.sort,
           trash_name: "this page", trash_path: (page_path(page.path) if trash), trash_form: ("page_trash_form" if trash) %>
+    <%= plugin_slots(:content_aside, record: page) if page.persisted? %>
 
     <%= postbox "page-attributes", "Page Attributes" do %>
       <%= render "content_form/permalink", record: page, form: form, required: true, hint: "Lowercase letters, digits and dashes." %>

@@ -1,0 +1,7 @@
+<% @page_title = "Revisions" %>
+<%= parent_page @global.name, edit_global_path(@global.slug) %>
+<% content_for :page_actions do %>
+  <%= link_to "Back to the global", edit_global_path(@global.slug), class: ui(:button) %>
+<% end %>
+<%= render "layouts/shared/page_header", title: "Revisions of “" + @global.name + "”" %>
+<%= render "versions/list", versions: @versions, pagination: @pagination, show_path: ->(version) { global_version_path(@global.slug, version) } %>

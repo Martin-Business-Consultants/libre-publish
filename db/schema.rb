@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_11_180000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_11_230000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -268,6 +268,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_180000) do
     t.index ["slug"], name: "index_forms_on_slug", unique: true
   end
 
+  create_table "global_versions", force: :cascade do |t|
+    t.integer "author_id"
+    t.datetime "created_at", null: false
+    t.json "data", default: {}, null: false
+    t.integer "global_id", null: false
+    t.string "name"
+    t.index ["author_id"], name: "index_global_versions_on_author_id"
+    t.index ["global_id", "created_at"], name: "index_global_versions_on_global_id_and_created_at"
+    t.index ["global_id"], name: "index_global_versions_on_global_id"
+  end
+
   create_table "globals", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.json "data", default: {}, null: false
@@ -483,6 +494,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_180000) do
     t.index ["user_id"], name: "index_sessions_on_user_id"
   end
 
+  create_table "setting_versions", force: :cascade do |t|
+    t.integer "author_id"
+    t.datetime "created_at", null: false
+    t.json "data", default: {}, null: false
+    t.string "key", null: false
+    t.integer "setting_id", null: false
+    t.index ["author_id"], name: "index_setting_versions_on_author_id"
+    t.index ["setting_id", "created_at"], name: "index_setting_versions_on_setting_id_and_created_at"
+    t.index ["setting_id"], name: "index_setting_versions_on_setting_id"
+  end
+
   create_table "settings", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.json "data", default: {}, null: false
@@ -529,6 +551,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_180000) do
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email", null: false
+    t.string "locale"
     t.string "name", null: false
     t.string "password_digest", null: false
     t.json "recovery_code_digests", default: [], null: false
@@ -586,6 +609,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_180000) do
   add_foreign_key "device_authorizations", "users", on_delete: :cascade
   add_foreign_key "form_emails", "forms", on_delete: :cascade
   add_foreign_key "form_submissions", "forms"
+  add_foreign_key "global_versions", "globals", on_delete: :cascade
   add_foreign_key "hello_greetings", "users"
   add_foreign_key "invoices", "quote_requests"
   add_foreign_key "page_versions", "pages"
@@ -595,6 +619,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_180000) do
   add_foreign_key "pages", "translation_groups"
   add_foreign_key "plugin_changes", "users", column: "requested_by_id", on_delete: :nullify
   add_foreign_key "sessions", "users"
+  add_foreign_key "setting_versions", "settings", on_delete: :cascade
   add_foreign_key "taggings", "collection_entries", column: "tag_entry_id", on_delete: :cascade
   add_foreign_key "upgrades", "users", column: "requested_by_id", on_delete: :nullify
   add_foreign_key "users", "roles"
