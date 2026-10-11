@@ -331,6 +331,7 @@ default).
 | `content.publish_refusal` | nil, or why this person may not publish or schedule this page or entry now (a review that hasn't approved it): the save is refused with it, in the editor, the bulk actions and the API alike. Not asked of scheduled publishing, which runs as no one | `record:`, `user:` |
 | `website.scripts` | The "scripts" global's items (hashes: `name`, `head`, `body`, `enabled`) before they're printed, for each part; return the list, changed or not (a consent plugin holds some back) | `part:` ("head" or "body"), `request:` |
 | `sitemap.entries` | the sitemap's rows | |
+| `website.cache_version` | What a cached website page depends on, a list joined into its ETag; add a stamp of anything your plugin draws into a page that the content doesn't cover (Forms adds its forms, so an edited form reaches visitors at once) | |
 
 HTML a filter returns is escaped unless it's marked safe, as ERB would:
 build it with tag helpers or `safe_join`.

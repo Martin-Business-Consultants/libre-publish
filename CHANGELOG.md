@@ -8,6 +8,13 @@ out.
 
 ## Unreleased
 
+### Added
+- **The `website.cache_version` filter** (docs/plugins.md, Hooks): a plugin
+  adds a stamp of what it draws into a website page to what the page's
+  cache depends on. Forms adds its forms, so a form edited in the CMS
+  reaches a theme's pages at once; before, a cached page kept answering
+  "not modified" with the old form until some content changed.
+
 ## 1.29.0
 
 ### Changed

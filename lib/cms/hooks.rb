@@ -26,7 +26,8 @@ module Cms
       "website.markdown" => "Markdown drawn as HTML; text:",
       "website.head" => "HTML for the end of <head>, after the theme's; request:",
       "website.body" => "HTML for the end of <body>, after the theme's; request:",
-      "sitemap.entries" => "the sitemap's rows (Sitemap::Entry)"
+      "sitemap.entries" => "the sitemap's rows (Sitemap::Entry)",
+      "website.cache_version" => "what a cached website page depends on (a list; add a stamp of what your plugin draws into pages)"
     }.freeze
 
     mattr_reader :filters, default: Hash.new { |hash, name| hash[name] = [] }

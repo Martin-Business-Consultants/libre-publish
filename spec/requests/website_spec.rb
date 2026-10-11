@@ -192,6 +192,20 @@ RSpec.describe "Website", type: :request do
       expect(response.body).to include("<title>Home | Acme</title>", %(<hr class="text">), %(<meta name="generator" content="Libre Publish">))
       expect(response.body).to include("&lt;script&gt;alert(1)&lt;/script&gt;")
     end
+
+    it "add to what a cached page depends on, so a change to what they draw into it reaches visitors" do
+      stamp = "form v1"
+      Cms::Plugins.filter(:seo_plus, "website.cache_version") { |parts| parts + [stamp] }
+      get "/"
+      etag = response.headers["ETag"]
+
+      get "/", headers: {"If-None-Match" => etag}
+      expect(response).to have_http_status(:not_modified)
+
+      stamp = "form v2"
+      get "/", headers: {"If-None-Match" => etag}
+      expect(response).to have_http_status(:ok)
+    end
   end
 
   def tag = ActionController::Base.helpers.tag

@@ -75,6 +75,10 @@ module Website
   end
 
   # What a cached page depends on: the content (DeliveryVersion), the theme
-  # drawing it, and its design settings.
-  def cache_version = [theme&.key, theme&.version, DeliveryVersion.current, Website::Design.version].join("/")
+  # drawing it, its design settings, and what plugins add (the
+  # website.cache_version filter: Forms adds its forms, which a theme draws).
+  def cache_version
+    parts = [theme&.key, theme&.version, DeliveryVersion.current, Website::Design.version]
+    Cms::Hooks.apply("website.cache_version", parts).join("/")
+  end
 end
