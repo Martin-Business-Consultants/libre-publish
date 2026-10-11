@@ -6,6 +6,13 @@ section below. An install is brought to one with `bin/update v1.0.0`, or a
 Kamal site with `kamal deploy -d <site>`. Settings shows when a newer one is
 out.
 
+## 1.20.4
+
+### Fixed
+- **Media's grid view** drew its pagination inside the grid, squeezed into
+  a tile's cell beside the last image. It's a row of its own under the grid
+  now, as under a table.
+
 ## 1.20.3
 
 ### Fixed
