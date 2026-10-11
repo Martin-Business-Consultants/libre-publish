@@ -45,7 +45,7 @@
     <% if @assets.any? %>
       <ul class="grid grid-cols-2 gap-x-3 gap-y-4 sm:grid-cols-3 lg:grid-cols-4" role="list"
           data-controller="media--infinite-scroll">
-        <%= render "tiles", assets: @assets, more: @more, page: @page %>
+        <%= render "tiles", assets: @assets, more: @more, page: @page, query: @query, folder: @folder %>
       </ul>
     <% else %>
       <p class="rounded-xl border border-gray-200 py-12 text-center text-sm text-gray-500">

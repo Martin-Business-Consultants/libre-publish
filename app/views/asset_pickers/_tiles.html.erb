@@ -1,4 +1,4 @@
-<%# locals: (assets:, more:, page:) %>
+<%# locals: (assets:, more:, page:, query:, folder:) %>
 <%# One page of the picker's grid, and, when there's more, the link the
     media--infinite-scroll controller follows as it comes into view. %>
 <% assets.each do |asset| %>
@@ -19,6 +19,6 @@
 <% end %>
 <% if more %>
   <li class="col-span-full py-4 text-center text-sm text-gray-500" data-media--infinite-scroll-target="next">
-    <%= link_to "More", asset_picker_path(q: @query.presence, folder: @folder, page: page + 1), data: { turbo: false, action: "media--infinite-scroll#load" } %>
+    <%= link_to "More", asset_picker_path(q: query.presence, folder: folder, page: page + 1), data: { turbo: false, action: "media--infinite-scroll#load" } %>
   </li>
 <% end %>
