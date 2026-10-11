@@ -223,6 +223,7 @@ Rails.application.routes.draw do
         scope module: :updates do
           resource :check, only: :create
           resource :stop, only: :create
+          resource :failures, only: :destroy
         end
       end
       resources :sessions, only: [:index]
@@ -232,6 +233,7 @@ Rails.application.routes.draw do
       # PluginChanges.
       namespace :plugins do
         resources :installations, only: :create
+        resource :failures, only: :destroy
       end
       # The plugins that are themes (Website.themes), with installing one.
       resources :themes, only: :index, param: :key do

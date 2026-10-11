@@ -63,7 +63,13 @@
 
   <% if @changes.any? %>
     <section class="<%= ui(:panel, "space-y-3 p-6") %>">
-      <h2 class="<%= ui(:heading) %>">Recent changes</h2>
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <h2 class="<%= ui(:heading) %>">Recent changes</h2>
+        <% if Current.user.admin? && @changes.any?(&:failed?) %>
+          <%= button_to "Clear failed updates", settings_plugins_failures_path, method: :delete, class: ui(:button, :small),
+                form: { data: { turbo_confirm: "Clear the failed changes from this list?" } } %>
+        <% end %>
+      </div>
       <ul class="divide-y divide-gray-100">
         <% @changes.each do |change| %>
           <%# herb:key change.id %>

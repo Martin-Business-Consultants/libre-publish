@@ -6,6 +6,14 @@ section below. An install is brought to one with `bin/update v1.0.0`, or a
 Kamal site with `kamal deploy -d <site>`. Settings shows when a newer one is
 out.
 
+## 1.20.1
+
+### Added
+- **Clear failed updates**: a button beside Settings › Updates' Past updates
+  and Settings › Plugins' Recent changes, when any failed, that takes the
+  failed ones out of the list (after asking). What succeeded, and anything
+  running, stays. Admins only.
+
 ## 1.20.0
 
 ### Fixed
