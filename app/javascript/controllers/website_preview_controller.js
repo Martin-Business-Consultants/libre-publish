@@ -5,6 +5,11 @@ import { Controller } from "@hotwired/stimulus"
 // its own address with ?website_preview, into the frame (or, from "Open in
 // a new tab", a new tab); the controller renders it through the theme
 // without saving (ContentEditing#render_website_preview).
+
+// A save from the preview, waiting for the page it comes back to: the
+// editor is drawn anew (the controller with it), so this outlives it.
+let justSaved = false
+
 export default class extends Controller {
   static targets = [ "frame", "save" ]
   static values = { form: String }
@@ -14,6 +19,8 @@ export default class extends Controller {
     this.submitted = this.submitted.bind(this)
     window.addEventListener("message", this.receive)
     document.addEventListener("turbo:submit-end", this.submitted)
+    // Opened on #preview: the tab was shown before this was here to hear it.
+    if (!this.frameTarget.closest("[hidden]")) this.refresh()
   }
 
   disconnect() {
@@ -21,17 +28,18 @@ export default class extends Controller {
     document.removeEventListener("turbo:submit-end", this.submitted)
   }
 
-  // A save started from the preview, finished. The page comes back morphed
-  // (the frame kept as it was), so the preview is drawn again with what was
-  // saved; one that didn't save says so, and the Edit tab shows why.
+  // A save started from the preview, finished. The page comes back on its
+  // Edit tab, so the Preview tab opens again, drawn with what was saved, to
+  // keep editing; one that didn't save says so, and the Edit tab shows why.
   submitted(event) {
     if (!this.saving || event.target.id !== this.formValue) return
     this.saving = false
 
     if (event.detail.success) {
-      this.justSaved = true
-      document.addEventListener("turbo:render", () => this.refresh(), { once: true })
-      setTimeout(() => { if (this.justSaved) this.refresh() }, 1500)
+      justSaved = true
+      const reopen = () => document.querySelector("[data-controller~=website-preview] a[data-tab=preview]")?.click()
+      document.addEventListener("turbo:render", reopen, { once: true })
+      setTimeout(() => { if (justSaved) reopen() }, 1500)
     } else {
       this.frameTarget.contentWindow?.postMessage({ type: "lp-inline-save-failed" }, window.location.origin)
       this.element.querySelector("a[data-tab=edit]")?.click()
@@ -68,8 +76,8 @@ export default class extends Controller {
   }
 
   refresh() {
-    const saved = this.justSaved
-    this.justSaved = false
+    const saved = justSaved
+    justSaved = false
     this.#post(this.frameTarget.name, saved)
   }
 
