@@ -29,6 +29,8 @@ out.
   off doesn't cut one off unknowingly.
 
 ### Changed
+- **New installs get Forms 1.5.1** (it was pinned at 1.1.1): reCAPTCHA
+  checked, webhooks guarded, upload caps, recipients by name and email.
 - **On update, an install keeps working as it did**: with no theme it's API
   only; with a theme and a machine token that read it in the last 30 days,
   Website + API with everything on; otherwise Website.
