@@ -340,6 +340,28 @@ plugin's bug doesn't take a page down. Registering again (a code reload)
 drops the plugin's hooks first, so register them in `config.to_prepare`
 with the rest.
 
+## The admin's language
+
+The admin shows in each person's language (Settings › Account, else the
+workspace's in Settings › General): English, Español, Français or Deutsch.
+Its words are English in the views, passed through `tx` where they're shown,
+and translated from `config/locales/admin/<locale>.yml`, keyed by the English
+itself; a string without a translation shows in English. A plugin's words
+work the same way: wrap them in `tx("…")` (`tx("%{count} waiting", count: n)`
+for values), and ship `config/locales/<locale>.yml` in the engine, which Rails
+loads with the rest:
+
+```yaml
+es:
+  admin_text:
+    "Reviews": "Revisiones"
+    "%{count} waiting": "%{count} en espera"
+```
+
+Menu labels, submenu links, Settings pages and postbox titles a plugin
+registers are passed through `tx` by the core, so translating them is only
+the YAML.
+
 ## Events
 
 Everything goes out through `Event` (STYLE.md, Events). A plugin's model

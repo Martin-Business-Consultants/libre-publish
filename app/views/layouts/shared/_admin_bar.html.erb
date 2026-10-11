@@ -15,13 +15,13 @@
   <button type="button" class="<%= class_names(muted_item_classes, "admin-bar__drawer-toggle") %>" aria-controls="admin-menu" aria-expanded="false"
     data-admin-menu-target="drawerToggle" data-action="admin-menu#toggleDrawer">
     <%= icon_tag "menu", class: "size-5" %>
-    <span class="sr-only">Menu</span>
+    <span class="sr-only"><%= tx("Menu") %></span>
   </button>
 
   <div class="admin-bar__dropdown relative flex">
     <% branding = current_branding %>
     <% site_name = branding[:site_title].presence || Site.key %>
-    <%= link_to dashboard_path, class: class_names(item_classes, "font-semibold text-gray-900"), title: "Dashboard (g h)", data: { keys: "g h" } do %>
+    <%= link_to dashboard_path, class: class_names(item_classes, "font-semibold text-gray-900"), title: tx("Dashboard (g h)"), data: { keys: "g h" } do %>
       <% if branding[:logo_url_small].present? %>
         <%# Settings › Branding's logo, as tall as the bar and as wide as it is. %>
         <%= image_tag branding[:logo_url_small], alt: site_name, class: "admin-bar__logo" %>
@@ -32,38 +32,38 @@
     <% end %>
     <% if site_url %>
       <ul class="<%= menu_classes %>">
-        <li><%= link_to "View site", site_url, class: menu_link_classes, target: "_blank", rel: "noopener" %></li>
+        <li><%= link_to tx("View site"), site_url, class: menu_link_classes, target: "_blank", rel: "noopener" %></li>
       </ul>
     <% end %>
   </div>
 
   <% if new_items.any? %>
     <div class="admin-bar__dropdown relative flex">
-      <%= link_to new_items.first.last, class: muted_item_classes, title: "New (n)" do %>
+      <%= link_to new_items.first.last, class: muted_item_classes, title: tx("New (n)") do %>
         <%= icon_tag "add", class: "size-4" %>
-        <span class="admin-bar__label font-medium">New</span>
+        <span class="admin-bar__label font-medium"><%= tx("New") %></span>
       <% end %>
       <ul class="<%= menu_classes %>">
         <% new_items.each do |label, url| %>
           <%# herb:key label %>
-          <li><%= link_to label, url, class: menu_link_classes %></li>
+          <li><%= link_to tx(label), url, class: menu_link_classes %></li>
         <% end %>
       </ul>
     </div>
   <% end %>
 
   <% if UpdateCheck.update_available? && Current.user.can?("settings:read") %>
-    <%= link_to settings_updates_path, class: class_names(item_classes, "admin-bar__update font-medium text-blue-600"), title: "A newer version is available" do %>
+    <%= link_to settings_updates_path, class: class_names(item_classes, "admin-bar__update font-medium text-blue-600"), title: tx("A newer version is available") do %>
       <%= icon_tag "refresh", class: "size-4" %>
-      <span class="admin-bar__label">Version <%= UpdateCheck.latest_version %> available</span>
+      <span class="admin-bar__label"><%= tx("Version %{version} available", version: UpdateCheck.latest_version) %></span>
     <% end %>
   <% end %>
 
   <% plugin_updates = UpdateCheck::Plugins.available %>
   <% if plugin_updates.any? && Current.user.admin? %>
-    <%= link_to settings_plugins_path, class: class_names(item_classes, "admin-bar__update font-medium text-blue-600"), title: "Newer plugin releases are available" do %>
+    <%= link_to settings_plugins_path, class: class_names(item_classes, "admin-bar__update font-medium text-blue-600"), title: tx("Newer plugin releases are available") do %>
       <%= icon_tag "refresh", class: "size-4" %>
-      <span class="admin-bar__label"><%= pluralize(plugin_updates.size, "plugin update") %></span>
+      <span class="admin-bar__label"><%= tx(plugin_updates.size == 1 ? "1 plugin update" : "%{count} plugin updates", count: plugin_updates.size) %></span>
     <% end %>
   <% end %>
 
@@ -76,22 +76,22 @@
       <%= render "layouts/shared/nav_filter" %>
     <% end %>
     <%# Opens the search modal (layouts/shared/global_search); a link, so it still goes to Search without it. %>
-    <%= link_to search_path, class: ui(:button, :plain, :icon), title: "Search everything (⌘K)", data: { global_search_open: true } do %>
+    <%= link_to search_path, class: ui(:button, :plain, :icon), title: tx("Search everything (⌘K)"), data: { global_search_open: true } do %>
       <%= icon_tag "search", class: "size-4" %>
-      <span class="sr-only">Search everything</span>
+      <span class="sr-only"><%= tx("Search everything") %></span>
     <% end %>
     <%= render "layouts/shared/screen_options" %>
     <%= render "layouts/shared/theme_toggle" %>
     <div class="admin-bar__dropdown admin-bar__dropdown--end relative flex">
       <%= link_to settings_profile_path, class: muted_item_classes do %>
-        <span class="admin-bar__label">Howdy, <%= Current.user.name.to_s.split.first.presence || Current.user.email %></span>
+        <span class="admin-bar__label"><%= tx("Howdy, %{name}", name: Current.user.name.to_s.split.first.presence || Current.user.email) %></span>
         <span class="flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 text-gray-600"><%= icon_tag "person", class: "size-4" %></span>
       <% end %>
       <ul class="<%= menu_classes %>">
         <li class="truncate border-b border-gray-100 px-3 pb-2 pt-1.5 text-xs text-gray-500"><%= Current.user.email %></li>
-        <li class="pt-1"><%= link_to "Edit profile", settings_profile_path, class: menu_link_classes %></li>
-        <li><%= link_to "Settings", settings_path, class: menu_link_classes, data: { keys: "g s" } %></li>
-        <li><%= button_to "Sign out", session_path(Current.session), method: :delete, class: menu_link_classes, form_class: "contents" %></li>
+        <li class="pt-1"><%= link_to tx("Edit profile"), settings_profile_path, class: menu_link_classes %></li>
+        <li><%= link_to tx("Settings"), settings_path, class: menu_link_classes, data: { keys: "g s" } %></li>
+        <li><%= button_to tx("Sign out"), session_path(Current.session), method: :delete, class: menu_link_classes, form_class: "contents" %></li>
       </ul>
     </div>
   </div>

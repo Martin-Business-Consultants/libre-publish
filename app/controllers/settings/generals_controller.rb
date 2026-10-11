@@ -11,7 +11,7 @@ class Settings::GeneralsController < Settings::BaseController
   IDENTITY_FIELDS = %w[title description default_locale site_base_url public_origins_raw].freeze
   CONTACT_FIELDS  = %w[phone email address_line1 city state zip].freeze
   # The zone the admin shows and reads times in (Site.time_zone).
-  TIME_FIELDS     = %w[timezone].freeze
+  TIME_FIELDS     = %w[timezone admin_locale].freeze
 
   def show
     @settings = current_settings
@@ -59,7 +59,9 @@ class Settings::GeneralsController < Settings::BaseController
   end
 
   def scalar_params
-    params.require(:settings).permit(*(IDENTITY_FIELDS + CONTACT_FIELDS + TIME_FIELDS))
+    permitted = params.require(:settings).permit(*(IDENTITY_FIELDS + CONTACT_FIELDS + TIME_FIELDS))
+    permitted[:admin_locale] = permitted[:admin_locale].presence_in(AdminLocale::LANGUAGES.keys) || AdminLocale::DEFAULT if permitted.key?(:admin_locale)
+    permitted
   end
 
   def current_settings
@@ -70,6 +72,7 @@ class Settings::GeneralsController < Settings::BaseController
       "description"     => data["description"].to_s,
       "default_locale"  => data["default_locale"].presence || "en",
       "timezone"        => data["timezone"].to_s,
+      "admin_locale"    => AdminLocale.workspace,
       "site_base_url"   => data["site_base_url"].to_s,
       "public_origins"  => Array(data["public_origins"]),
       "phone"           => data["phone"].to_s,

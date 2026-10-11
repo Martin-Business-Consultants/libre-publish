@@ -4,7 +4,7 @@ module ApplicationHelper
   UTILITIES_STYLESHEET = "utilities"
 
   def page_title_tag
-    tag.title [@page_title, current_branding[:site_title].presence || "CMS"].compact.join(" | ")
+    tag.title [(tx(@page_title) if @page_title), current_branding[:site_title].presence || "CMS"].compact.join(" | ")
   end
 
   # Herb compiles stylesheet_link_tag into a single <link>, which skips
@@ -133,7 +133,7 @@ module ApplicationHelper
     return "—" if time.blank?
 
     local = time.in_time_zone
-    time_tag time, "#{time_ago_in_words(time)} ago", title: "#{l(local, format: :long)} #{local.strftime("%Z")}"
+    time_tag time, AdminLocale.translate("%{time} ago", time: time_ago_in_words(time)), title: "#{l(local, format: :long)} #{local.strftime("%Z")}"
   end
 
   # A native date input with the date-field controller: a click opens the

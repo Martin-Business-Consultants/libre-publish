@@ -35,7 +35,10 @@
     <%= settings_field "Name" do %>
       <%= form.text_field :name, value: @user.name, required: true, autocomplete: "name", placeholder: "Full name", class: "w-full" %>
     <% end %>
-    <div><button type="submit" class="<%= ui(:button) %>">Save name</button></div>
+    <%= settings_field tx("Language"), hint: tx("The admin's own words, for you. Content keeps its own languages.") do %>
+      <%= form.select :locale, AdminLocale::LANGUAGES.invert.to_a, { selected: @user.locale, include_blank: tx("The workspace's (%{language})", language: AdminLocale::LANGUAGES[AdminLocale.workspace]) }, class: "w-full" %>
+    <% end %>
+    <div><button type="submit" class="<%= ui(:button) %>"><%= tx("Save") %></button></div>
   <% end %>
 </section>
 

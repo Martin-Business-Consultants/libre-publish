@@ -39,6 +39,8 @@ class Settings::ProfilesController < Settings::BaseController
   end
 
   def user_params
-    params.permit(:name)
+    params.permit(:name, :locale).tap do |permitted|
+      permitted[:locale] = permitted[:locale].presence_in(AdminLocale::LANGUAGES.keys) if permitted.key?(:locale)
+    end
   end
 end

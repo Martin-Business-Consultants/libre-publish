@@ -103,7 +103,7 @@ module NavigationHelper
       [label, resolve_path(path)] if permitted?(capability)
     end
     if permitted?("entries:write")
-      menu_collections.each { |collection| core << ["Entry in #{collection.name}", new_collection_entry_path(collection.slug)] }
+      menu_collections.each { |collection| core << [AdminLocale.translate("Entry in %{name}", name: collection.name), new_collection_entry_path(collection.slug)] }
     end
     additions = Cms::Plugins.enabled_new_items.filter_map do |item|
       next unless permitted?(item.capability)

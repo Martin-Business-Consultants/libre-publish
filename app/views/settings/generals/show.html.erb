@@ -25,6 +25,9 @@
         <%= settings_field "Time zone", hint: "The admin shows and reads every time in this zone: schedules, board cards, timestamps. Blank uses the server's (" + Site.server_time_zone.tzinfo.name + ")." do %>
           <%= form.select :timezone, options_for_select(site_time_zone_options(@settings["timezone"]), @settings["timezone"]), { include_blank: "Server's zone" }, class: "w-full" %>
         <% end %>
+        <%= settings_field "Admin language", hint: "The admin's own words, for everyone who hasn't chosen theirs in Settings › Account. Not the content's: that's the locale above." do %>
+          <%= form.select :admin_locale, AdminLocale::LANGUAGES.invert.to_a, { selected: @settings["admin_locale"] }, class: "w-full" %>
+        <% end %>
       </div>
       <%= settings_field "Site base URL", hint: "Canonical public-site origin (no trailing slash). Used for sitemap.xml and anywhere absolute URLs are needed. Falls back to this install's address (APP_HOST) when blank." do %>
         <%= form.url_field :site_base_url, value: @settings["site_base_url"], placeholder: "https://www.example.com", class: "w-full" %>
