@@ -15,16 +15,16 @@
   <% cards << [ "Globals", "world", globals_path, Global.count, "global" ] %>
 <% end %>
 <% if cards.any? %>
-  <section class="space-y-3" aria-labelledby="dashboard_content">
-    <h2 id="dashboard_content" class="<%= ui(:heading) %>">Content</h2>
-    <div class="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-4">
+  <section class="stack stack--md" aria-labelledby="dashboard_content">
+    <h2 id="dashboard_content" class="heading">Content</h2>
+    <div class="dashboard__cards">
       <% cards.each do |title, icon, path, count, noun| %>
         <%# herb:key path %>
-        <%= link_to path, class: ui(:panel, "flex min-w-0 items-center gap-3 p-4 hover:border-gray-300 hover:bg-gray-50") do %>
-          <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-600"><%= icon_tag icon, class: "size-4" %></span>
-          <span class="flex min-w-0 flex-col">
-            <span class="truncate text-sm font-medium text-gray-900"><%= title %></span>
-            <span class="text-xs text-gray-500"><%= pluralize(number_with_delimiter(count), noun) %></span>
+        <%= link_to path, class: "panel content-card" do %>
+          <span class="content-card__icon"><%= icon_tag icon, class: "icon--sm" %></span>
+          <span class="stack stack--2xs grow">
+            <span class="truncate text-medium text-ink"><%= title %></span>
+            <span class="text-small text-muted"><%= pluralize(number_with_delimiter(count), noun) %></span>
           </span>
         <% end %>
       <% end %>

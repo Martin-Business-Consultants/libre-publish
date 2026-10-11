@@ -7,35 +7,35 @@
 <% source = InstalledPlugins.repo(plugin.key.to_s) unless absorbed %>
 <% newer = UpdateCheck::Plugins.latest_version(plugin.key) %>
 <% removable = InstalledPlugins.present.key?(plugin.key.to_s) %>
-<li id="plugin_<%= plugin.key %>" class="space-y-1 py-4">
-  <div class="flex flex-wrap items-center justify-between gap-3">
-    <div class="flex min-w-0 flex-col gap-0.5">
-      <span class="text-sm font-semibold text-gray-900">
-        <%= link_to plugin.name, settings_plugin_path(plugin.key), class: "hover:underline" %>
-        <span class="ml-1 text-xs font-normal text-gray-500"><%= plugin.version %> · <%= plugin.bundled ? "bundled" : (source || "installed") %></span>
+<li id="plugin_<%= plugin.key %>" class="item">
+  <div class="item__row">
+    <div class="item__text">
+      <span class="item__name">
+        <%= link_to plugin.name, settings_plugin_path(plugin.key) %>
+        <span class="item__meta"><%= plugin.version %> · <%= plugin.bundled ? "bundled" : (source || "installed") %></span>
         <% if newer %>
-          <span class="ml-1 text-xs font-semibold text-blue-600"><%= newer %> available</span>
+          <span class="item__accent"><%= newer %> available</span>
         <% end %>
       </span>
-      <span class="text-sm text-gray-500"><%= plugin.description %></span>
+      <span class="item__description"><%= plugin.description %></span>
     </div>
-    <div class="flex shrink-0 items-center gap-2">
+    <div class="item__actions">
       <%= status_tag enabled ? "Active" : (switched_on ? "Waiting" : "Off") %>
       <% if enabled && settings_page %>
-        <%= link_to instance_exec(&settings_page.path), class: ui(:button, :plain, :icon), title: plugin.name + " settings" do %>
-          <%= icon_tag "settings-outline", class: "size-4" %>
-          <span class="sr-only"><%= plugin.name %> settings</span>
+        <%= link_to instance_exec(&settings_page.path), class: "btn btn--plain btn--icon", title: plugin.name + " settings" do %>
+          <%= icon_tag "settings-outline" %>
+          <span class="visually-hidden"><%= plugin.name %> settings</span>
         <% end %>
       <% end %>
       <% if Current.user.can?("settings:write") %>
         <% if switched_on %>
-          <%= button_to "Switch off", settings_plugin_activation_path(plugin.key), method: :delete, class: ui(:button, :small) %>
+          <%= button_to "Switch off", settings_plugin_activation_path(plugin.key), method: :delete, class: "btn btn--sm" %>
         <% elsif plugin.compatible? %>
-          <%= button_to "Switch on", settings_plugin_activation_path(plugin.key), class: ui(:button, :small) %>
+          <%= button_to "Switch on", settings_plugin_activation_path(plugin.key), class: "btn btn--sm" %>
         <% end %>
       <% end %>
       <% if source && Current.user.admin? %>
-        <%= button_to "Update", settings_plugin_upgrade_path(plugin.key), class: ui(:button, newer ? :primary : nil, :small),
+        <%= button_to "Update", settings_plugin_upgrade_path(plugin.key), class: class_names("btn btn--sm", "btn--primary": newer),
               title: "Install " + source + "’s latest release in place of this one" %>
       <% end %>
       <% if removable && Current.user.admin? %>
@@ -45,9 +45,9 @@
     </div>
   </div>
   <% unless plugin.compatible? %>
-    <p class="text-xs text-red-600">Needs CMS <%= plugin.requires %>; this is <%= cms_version %>.</p>
+    <p class="field-error">Needs CMS <%= plugin.requires %>; this is <%= cms_version %>.</p>
   <% end %>
   <% if missing.any? %>
-    <p class="text-xs text-red-600">Needs <%= missing.map { |dependency| Cms::Plugins.manifests[dependency]&.name || dependency.to_s }.to_sentence %> switched on.</p>
+    <p class="field-error">Needs <%= missing.map { |dependency| Cms::Plugins.manifests[dependency]&.name || dependency.to_s }.to_sentence %> switched on.</p>
   <% end %>
 </li>

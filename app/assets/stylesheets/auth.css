@@ -1,0 +1,47 @@
+/* The signed-out screens (layouts/public: sign in, sign up, password reset,
+   two-factor): the logo over a box on the gray page. */
+@layer components {
+  .public {
+    background-color: var(--gray-50);
+    display: flex;
+    flex-direction: column;
+    min-block-size: 100dvh;
+  }
+
+  .public__header {
+    padding: var(--space-12) var(--space-4) var(--space-2);
+    position: relative;
+  }
+
+  .public__brand {
+    align-items: center;
+    display: flex;
+    gap: var(--space-3);
+    justify-content: center;
+  }
+
+  .public__logo {
+    font-size: var(--text-xl);
+    font-weight: var(--weight-bold);
+    letter-spacing: -0.025em;
+    line-height: var(--leading-xl);
+  }
+
+  .public__main {
+    flex: 1;
+    padding: var(--space-8) var(--space-4);
+  }
+
+  /* A one-time code, typed into the middle of a wide field. */
+  input.one-time-code {
+    font-family: var(--font-mono);
+    font-size: var(--text-lg);
+    letter-spacing: 0.1em;
+    text-align: center;
+  }
+
+  /* A device's code (cms login), as the terminal shows it. */
+  input.device-code {
+    text-transform: uppercase;
+  }
+}

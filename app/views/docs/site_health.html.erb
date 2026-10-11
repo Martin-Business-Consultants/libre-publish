@@ -2,17 +2,17 @@
 <%= parent_page "Docs", docs_path %>
 <%= render "layouts/shared/page_header", title: "Site health" %>
 
-<div class="grid items-start gap-6 lg:grid-cols-3">
-  <div class="space-y-6 lg:col-span-2">
+<div class="with-sidebar">
+  <div>
     <%= render "docs/checklist", checks: @checks, groups: SiteHealth::GROUPS, key: "site-health" %>
   </div>
-  <aside class="space-y-6">
+  <aside>
     <%= postbox "site-health-summary", "In good order?" do %>
-      <div class="space-y-1">
-        <p class="text-base font-semibold text-gray-900">
+      <div class="stack stack--xs">
+        <p class="text-large text-semibold text-ink">
           <%= @summary[:ready] ? "Everything checks out" : "#{pluralize(@summary[:failing], "thing")} to fix" %>
         </p>
-        <p class="text-gray-500"><%= @summary[:passing] %> of <%= @summary[:total] %> checks pass. The ones marked ? are yours to judge.</p>
+        <p class="text-muted"><%= @summary[:passing] %> of <%= @summary[:total] %> checks pass. The ones marked ? are yours to judge.</p>
       </div>
     <% end %>
     <%= render "docs/nav", guides: @guides, current: :site_health %>

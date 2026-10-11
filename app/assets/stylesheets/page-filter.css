@@ -5,16 +5,30 @@
 @layer components {
   .nav-filter {
     align-items: center;
+    block-size: var(--space-8);
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    color: var(--gray-500);
     cursor: text;
     display: inline-flex;
+    gap: var(--space-2);
+    padding-inline: var(--space-2);
+
+    &:hover {
+      background-color: var(--gray-100);
+    }
+
+    > kbd {
+      flex-shrink: 0;
+    }
 
     #global-container:not(:has([data-filter-target~="item"])) & {
       display: none;
     }
 
     &:is(:focus-within, :has(.nav-filter__input:not(:placeholder-shown))) {
-      background-color: var(--color-white);
-      border-color: var(--color-gray-300);
+      background-color: var(--surface);
+      border-color: var(--gray-300);
 
       .nav-filter__input {
         inline-size: 20ch;
@@ -24,6 +38,7 @@
 
   .nav-filter__input {
     background: none;
+    font-size: var(--text-sm);
     border: 0;
     box-shadow: none;
     color: inherit;

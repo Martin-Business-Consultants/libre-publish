@@ -1,0 +1,67 @@
+/* Menus: a list of actions or choices on a floating box.
+
+   - .menu: the box (the admin bar's dropdowns, a field's results, a
+     popup's list), .menu__item each row in it, a link or a button.
+   - .popup: a <dialog> that opens under its button as a menu
+     (layouts/shared/_quick_filter, shown non-modal by dialog_controller),
+     inside a wrapper with .popup-anchor. Near the window's edge
+     orientation_helpers flips it with .orient-left or .orient-right and
+     nudges it by --orient-offset. */
+@layer components {
+  .menu {
+    background-color: var(--surface);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-overlay);
+    color: var(--gray-900);
+    padding: var(--space-1);
+  }
+
+  .menu__item {
+    align-items: center;
+    border-radius: var(--radius-md);
+    color: var(--gray-700);
+    display: flex;
+    font-size: var(--text-sm);
+    gap: var(--space-2);
+    inline-size: 100%;
+    line-height: var(--leading-sm);
+    padding: var(--space-1-5) var(--space-2-5);
+    text-align: start;
+
+    &:hover,
+    &[aria-selected="true"],
+    &[aria-current] {
+      background-color: var(--gray-100);
+      color: var(--gray-900);
+    }
+
+    .icon {
+      --icon-size: 1rem;
+    }
+  }
+
+  .popup-anchor {
+    position: relative;
+  }
+
+  .popup {
+    inset: calc(100% + var(--space-1)) auto auto 0;
+    margin: 0;
+    max-block-size: 70dvh;
+    max-inline-size: calc(100vw - var(--space-4));
+    overflow-y: auto;
+    position: absolute;
+    z-index: var(--z-popup);
+
+    &.orient-left {
+      inset-inline: auto 0;
+      translate: var(--orient-offset, 0px);
+    }
+
+    &.orient-right {
+      inset-inline: 0 auto;
+      translate: var(--orient-offset, 0px);
+    }
+  }
+}

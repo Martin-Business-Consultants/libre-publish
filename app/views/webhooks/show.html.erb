@@ -3,10 +3,10 @@
 
 <%= render "layouts/shared/page_header", title: @page_title %>
 
-<div class="max-w-4xl space-y-6">
-  <div class="<%= ui(:panel, "space-y-2 p-5") %>">
-    <p class="font-mono text-sm break-all text-gray-900"><%= @webhook.url %></p>
-    <p class="flex flex-wrap items-center gap-2 text-sm text-gray-500"><%= webhook_health(@webhook) %> <span><%= Array(@webhook.events).join(", ") %></span></p>
+<div class="stack stack--lg measure--xl">
+  <div class="panel panel--padded stack stack--sm">
+    <p class="text-mono break-all text-ink"><%= @webhook.url %></p>
+    <p class="cluster text-muted"><%= webhook_health(@webhook) %> <span><%= Array(@webhook.events).join(", ") %></span></p>
   </div>
   <%= render "webhooks/deliveries", deliveries: @deliveries, pagination: @pagination %>
 </div>

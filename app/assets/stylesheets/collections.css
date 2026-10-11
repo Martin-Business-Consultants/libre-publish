@@ -1,0 +1,109 @@
+/* A collection's board (collections/boards): two columns, off and on, side
+   by side from 48rem, each a box of cards that entries are dragged between
+   (drag_and_drop.css shades the column a card hovers over). A dot in each
+   column's header and on a card's yes/no field is green while on. */
+@layer components {
+  .board {
+    display: grid;
+    gap: var(--space-4);
+    grid-template-columns: minmax(0, 1fr);
+
+    @media (width >= 48rem) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .board-column {
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-xl);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    min-block-size: 16rem;
+    padding: var(--space-3);
+  }
+
+  .board-column__header {
+    align-items: center;
+    display: flex;
+    gap: var(--space-2);
+    padding-inline: var(--space-1);
+  }
+
+  .board-column__empty {
+    color: var(--gray-400);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+    padding: var(--space-8) var(--space-4);
+    text-align: center;
+  }
+
+  .board-dot {
+    background-color: var(--gray-300);
+    block-size: var(--space-2);
+    border-radius: var(--radius-full);
+    flex-shrink: 0;
+    inline-size: var(--space-2);
+  }
+
+  .board-dot--on {
+    background-color: var(--green-500);
+  }
+
+  .board-card {
+    background-color: var(--surface);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-3);
+
+    &:hover {
+      border-color: var(--gray-300);
+    }
+  }
+
+  .board-card--movable {
+    cursor: grab;
+  }
+
+  .board-card__grip {
+    color: var(--gray-400);
+    line-height: var(--leading-sm);
+    user-select: none;
+  }
+
+  /* The fields the collection puts on a card in the right-hand column, under
+     a hairline. */
+  .board-card__fields {
+    border-block-start: 1px solid var(--gray-100);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding-block-start: var(--space-3);
+  }
+
+  .board-card__field-label {
+    color: var(--gray-500);
+    flex-shrink: 0;
+    font-size: var(--text-xs);
+    inline-size: 6rem;
+    line-height: var(--leading-xs);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+/* The New collection dialog's templates (collections/_new_collection): the
+   rows (.template-choice, records.css) in a list that scrolls past 20rem. */
+@layer components {
+  .template-choices {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    max-block-size: 20rem;
+    overflow-y: auto;
+  }
+}

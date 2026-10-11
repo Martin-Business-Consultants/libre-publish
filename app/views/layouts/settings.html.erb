@@ -4,12 +4,12 @@
     :settings_aside) when it has one, then the Settings sections. %>
 <% content_for :content do %>
   <div class="settings-screen">
-    <div class="mb-6"><%= content_for(:settings_header) %></div>
-    <div class="settings-columns grid grid-cols-1 items-start gap-6 lg:grid-cols-3">
-      <div class="min-w-0 space-y-6 lg:col-span-2">
+    <div class="stack"><%= content_for(:settings_header) %></div>
+    <div class="settings-columns">
+      <div class="settings-columns__main">
         <%= yield %>
       </div>
-      <aside class="settings-aside flex min-w-0 flex-col gap-4 top-16 lg:sticky">
+      <aside class="settings-aside">
         <%= content_for(:settings_aside) %>
         <%= render "settings/sections_box" %>
       </aside>

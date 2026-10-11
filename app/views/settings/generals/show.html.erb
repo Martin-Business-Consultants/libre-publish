@@ -6,56 +6,56 @@
 <% end %>
 
 <%= form_with url: settings_general_path, id: "settings_form", method: :patch, scope: :settings do |form| %>
-  <%= tag.fieldset class: "space-y-6", disabled: !Current.user.can?("settings:write") do %>
-    <section class="<%= ui(:panel, "space-y-5 p-6") %>">
-      <div class="space-y-1">
-        <h2 class="<%= ui(:heading) %>">Identity</h2>
-        <p class="text-sm text-gray-500">Site title and description used as defaults across SEO, headers, and emails.</p>
+  <%= tag.fieldset class: "stack stack--lg", disabled: !Current.user.can?("settings:write") do %>
+    <section class="panel panel--padded fields">
+      <div class="stack stack--xs">
+        <h2 class="heading">Identity</h2>
+        <p class="text-muted">Site title and description used as defaults across SEO, headers, and emails.</p>
       </div>
       <%= settings_field "Business name" do %>
-        <%= form.text_field :title, value: @settings["title"], class: "w-full" %>
+        <%= form.text_field :title, value: @settings["title"] %>
       <% end %>
       <%= settings_field "Tagline / description" do %>
-        <%= form.text_area :description, value: @settings["description"], rows: 2, class: "w-full" %>
+        <%= form.text_area :description, value: @settings["description"], rows: 2 %>
       <% end %>
-      <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+      <div class="grid grid--2">
         <%= settings_field "Default locale" do %>
-          <%= form.text_field :default_locale, value: @settings["default_locale"], placeholder: "en", class: "w-full" %>
+          <%= form.text_field :default_locale, value: @settings["default_locale"], placeholder: "en" %>
         <% end %>
         <%= settings_field "Time zone", hint: "The admin shows and reads every time in this zone: schedules, board cards, timestamps. Blank uses the server's (" + Site.server_time_zone.tzinfo.name + ")." do %>
-          <%= form.select :timezone, options_for_select(site_time_zone_options(@settings["timezone"]), @settings["timezone"]), { include_blank: "Server's zone" }, class: "w-full" %>
+          <%= form.select :timezone, options_for_select(site_time_zone_options(@settings["timezone"]), @settings["timezone"]), { include_blank: "Server's zone" } %>
         <% end %>
         <%= settings_field "Admin language", hint: "The admin's own words, for everyone who hasn't chosen theirs in Settings › Account. Not the content's: that's the locale above." do %>
-          <%= form.select :admin_locale, AdminLocale::LANGUAGES.invert.to_a, { selected: @settings["admin_locale"] }, class: "w-full" %>
+          <%= form.select :admin_locale, AdminLocale::LANGUAGES.invert.to_a, { selected: @settings["admin_locale"] } %>
         <% end %>
       </div>
       <%= settings_field "Site base URL", hint: "Canonical public-site origin (no trailing slash). Used for sitemap.xml and anywhere absolute URLs are needed. Falls back to this install's address (APP_HOST) when blank." do %>
-        <%= form.url_field :site_base_url, value: @settings["site_base_url"], placeholder: "https://www.example.com", class: "w-full" %>
+        <%= form.url_field :site_base_url, value: @settings["site_base_url"], placeholder: "https://www.example.com" %>
       <% end %>
       <%= settings_field "Additional public origins", hint: "One origin per line. Used to allow CORS for form submissions from these domains (preview, www/apex, staging). The Site base URL above is always allowed." do %>
-        <%= form.text_area :public_origins_raw, value: @settings["public_origins"].join("\n"), rows: 3, placeholder: "https://www.example.com\nhttps://preview.example.com", class: "w-full font-mono" %>
+        <%= form.text_area :public_origins_raw, value: @settings["public_origins"].join("\n"), rows: 3, placeholder: "https://www.example.com\nhttps://preview.example.com", class: "text-mono" %>
       <% end %>
     </section>
 
-    <section class="<%= ui(:panel, "space-y-5 p-6") %>" id="serving">
-      <div class="space-y-1">
-        <h2 class="<%= ui(:heading) %>">How the site is served</h2>
-        <p class="text-sm text-gray-500">Most sites are the theme’s website alone. Serve content as JSON too only when something else reads it: an app, another site, a frontend built elsewhere.</p>
+    <section class="panel panel--padded fields" id="serving">
+      <div class="stack stack--xs">
+        <h2 class="heading">How the site is served</h2>
+        <p class="text-muted">Most sites are the theme’s website alone. Serve content as JSON too only when something else reads it: an app, another site, a frontend built elsewhere.</p>
       </div>
-      <div class="flex flex-col gap-5" data-controller="show-if">
-        <div data-field-name="serving">
+      <div class="fields" data-controller="show-if">
+        <div class="stack stack--sm" data-field-name="serving">
           <%= settings_field "Served as" do %>
-            <%= form.select :serving, Serving::MODES.invert.to_a, { selected: @settings["serving"] }, class: "w-full" %>
+            <%= form.select :serving, Serving::MODES.invert.to_a, { selected: @settings["serving"] } %>
           <% end %>
-          <ul class="mt-2 flex flex-col gap-1 text-xs text-gray-500">
-            <li><strong class="font-medium text-gray-700">Website</strong>: the theme draws the site. The delivery API (/api/v1) is off.</li>
-            <li><strong class="font-medium text-gray-700">Website + API</strong>: the theme draws the site, and what you choose below is served as JSON too.</li>
-            <li><strong class="font-medium text-gray-700">API only</strong>: a frontend elsewhere draws the site from /api/v1; this address shows a blank page.</li>
+          <ul class="stack stack--xs text-small text-muted">
+            <li><strong class="text-medium text-body">Website</strong>: the theme draws the site. The delivery API (/api/v1) is off.</li>
+            <li><strong class="text-medium text-body">Website + API</strong>: the theme draws the site, and what you choose below is served as JSON too.</li>
+            <li><strong class="text-medium text-body">API only</strong>: a frontend elsewhere draws the site from /api/v1; this address shows a blank page.</li>
           </ul>
         </div>
-        <div class="flex flex-col gap-3" data-show-if='{"field":"serving","equals":"website_api"}'>
-          <p class="<%= ui(:label) %>">Served over the API</p>
-          <label class="flex items-center gap-2 text-sm text-gray-700">
+        <div class="stack stack--md" data-show-if='{"field":"serving","equals":"website_api"}'>
+          <p class="label">Served over the API</p>
+          <label class="choice">
             <%= hidden_field_tag "settings[api_pages]", "0", id: nil %>
             <%= check_box_tag "settings[api_pages]", "1", @settings["api_pages"], id: nil %>
             <span>Pages, with the globals (navigation, footer)</span>
@@ -63,7 +63,7 @@
           <%= hidden_field_tag "settings[api_collections][]", "", id: nil %>
           <% @collections.each do |collection| %>
             <%# herb:key collection.id %>
-            <label class="flex items-center gap-2 text-sm text-gray-700">
+            <label class="choice">
               <%= check_box_tag "settings[api_collections][]", collection.slug, collection.api_enabled?, id: nil %>
               <span><%= collection.name %></span>
             </label>
@@ -71,9 +71,9 @@
         </div>
       </div>
       <% if @tokens_reading.any? then %>
-        <div class="<%= ui(:notice, :yellow, "flex-col items-start") %>">
+        <div class="notice notice--warning notice--stacked">
           <p>These machine tokens read the site in the last 30 days. Choosing <strong>Website</strong> turns the API off, and they’d get nothing:</p>
-          <ul class="list-disc pl-5">
+          <ul class="bullets">
             <% @tokens_reading.each do |token| %>
               <%# herb:key token.id %>
               <li><%= token.name %> (<%= token.role&.name %>), <%= time_ago_in_words(token.last_used_at) %> ago</li>
@@ -83,31 +83,31 @@
       <% end %>
     </section>
 
-    <section class="<%= ui(:panel, "space-y-5 p-6") %>">
-      <div class="space-y-1">
-        <h2 class="<%= ui(:heading) %>">Contact</h2>
-        <p class="text-sm text-gray-500">Surfaces on the public site footer, contact pages, and SEO structured data.</p>
+    <section class="panel panel--padded fields">
+      <div class="stack stack--xs">
+        <h2 class="heading">Contact</h2>
+        <p class="text-muted">Surfaces on the public site footer, contact pages, and SEO structured data.</p>
       </div>
-      <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+      <div class="grid grid--2">
         <%= settings_field "Phone" do %>
-          <%= form.telephone_field :phone, value: @settings["phone"], placeholder: "(269) 555-1234", class: "w-full" %>
+          <%= form.telephone_field :phone, value: @settings["phone"], placeholder: "(269) 555-1234" %>
         <% end %>
         <%= settings_field "Email" do %>
-          <%= form.email_field :email, value: @settings["email"], placeholder: "hello@example.com", class: "w-full" %>
+          <%= form.email_field :email, value: @settings["email"], placeholder: "hello@example.com" %>
         <% end %>
       </div>
       <%= settings_field "Address" do %>
-        <%= form.text_field :address_line1, value: @settings["address_line1"], placeholder: "717 E. Bridge Street", class: "w-full" %>
+        <%= form.text_field :address_line1, value: @settings["address_line1"], placeholder: "717 E. Bridge Street" %>
       <% end %>
-      <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
+      <div class="grid grid--3">
         <%= settings_field "City" do %>
-          <%= form.text_field :city, value: @settings["city"], class: "w-full" %>
+          <%= form.text_field :city, value: @settings["city"] %>
         <% end %>
         <%= settings_field "State" do %>
-          <%= form.text_field :state, value: @settings["state"], class: "w-full" %>
+          <%= form.text_field :state, value: @settings["state"] %>
         <% end %>
         <%= settings_field "Zip" do %>
-          <%= form.text_field :zip, value: @settings["zip"], class: "w-full" %>
+          <%= form.text_field :zip, value: @settings["zip"] %>
         <% end %>
       </div>
     </section>

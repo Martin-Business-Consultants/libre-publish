@@ -9,12 +9,19 @@
     mask-image: var(--svg);
     mask-position: center;
     mask-repeat: no-repeat;
-    /* contain, so a size-* utility on the icon sizes its picture too. */
+    /* contain, so a size modifier sizes its picture too. */
     mask-size: contain;
     pointer-events: none;
     position: relative;
     user-select: none;
   }
+
+  /* Sizes, when 1em (the text's) isn't it: 12, 16, 20, 24 and 40px. */
+  .icon--xs { --icon-size: 0.75rem; }
+  .icon--sm { --icon-size: 1rem; }
+  .icon--md { --icon-size: 1.25rem; }
+  .icon--lg { --icon-size: 1.5rem; }
+  .icon--xl { --icon-size: 2.5rem; }
 
   img.icon {
     background: none;

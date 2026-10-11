@@ -5,8 +5,8 @@
 <html lang="<%= I18n.locale %>">
   <%= render "layouts/shared/head" %>
 
-  <body class="<%= class_names("bg-white text-gray-900", @body_class) %>" data-controller="keyboard admin-menu">
-    <a href="#main" class="<%= ui(:button, "admin__skip-link") %>" data-turbo="false">Skip to main content</a>
+  <body class="<%= class_names(@body_class) %>" data-controller="keyboard admin-menu">
+    <a href="#main" class="btn admin__skip-link" data-turbo="false">Skip to main content</a>
     <div id="global-container" data-controller="filter">
       <% if Current.user %>
         <%= render "layouts/shared/admin_bar" %>
@@ -15,8 +15,8 @@
         <%= render "layouts/shared/admin_menu" %>
       <% end %>
 
-      <div class="admin__content min-w-0">
-        <main id="main" class="mx-auto max-w-7xl">
+      <div class="admin__content">
+        <main id="main" class="admin__main">
           <%= content_for?(:content) ? yield(:content) : yield %>
         </main>
       </div>

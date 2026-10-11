@@ -3,18 +3,18 @@
     did. label: what the stored value is called (its title), shown in the
     search box. Without JavaScript the text input is the field. %>
 <% frame_id = "picker_" + dom_id %>
-<div class="<%= class_names("relative", extra_class) %>" data-controller="picker" data-picker-url-value="<%= url %>" data-picker-mode-value="<%= mode %>"
+<div class="<%= class_names("picker", extra_class) %>" data-controller="picker" data-picker-url-value="<%= url %>" data-picker-mode-value="<%= mode %>"
      data-action="keydown->picker#navigate click@document->picker#dismiss">
   <% if name %>
-    <input type="text" name="<%= name %>" value="<%= value %>" id="<%= dom_id %>" class="w-full font-mono" autocomplete="off"
+    <input type="text" name="<%= name %>" value="<%= value %>" id="<%= dom_id %>" class="full-width text-mono" autocomplete="off"
            placeholder="<%= placeholder %>" aria-label="<%= aria_label %>" data-picker-target="value">
   <% else %>
     <input type="hidden" id="<%= dom_id %>" data-picker-target="value">
   <% end %>
-  <input type="search" class="w-full" value="<%= label %>" placeholder="Search…" autocomplete="off" hidden
+  <input type="search" class="full-width" value="<%= label %>" placeholder="Search…" autocomplete="off" hidden
          aria-label="<%= aria_label || "Search" %>" aria-autocomplete="list"
          data-picker-target="query" data-action="input->picker#search focus->picker#open change->picker#clear">
-  <div class="<%= ui(:menu, "absolute left-0 right-0 top-full z-10 mt-1 max-h-72 overflow-y-auto") %>" data-picker-target="results" hidden>
+  <div class="menu picker__results" data-picker-target="results" hidden>
     <turbo-frame id="<%= frame_id %>" data-picker-target="frame"></turbo-frame>
   </div>
 </div>

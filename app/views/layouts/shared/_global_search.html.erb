@@ -1,15 +1,15 @@
 <%# Search everything, in a modal: the admin bar's search button or ⌘K / Ctrl+K
     opens it, results come as you type (searches/_quick), the arrow keys and
     Enter pick one. Outside the bar, so a dark top bar doesn't darken it. %>
-<dialog class="dialog global-search gap-2 rounded-xl border border-gray-200 bg-white p-3 text-left text-gray-900 shadow-overlay" aria-label="Search everything" closedby="any"
+<dialog class="dialog global-search" aria-label="Search everything" closedby="any"
         data-controller="global-search" data-global-search-url-value="<%= search_path %>"
         data-action="keydown->global-search#navigate click->global-search#closeOnBackdrop">
-  <div class="relative">
-    <%= icon_tag "search", class: "pointer-events-none absolute left-2.5 top-2 size-4 text-gray-400" %>
-    <input type="search" class="w-full pl-8" placeholder="Search pages, entries, globals, users…" autocomplete="off" spellcheck="false"
+  <div class="input-with-icon">
+    <%= icon_tag "search", class: "input-with-icon__icon" %>
+    <input type="search" placeholder="Search pages, entries, globals, users…" autocomplete="off" spellcheck="false"
            aria-label="Search everything" data-global-search-target="input" data-action="input->global-search#search">
   </div>
-  <div class="min-h-0 flex-1 overflow-y-auto" data-global-search-target="results">
-    <p class="px-3 py-8 text-center text-sm text-gray-500">Type to find a page, entry, global, user…</p>
+  <div class="global-search__results" data-global-search-target="results">
+    <p class="empty-state">Type to find a page, entry, global, user…</p>
   </div>
 </dialog>

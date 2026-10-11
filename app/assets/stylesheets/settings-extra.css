@@ -1,0 +1,213 @@
+/* Settings screens: Account, Branding, Deploy, Service tokens, API token,
+   Search, Email delivery, History and Media (app/views/settings). */
+@layer components {
+  /* A section a sidebar's "On this page" links to: it scrolls to below the
+     admin bar, not under it. */
+  .settings-section {
+    scroll-margin-block-start: 5rem;
+  }
+
+  /* The sidebar's "On this page" links. */
+  .on-page-nav__link {
+    border-radius: var(--radius-md);
+    color: var(--gray-700);
+    display: block;
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+    padding: var(--space-1) var(--space-2);
+
+    &:hover {
+      background-color: var(--gray-100);
+      color: var(--gray-900);
+    }
+  }
+
+  /* A row in a divided list (sessions, tokens, deploys): padded above and
+     below; --sm tighter, --lg roomier. library candidate */
+  .list-row {
+    padding-block: var(--space-3);
+  }
+
+  .list-row--sm {
+    padding-block: var(--space-2-5);
+  }
+
+  .list-row--lg {
+    padding-block: var(--space-4);
+  }
+
+  /* A bulleted or numbered list in running text. library candidate */
+  .bullet-list,
+  .number-list {
+    color: var(--gray-700);
+    display: flex;
+    flex-direction: column;
+    font-size: var(--text-sm);
+    gap: var(--space-1-5);
+    line-height: var(--leading-sm);
+    padding-inline-start: var(--space-5);
+  }
+
+  .bullet-list {
+    list-style: disc;
+  }
+
+  .number-list {
+    gap: var(--space-5);
+    list-style: decimal;
+  }
+
+  /* A tinted box that asks for attention but isn't a status notice: your
+     recovery codes, a change waiting for approval. Words stay ink.
+     library candidate */
+  .callout {
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    color: var(--gray-900);
+    display: flex;
+    flex-direction: column;
+    font-size: var(--text-sm);
+    gap: var(--space-2);
+    line-height: var(--leading-sm);
+    padding: var(--space-4);
+  }
+
+  .callout--warning {
+    background-color: var(--yellow-50);
+    border-color: var(--yellow-200);
+  }
+
+  /* A panel for what can't be undone (Delete account): a red hairline, a
+     red heading. library candidate */
+  .danger-zone {
+    border-color: var(--red-200);
+  }
+
+  .danger-zone__title {
+    color: var(--red-700);
+  }
+
+  /* What a <details> opens under its summary button. */
+  .disclosure__body {
+    margin-block-start: var(--space-3);
+  }
+
+  /* The two-factor code: six digits, not a whole row. */
+  .field > input.otp-input {
+    font-family: var(--font-mono);
+    inline-size: 10rem;
+  }
+
+  /* A grid of fields, spaced as .fields spaces them (20px). library
+     candidate */
+  .fields-grid {
+    --gap: var(--space-5);
+  }
+
+  /* A cell across two columns of a grid--3 from 40rem. library candidate */
+  @media (width >= 40rem) {
+    .span-2 {
+      grid-column: span 2 / span 2;
+    }
+  }
+
+  /* API token › What it can do: a card per group of capabilities. */
+  .settings-cards__card {
+    background-color: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding: var(--space-3) var(--space-4);
+  }
+
+  /* Branding › Appearance: a card per theme around a radio, side by side
+     from 40rem (theme-switcher.css colors them by state). */
+  .theme-switcher {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+
+    @media (width >= 40rem) {
+      flex-direction: row;
+    }
+  }
+
+  .theme-switcher__btn {
+    align-items: center;
+    border-style: solid;
+    border-width: 1px;
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    gap: var(--space-1-5);
+    line-height: var(--leading-sm);
+    padding: var(--space-3) var(--space-4);
+  }
+}
+
+/* A branding image field (settings/brandings/_image_dropzone): a dashed zone
+   that takes a dropped image or a click (its file input covers it, unseen).
+   Its colors change while it's hovered, focused or dragged over
+   (image_dropzone_controller toggles image-dropzone--over); the prompt
+   shrinks once it holds an image (image-dropzone--filled). */
+@layer components {
+  .image-dropzone {
+    align-items: center;
+    background-color: var(--surface);
+    border: 2px dashed var(--gray-300);
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    justify-content: center;
+    min-block-size: 9rem;
+    padding: var(--space-4);
+    position: relative;
+    text-align: center;
+    transition: border-color 150ms, background-color 150ms;
+
+    &:hover,
+    &:focus-within,
+    &.image-dropzone--over {
+      background-color: var(--accent-50);
+      border-color: var(--accent-500);
+    }
+  }
+
+  .image-dropzone__preview {
+    display: contents;
+  }
+
+  .image-dropzone__preview img {
+    max-block-size: 6rem;
+    max-inline-size: 100%;
+    object-fit: contain;
+  }
+
+  .image-dropzone__prompt {
+    align-items: center;
+    color: var(--gray-500);
+    display: inline-flex;
+    font-size: var(--text-sm);
+    gap: var(--space-1-5);
+    line-height: var(--leading-sm);
+
+    .image-dropzone--filled & {
+      font-size: var(--text-xs);
+      line-height: var(--leading-xs);
+    }
+  }
+
+  .image-dropzone__file {
+    cursor: pointer;
+    inset: 0;
+    opacity: 0;
+    position: absolute;
+  }
+}

@@ -146,11 +146,18 @@ JSON, with its signature at the same address plus `.sig`) and
   subclass, so jobs already queued still run.
 - **API responses** are jbuilder views under the plugin's `app/views/api/`;
   a controller renders JSON itself only for an error body. 
-- **Views** follow the core's frontend rules (STYLE.md: the admin's Tailwind
-  classes and the core's `ui(...)` recipes and partials, strict locals, no
-  inline styles); `bin/ci` lints `engines/` with Herb, and the classes spec
-  checks a plugin's views as it does the core's. A plugin's stylesheet holds
-  only what classes can't say.
+- **Views** follow the core's frontend rules (STYLE.md: the admin's own
+  classes, named for what a thing is — `panel`, `btn btn--primary`,
+  `field`, `data-table`, `stack`, `badge` — and the core's partials, strict
+  locals, no inline styles); `bin/ci` lints `engines/` with Herb, and the
+  classes spec checks a plugin's views as it does the core's: a class
+  nothing defines fails it, and so does a rule in the plugin's stylesheet
+  that nothing uses. What's the plugin's alone gets a class named for the
+  plugin (`hello-greeting`), drawn in its stylesheet with the admin's
+  tokens (`--gray-*`, `--space-*`, `--radius-*`), so it follows Settings ›
+  Branding and the dark theme. Tailwind's classes and `ui(...)` are gone:
+  a view that still uses them loses its styling, and `ui(...)`
+  raises `NoMethodError`.
 
 ## Registering
 

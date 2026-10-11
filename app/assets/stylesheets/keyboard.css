@@ -8,7 +8,7 @@
 
   tr[data-keyboard-current],
   li[data-keyboard-current] {
-    background-color: var(--color-blue-50);
+    background-color: var(--accent-50);
     outline-offset: -2px;
   }
 }

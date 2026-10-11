@@ -1,5 +1,102 @@
-/* Buttons are drawn by their classes (UiHelper#ui(:button)); this holds the
-/* two states the markup doesn't carry. */
+/* Buttons: <button class="btn"> or a link drawn as one. Outlined is the
+   default, for every action but a screen's one primary (STYLE.md):
+   .btn--primary fills it with the accent, .btn--danger is outlined in red
+   (Delete, Move to Trash), .btn--destructive is filled red (the button that
+   confirms a delete), .btn--plain has no border until hovered (toolbars, row
+   tools). .btn--sm is the small size, .btn--icon a square for an icon alone
+   (with .btn--sm, a smaller square), .btn--block as wide as its container. */
+@layer components {
+  .btn {
+    align-items: center;
+    background-color: var(--surface);
+    block-size: var(--space-8);
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-md);
+    color: var(--gray-900);
+    display: inline-flex;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    gap: var(--space-1-5);
+    justify-content: center;
+    line-height: var(--leading-sm);
+    padding-inline: var(--space-3);
+    white-space: nowrap;
+
+    &:hover:not(:disabled) {
+      background-color: var(--gray-50);
+      border-color: var(--gray-400);
+    }
+
+    .icon {
+      --icon-size: 1rem;
+    }
+  }
+
+  .btn--primary {
+    background-color: var(--accent-600);
+    border-color: var(--accent-600);
+    color: var(--on-accent);
+
+    &:hover:not(:disabled) {
+      background-color: var(--accent-700);
+      border-color: var(--accent-700);
+    }
+  }
+
+  .btn--danger {
+    color: var(--red-600);
+
+    &:hover:not(:disabled) {
+      background-color: var(--red-50);
+      border-color: var(--gray-300);
+    }
+  }
+
+  .btn--destructive {
+    background-color: var(--red-600);
+    border-color: var(--red-600);
+    color: #fff;
+
+    &:hover:not(:disabled) {
+      background-color: var(--red-700);
+      border-color: var(--red-700);
+    }
+  }
+
+  .btn--plain {
+    background-color: transparent;
+    border-color: transparent;
+    color: var(--gray-600);
+
+    &:hover:not(:disabled) {
+      background-color: var(--gray-100);
+      border-color: transparent;
+      color: var(--gray-900);
+    }
+  }
+
+  .btn--sm {
+    block-size: 1.75rem;
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+    padding-inline: var(--space-2-5);
+  }
+
+  .btn--icon {
+    inline-size: var(--space-8);
+    padding-inline: 0;
+
+    &.btn--sm {
+      inline-size: 1.75rem;
+    }
+  }
+
+  .btn--block {
+    inline-size: 100%;
+  }
+}
+
+/* Two states a button's markup doesn't carry. */
 
 /* A form being submitted (Turbo marks it aria-busy and disables its submit
    button): the disabled submit button shows a pulsing ellipsis in place of
@@ -42,9 +139,9 @@
 
   @keyframes copied {
     0% {
-      background-color: var(--color-green-50);
-      border-color: var(--color-green-300);
-      color: var(--color-green-700);
+      background-color: var(--green-50);
+      border-color: var(--green-300);
+      color: var(--green-700);
       scale: 0.94;
     }
 
@@ -53,21 +150,21 @@
     }
 
     80% {
-      background-color: var(--color-green-50);
-      border-color: var(--color-green-300);
-      color: var(--color-green-700);
+      background-color: var(--green-50);
+      border-color: var(--green-300);
+      color: var(--green-700);
     }
   }
 }
 
 /* With reduced motion the animation ends at once, so it stays green instead
-   (in the utilities layer, after the utility classes', to beat the button's colors). */
-@layer utilities {
+   (in the helpers layer, after the components', to beat the button's colors). */
+@layer helpers {
   @media (prefers-reduced-motion: reduce) {
     .btn--success {
-      background-color: var(--color-green-50);
-      border-color: var(--color-green-300);
-      color: var(--color-green-700);
+      background-color: var(--green-50);
+      border-color: var(--green-300);
+      color: var(--green-700);
     }
   }
 }

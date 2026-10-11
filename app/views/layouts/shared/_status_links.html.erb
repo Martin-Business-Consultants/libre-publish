@@ -3,18 +3,16 @@
     Draft (4)", drawn as quiet tabs, the current one filled. options:
     [[label, value, count], …], the first usually All with value nil. Each
     link swaps one query param, so filters are bookmarkable. %>
-<ul class="mb-4 flex flex-wrap items-center gap-1 text-sm" role="list">
+<ul class="status-links" role="list">
   <% options.each do |label, value, count| %>
     <%# herb:key label %>
     <% chosen = value.to_s == current.to_s %>
     <li>
       <%= link_to url_for(request.query_parameters.except("page").merge(param.to_s => value.presence).compact),
-            class: class_names("inline-flex h-7 items-center gap-1.5 rounded-md px-2.5",
-              chosen ? "bg-gray-100 font-medium text-gray-900" : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"),
-            aria: { current: ("page" if chosen) } do %>
+            class: "status-links__link", aria: { current: ("page" if chosen) } do %>
         <%= label %>
         <% if count %>
-          <span class="<%= class_names("text-xs tabular-nums", chosen ? "text-gray-500" : "text-gray-400") %>"><%= count %></span>
+          <span class="status-links__count"><%= count %></span>
         <% end %>
       <% end %>
     </li>

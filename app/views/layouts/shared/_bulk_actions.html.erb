@@ -10,13 +10,13 @@
     action instead, each posting to its own resource (formaction); Delete
     opens under a <details> first, so it still takes a second click. %>
 <% message = delete_message || "They go to the trash, where they can be restored." %>
-<div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+<div class="list-toolbar">
   <% if status_path || deletion_path %>
     <%= form_with url: status_path || deletion_path, id: id, data: { controller: "bulk-actions" } do %>
       <div data-bulk-actions-target="controls" hidden>
-        <div class="flex items-center gap-2">
-          <label class="sr-only" for="<%= id %>_choice">Bulk actions</label>
-          <select id="<%= id %>_choice" class="w-44" data-bulk-actions-target="choice">
+        <div class="row">
+          <label class="visually-hidden" for="<%= id %>_choice">Bulk actions</label>
+          <select id="<%= id %>_choice" class="list-toolbar__choice" data-bulk-actions-target="choice">
             <option value="">Bulk actions</option>
             <% if deletion_path %>
               <option value="delete" data-url="<%= deletion_path %>" data-confirm="true">Delete</option>
@@ -29,35 +29,35 @@
             <% end %>
           </select>
           <input type="hidden" name="status" value="" data-bulk-actions-target="status">
-          <button type="button" class="<%= ui(:button) %>" data-action="bulk-actions#apply">Apply</button>
+          <button type="button" class="btn" data-action="bulk-actions#apply">Apply</button>
         </div>
       </div>
       <noscript>
-        <div class="flex flex-wrap items-center gap-2">
+        <div class="cluster">
           <% if status_path %>
             <% Array(statuses).each do |status| %>
               <%# herb:key status %>
-              <button type="submit" class="<%= ui(:button, :small) %>" formaction="<%= status_path %>" name="status" value="<%= status %>">Set to <%= status.to_s.humanize.downcase %></button>
+              <button type="submit" class="btn btn--sm" formaction="<%= status_path %>" name="status" value="<%= status %>">Set to <%= status.to_s.humanize.downcase %></button>
             <% end %>
           <% end %>
           <% if deletion_path %>
             <details>
-              <summary class="<%= ui(:button, :danger, :small) %>">Delete…</summary>
-              <div class="mt-2 flex flex-wrap items-center gap-2 text-sm text-gray-600">
+              <summary class="btn btn--danger btn--sm">Delete…</summary>
+              <div class="list-toolbar__confirm cluster text-body">
                 <span><%= message %></span>
-                <button type="submit" class="<%= ui(:button, :destructive, :small) %>" formaction="<%= deletion_path %>">Delete the ticked <%= noun.pluralize %></button>
+                <button type="submit" class="btn btn--destructive btn--sm" formaction="<%= deletion_path %>">Delete the ticked <%= noun.pluralize %></button>
               </div>
             </details>
           <% end %>
         </div>
       </noscript>
-      <dialog class="<%= ui(:dialog, "dialog dialog--action") %>" data-bulk-actions-target="dialog">
-        <h3 class="text-lg font-semibold text-gray-900">Delete the ticked <%= noun.pluralize %>?</h3>
-        <p class="text-sm text-gray-600"><%= message %></p>
-        <div class="mt-2 flex justify-end gap-2">
-          <button type="button" class="<%= ui(:button) %>" data-action="bulk-actions#cancel">Cancel</button>
-          <button type="submit" class="<%= ui(:button, :destructive) %>">
-            <%= icon_tag "trash", class: "size-4" %>
+      <dialog class="dialog dialog--action" data-bulk-actions-target="dialog">
+        <h3 class="heading heading--lg">Delete the ticked <%= noun.pluralize %>?</h3>
+        <p class="text-body"><%= message %></p>
+        <div class="dialog__actions">
+          <button type="button" class="btn" data-action="bulk-actions#cancel">Cancel</button>
+          <button type="submit" class="btn btn--destructive">
+            <%= icon_tag "trash", class: "icon--sm" %>
             <span>Delete</span>
           </button>
         </div>
@@ -65,7 +65,7 @@
     <% end %>
   <% end %>
   <% unless search == false %>
-    <div class="ml-auto w-full sm:w-auto">
+    <div class="list-toolbar__search">
       <%= render "layouts/shared/list_search" %>
     </div>
   <% end %>

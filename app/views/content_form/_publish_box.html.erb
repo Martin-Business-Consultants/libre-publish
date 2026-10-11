@@ -11,73 +11,70 @@
 <% status = statusful ? (record.status.presence || "draft") : nil %>
 <% revisions = record.persisted? && record.respond_to?(:versions) ? record.versions.size : 0 %>
 <% lines = statusful || revisions.positive? || !can_publish %>
-<% line_classes = "flex items-start gap-2 text-gray-700" %>
-<% icon_classes = "mt-0.5 size-4 text-gray-400" %>
-<% field_classes = "mt-2 flex flex-col gap-3" %>
 <%= postbox "publish", "Publish", flush: true do %>
   <div data-controller="publish-box">
     <% if statusful && status == "draft" %>
-      <div class="px-5 pt-4">
-        <button type="submit" class="<%= ui(:button, :small) %>" data-action="publish-box#submit" data-publish-box-status-param="draft"><%= tx("Save Draft") %></button>
+      <div class="publish-box__draft">
+        <button type="submit" class="btn btn--sm" data-action="publish-box#submit" data-publish-box-status-param="draft"><%= tx("Save Draft") %></button>
       </div>
     <% end %>
 
     <% if lines %>
-      <div class="flex flex-col gap-3 px-5 py-4">
+      <div class="publish-box__lines">
         <% if statusful %>
-          <div class="<%= line_classes %>">
-            <%= icon_tag "pinned", class: icon_classes %>
-            <div class="min-w-0 flex-1">
-              <span><%= tx("Status:") %> <strong class="font-semibold text-gray-900"><%= tx(status.humanize) %></strong></span>
+          <div class="publish-box__line">
+            <%= icon_tag "pinned", class: "publish-box__icon" %>
+            <div class="grow">
+              <span><%= tx("Status:") %> <strong class="text-semibold text-ink"><%= tx(status.humanize) %></strong></span>
               <details class="inline-edit">
-                <summary class="<%= ui(:link) %>"><%= tx("Edit") %></summary>
-                <label class="<%= field_classes %>">
-                  <span class="sr-only"><%= tx("Status") %></span>
-                  <%= form.select :status, statuses.map { [tx(it), it] }, {}, class: "w-full", data: { publish_box_target: "status" } %>
+                <summary class="link"><%= tx("Edit") %></summary>
+                <label class="publish-box__field">
+                  <span class="visually-hidden"><%= tx("Status") %></span>
+                  <%= form.select :status, statuses.map { [tx(it), it] }, {}, class: "full-width", data: { publish_box_target: "status" } %>
                 </label>
               </details>
             </div>
           </div>
 
-          <div class="<%= line_classes %>">
-            <%= icon_tag "history", class: icon_classes %>
-            <div class="min-w-0 flex-1">
+          <div class="publish-box__line">
+            <%= icon_tag "history", class: "publish-box__icon" %>
+            <div class="grow">
               <span>
                 <% if record.publish_at.present? && record.publish_at > Time.current && status != "published" %>
-                  <%= tx("Scheduled for") %> <strong class="font-semibold text-gray-900"><%= site_time_tag(record.publish_at) %></strong>
+                  <%= tx("Scheduled for") %> <strong class="text-semibold text-ink"><%= site_time_tag(record.publish_at) %></strong>
                 <% elsif status == "published" && record.respond_to?(:published_at) && record.published_at.present? %>
-                  <%= tx("Published on") %> <strong class="font-semibold text-gray-900"><%= site_time_tag(record.published_at) %></strong>
+                  <%= tx("Published on") %> <strong class="text-semibold text-ink"><%= site_time_tag(record.published_at) %></strong>
                 <% else %>
-                  <%= tx("Publish") %> <strong class="font-semibold text-gray-900"><%= tx("immediately") %></strong>
+                  <%= tx("Publish") %> <strong class="text-semibold text-ink"><%= tx("immediately") %></strong>
                 <% end %>
               </span>
               <details class="inline-edit">
-                <summary class="<%= ui(:link) %>"><%= tx("Edit") %></summary>
-                <div class="<%= field_classes %>">
+                <summary class="link"><%= tx("Edit") %></summary>
+                <div class="publish-box__field">
                   <%= render "content_form/schedule", record: record, scope: scope %>
                 </div>
               </details>
             </div>
           </div>
           <% if record.unpublish_at.present? && record.unpublish_at > Time.current && status == "published" %>
-            <p class="<%= ui(:notice, :yellow) %>"><span><%= tx("Will unpublish") %> <%= site_time_tag(record.unpublish_at) %>.</span></p>
+            <p class="notice notice--warning"><span><%= tx("Will unpublish") %> <%= site_time_tag(record.unpublish_at) %>.</span></p>
           <% end %>
         <% end %>
 
         <% if revisions.positive? %>
-          <div class="<%= line_classes %>">
-            <%= icon_tag "refresh", class: icon_classes %>
-            <div class="min-w-0 flex-1">
-              <span><%= tx("Revisions:") %> <strong class="font-semibold text-gray-900"><%= revisions %></strong></span>
+          <div class="publish-box__line">
+            <%= icon_tag "refresh", class: "publish-box__icon" %>
+            <div class="grow">
+              <span><%= tx("Revisions:") %> <strong class="text-semibold text-ink"><%= revisions %></strong></span>
               <% if (browse = versions_path_for(record)) %>
-                <%= link_to tx("Browse"), browse, class: ui(:link) %>
+                <%= link_to tx("Browse"), browse, class: "link" %>
               <% end %>
             </div>
           </div>
         <% end %>
 
         <% unless can_publish %>
-          <p class="<%= ui(:notice, :yellow) %>">
+          <p class="notice notice--warning">
             <% if statusful && status == "draft" %>
               <%= tx("Your role can't publish. Save it as a draft, and someone who can publishes it.") %>
             <% elsif record.persisted? %>
@@ -89,13 +86,13 @@
     <% end %>
 
     <% if trash_path || label %>
-      <div class="<%= class_names("flex items-center justify-between gap-2 rounded-b-xl bg-gray-50 px-5 py-3", lines ? "border-t border-gray-200" : nil) %>">
+      <div class="publish-box__actions">
         <% if trash_path %>
           <%= render "layouts/shared/delete_dialog", name: trash_name, path: trash_path, trigger_text: tx("Move to Trash"), form: trash_form,
                 message: tx("It goes to the trash, where it can be restored.") %>
         <% end %>
         <% if label %>
-          <button type="submit" class="<%= ui(:button, :primary, "ms-auto") %>" data-action="publish-box#submit" data-publish-box-status-param="<%= sets_status %>"><%= tx(label) %></button>
+          <button type="submit" class="btn btn--primary push-end" data-action="publish-box#submit" data-publish-box-status-param="<%= sets_status %>"><%= tx(label) %></button>
         <% end %>
       </div>
     <% end %>

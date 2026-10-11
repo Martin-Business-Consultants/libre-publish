@@ -109,10 +109,10 @@ class Branding
     [primary_color, secondary_color, font, border_radius, box_shadow].any?(&:present?)
   end
 
-  # The accent scale the markup's blue classes read (_global.css), mixed from
-  # the color as Tailwind's steps are spaced around its 600, with dark words
-  # on an accent fill when white wouldn't read on it. Unlayered, like the
-  # defaults it replaces; the dark theme mixes its accents from these.
+  # The brand scale the admin's accent reads (--brand-*, _global.css), mixed
+  # from the color in ten steps around its 600, with dark words on an accent
+  # fill when white wouldn't read on it. Unlayered, like the defaults it
+  # replaces; the dark theme mixes its accents from these.
   ACCENT_STEPS = {
     50 => "color-mix(in oklch, %s 8%%, white)",
     100 => "color-mix(in oklch, %s 16%%, white)",
@@ -126,7 +126,7 @@ class Branding
     900 => "color-mix(in oklch, %s 56%%, black)"
   }.freeze
 
-  # Corners: the radii the utilities' rounded-sm/-md/-lg/-xl read (badges,
+  # Corners: the radii the components read (--radius-sm/-md/-lg/-xl: badges,
   # controls, notices, panels and menus).
   CORNERS = {
     "none" => {sm: "0", md: "0", lg: "0", xl: "0"},
@@ -135,8 +135,8 @@ class Branding
     "large" => {sm: "0.375rem", md: "0.625rem", lg: "0.875rem", xl: "1.25rem"}
   }.freeze
 
-  # Shadow: a panel's (shadow-surface) and what floats over the page
-  # (shadow-overlay: menus, dialogs, sheets, toasts).
+  # Shadow: a panel's (--shadow-surface) and what floats over the page
+  # (--shadow-overlay: menus, dialogs, sheets, toasts).
   SHADOW_TOKENS = {
     "none" => {surface: "0 0 #0000", overlay: "0 0 #0000"},
     "small" => {
@@ -156,7 +156,7 @@ class Branding
   def stylesheet
     declarations = []
     if (color = primary_color)
-      ACCENT_STEPS.each { |step, mix| declarations << "--accent-#{step}: #{format(mix, color)};" }
+      ACCENT_STEPS.each { |step, mix| declarations << "--brand-#{step}: #{format(mix, color)};" }
       declarations << "--on-accent: #1c1917;" if light?(color)
     end
     # The grays take the secondary color's hue, faintly (_global.css).

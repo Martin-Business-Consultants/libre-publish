@@ -1,17 +1,14 @@
 # frozen_string_literal: true
 
 module ApplicationHelper
-  UTILITIES_STYLESHEET = "utilities"
-
   def page_title_tag
     tag.title [(tx(@page_title) if @page_title), current_branding[:site_title].presence || "CMS"].compact.join(" | ")
   end
 
   # Herb compiles stylesheet_link_tag into a single <link>, which skips
-  # Propshaft's :app expansion, so the layout calls this instead. The utility
-  # classes (lib/assets/stylesheets/utilities.css, Tailwind's, ours, no
-  # build) come first: their @layer statement sets the order the app's
-  # layers join (_global.css).
+  # Propshaft's :app expansion, so the layout calls this instead. The app's
+  # stylesheets are the admin's own CSS (STYLE.md); _global.css, first by
+  # name, sets the order of their layers.
   #
   # A plugin's stylesheets load only where it shows something
   # (page_plugins), each in its own tag, which Turbo adds and drops as pages
@@ -21,7 +18,6 @@ module ApplicationHelper
   # than a page that fails.
   def app_stylesheet_tags
     safe_join([
-      stylesheet_link_tag(UTILITIES_STYLESHEET, "data-turbo-track": "reload"),
       stylesheet_link_tag(:app, "data-turbo-track": "reload"),
       *Cms::Plugins.enabled_stylesheets(page_plugins).filter_map { plugin_stylesheet_tag(it) }
     ], "\n")
@@ -71,15 +67,16 @@ module ApplicationHelper
     STATUS_TONES.fetch(label.to_s.downcase) { highlight ? "progress" : "neutral" }
   end
 
-  # The badge color for each tone: green for what's live or done, red for
-  # what failed, yellow for what waits, the accent for what's under way.
-  STATUS_BADGES = {"positive" => :green, "negative" => :red, "waiting" => :yellow, "progress" => :blue, "neutral" => :gray}.freeze
+  # The badge for each tone (badges.css): green for what's live or done, red
+  # for what failed, yellow for what waits, the accent for what's under way.
+  STATUS_BADGES = {"positive" => "badge badge--success", "negative" => "badge badge--danger", "waiting" => "badge badge--warning",
+                   "progress" => "badge badge--info", "neutral" => "badge"}.freeze
 
   # A status label as a small chip tinted by what it means (data-tone names
   # the meaning).
   def status_tag(label, highlight: false)
     tone = status_tone(label, highlight: highlight)
-    tag.span label, class: ui(:badge, STATUS_BADGES.fetch(tone)), data: {tone: tone}
+    tag.span label, class: STATUS_BADGES.fetch(tone), data: {tone: tone}
   end
 
   # The site's color and font (Settings › Branding) on top of the app's
@@ -122,7 +119,7 @@ module ApplicationHelper
   # shows as text.
   def external_link(url, text = url, link_class: nil)
     if external_url?(url)
-      link_to text, url.to_s, class: link_class || ui(:link), target: "_blank", rel: "noopener"
+      link_to text, url.to_s, class: link_class || "link", target: "_blank", rel: "noopener"
     else
       text.to_s
     end
@@ -146,16 +143,16 @@ module ApplicationHelper
 
   # A key, token or secret, masked until the eye is clicked. A helper, not a
   # partial, so it works inside form_with. reveal_controller toggles
-  # .secret-field--shown, which swaps the eye's two icons (inputs.css).
+  # .secret-field--shown, which swaps the eye's two icons (forms.css).
   def secret_field(form, method, placeholder: nil, **options)
-    tag.span class: "secret-field relative flex items-center", data: {controller: "reveal"} do
+    tag.span class: "secret-field", data: {controller: "reveal"} do
       safe_join([
-        form.password_field(method, value: form.object.try(method), class: "w-full pr-10 font-mono", autocomplete: "off",
+        form.password_field(method, value: form.object.try(method), autocomplete: "off",
           spellcheck: false, placeholder: placeholder, data: {reveal_target: "input", "1p-ignore": true}, **options),
-        tag.button(type: "button", class: ui(:button, :plain, :icon, "absolute right-0"), title: "Show", aria: {pressed: false},
+        tag.button(type: "button", class: "btn btn--plain btn--icon", title: "Show", aria: {pressed: false},
           data: {reveal_target: "button", action: "reveal#toggle"}) do
-          safe_join([icon_tag("eye", class: "secret-field__show size-4"), icon_tag("eye-off", class: "secret-field__hide size-4"),
-            tag.span("Show or hide", class: "sr-only")])
+          safe_join([icon_tag("eye", class: "secret-field__show icon--sm"), icon_tag("eye-off", class: "secret-field__hide icon--sm"),
+            tag.span("Show or hide", class: "visually-hidden")])
         end
       ])
     end

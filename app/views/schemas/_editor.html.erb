@@ -3,7 +3,7 @@
     Posts `<scope>[fields][<row id>][…]` rows that SchemaFields reads back into
     field definitions; the schema-editor controller adds, removes and reorders
     rows, and each row's type decides which of its settings show (schemas.css). %>
-<div class="flex flex-col gap-4" data-controller="schema-editor">
+<div class="stack" data-controller="schema-editor">
   <%= render "schemas/list", fields: fields, prefix: scope + "[fields]", field_types: field_types,
         collection_slugs: collection_slugs, block_slugs: block_slugs %>
 

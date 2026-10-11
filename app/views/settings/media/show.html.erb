@@ -7,18 +7,18 @@
 <% end %>
 
 <%= form_with url: settings_media_path, id: "media_form", method: :patch, scope: :media do |form| %>
-  <%= tag.fieldset class: "space-y-6", disabled: !can_write do %>
-    <section class="<%= ui(:panel, "space-y-5 p-6") %>">
-      <div class="space-y-1">
-        <h2 class="<%= ui(:heading) %>">Image limits</h2>
-        <p class="text-sm text-gray-500">How heavy an image on the website may be. Heavy images make pages slow, most of all on phones. A JPEG, PNG or WebP over either limit is made a lighter WebP within them; its original is kept, to restore from its details. GIFs and SVGs are left as they are.</p>
+  <%= tag.fieldset class: "stack stack--lg", disabled: !can_write do %>
+    <section class="panel panel--padded fields">
+      <div class="stack stack--xs">
+        <h2 class="heading">Image limits</h2>
+        <p class="text-muted">How heavy an image on the website may be. Heavy images make pages slow, most of all on phones. A JPEG, PNG or WebP over either limit is made a lighter WebP within them; its original is kept, to restore from its details. GIFs and SVGs are left as they are.</p>
       </div>
-      <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+      <div class="grid grid--2 fields-grid">
         <%= settings_field "Largest file (KB)", hint: "#{ImageLimits::DEFAULT_MAX_KB} KB suits most sites; 1000 KB is 1 MB." do %>
-          <%= form.number_field :max_kb, value: @limits["max_kb"], class: "w-full", min: ImageLimits::KB_RANGE.min, max: ImageLimits::KB_RANGE.max, step: 50 %>
+          <%= form.number_field :max_kb, value: @limits["max_kb"], min: ImageLimits::KB_RANGE.min, max: ImageLimits::KB_RANGE.max, step: 50 %>
         <% end %>
         <%= settings_field "Longest side (pixels)", hint: "#{ImageLimits::DEFAULT_MAX_SIDE} is sharp on large, high-density screens." do %>
-          <%= form.number_field :max_side, value: @limits["max_side"], class: "w-full", min: ImageLimits::SIDE_RANGE.min, max: ImageLimits::SIDE_RANGE.max, step: 10 %>
+          <%= form.number_field :max_side, value: @limits["max_side"], min: ImageLimits::SIDE_RANGE.min, max: ImageLimits::SIDE_RANGE.max, step: 10 %>
         <% end %>
       </div>
       <%= settings_switch form, :optimize_uploads, "Make uploads lighter as they arrive",
@@ -27,10 +27,10 @@
   <% end %>
 <% end %>
 
-<section class="<%= ui(:panel, "mt-6 flex flex-wrap items-center justify-between gap-3 p-6") %>">
-  <div class="space-y-1">
-    <h2 class="<%= ui(:heading) %>">Images already in the library</h2>
-    <p class="text-sm text-gray-500">
+<section class="panel panel--padded cluster cluster--between cluster--md">
+  <div class="stack stack--xs">
+    <h2 class="heading">Images already in the library</h2>
+    <p class="text-muted">
       <% if @over.zero? then %>
         Every image is within the limits.
       <% else %>
@@ -38,5 +38,5 @@
       <% end %>
     </p>
   </div>
-  <%= link_to "Open the Media Library", file_manager_path, class: ui(:button) unless @over.zero? %>
+  <%= link_to "Open the Media Library", file_manager_path, class: "btn" unless @over.zero? %>
 </section>

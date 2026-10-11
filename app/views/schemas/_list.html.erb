@@ -1,6 +1,6 @@
 <%# locals: (fields:, prefix:, field_types:, collection_slugs:, block_slugs: nil) %>
-<div class="schema-list flex flex-col gap-3" data-prefix="<%= prefix %>">
-  <ol class="schema-list__fields flex flex-col gap-2">
+<div class="schema-list stack stack--md" data-prefix="<%= prefix %>">
+  <ol class="schema-list__fields stack stack--sm">
     <% Array(fields).each_with_index do |field, index| %>
       <%# herb:key index %>
       <%= render "schemas/field", field: field, prefix: prefix, key: "f" + index.to_s,
@@ -8,8 +8,8 @@
     <% end %>
   </ol>
   <div>
-    <button type="button" class="<%= ui(:button, :small) %>" data-action="schema-editor#add">
-      <%= icon_tag "add", class: "size-4" %>
+    <button type="button" class="btn btn--sm" data-action="schema-editor#add">
+      <%= icon_tag "add" %>
       <span>Add field</span>
     </button>
   </div>

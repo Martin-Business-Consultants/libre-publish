@@ -1,0 +1,85 @@
+/* A panel: the white box most of a screen sits in, a hairline around it and
+   the branding's corners and shadow. Bare, it has no padding (a table fills
+   it edge to edge); .panel--padded pads it. Its parts, when it has them:
+   __header (a heading and its actions, ruled off), __footer (a gray strip of small print or actions). .panel--scroll lets a
+   wide table scroll sideways inside it. */
+@layer components {
+  .panel {
+    background-color: var(--surface);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-surface);
+    min-inline-size: 0;
+  }
+
+  .panel--padded {
+    padding: var(--space-6);
+  }
+
+  /* A panel that's a <details>: open, its summary stands off its contents. */
+  details.panel[open] > summary {
+    margin-block-end: var(--space-4);
+  }
+
+  .panel--scroll {
+    overflow-x: auto;
+  }
+
+  .panel__header {
+    align-items: center;
+    border-block-end: 1px solid var(--gray-200);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-4);
+    justify-content: space-between;
+    padding: var(--space-4) var(--space-6);
+  }
+
+  .panel__footer {
+    background-color: var(--gray-50);
+    border-block-start: 1px solid var(--gray-200);
+    border-end-end-radius: var(--radius-xl);
+    border-end-start-radius: var(--radius-xl);
+    color: var(--gray-500);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+    padding: var(--space-2-5) var(--space-5);
+  }
+
+  /* A quieter box inside a panel or a form: gray, no border (a preview, a
+     group of options). */
+  .well {
+    background-color: var(--gray-50);
+    border-radius: var(--radius-lg);
+    padding: var(--space-3);
+  }
+
+  /* What a list or a panel says when there's nothing in it. */
+  .empty-state {
+    color: var(--gray-500);
+    padding: var(--space-12) var(--space-4);
+    text-align: center;
+  }
+
+  /* Labels and values in rows (a record's details): the label in a fixed
+     column, muted. */
+  .details {
+    display: grid;
+    gap: var(--space-2) var(--space-4);
+    grid-template-columns: 6rem minmax(0, 1fr);
+
+    > dt {
+      color: var(--gray-500);
+    }
+
+    > dd {
+      color: var(--gray-900);
+      min-inline-size: 0;
+      overflow-wrap: anywhere;
+    }
+  }
+
+  .details--wide {
+    grid-template-columns: 10rem minmax(0, 1fr);
+  }
+}

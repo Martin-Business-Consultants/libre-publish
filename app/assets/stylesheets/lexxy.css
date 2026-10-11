@@ -7,53 +7,53 @@
    the gray and accent tokens, which the dark theme re-points (_global.css),
    so the editor turns over with the rest of the admin. */
 :root {
-  --lexxy-color-ink: var(--color-gray-900);
-  --lexxy-color-ink-medium: var(--color-gray-600);
-  --lexxy-color-ink-light: var(--color-gray-400);
-  --lexxy-color-ink-lighter: var(--color-gray-200);
-  --lexxy-color-ink-lightest: var(--color-gray-100);
-  --lexxy-color-ink-inverted: var(--color-white);
+  --lexxy-color-ink: var(--gray-900);
+  --lexxy-color-ink-medium: var(--gray-600);
+  --lexxy-color-ink-light: var(--gray-400);
+  --lexxy-color-ink-lighter: var(--gray-200);
+  --lexxy-color-ink-lightest: var(--gray-100);
+  --lexxy-color-ink-inverted: var(--surface);
 
-  --lexxy-color-canvas: var(--color-white);
-  --lexxy-color-text: var(--color-gray-900);
-  --lexxy-color-text-subtle: var(--color-gray-500);
+  --lexxy-color-canvas: var(--surface);
+  --lexxy-color-text: var(--gray-900);
+  --lexxy-color-text-subtle: var(--gray-500);
 
-  --lexxy-color-accent-dark: var(--color-blue-600);
-  --lexxy-color-accent-medium: var(--color-blue-400);
-  --lexxy-color-accent-light: var(--color-blue-200);
-  --lexxy-color-accent-lightest: var(--color-blue-50);
-  --lexxy-color-link: var(--color-blue-600);
+  --lexxy-color-accent-dark: var(--accent-600);
+  --lexxy-color-accent-medium: var(--accent-400);
+  --lexxy-color-accent-light: var(--accent-200);
+  --lexxy-color-accent-lightest: var(--accent-50);
+  --lexxy-color-link: var(--accent-600);
 
-  --lexxy-color-red: var(--color-red-600);
-  --lexxy-color-green: var(--color-green-600);
-  --lexxy-color-blue: var(--color-blue-500);
-  --lexxy-color-purple: var(--color-blue-700);
+  --lexxy-color-red: var(--red-600);
+  --lexxy-color-green: var(--green-600);
+  --lexxy-color-blue: var(--accent-500);
+  --lexxy-color-purple: var(--accent-700);
 
-  --lexxy-color-code-bg: var(--color-gray-100);
-  --lexxy-color-code-token-att: var(--color-red-600);
-  --lexxy-color-code-token-comment: var(--color-gray-500);
-  --lexxy-color-code-token-function: var(--color-blue-700);
-  --lexxy-color-code-token-operator: var(--color-red-600);
-  --lexxy-color-code-token-property: var(--color-blue-600);
-  --lexxy-color-code-token-punctuation: var(--color-gray-700);
-  --lexxy-color-code-token-selector: var(--color-green-700);
-  --lexxy-color-code-token-variable: var(--color-yellow-700);
+  --lexxy-color-code-bg: var(--gray-100);
+  --lexxy-color-code-token-att: var(--red-600);
+  --lexxy-color-code-token-comment: var(--gray-500);
+  --lexxy-color-code-token-function: var(--accent-700);
+  --lexxy-color-code-token-operator: var(--red-600);
+  --lexxy-color-code-token-property: var(--accent-600);
+  --lexxy-color-code-token-punctuation: var(--gray-700);
+  --lexxy-color-code-token-selector: var(--green-700);
+  --lexxy-color-code-token-variable: var(--yellow-700);
 
-  --lexxy-color-selected: var(--color-blue-100);
-  --lexxy-color-selected-hover: var(--color-blue-200);
-  --lexxy-color-selected-dark: var(--color-blue-500);
+  --lexxy-color-selected: var(--accent-100);
+  --lexxy-color-selected-hover: var(--accent-200);
+  --lexxy-color-selected-dark: var(--accent-500);
 
-  --lexxy-color-table-header-bg: var(--color-gray-50);
-  --lexxy-color-table-cell-border: var(--color-gray-200);
-  --lexxy-color-table-cell-selected-bg: var(--color-blue-100);
-  --lexxy-color-table-cell-toggle: var(--color-blue-100);
-  --lexxy-color-table-cell-remove: var(--color-red-50);
+  --lexxy-color-table-header-bg: var(--gray-50);
+  --lexxy-color-table-cell-border: var(--gray-200);
+  --lexxy-color-table-cell-selected-bg: var(--accent-100);
+  --lexxy-color-table-cell-toggle: var(--accent-100);
+  --lexxy-color-table-cell-remove: var(--red-50);
 
   --lexxy-font-base: var(--font-sans);
   --lexxy-font-mono: var(--font-mono);
   --lexxy-radius: var(--radius-md);
   --lexxy-shadow: var(--shadow-overlay);
-  --lexxy-focus-ring-color: var(--color-blue-500);
+  --lexxy-focus-ring-color: var(--accent-500);
   --lexxy-focus-ring-offset: 2px;
 }
 
@@ -62,29 +62,29 @@
      the toolbar on a gray-50 strip across its top, the border darkening
      while the editor holds focus as a text field's does (base.css). */
   .content-rich-text lexxy-editor.lexxy-content {
-    --lexxy-editor-padding: calc(var(--spacing) * 3) calc(var(--spacing) * 3.5);
-    --lexxy-toolbar-button-size: calc(var(--spacing) * 7);
+    --lexxy-editor-padding: var(--space-3) var(--space-3-5);
+    --lexxy-toolbar-button-size: 1.75rem;
     --lexxy-toolbar-gap: 1px;
-    --lexxy-toolbar-padding: calc(var(--spacing) * 1);
+    --lexxy-toolbar-padding: var(--space-1);
 
-    background-color: var(--color-white);
-    border: 1px solid var(--color-gray-300);
+    background-color: var(--surface);
+    border: 1px solid var(--gray-300);
     border-radius: var(--radius-md);
     display: block;
     padding: 0;
 
     &:hover:not(:focus-within) {
-      border-color: var(--color-gray-400);
+      border-color: var(--gray-400);
     }
 
     &:focus-within {
-      border-color: var(--color-gray-900);
+      border-color: var(--gray-900);
       outline: none;
     }
 
     lexxy-toolbar {
-      background-color: var(--color-gray-50);
-      border-block-end: 1px solid var(--color-gray-200);
+      background-color: var(--gray-50);
+      border-block-end: 1px solid var(--gray-200);
       border-start-end-radius: var(--radius-md);
       border-start-start-radius: var(--radius-md);
       inline-size: auto;
@@ -98,7 +98,7 @@
   }
 
   lexxy-toolbar {
-    color: var(--color-gray-600);
+    color: var(--gray-600);
 
     svg {
       fill: currentColor;
@@ -113,15 +113,15 @@
 
     @media (any-hover: hover) {
       &:hover:not([aria-pressed="true"], [aria-disabled="true"]) {
-        background-color: var(--color-gray-200);
-        color: var(--color-gray-900);
+        background-color: var(--gray-200);
+        color: var(--gray-900);
       }
     }
 
     &[aria-pressed="true"],
     &[aria-expanded="true"] {
-      background-color: var(--color-gray-200);
-      color: var(--color-gray-900);
+      background-color: var(--gray-200);
+      color: var(--gray-900);
     }
   }
 
@@ -135,8 +135,8 @@
     [data-dropdown-panel] {
       --lexxy-toolbar-spacing: 1.5ch;
 
-      background-color: var(--color-white);
-      border: 1px solid var(--color-gray-200);
+      background-color: var(--surface);
+      border: 1px solid var(--gray-200);
       border-radius: var(--radius-xl);
     }
 
@@ -144,18 +144,18 @@
       border-radius: var(--radius-md);
 
       &[value="link"] {
-        background-color: var(--color-gray-900);
-        color: var(--color-white);
+        background-color: var(--gray-900);
+        color: var(--surface);
 
         &:hover {
-          background-color: var(--color-gray-800);
+          background-color: var(--gray-800);
         }
       }
 
       &[value="unlink"] {
-        background-color: var(--color-white);
-        border: 1px solid var(--color-gray-300);
-        color: var(--color-gray-900);
+        background-color: var(--surface);
+        border: 1px solid var(--gray-300);
+        color: var(--gray-900);
       }
     }
   }
@@ -188,7 +188,7 @@
     color: currentColor;
 
     h1, h2, h3, h4, h5, h6 {
-      font-weight: var(--font-weight-semibold);
+      font-weight: var(--weight-semibold);
       letter-spacing: -0.01em;
       line-height: 1.2;
       overflow-wrap: break-word;
@@ -225,19 +225,19 @@
     }
 
     a {
-      color: var(--color-blue-600);
+      color: var(--accent-600);
       text-decoration: underline;
     }
 
     blockquote {
-      border-inline-start: 3px solid var(--color-gray-300);
-      color: var(--color-gray-600);
+      border-inline-start: 3px solid var(--gray-300);
+      color: var(--gray-600);
       padding-block: 0;
     }
 
     code:not(pre code) {
-      background: var(--color-gray-100);
-      border: 1px solid var(--color-gray-200);
+      background: var(--gray-100);
+      border: 1px solid var(--gray-200);
       border-radius: var(--radius-sm);
     }
 
@@ -249,7 +249,7 @@
 
     hr {
       border: 0;
-      border-block-end: 1px solid var(--color-gray-300);
+      border-block-end: 1px solid var(--gray-300);
       inline-size: 100%;
       margin: calc(var(--lexxy-content-margin) * 2) 0;
     }
@@ -261,8 +261,8 @@
       }
 
       tr:not([data-action="delete"]) {
-        th:not([class*="selected"], [data-action="delete"], [data-action="toggle"]) { background-color: var(--color-gray-50); }
-        td:not([class*="selected"], [data-action="delete"], [data-action="toggle"]) { background-color: var(--color-white); }
+        th:not([class*="selected"], [data-action="delete"], [data-action="toggle"]) { background-color: var(--gray-50); }
+        td:not([class*="selected"], [data-action="delete"], [data-action="toggle"]) { background-color: var(--surface); }
       }
     }
 
@@ -290,7 +290,7 @@
       inset-inline-start: -0.25ch;
 
       .lexxy-floating-controls__group {
-        background-color: var(--color-blue-600);
+        background-color: var(--accent-600);
         border-radius: 50%;
       }
     }

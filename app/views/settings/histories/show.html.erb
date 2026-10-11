@@ -1,7 +1,7 @@
 <% @page_title = "History" %>
 <%= parent_page "History", settings_histories_path %>
 <%= render "layouts/shared/page_header", title: "Compare a version of " + @version.label %>
-<section class="<%= ui(:panel, "mt-4 flex flex-col gap-5 p-6 text-left") %>">
+<section class="panel panel--padded fields">
   <%= render "versions/comparison", version: @version, restore_path: restore_settings_history_path(@version),
         can_restore: Current.user.can?("settings:write") %>
 </section>

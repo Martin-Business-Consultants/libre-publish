@@ -4,47 +4,47 @@
     itself at /collections/new (the menus link there) and when a submit came
     back with errors. %>
 <div class="contents" data-controller="dialog" data-dialog-modal-value="true" data-dialog-auto-open-value="<%= open %>" data-action="keydown.esc->dialog#close:stop">
-  <button type="button" class="<%= ui(:button) %>" data-keys="n" data-action="dialog#open">
-    <%= icon_tag "add", class: "size-4" %>
+  <button type="button" class="btn" data-keys="n" data-action="dialog#open">
+    <%= icon_tag "add" %>
     <span>New collection</span>
   </button>
-  <dialog class="<%= ui(:sheet) %>" data-dialog-target="dialog" aria-label="New collection" closedby="any">
-    <h2 class="text-lg font-semibold text-gray-900">New collection</h2>
+  <dialog class="dialog dialog--sheet" data-dialog-target="dialog" aria-label="New collection" closedby="any">
+    <h2 class="heading heading--lg">New collection</h2>
     <%= render "layouts/shared/errors", record: collection %>
-    <%= form_with model: collection, url: collections_path, class: "flex flex-col gap-5", data: { controller: "slug" } do |form| %>
-      <label class="block space-y-1.5">
-        <span class="<%= ui(:label) %>">Name</span>
-        <%= form.text_field :name, class: "w-full", placeholder: "Posts", autocomplete: "off", data: { slug_target: "source", action: "slug#fill" } %>
+    <%= form_with model: collection, url: collections_path, class: "fields", data: { controller: "slug" } do |form| %>
+      <label class="field">
+        <span class="label">Name</span>
+        <%= form.text_field :name, placeholder: "Posts", autocomplete: "off", data: { slug_target: "source", action: "slug#fill" } %>
       </label>
-      <label class="block space-y-1.5">
-        <span class="<%= ui(:label) %>">Slug</span>
-        <%= form.text_field :slug, class: "w-full font-mono", placeholder: "posts", autocomplete: "off", spellcheck: false, data: { slug_target: "slug", action: "slug#take" } %>
-        <span class="<%= ui(:help, "block") %>">How the site and the API name it. It can’t change later. A template fills both in when left blank.</span>
+      <label class="field">
+        <span class="label">Slug</span>
+        <%= form.text_field :slug, class: "text-mono", placeholder: "posts", autocomplete: "off", spellcheck: false, data: { slug_target: "slug", action: "slug#take" } %>
+        <span class="help">How the site and the API name it. It can’t change later. A template fills both in when left blank.</span>
       </label>
 
-      <fieldset class="space-y-1.5">
-        <legend class="<%= ui(:label, "mb-1.5") %>">Start from</legend>
-        <div class="max-h-80 space-y-2 overflow-y-auto">
-          <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-gray-200 px-3 py-2.5 text-sm hover:bg-gray-50">
-            <%= radio_button_tag :template, "", params[:template].blank?, id: nil, class: "mt-0.5" %>
-            <span class="text-gray-900">No fields yet — I’ll define them</span>
+      <fieldset class="field">
+        <legend class="label">Start from</legend>
+        <div class="template-choices">
+          <label class="choice choice--top template-choice">
+            <%= radio_button_tag :template, "", params[:template].blank?, id: nil %>
+            <span class="text-ink">No fields yet — I’ll define them</span>
           </label>
           <% Collection::TEMPLATES.each do |template| %>
             <%# herb:key template["key"] %>
-            <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-gray-200 px-3 py-2.5 text-sm hover:bg-gray-50">
-              <%= radio_button_tag :template, template["key"], params[:template] == template["key"], id: nil, class: "mt-0.5" %>
-              <span class="flex flex-col gap-0.5">
-                <strong class="font-medium text-gray-900"><%= template["name"] %></strong>
-                <span class="<%= ui(:help) %>"><%= template["description"] %> · <%= pluralize(template["fields"].size, "field") %></span>
+            <label class="choice choice--top template-choice">
+              <%= radio_button_tag :template, template["key"], params[:template] == template["key"], id: nil %>
+              <span class="stack stack--2xs">
+                <strong class="text-medium text-ink"><%= template["name"] %></strong>
+                <span class="help"><%= template["description"] %> · <%= pluralize(template["fields"].size, "field") %></span>
               </span>
             </label>
           <% end %>
         </div>
       </fieldset>
 
-      <div class="dialog__actions flex justify-end gap-2">
-        <button type="button" class="<%= ui(:button) %>" data-action="dialog#close">Cancel</button>
-        <%= form.button "Create collection", class: ui(:button, :primary) %>
+      <div class="dialog__actions">
+        <button type="button" class="btn" data-action="dialog#close">Cancel</button>
+        <%= form.button "Create collection", class: "btn btn--primary" %>
       </div>
     <% end %>
   </dialog>

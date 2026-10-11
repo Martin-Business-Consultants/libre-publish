@@ -1,9 +1,51 @@
-/* A trashed image's preview (trash/_details): media_thumbnail draws a bare
-   <img>, so its size limits hang on the wrapper. */
+/* Tools' lists (seo_audits/show, search_replaces/show, backups/show). */
 @layer components {
-  .trash-item__preview img {
-    max-block-size: 50dvh;
-    max-inline-size: 100%;
-    object-fit: contain;
+  /* library candidate: rows of results, a hairline between each. */
+  .result-list {
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+
+    > li {
+      padding-block: var(--space-2-5);
+    }
+
+    > li + li {
+      border-block-start: 1px solid var(--gray-100);
+    }
+  }
+
+  /* library candidate: a short list in a bordered box, a hairline between
+     its rows (what a backup will hold). */
+  .boxed-list {
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+
+    > li {
+      color: var(--gray-700);
+      padding: var(--space-2) var(--space-3);
+    }
+
+    > li + li {
+      border-block-start: 1px solid var(--gray-100);
+    }
+  }
+
+  /* Replace all, ruled off under the matches. */
+  .search-replace__confirm {
+    border-block-start: 1px solid var(--gray-100);
+    padding-block-start: var(--space-4);
+  }
+
+  /* A redirect's Delete, at the start of the sheet's actions. */
+  .redirect-sheet__delete {
+    margin-inline-end: auto;
+  }
+
+  /* library candidate: a label drawn as a button (Import CSV, around a
+     hidden file input) points like one. */
+  label.btn {
+    cursor: pointer;
   }
 }

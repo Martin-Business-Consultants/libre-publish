@@ -1,11 +1,11 @@
 <% @page_title = "Dashboard" %>
 <%= render "layouts/shared/page_header", title: @page_title %>
 
-<div class="max-w-6xl space-y-8">
+<div class="dashboard">
   <%= render "dashboard/content" %>
 
   <% if Current.user.can?("pages:read") %>
-    <div class="grid items-start gap-6 lg:grid-cols-2">
+    <div class="dashboard__columns">
       <%= render "dashboard/api_use" %>
       <% if Serving.api? then %>
         <%= render "dashboard/frontend" %>

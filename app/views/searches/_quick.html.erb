@@ -3,26 +3,26 @@
     typed: titles that match it fuzzily, then records whose text holds it,
     each a link the arrow keys walk. %>
 <% if quick.blank? then %>
-  <p class="px-3 py-8 text-center text-sm text-gray-500">Type to find a page, entry, global, user…</p>
+  <p class="search-results__empty">Type to find a page, entry, global, user…</p>
 <% elsif !quick.any? then %>
-  <p class="px-3 py-8 text-center text-sm text-gray-500">Nothing matches “<%= quick.term %>”.</p>
+  <p class="search-results__empty">Nothing matches “<%= quick.term %>”.</p>
 <% else %>
   <% [["Titles", quick.titles], ["In the text", quick.texts]].each do |heading, results| %>
     <% if results.any? then %>
-      <p class="px-3 pb-1 pt-3 text-xs font-semibold uppercase tracking-wide text-gray-500"><%= heading %></p>
+      <p class="eyebrow search-results__heading"><%= heading %></p>
       <ul role="listbox" aria-label="<%= heading %>">
         <% results.each do |result| %>
           <%# herb:key "#{result.record.class.name}-#{result.record.id}" %>
           <li>
-            <%= link_to search_result_path(result.record), class: "global-search__result flex items-start gap-3 rounded-md px-3 py-2 text-sm text-gray-900",
+            <%= link_to search_result_path(result.record), class: "global-search__result search-results__item",
                   role: "option", data: { global_search_target: "result", action: "mouseenter->global-search#hover" } do %>
-              <span class="min-w-0 flex-1">
-                <span class="block truncate font-medium"><%= search_marked_title(result.title, result.marks) %></span>
+              <span class="grow">
+                <span class="search-results__title truncate"><%= search_marked_title(result.title, result.marks) %></span>
                 <% if result.snippet.present? then %>
-                  <span class="mt-0.5 block truncate text-xs text-gray-500"><%= sanitize result.snippet, tags: %w[mark] %></span>
+                  <span class="search-results__snippet truncate"><%= sanitize result.snippet, tags: %w[mark] %></span>
                 <% end %>
               </span>
-              <span class="<%= ui(:badge, :gray) %>"><%= result.kind %></span>
+              <span class="badge"><%= result.kind %></span>
             <% end %>
           </li>
         <% end %>
@@ -31,6 +31,6 @@
   <% end %>
 <% end %>
 <% unless quick.blank? %>
-  <%= link_to "All results for “#{quick.term}”", search_path(q: quick.term), class: "global-search__result mt-2 block rounded-md px-3 py-2 text-sm text-blue-600",
+  <%= link_to "All results for “#{quick.term}”", search_path(q: quick.term), class: "global-search__result search-results__item search-results__all",
         data: { global_search_target: "result", action: "mouseenter->global-search#hover" } %>
 <% end %>

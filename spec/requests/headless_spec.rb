@@ -20,7 +20,7 @@ RSpec.describe "Headless", type: :request do
     expect(response.body).to include('data-controller="tabs"', api_preview_path("page", page.id))
 
     get api_preview_path("page", page.id)
-    preview = response.body[%r{<pre class="api-json__body [^"]*"><code>(.*)</code></pre>}m, 1]
+    preview = response.body[%r{<pre class="[^"]*\bapi-json__body\b[^"]*"><code>(.*)</code></pre>}m, 1]
     get "/api/pages/about", params: {resolve: "assets"}, headers: api_headers
     expect(JSON.parse(CGI.unescapeHTML(preview))).to eq(response.parsed_body)
 

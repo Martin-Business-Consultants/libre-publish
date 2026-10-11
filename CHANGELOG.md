@@ -8,6 +8,25 @@ out.
 
 ## Unreleased
 
+### Changed
+- **The admin's own CSS** (`app/assets/stylesheets`, STYLE.md): a small
+  library written for this CMS replaces Tailwind's utility classes. The
+  markup names what a thing is (`panel`, `btn btn--primary`, `field`,
+  `data-table`, `stack`, `badge badge--success`) and the stylesheets draw
+  it, in the same classic look, from the same tokens Settings › Branding
+  sets. Gone: `lib/assets/stylesheets/utilities.css` (Tailwind's
+  definitions and preflight), `tailwind-extras.css` and `UiHelper#ui`.
+  `spec/architecture/css_classes_spec.rb` fails on a class nothing defines,
+  on a variant class (`hover:`, `sm:`) and on a rule nothing uses.
+- **Breaking, for plugins:** a plugin's views that used Tailwind's classes
+  or `ui(...)` lose their styling and must move to the admin's classes
+  (docs/plugins.md); `ui(...)` raises `NoMethodError`. Branding's
+  stylesheet now sets `--brand-*` (the admin's `--accent-*` reads them per
+  theme), and the tokens are the admin's own: `--gray-*`, `--space-*`,
+  `--leading-*`, `--weight-*`, `--surface` in place of Tailwind's
+  `--color-gray-*`, `--spacing`, `--text-*--line-height`,
+  `--font-weight-*`, `--color-white`.
+
 ## 1.28.0
 
 ### Added

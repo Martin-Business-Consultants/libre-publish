@@ -3,14 +3,13 @@
     brightness, contrast and saturation changed, then saved as a copy
     (file_manager/assets/image_edits) that the block's field takes. Opened by
     the preview's "Crop & edit" (website-preview). %>
-<% chip = "image-editor__chip rounded-md border border-gray-300 px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50" %>
-<dialog class="dialog image-editor gap-4 rounded-xl border border-gray-200 bg-white p-5 text-left text-gray-900 shadow-overlay"
+<dialog class="dialog image-editor"
         aria-label="Edit image" data-controller="image-editor"
         data-image-editor-source-url-value="<%= file_manager_asset_image_edit_path(asset_id: "ASSET_ID") %>"
         data-action="image-editor:open@window->image-editor#open">
-  <header class="flex items-center justify-between gap-3">
-    <h2 class="truncate text-lg font-semibold" data-image-editor-target="title">Edit image</h2>
-    <button type="button" class="<%= ui(:button, :plain, :small) %>" data-action="image-editor#close">Cancel</button>
+  <header class="row row--between row--md">
+    <h2 class="heading heading--lg truncate" data-image-editor-target="title">Edit image</h2>
+    <button type="button" class="btn btn--plain btn--sm" data-action="image-editor#close">Cancel</button>
   </header>
 
   <div class="image-editor__body">
@@ -22,44 +21,44 @@
         <span class="image-editor__handle" data-corner="sw"></span>
         <span class="image-editor__handle" data-corner="se"></span>
       </div>
-      <p class="image-editor__loading text-sm text-gray-500" data-image-editor-target="loading">Loading…</p>
+      <p class="image-editor__loading text-muted" data-image-editor-target="loading">Loading…</p>
     </div>
 
-    <div class="flex flex-col gap-5 text-sm">
-      <section class="flex flex-col gap-2">
-        <h3 class="<%= ui(:label) %>">Crop</h3>
-        <div class="flex flex-wrap gap-1.5">
+    <div class="image-editor__tools">
+      <section class="stack stack--sm">
+        <h3 class="label">Crop</h3>
+        <div class="image-editor__chips">
           <% [["Free", ""], ["Original", "original"], ["1:1", "1"], ["4:3", "1.3333"], ["3:2", "1.5"], ["16:9", "1.7778"], ["3:4", "0.75"]].each do |chip_label, ratio| %>
             <%# herb:key chip_label %>
-            <button type="button" class="<%= chip %>" data-ratio="<%= ratio %>" data-image-editor-target="ratio" data-action="image-editor#aspect"><%= chip_label %></button>
+            <button type="button" class="image-editor__chip" data-ratio="<%= ratio %>" data-image-editor-target="ratio" data-action="image-editor#aspect"><%= chip_label %></button>
           <% end %>
         </div>
       </section>
-      <section class="flex flex-col gap-2">
-        <h3 class="<%= ui(:label) %>">Turn and flip</h3>
-        <div class="flex flex-wrap gap-1.5">
-          <button type="button" class="<%= chip %>" data-action="image-editor#rotateLeft" title="Turn left">⟲ Left</button>
-          <button type="button" class="<%= chip %>" data-action="image-editor#rotateRight" title="Turn right">⟳ Right</button>
-          <button type="button" class="<%= chip %>" data-action="image-editor#flipX">⇋ Flip across</button>
-          <button type="button" class="<%= chip %>" data-action="image-editor#flipY">⇵ Flip over</button>
+      <section class="stack stack--sm">
+        <h3 class="label">Turn and flip</h3>
+        <div class="image-editor__chips">
+          <button type="button" class="image-editor__chip" data-action="image-editor#rotateLeft" title="Turn left">⟲ Left</button>
+          <button type="button" class="image-editor__chip" data-action="image-editor#rotateRight" title="Turn right">⟳ Right</button>
+          <button type="button" class="image-editor__chip" data-action="image-editor#flipX">⇋ Flip across</button>
+          <button type="button" class="image-editor__chip" data-action="image-editor#flipY">⇵ Flip over</button>
         </div>
       </section>
-      <section class="flex flex-col gap-3">
-        <h3 class="<%= ui(:label) %>">Adjust</h3>
+      <section class="stack stack--md">
+        <h3 class="label">Adjust</h3>
         <% [["Brightness", "brightness"], ["Contrast", "contrast"], ["Saturation", "saturation"]].each do |adjust_label, key| %>
           <%# herb:key key %>
-          <label class="flex flex-col gap-1">
-            <span class="flex justify-between text-xs text-gray-600"><span><%= adjust_label %></span><output data-image-editor-target="output" data-key="<%= key %>">0</output></span>
+          <label class="stack stack--xs">
+            <span class="row row--between text-small text-body"><span><%= adjust_label %></span><output data-image-editor-target="output" data-key="<%= key %>">0</output></span>
             <input type="range" min="-100" max="100" step="1" value="0" data-key="<%= key %>" data-image-editor-target="slider" data-action="input->image-editor#adjust">
           </label>
         <% end %>
       </section>
-      <div class="mt-auto flex flex-col gap-2">
-        <p class="text-xs text-gray-500">Saved as a copy beside the original, so anywhere else the original is used stays as it is.</p>
-        <p class="text-xs text-red-600" data-image-editor-target="error" hidden></p>
-        <div class="flex gap-2">
-          <button type="button" class="<%= ui(:button, :small) %>" data-action="image-editor#reset">Reset</button>
-          <button type="button" class="<%= ui(:button, :primary, :small, "flex-1") %>" data-image-editor-target="saveButton" data-action="image-editor#save">Use this image</button>
+      <div class="image-editor__footer">
+        <p class="help">Saved as a copy beside the original, so anywhere else the original is used stays as it is.</p>
+        <p class="field-error" data-image-editor-target="error" hidden></p>
+        <div class="row">
+          <button type="button" class="btn btn--sm" data-action="image-editor#reset">Reset</button>
+          <button type="button" class="btn btn--primary btn--sm grow" data-image-editor-target="saveButton" data-action="image-editor#save">Use this image</button>
         </div>
       </div>
     </div>

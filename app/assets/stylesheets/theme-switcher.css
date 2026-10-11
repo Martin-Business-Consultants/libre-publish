@@ -3,18 +3,18 @@
 /* change with that state, so they're set here rather than in the markup. */
 @layer components {
   .theme-switcher__btn {
-    background-color: var(--color-white);
-    border-color: var(--color-gray-200);
-    color: var(--color-gray-700);
+    background-color: var(--surface);
+    border-color: var(--gray-200);
+    color: var(--gray-700);
 
     &:hover {
-      background-color: var(--color-gray-50);
+      background-color: var(--gray-50);
     }
 
     &:has(input:checked) {
-      background-color: var(--color-blue-50);
-      border-color: var(--color-blue-500);
-      color: var(--color-blue-700);
+      background-color: var(--accent-50);
+      border-color: var(--accent-500);
+      color: var(--accent-700);
     }
 
     &:has(input:focus-visible) {

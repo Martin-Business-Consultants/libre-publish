@@ -5,12 +5,12 @@
     asset hands it to the field that opened the picker
     (media--asset-picker#pick, which copies its .media-thumb). %>
 <turbo-frame id="asset_picker">
-  <div class="flex flex-col gap-4">
-    <div class="flex flex-wrap items-center gap-2">
-      <%= form_with url: asset_picker_path, method: :get, class: "relative min-w-0 flex-1" do %>
+  <div class="stack">
+    <div class="cluster">
+      <%= form_with url: asset_picker_path, method: :get, class: "input-with-icon grow" do %>
         <%= hidden_field_tag :folder, @folder, id: nil %>
-        <%= icon_tag "search", class: "pointer-events-none absolute left-2.5 top-2 size-4 text-gray-400" %>
-        <%= search_field_tag :q, @query, id: nil, class: "w-full pl-8", placeholder: (@folder ? "Search #{@folder}…" : "Search every folder…"), autocomplete: "off",
+        <%= icon_tag "search", class: "input-with-icon__icon" %>
+        <%= search_field_tag :q, @query, id: nil, placeholder: (@folder ? "Search #{@folder}…" : "Search every folder…"), autocomplete: "off",
               aria: { label: "Search files" } %>
       <% end %>
       <%= form_with url: asset_picker_path, method: :get, data: { controller: "form" } do %>
@@ -21,20 +21,20 @@
     </div>
 
     <% if Current.user.can?("assets:write") %>
-      <%= form_with url: asset_picker_path, class: "relative flex flex-wrap items-center gap-2", data: { controller: "form media--direct-upload" } do |form| %>
+      <%= form_with url: asset_picker_path, class: "cluster", data: { controller: "form media--direct-upload" } do |form| %>
         <%= form.hidden_field :folder, value: @folder || "/", id: nil %>
-        <label class="<%= ui(:button, :small, "cursor-pointer") %>" title="Upload into this folder">
-          <%= icon_tag "add", class: "size-4" %>
+        <label class="btn btn--sm" title="Upload into this folder">
+          <%= icon_tag "add" %>
           <span>Upload into <%= @folder || "/" %></span>
           <%= form.file_field :files, multiple: true, direct_upload: true, hidden: true,
                 data: { action: "change->form#submit", media__direct_upload_target: "input" } %>
         </label>
-        <ul class="flex w-full flex-col gap-1.5 text-xs text-gray-700" data-media--direct-upload-target="list" hidden></ul>
+        <ul class="stack stack--xs full-width text-small text-body" data-media--direct-upload-target="list" hidden></ul>
       <% end %>
     <% end %>
 
     <% if @upload_errors.present? %>
-      <ul class="<%= ui(:notice, :red, "flex-col") %>">
+      <ul class="notice notice--danger notice--stacked">
         <% @upload_errors.each do |message| %>
           <%# herb:key message %>
           <li><%= message %></li>
@@ -43,12 +43,12 @@
     <% end %>
 
     <% if @assets.any? %>
-      <ul class="grid grid-cols-2 gap-x-3 gap-y-4 sm:grid-cols-3 lg:grid-cols-4" role="list"
+      <ul class="asset-picker__grid" role="list"
           data-controller="media--infinite-scroll">
         <%= render "tiles", assets: @assets, more: @more, page: @page, query: @query, folder: @folder %>
       </ul>
     <% else %>
-      <p class="rounded-xl border border-gray-200 py-12 text-center text-sm text-gray-500">
+      <p class="empty-state asset-picker__empty">
         <% if @query.present? then %>
           Nothing matches “<%= @query %>”.
         <% elsif @folder then %>

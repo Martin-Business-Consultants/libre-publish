@@ -1,0 +1,29 @@
+/* Webhooks (webhooks/index, _sheet): a receiver's URL held to a column, and
+   the events to send, grouped in hairline boxes. */
+@layer components {
+  .webhooks__url {
+    display: block;
+    max-inline-size: 20rem;
+  }
+
+  .webhook-events__legend {
+    margin-block-end: var(--space-1-5);
+  }
+
+  .webhook-events__group {
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1-5);
+    padding: var(--space-3);
+  }
+
+  .webhook-events__group-name {
+    color: var(--gray-500);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-medium);
+    line-height: var(--leading-xs);
+    padding-inline: var(--space-1);
+  }
+}

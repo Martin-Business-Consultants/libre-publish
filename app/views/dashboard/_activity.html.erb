@@ -1,28 +1,28 @@
 <%# locals: () %>
 <%# The latest editorial actions (AuditLog), the audit log's head. %>
 <% entries = AuditLog.recent.limit(8).to_a %>
-<section class="<%= ui(:panel, "overflow-hidden") %>" aria-labelledby="dashboard_activity">
-  <header class="flex items-center justify-between gap-4 border-b border-gray-200 px-5 py-3">
-    <h2 id="dashboard_activity" class="<%= ui(:heading) %>">Recent activity</h2>
-    <%= link_to "Audit log", audit_logs_path, class: ui(:button, :small) %>
+<section class="panel" aria-labelledby="dashboard_activity">
+  <header class="panel__header dashboard__header">
+    <h2 id="dashboard_activity" class="heading">Recent activity</h2>
+    <%= link_to "Audit log", audit_logs_path, class: "btn btn--sm" %>
   </header>
   <% if entries.any? %>
-    <ul class="divide-y divide-gray-100">
+    <ul class="divided">
       <% entries.each do |entry| %>
         <%# herb:key entry.id %>
-        <li class="flex items-center justify-between gap-4 px-5 py-2.5 text-sm">
-          <span class="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-            <span class="font-medium text-gray-900"><%= entry.actor_label.presence || "system" %></span>
-            <span class="<%= ui(:badge, :gray) %>"><%= entry.current_action %></span>
+        <li class="dashboard__row dashboard__row--inset">
+          <span class="cluster grow">
+            <span class="text-medium text-ink"><%= entry.actor_label.presence || "system" %></span>
+            <span class="badge"><%= entry.current_action %></span>
             <% if entry.target_label.present? %>
-              <span class="truncate text-gray-700"><%= audit_target_link(entry) %></span>
+              <span class="truncate text-body"><%= audit_target_link(entry) %></span>
             <% end %>
           </span>
-          <span class="shrink-0 text-xs whitespace-nowrap text-gray-500"><%= time_ago_tag entry.created_at %></span>
+          <span class="no-shrink nowrap text-small text-muted"><%= time_ago_tag entry.created_at %></span>
         </li>
       <% end %>
     </ul>
   <% else %>
-    <p class="py-12 text-center text-sm text-gray-500">Nothing has happened yet.</p>
+    <p class="empty-state">Nothing has happened yet.</p>
   <% end %>
 </section>

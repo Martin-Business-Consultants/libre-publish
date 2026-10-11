@@ -9,15 +9,15 @@
 <% fm_scope = content_scope("entry")["frontmatter"] %>
 <% trash = entry.persisted? && Current.user.can?("entries:delete") %>
 <%= form_with model: entry, url: (entry.persisted? ? collection_entry_path(collection.slug, entry.slug) : collection_entries_path(collection.slug)),
-      scope: :entry, id: "entry_form", class: "flex flex-col gap-6 lg:flex-row lg:items-start", data: { controller: "form slug", action: "keydown.esc->form#cancel", slug_locked_value: entry.persisted? } do |form| %>
+      scope: :entry, id: "entry_form", class: "editor", data: { controller: "form slug", action: "keydown.esc->form#cancel", slug_locked_value: entry.persisted? } do |form| %>
   <%= form.hidden_field :lock_version %>
-  <div class="flex min-w-0 flex-1 flex-col gap-6">
+  <div class="editor__main">
     <div>
-      <label class="sr-only" for="entry_title">Name</label>
-      <%= form.text_field :title, required: true, class: "w-full rounded-none border-0 border-b bg-transparent px-0 pb-3 pt-0 text-3xl font-semibold tracking-tight", placeholder: "Add title", data: { slug_target: "source", action: "slug#fill" }, autofocus: entry.new_record? %>
+      <label class="visually-hidden" for="entry_title">Name</label>
+      <%= form.text_field :title, required: true, class: "title-input", placeholder: "Add title", data: { slug_target: "source", action: "slug#fill" }, autofocus: entry.new_record? %>
     </div>
 
-    <%= tag.div class: "flex flex-col gap-6", data: ({ tab: "edit", tabs_target: "panel" } if entry.persisted?) do %>
+    <%= tag.div class: "stack stack--lg", data: ({ tab: "edit", tabs_target: "panel" } if entry.persisted?) do %>
     <% if main_fields.any? %>
       <%= postbox "entry-fields", "Fields" do %>
         <%= render "content_form/fields", fields: main_fields, values: entry.frontmatter, scope: fm_scope, depth: 1 %>
@@ -25,23 +25,23 @@
     <% end %>
 
     <% if collection.enable_blocks? %>
-      <section class="<%= ui(:panel) %>">
-        <h2 class="<%= ui(:heading, "border-b border-gray-200 px-5 py-3.5") %>">Blocks</h2>
-        <div class="p-3 sm:p-5">
+      <section class="panel">
+        <h2 class="heading editor__section-title">Blocks</h2>
+        <div class="editor__section-body">
           <%= render "content_form/blocks", blocks: entry.blocks, scope: content_scope("entry")["blocks"], depth: 1, record: entry %>
         </div>
-        <p class="rounded-b-xl border-t border-gray-200 bg-gray-50 px-5 py-2.5 text-xs text-gray-500"><%= editor_status_line(entry) %></p>
+        <p class="panel__footer"><%= editor_status_line(entry) %></p>
       </section>
     <% end %>
 
-    <section class="<%= ui(:panel) %>">
-      <h2 class="<%= ui(:heading, "border-b border-gray-200 px-5 py-3.5") %>">Body</h2>
-      <div class="flex flex-col gap-1.5 p-5">
+    <section class="panel">
+      <h2 class="heading editor__section-title">Body</h2>
+      <div class="editor__section-body">
         <%= render "content_form/fields/rich_text", field: { "name" => "body_markdown", "label" => "Body" }, value: entry.body_markdown,
               scope: content_scope("entry")["body_markdown"], markdown: true %>
       </div>
       <% unless collection.enable_blocks? %>
-        <p class="rounded-b-xl border-t border-gray-200 bg-gray-50 px-5 py-2.5 text-xs text-gray-500"><%= editor_status_line(entry) %></p>
+        <p class="panel__footer"><%= editor_status_line(entry) %></p>
       <% end %>
     </section>
     <% end %>
@@ -49,16 +49,16 @@
     <%= render "content_form/seo", record: entry, scope: "entry", invalid_json: invalid_json %>
   </div>
 
-  <aside class="flex shrink-0 flex-col gap-4 lg:w-80">
+  <aside class="editor__aside">
     <%= render "content_form/publish_box", record: entry, form: form, scope: "entry", prefix: "entries", statuses: CollectionEntry::STATUSES.sort,
           trash_name: "this entry", trash_path: (collection_entry_path(collection.slug, entry.slug) if trash), trash_form: ("entry_trash_form" if trash) %>
     <%= plugin_slots(:content_aside, record: entry) if entry.persisted? %>
 
     <%= postbox "entry-attributes", "Entry Attributes" do %>
       <%= render "content_form/permalink", record: entry, form: form, hint: "Made from the name when blank." %>
-      <label class="flex flex-col gap-1.5">
-        <span class="<%= ui(:label) %>">Locale</span>
-        <%= form.text_field :locale, required: true, class: "w-full", placeholder: "en", autocomplete: "off" %>
+      <label class="field">
+        <span class="label">Locale</span>
+        <%= form.text_field :locale, required: true, placeholder: "en", autocomplete: "off" %>
       </label>
       <% if sidebar_fields.any? %>
         <%= render "content_form/fields", fields: sidebar_fields, values: entry.frontmatter, scope: fm_scope, depth: 1 %>

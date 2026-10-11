@@ -15,7 +15,7 @@
   }
 
   .attachment__caption {
-    color: var(--color-gray-600);
+    color: var(--gray-600);
     font-size: var(--text-sm);
 
     textarea {
@@ -52,7 +52,7 @@
     color: var(--attachment-icon-color);
     display: grid;
     font-size: var(--text-sm);
-    font-weight: var(--font-weight-bold);
+    font-weight: var(--weight-bold);
     inline-size: auto;
     padding-inline: 0.5ch;
     place-content: center;
@@ -86,7 +86,7 @@
   }
 
   .attachment--file {
-    --attachment-icon-color: var(--color-gray-500);
+    --attachment-icon-color: var(--gray-500);
 
     align-items: center;
     display: flex;
@@ -102,8 +102,8 @@
     }
 
     .attachment__name {
-      color: var(--color-gray-900);
-      font-weight: var(--font-weight-semibold);
+      color: var(--gray-900);
+      font-weight: var(--weight-semibold);
     }
 
     /* Video attachments don't have an identifiable class, but we need to
@@ -125,7 +125,7 @@
   .attachment--svg,
   .attachment--ppt,
   .attachment--pptx {
-    --attachment-icon-color: var(--color-red-500);
+    --attachment-icon-color: var(--red-500);
   }
 
   .attachment--css,
@@ -138,7 +138,7 @@
   .attachment--erb,
   .attachment--ts,
   .attachment--js {
-    --attachment-icon-color: var(--color-blue-700);
+    --attachment-icon-color: var(--accent-700);
   }
 
   .attachment--txt,
@@ -147,18 +147,18 @@
   .attachment--md,
   .attachment--doc,
   .attachment--docx {
-    --attachment-icon-color: var(--color-blue-500);
+    --attachment-icon-color: var(--accent-500);
   }
 
   .attachment--csv,
   .attachment--numbers,
   .attachment--xls,
   .attachment--xlsx {
-    --attachment-icon-color: var(--color-green-600);
+    --attachment-icon-color: var(--green-600);
   }
 
   .attachment__link {
-    color: var(--color-blue-600);
+    color: var(--accent-600);
     text-decoration: underline;
   }
 
@@ -194,7 +194,7 @@
     }
 
     &.node--selected {
-      --attachment-bg-color: var(--color-blue-600);
+      --attachment-bg-color: var(--accent-600);
       --attachment-text-color: var(--on-accent);
     }
   }

@@ -10,3 +10,128 @@
     }
   }
 }
+
+/* Layout: the pieces a screen is arranged with. They set how children sit,
+   never how anything looks, so any component goes inside any of them.
+
+   A gap is a modifier by size: --2xs 2px, --xs 4px, --sm 8px, --md 12px,
+   --base 16px, --lg 24px, --xl 32px (.stack--sm, .row--xs). Without one a
+   stack and a grid space by 16px, a cluster and a row by 8px. */
+@layer components {
+  /* Children in a column, a gap between each. */
+  .stack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap, var(--space-4));
+  }
+
+  /* Children in a row that wraps, centered on the cross axis. */
+  .cluster {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gap, var(--space-2));
+  }
+
+  /* A row that doesn't wrap: an icon beside its words, a title beside its
+     actions. */
+  .row {
+    align-items: center;
+    display: flex;
+    gap: var(--gap, var(--space-2));
+    min-inline-size: 0;
+  }
+
+  .stack--2xs, .row--2xs { --gap: var(--space-0-5); }
+  .stack--xs, .cluster--xs, .row--xs { --gap: var(--space-1); }
+  .stack--sm, .cluster--sm, .grid--sm { --gap: var(--space-2); }
+  .stack--md, .cluster--md, .row--md, .grid--md { --gap: var(--space-3); }
+  .cluster--base, .row--base { --gap: var(--space-4); }
+  .stack--lg { --gap: var(--space-6); }
+
+  /* Where a row's or cluster's children sit along it, and across it. */
+  .cluster--between, .row--between { justify-content: space-between; }
+  .cluster--end, .row--end { justify-content: flex-end; }
+  .cluster--top, .row--top { align-items: flex-start; }
+  .row--baseline { align-items: baseline; }
+  .stack--start { align-items: flex-start; }
+
+  /* Equal columns that stack on a phone: .grid--2 and .grid--3 from 40rem,
+     .grid--4 from 48rem; .grid--tiles fits as many 10rem tiles as there's
+     room for. */
+  .grid {
+    display: grid;
+    gap: var(--gap, var(--space-4));
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  @media (width >= 40rem) {
+    .grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+
+  @media (width >= 48rem) {
+    .grid--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+
+  .grid--tiles {
+    grid-template-columns: repeat(auto-fill, minmax(min(var(--tile-size, 10rem), 100%), 1fr));
+  }
+
+  /* A main column and a sidebar beside it from 64rem (an editor's boxes, a
+     settings page's help), stacked before. The sidebar is 20rem; .with-sidebar
+     --sticky keeps it in view under the admin bar. */
+  .with-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+
+    > :first-child {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      gap: var(--space-6);
+      min-inline-size: 0;
+    }
+
+    > :last-child {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      min-inline-size: 0;
+    }
+
+    @media (width >= 64rem) {
+      align-items: flex-start;
+      flex-direction: row;
+
+      > :last-child {
+        flex-shrink: 0;
+        inline-size: 20rem;
+      }
+
+      &.with-sidebar--sticky > :last-child {
+        inset-block-start: calc(var(--admin-bar-height, 3rem) + var(--space-4));
+        position: sticky;
+      }
+    }
+  }
+
+  /* A screen's content held to a readable width: --sm for a single form
+     (sign in), --md a narrow settings form, --lg most settings pages, --xl a
+     wide one. */
+  .measure--sm { max-inline-size: 24rem; }
+  .measure--md { max-inline-size: 28rem; }
+  .measure--lg { max-inline-size: 48rem; }
+  .measure--xl { max-inline-size: 56rem; }
+
+  .measure--centered {
+    inline-size: 100%;
+    margin-inline: auto;
+  }
+
+  /* Hairlines between children: a list of rows. */
+  .divided > * + * {
+    border-block-start: 1px solid var(--gray-100);
+  }
+}

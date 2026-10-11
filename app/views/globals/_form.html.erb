@@ -5,18 +5,18 @@
 <% tabs = global.fields.group_by { it["tab"].presence || "General" } %>
 <% data_scope = content_scope("global")["data"] %>
 <% trash = Current.user.can?("globals:delete") %>
-<%= form_with model: global, url: global_path(global.slug), scope: :global, id: "global_form", class: "flex flex-col gap-6 lg:flex-row lg:items-start",
+<%= form_with model: global, url: global_path(global.slug), scope: :global, id: "global_form", class: "editor",
       data: { controller: "form", action: "keydown.esc->form#cancel" } do |form| %>
   <%= form.hidden_field :lock_version %>
-  <div class="flex min-w-0 flex-1 flex-col gap-6">
+  <div class="editor__main">
     <div>
-      <label class="sr-only" for="global_name">Name</label>
-      <%= form.text_field :name, required: true, class: "w-full rounded-none border-0 border-b bg-transparent px-0 pb-3 pt-0 text-3xl font-semibold tracking-tight", placeholder: "Add name" %>
+      <label class="visually-hidden" for="global_name">Name</label>
+      <%= form.text_field :name, required: true, class: "title-input", placeholder: "Add name" %>
     </div>
 
     <% if tabs.empty? %>
-      <section class="<%= ui(:panel, "py-12 text-center text-sm text-gray-500") %>">
-        <p>This global has no fields yet. <%= link_to "Define its fields", global_schema_path(global.slug), class: ui(:link) %>.</p>
+      <section class="panel empty-state">
+        <p>This global has no fields yet. <%= link_to "Define its fields", global_schema_path(global.slug), class: "link" %>.</p>
       </section>
     <% end %>
     <% tabs.each do |tab, fields| %>
@@ -27,22 +27,22 @@
     <% end %>
   </div>
 
-  <aside class="flex shrink-0 flex-col gap-4 lg:w-80">
+  <aside class="editor__aside">
     <%= render "content_form/publish_box", record: global, form: form, scope: "global", prefix: "globals",
           trash_name: "this global", trash_path: (global_path(global.slug) if trash), trash_form: ("global_trash_form" if trash) %>
 
     <%= postbox "global-identity", "Global" do %>
-      <label class="flex flex-col gap-1.5">
-        <span class="<%= ui(:label) %>">Slug</span>
-        <%= form.text_field :slug, required: true, class: "w-full font-mono", autocomplete: "off" %>
+      <label class="field">
+        <span class="label">Slug</span>
+        <%= form.text_field :slug, required: true, class: "text-mono", autocomplete: "off" %>
       </label>
-      <label class="flex flex-col gap-1.5">
-        <span class="<%= ui(:label) %>">Description</span>
-        <%= form.text_field :description, class: "w-full" %>
+      <label class="field">
+        <span class="label">Description</span>
+        <%= form.text_field :description %>
       </label>
-      <label class="flex flex-col gap-1.5">
-        <span class="<%= ui(:label) %>">Icon</span>
-        <%= form.text_field :icon, class: "w-full", autocomplete: "off" %>
+      <label class="field">
+        <span class="label">Icon</span>
+        <%= form.text_field :icon, autocomplete: "off" %>
       </label>
       <%= render "content_form/reference", reference: "globals/" + global.slug %>
     <% end %>

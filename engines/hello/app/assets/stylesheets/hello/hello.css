@@ -1,4 +1,18 @@
-/* A plugin stylesheet: linked on every admin page while Hello is on
-   (Cms::Plugins.stylesheet). Hello's screens are drawn with the admin's
-   utility classes (STYLE.md, Styling), so it holds nothing yet; a
-   plugin puts here only what classes can't say. */
+/* A plugin stylesheet: linked on the admin pages that show something of
+   Hello's (Cms::Plugins.stylesheet). Hello's screens are drawn with the
+   admin's own components and layout classes (STYLE.md, Styling: panel,
+   fields, btn, stack, row…); what's Hello's alone gets a class of its own,
+   named for the plugin, drawn here with the admin's tokens (--gray-*,
+   --space-*, --text-*), so it follows Settings › Branding and the dark
+   theme. */
+@layer components {
+  /* A greeting in the list: its words, and when, at the far end. */
+  .hello-greeting {
+    align-items: baseline;
+    color: var(--gray-900);
+    display: flex;
+    gap: var(--space-4);
+    justify-content: space-between;
+    padding-block: var(--space-2-5);
+  }
+}

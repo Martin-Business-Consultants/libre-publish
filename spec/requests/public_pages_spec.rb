@@ -11,7 +11,7 @@ RSpec.describe "Public pages", type: :request do
 
   def expect_public_page(*texts)
     expect(response.body).to include(*texts)
-    expect(response.body).to include('class="public ')
+    expect(response.body).to include('<body class="public">')
   end
 
   it "renders sign in" do

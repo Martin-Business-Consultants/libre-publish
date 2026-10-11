@@ -1,32 +1,32 @@
 <%# locals: (deliveries:, pagination: nil) %>
-<section class="space-y-3">
-  <h2 class="<%= ui(:heading) %>">Recent deliveries</h2>
-  <div class="<%= ui(:panel, "overflow-x-auto") %>">
-    <table class="<%= ui(:table) %>">
+<section class="stack stack--md">
+  <h2 class="heading">Recent deliveries</h2>
+  <div class="panel panel--scroll">
+    <table class="data-table">
       <thead>
         <tr>
-          <th class="<%= ui(:th) %>">When</th>
-          <th class="<%= ui(:th) %>">Event</th>
-          <th class="<%= ui(:th) %>">Result</th>
-          <th class="<%= ui(:th, "text-right") %>">Time</th>
-          <th class="<%= ui(:th) %>">Error</th>
+          <th>When</th>
+          <th>Event</th>
+          <th>Result</th>
+          <th class="data-table__num">Time</th>
+          <th>Error</th>
         </tr>
       </thead>
       <tbody>
         <% deliveries.each do |delivery| %>
           <%# herb:key delivery.id %>
-          <tr id="<%= dom_id(delivery) %>" class="hover:bg-gray-50">
-            <td class="<%= ui(:td) %>"><span class="text-xs whitespace-nowrap text-gray-500"><%= time_ago_tag delivery.created_at %></span></td>
-            <td class="<%= ui(:td) %>"><span class="font-mono text-xs"><%= delivery.event %></span></td>
-            <td class="<%= ui(:td) %>">
+          <tr id="<%= dom_id(delivery) %>">
+            <td><span class="nowrap text-small text-muted"><%= time_ago_tag delivery.created_at %></span></td>
+            <td><span class="text-mono text-small"><%= delivery.event %></span></td>
+            <td>
               <% if delivery.success %>
                 <%= status_tag((delivery.response_status || "OK").to_s, highlight: true) %>
               <% else %>
-                <span class="<%= ui(:badge, :red) %>"><%= delivery.response_status || "Failed" %></span>
+                <span class="badge badge--danger"><%= delivery.response_status || "Failed" %></span>
               <% end %>
             </td>
-            <td class="<%= ui(:td, "text-right tabular-nums whitespace-nowrap") %>"><%= "#{delivery.duration_ms} ms" if delivery.duration_ms %></td>
-            <td class="<%= ui(:td) %>"><span class="text-xs text-gray-500"><%= delivery.error %></span></td>
+            <td class="data-table__num nowrap"><%= "#{delivery.duration_ms} ms" if delivery.duration_ms %></td>
+            <td><span class="text-small text-muted"><%= delivery.error %></span></td>
           </tr>
         <% end %>
         <%= table_empty_row("Nothing delivered yet.", columns: 5) if deliveries.none? %>

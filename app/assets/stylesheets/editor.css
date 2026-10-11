@@ -1,13 +1,37 @@
 /* The content editors' boxes and tabs (content_form_helper#postbox,
    content_form/_publish_box, _editor_tabs): what their classes can't say. */
 @layer components {
-  /* A box: its header a summary that collapses it, on a hairline above the
-     body while open, the caret turned to point at the title while closed. */
+  /* A box (a .panel): its header a summary that collapses it, on a hairline
+     above the body while open, the caret turned to point at the title while
+     closed. The body is padded unless the box lays out its own rows. */
+  .postbox__header {
+    align-items: center;
+    display: flex;
+    gap: var(--space-2);
+    justify-content: space-between;
+    padding: var(--space-3-5) var(--space-5);
+    user-select: none;
+  }
+
   .postbox[open] > .postbox__header {
-    border-block-end: 1px solid var(--color-gray-200);
+    border-block-end: 1px solid var(--gray-200);
+  }
+
+  .postbox__body {
+    font-size: var(--text-sm);
+  }
+
+  .postbox__body--padded {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    padding: var(--space-5);
   }
 
   .postbox__toggle {
+    --icon-size: 1rem;
+
+    color: var(--gray-400);
     transition: rotate 100ms ease;
 
     .postbox:not([open]) > .postbox__header & {
@@ -29,19 +53,190 @@
     }
   }
 
-  /* An editor's Edit, SEO and JSON tabs (tabs_controller sets aria-selected). */
+  /* An editor's Edit, SEO, JSON and Preview tabs, on a rule across the
+     editor (tabs_controller sets aria-selected). The rule is an inset
+     shadow, which the selected tab's underline paints over, so nothing
+     hangs below the bar: it scrolls sideways when narrow, never up and
+     down. */
+  .editor-tabs {
+    box-shadow: inset 0 -1px var(--gray-200);
+    display: flex;
+    gap: var(--space-1);
+    margin-block-end: var(--space-6);
+    overflow: auto hidden;
+  }
+
   .editor-tabs__tab {
-    border-color: transparent;
-    color: var(--color-gray-500);
+    align-items: center;
+    border-block-end: 2px solid transparent;
+    color: var(--gray-500);
+    display: inline-flex;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    gap: var(--space-1-5);
+    line-height: var(--leading-sm);
+    padding: var(--space-1) var(--space-3) var(--space-2-5);
 
     &:hover {
-      color: var(--color-gray-900);
+      color: var(--gray-900);
     }
 
     &[aria-selected="true"] {
-      border-color: var(--color-gray-900);
-      color: var(--color-gray-900);
+      border-color: var(--gray-900);
+      color: var(--gray-900);
     }
+
+    .icon {
+      --icon-size: 1rem;
+    }
+  }
+
+  /* The Publish box (content_form/_publish_box): Save Draft, then a line
+     each for the status, the schedule and the revisions (an icon, the words,
+     an Edit that opens a field under them), then the actions on a gray foot,
+     ruled off when lines come before it. */
+  .publish-box__draft {
+    padding: var(--space-4) var(--space-5) 0;
+  }
+
+  .publish-box__lines {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-5);
+  }
+
+  .publish-box__line {
+    align-items: flex-start;
+    color: var(--gray-700);
+    display: flex;
+    gap: var(--space-2);
+  }
+
+  .publish-box__icon {
+    --icon-size: 1rem;
+
+    color: var(--gray-400);
+    margin-block-start: var(--space-0-5);
+  }
+
+  .publish-box__field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin-block-start: var(--space-2);
+  }
+
+  .publish-box__actions {
+    align-items: center;
+    background-color: var(--gray-50);
+    border-end-end-radius: var(--radius-xl);
+    border-end-start-radius: var(--radius-xl);
+    display: flex;
+    gap: var(--space-2);
+    justify-content: space-between;
+    padding: var(--space-3) var(--space-5);
+
+    .publish-box__lines + & {
+      border-block-start: 1px solid var(--gray-200);
+    }
+  }
+
+  /* How the API and the cms CLI name a record (content_form/_reference): a
+     gray strip, the reference over its label, a copy button at its end. */
+  .reference {
+    align-items: center;
+    background-color: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    display: flex;
+    gap: var(--space-2);
+    padding: var(--space-1-5) var(--space-1) var(--space-1-5) var(--space-3);
+  }
+
+  .reference__text {
+    display: flex;
+    flex: 1 1 0%;
+    flex-direction: column;
+    min-inline-size: 0;
+  }
+
+  /* The SEO panel (content_form/_seo): its title and checks ruled off above
+     its groups of fields, which are ruled off from each other. */
+  .seo-panel__title,
+  .seo-panel__checks {
+    border-block-end: 1px solid var(--gray-200);
+    padding: var(--space-3-5) var(--space-5);
+  }
+
+  .seo-panel__checks {
+    display: flex;
+    flex-direction: column;
+    font-size: var(--text-sm);
+    gap: var(--space-1);
+  }
+
+  .seo-panel__group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding: var(--space-5);
+
+    & + & {
+      border-block-start: 1px solid var(--gray-200);
+    }
+  }
+
+  /* The JSON tab (content_form/_api_json): the fetch examples spaced under
+     their summary, the response scrolling within the window's height. */
+  .api-json__fetch {
+    margin-block-start: var(--space-2);
+  }
+
+  .code-block.api-json__body {
+    max-block-size: 100vh;
+    overflow: auto;
+    padding: var(--space-3) var(--space-4);
+  }
+
+  /* The preview's image editor (content_form/_image_editor): its tools
+     beside the stage, the aspect and turn chips, the save at their foot. */
+  .dialog.image-editor {
+    padding: var(--space-5);
+  }
+
+  .image-editor__tools {
+    display: flex;
+    flex-direction: column;
+    font-size: var(--text-sm);
+    gap: var(--space-5);
+  }
+
+  .image-editor__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1-5);
+  }
+
+  .image-editor__chip {
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-md);
+    color: var(--gray-700);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-medium);
+    line-height: var(--leading-xs);
+    padding: var(--space-1) var(--space-2-5);
+
+    &:hover:not([aria-pressed="true"]) {
+      background-color: var(--gray-50);
+    }
+  }
+
+  .image-editor__footer {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin-block-start: auto;
   }
 }
 
@@ -53,33 +248,33 @@
     max-inline-size: 80ch;
 
     pre {
-      background: var(--color-gray-50);
-      border: 1px solid var(--color-gray-200);
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
       border-radius: var(--radius-lg);
       font-size: var(--text-xs);
       overflow-x: auto;
-      padding: calc(var(--spacing) * 3) calc(var(--spacing) * 4);
+      padding: var(--space-3) var(--space-4);
     }
 
     table {
       border-collapse: collapse;
       display: block;
       font-size: var(--text-sm);
-      margin-block: calc(var(--spacing) * 4);
+      margin-block: var(--space-4);
       overflow-x: auto;
     }
 
     th,
     td {
-      border-block-end: 1px solid var(--color-gray-200);
-      padding: calc(var(--spacing) * 2) calc(var(--spacing) * 4) calc(var(--spacing) * 2) 0;
+      border-block-end: 1px solid var(--gray-200);
+      padding: var(--space-2) var(--space-4) var(--space-2) 0;
       text-align: start;
       vertical-align: top;
     }
 
     th {
-      color: var(--color-gray-500);
-      font-weight: var(--font-weight-medium);
+      color: var(--gray-500);
+      font-weight: var(--weight-medium);
       padding-block-start: 0;
     }
   }

@@ -1,6 +1,6 @@
 <%# locals: (field:, value:, scope:, depth:) %>
 <% type = field["type"].to_s %>
-<%= tag.div class: "flex min-w-0 flex-col gap-1.5", data: { field_name: field["name"], **content_show_if_data(field) } do %>
+<%= tag.div class: "field", data: { field_name: field["name"], **content_show_if_data(field) } do %>
   <% case type %>
   <% when "string", "url" %>
     <%= render "content_form/fields/string", field: field, value: value, scope: scope %>
@@ -37,9 +37,9 @@
     <%= render "content_form/blocks", blocks: value, scope: scope, allowed_types: field["allowed_types"], depth: depth + 1, record: nil %>
   <% else %>
     <%= render "content_form/label", field: field, for_id: nil %>
-    <p class="<%= ui(:help) %>">This field’s type (<code><%= type %></code>) has no editor; its value is kept as it is.</p>
+    <p class="help">This field’s type (<code><%= type %></code>) has no editor; its value is kept as it is.</p>
   <% end %>
   <% if field["help"].present? %>
-    <p class="<%= ui(:help) %>"><%= field["help"] %></p>
+    <p class="help"><%= field["help"] %></p>
   <% end %>
 <% end %>

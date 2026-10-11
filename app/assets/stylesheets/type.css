@@ -1,0 +1,132 @@
+/* Type: titles and headings, and the text roles everything else is written
+   in. Body text is 14px gray-900 (base.css); these say when it's otherwise. */
+@layer components {
+  /* The screen's title (layouts/shared/_page_header). */
+  .page-title {
+    color: var(--gray-900);
+    font-size: var(--text-3xl);
+    font-weight: var(--weight-bold);
+    letter-spacing: -0.025em;
+    line-height: var(--leading-3xl);
+  }
+
+  /* A title inside the screen: a record's name, an empty state's. */
+  .title {
+    color: var(--gray-900);
+    font-size: var(--text-xl);
+    font-weight: var(--weight-semibold);
+    letter-spacing: -0.025em;
+    line-height: var(--leading-xl);
+  }
+
+  /* A section's heading (a panel's, a dialog's): .heading--lg for one that
+     leads a screen's section, .heading--sm for one inside a box. */
+  .heading {
+    color: var(--gray-900);
+    font-size: var(--text-base);
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-base);
+  }
+
+  .heading--lg {
+    font-size: var(--text-lg);
+    line-height: var(--leading-lg);
+  }
+
+  .heading--sm {
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  /* Small caps over a group (a search's results). */
+  .eyebrow {
+    color: var(--gray-500);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-medium);
+    letter-spacing: 0.025em;
+    line-height: var(--leading-xs);
+    text-transform: uppercase;
+  }
+
+  /* A link in running text or beside a control. */
+  .link {
+    color: var(--accent-600);
+    font-weight: var(--weight-medium);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in oklch, currentColor 40%, transparent);
+    text-underline-offset: 2px;
+
+    &:hover {
+      color: var(--accent-700);
+      text-decoration-color: currentColor;
+    }
+  }
+
+  /* A record's name that opens it (a table's first column, a card's title):
+     ink, underlined on hover. */
+  .title-link {
+    color: var(--gray-900);
+    font-weight: var(--weight-medium);
+
+    &:hover {
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+  }
+
+  /* Code, a path or a key inline: a gray chip in the mono face. */
+  .code {
+    background-color: var(--gray-100);
+    border-radius: var(--radius-sm);
+    color: var(--gray-700);
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    padding: var(--space-0-5) var(--space-1);
+  }
+
+  /* A block of code, JSON, a command or a secret to read or copy;
+     --wrap breaks it anywhere rather than scrolling. */
+  .code-block {
+    background-color: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    color: var(--gray-800);
+    display: block;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+    overflow-x: auto;
+    padding: var(--space-2) var(--space-3);
+    white-space: pre;
+  }
+
+  .code-block--wrap {
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+
+  /* Rich text the admin shows (docs, help): spacing between blocks, links
+     and lists drawn. */
+  .prose {
+    color: var(--gray-700);
+    line-height: 1.6;
+
+    > * + * { margin-block-start: var(--space-3); }
+    :is(h1, h2, h3, h4) { color: var(--gray-900); font-weight: var(--weight-semibold); }
+    > :is(h1, h2, h3, h4) { margin-block-start: var(--space-6); }
+    h1 { font-size: var(--text-2xl); line-height: var(--leading-2xl); }
+    h2 { font-size: var(--text-xl); line-height: var(--leading-xl); }
+    h3 { font-size: var(--text-base); line-height: var(--leading-base); }
+    a { color: var(--accent-600); text-decoration: underline; text-underline-offset: 2px; }
+    ul { list-style: disc; padding-inline-start: var(--space-5); }
+    ol { list-style: decimal; padding-inline-start: var(--space-5); }
+    li + li { margin-block-start: var(--space-1); }
+    code { background-color: var(--gray-100); border-radius: var(--radius-sm); font-size: 0.9em; padding: var(--space-0-5) var(--space-1); }
+    pre { background-color: var(--gray-50); border: 1px solid var(--gray-200); border-radius: var(--radius-lg); font-size: var(--text-xs); overflow-x: auto; padding: var(--space-3) var(--space-4); }
+    pre code { background: none; padding: 0; }
+    blockquote { border-inline-start: 3px solid var(--gray-200); color: var(--gray-600); padding-inline-start: var(--space-3); }
+    table { font-size: var(--text-sm); inline-size: 100%; }
+    :is(th, td) { border-block-end: 1px solid var(--gray-200); padding: var(--space-1-5) var(--space-2); text-align: start; }
+    th { font-weight: var(--weight-semibold); }
+  }
+}

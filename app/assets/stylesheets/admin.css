@@ -27,6 +27,7 @@
      sticky toolbar) can draw over the admin bar or the menu's fly-outs. */
   .admin__content {
     isolation: isolate;
+    min-inline-size: 0;
     padding-block: calc(var(--admin-bar-height) + 1.5rem) 3rem;
     padding-inline: calc(var(--admin-menu-width) + var(--admin-gutter)) var(--admin-gutter);
 
@@ -42,18 +43,125 @@
   }
 }
 
+/* A screen's content: its parts one under another, 16px apart (the title
+   row adds a little more under itself), up to 80rem wide. */
+@layer components {
+  .admin__main {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    margin-inline: auto;
+    max-inline-size: 80rem;
+  }
+}
+
 /* The admin bar. */
 @layer components {
+  /* The classic look's admin bar: the menu's gray, across the top. */
   .admin-bar {
+    align-items: stretch;
+    background-color: var(--gray-50);
     block-size: var(--admin-bar-height);
+    border-block-end: 1px solid var(--gray-200);
+    color: var(--gray-900);
+    display: flex;
+    font-size: var(--text-sm);
+    gap: var(--space-1);
     inset: 0 0 auto 0;
+    line-height: var(--leading-sm);
+    padding: var(--space-2);
     position: fixed;
     /* Above the admin menu, so the bar's dropdowns open over it. */
     z-index: calc(var(--z-nav) + 1);
   }
 
   .admin-bar__item {
+    align-items: center;
+    border-radius: var(--radius-md);
     display: flex;
+    gap: var(--space-2);
+    padding-inline: var(--space-2-5);
+    white-space: nowrap;
+
+    &:hover {
+      background-color: var(--gray-100);
+    }
+  }
+
+  .admin-bar__item--muted {
+    color: var(--gray-600);
+
+    &:hover {
+      color: var(--gray-900);
+    }
+  }
+
+  .admin-bar__item--site {
+    color: var(--gray-900);
+    font-weight: var(--weight-semibold);
+  }
+
+  /* A newer version of the CMS or a plugin. */
+  .admin-bar__update {
+    color: var(--accent-600);
+    font-weight: var(--weight-medium);
+  }
+
+  /* The site's mark when Branding has no logo: a house on the accent. */
+  .admin-bar__mark {
+    align-items: center;
+    background-color: var(--accent-600);
+    block-size: 1.75rem;
+    border-radius: var(--radius-md);
+    color: var(--on-accent);
+    display: flex;
+    inline-size: 1.75rem;
+    justify-content: center;
+  }
+
+  .admin-bar__avatar {
+    align-items: center;
+    background-color: var(--gray-100);
+    block-size: 1.75rem;
+    border-radius: var(--radius-full);
+    color: var(--gray-600);
+    display: flex;
+    inline-size: 1.75rem;
+    justify-content: center;
+  }
+
+  /* Plugins' items (plugin_slots :nav_actions). */
+  .admin-bar__plugins {
+    align-items: center;
+    color: var(--gray-500);
+    display: flex;
+    gap: var(--space-2);
+    padding-inline: var(--space-2);
+  }
+
+  /* Search, screen options, the theme and the person, at the far end. */
+  .admin-bar__tools {
+    align-items: center;
+    display: flex;
+    gap: var(--space-1);
+    margin-inline-start: auto;
+  }
+
+  .admin-bar__dropdown {
+    display: flex;
+    position: relative;
+  }
+
+  /* The signed-in person's email, atop their menu. */
+  .admin-bar__account {
+    border-block-end: 1px solid var(--gray-100);
+    color: var(--gray-500);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+    margin-block-end: var(--space-1);
+    overflow: hidden;
+    padding: var(--space-1-5) var(--space-3) var(--space-2);
+    text-overflow: ellipsis;
     white-space: nowrap;
   }
 
@@ -70,10 +178,12 @@
      the gap, so the hover that keeps it open isn't dropped on the way down. */
   .admin-bar__menu {
     display: none;
+    inline-size: 14rem;
     inset: calc(100% + 0.5rem) auto auto 0;
     list-style: none;
     margin: 0;
     position: absolute;
+    z-index: var(--z-bar);
 
     .admin-bar__dropdown:is(:hover, :focus-within) > & {
       display: block;
@@ -104,7 +214,13 @@
      window, it scrolls on its own. The column behind it keeps its gray down
      the window. On a narrow screen it's a drawer (no fly-outs there). */
   .admin-menu {
+    background-color: var(--gray-50);
+    border-inline-end: 1px solid var(--gray-200);
+    display: flex;
+    flex-direction: column;
+    font-size: var(--text-sm);
     inline-size: var(--admin-menu-width);
+    line-height: var(--leading-sm);
     inset: var(--admin-bar-height) auto 0 0;
     position: fixed;
     z-index: var(--z-nav);
@@ -141,8 +257,8 @@
 
   @media (min-width: 783px) {
     #global-container:has(#admin-menu)::before {
-      background-color: var(--color-gray-50);
-      border-inline-end: 1px solid var(--color-gray-200);
+      background-color: var(--gray-50);
+      border-inline-end: 1px solid var(--gray-200);
       content: "";
       inline-size: var(--admin-menu-width);
       inset: var(--admin-bar-height) auto 0 0;
@@ -157,8 +273,53 @@
     }
   }
 
+  .admin-menu__list {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    flex-shrink: 0;
+    gap: var(--space-0-5);
+    padding: var(--space-4) var(--space-3);
+  }
+
+  .admin-menu__separator {
+    border-block-start: 1px solid var(--gray-200);
+    margin: var(--space-3) var(--space-2-5);
+  }
+
   .admin-menu__item {
     position: relative;
+  }
+
+  .admin-menu__link {
+    align-items: center;
+    border-radius: var(--radius-md);
+    color: var(--gray-600);
+    display: flex;
+    font-weight: var(--weight-medium);
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-2-5);
+
+    .admin-menu__item--current > & {
+      background-color: var(--accent-50);
+      color: var(--accent-700);
+    }
+  }
+
+  .admin-menu__icon {
+    --icon-size: 1.25rem;
+
+    color: var(--gray-400);
+
+    .admin-menu__item--current > .admin-menu__link > & {
+      color: var(--accent-600);
+    }
+  }
+
+  .admin-menu__label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   /* While an item's fly-out is open, a bridge from the item across the
@@ -180,8 +341,8 @@
   /* An item keeps its hover look while the pointer is anywhere in it, its
      fly-out included, so it's clear which item the fly-out belongs to. */
   .admin-menu__item:not(.admin-menu__item--current):is(:hover, .admin-menu__item--open, :focus-within) > .admin-menu__link {
-    background-color: var(--color-gray-100);
-    color: var(--color-gray-900);
+    background-color: var(--gray-100);
+    color: var(--gray-900);
   }
 
   @media (min-width: 783px) {
@@ -201,14 +362,47 @@
     display: none;
     list-style: none;
     margin: 0;
+    padding-block: var(--space-1);
+
+    > li + li {
+      margin-block-start: var(--space-0-5);
+    }
   }
 
   .admin-menu__submenu-head {
+    color: var(--gray-500);
     display: none;
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    letter-spacing: 0.025em;
+    line-height: var(--leading-xs);
+    padding: var(--space-0-5) var(--space-2-5) var(--space-1);
+    text-transform: uppercase;
   }
 
   .admin-menu__submenu-link {
-    padding-inline-start: 2.75rem;
+    align-items: center;
+    border-radius: var(--radius-md);
+    color: var(--gray-500);
+    display: flex;
+    gap: var(--space-2);
+    padding: var(--space-1-5) var(--space-2-5) var(--space-1-5) 2.75rem;
+
+    &:hover {
+      background-color: var(--gray-100);
+      color: var(--gray-900);
+    }
+
+    &[aria-current] {
+      color: var(--accent-700);
+      font-weight: var(--weight-medium);
+    }
+  }
+
+  .admin-menu__submenu-icon {
+    --icon-size: 1rem;
+
+    color: var(--gray-400);
   }
 
   .admin-menu__item--current > .admin-menu__submenu {
@@ -218,8 +412,8 @@
   @media (min-width: 783px) {
     .admin-menu__item:not(.admin-menu__item--current):is(.admin-menu__item--open, :focus-within) > .admin-menu__submenu,
     :root[data-menu="folded"] .admin-menu__item:is(.admin-menu__item--open, :focus-within) > .admin-menu__submenu {
-      background-color: var(--color-white);
-      border: 1px solid var(--color-gray-200);
+      background-color: var(--surface);
+      border: 1px solid var(--gray-200);
       border-radius: var(--radius-xl);
       box-shadow: var(--shadow-overlay);
       display: block;
@@ -260,7 +454,19 @@
   }
 
   .admin-menu__collapse {
+    align-items: center;
+    border-block-start: 1px solid var(--gray-200);
+    color: var(--gray-500);
+    display: flex;
+    gap: var(--space-3);
     margin-block-start: auto;
+    padding: var(--space-3) var(--space-5);
+    text-align: start;
+
+    &:hover {
+      background-color: var(--gray-100);
+      color: var(--gray-900);
+    }
 
     :root[data-menu="folded"] & {
       justify-content: center;
@@ -310,6 +516,7 @@
   }
 
   .toast {
+    box-shadow: var(--shadow-overlay);
     pointer-events: auto;
     transition: opacity 200ms ease-out, translate 200ms ease-out;
 
@@ -330,15 +537,42 @@
     }
   }
 
+  .toast__dismiss {
+    border-radius: var(--radius-md);
+    opacity: 0.6;
+    padding: var(--space-1);
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+
   @keyframes toast-out {
     to { opacity: 0; translate: 0 0.5rem; }
   }
 }
 
-/* The actions beside a page's title (layouts/shared/_page_header): a button
-   that opens a popup sits level with the rest. */
+/* A screen's title row (layouts/shared/_page_header): the title, and its
+   actions across from it at the right, wrapping under it when there's no
+   room. A button that opens a popup sits level with the rest. */
 @layer components {
-  .page-title__actions {
+  .page-header {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-3);
+    justify-content: space-between;
+    margin-block-end: var(--space-2);
+  }
+
+  .page-header__actions {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    justify-content: flex-end;
+    margin-inline-start: auto;
+
     details:has(> summary),
     details[open] > summary {
       margin-block-end: 0;
@@ -350,27 +584,157 @@
   }
 }
 
-/* List tables, as WordPress lays them out (layouts/shared/_status_links,
-/* _bulk_actions, _row_links; the markup's classes draw them): the row
-/* actions under a row's title show while the row is hovered or holds focus,
-/* and always on a touch screen. */
+/* A list table's top bar (layouts/shared/_bulk_actions): the "Bulk actions"
+   select and Apply on the left, the list's search box on the right
+   (layouts/shared/_list_search), on a line of its own on a phone. */
 @layer components {
-  .row-actions {
-    visibility: hidden;
+  .list-toolbar {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    justify-content: space-between;
+  }
 
-    tr:is(:hover, :focus-within) &,
-    &:has(dialog[open]) {
-      visibility: visible;
-    }
+  .list-toolbar__choice {
+    inline-size: 11rem;
+  }
 
-    @media (any-hover: none) {
-      visibility: visible;
+  .list-toolbar__confirm {
+    margin-block-start: var(--space-2);
+  }
+
+  .list-toolbar__search {
+    inline-size: 100%;
+    margin-inline-start: auto;
+
+    @media (width >= 40rem) {
+      inline-size: auto;
     }
   }
 
-  /* A list table's tick-box column (screen_options_controller passes over it). */
-  .data-table__check {
-    inline-size: calc(var(--spacing) * 10);
+  .input-with-icon.list-search > input {
+    @media (width >= 40rem) {
+      inline-size: 16rem;
+    }
+  }
+}
+
+/* Numbered pagination under a list table (layouts/shared/_pagination):
+   which rows these are, then the pages. A page number's button is at least
+   square; Previous and Next show but are off on the first and last pages. */
+@layer components {
+  .pagination {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    justify-content: space-between;
+
+    [aria-disabled="true"] {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+  }
+
+  .pagination__page {
+    min-inline-size: 1.75rem;
+  }
+
+  .pagination__gap {
+    color: var(--gray-500);
+    padding-inline: var(--space-1-5);
+  }
+}
+
+/* A Fizzy quick filter (layouts/shared/_quick_filter): a select-like button
+   showing the current choice, and a menu of the others under it. */
+@layer components {
+  .quick-filter__button {
+    max-inline-size: 20rem;
+  }
+
+  .quick-filter__menu {
+    inline-size: 14rem;
+  }
+
+  .quick-filter__title {
+    color: var(--gray-500);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-medium);
+    line-height: var(--leading-xs);
+    padding: var(--space-1-5) var(--space-2-5) var(--space-1);
+  }
+
+  .quick-filter__option {
+    justify-content: space-between;
+  }
+
+  .quick-filter__option--chosen {
+    font-weight: var(--weight-medium);
+  }
+}
+
+/* An edit screen's first sidebar box (layouts/shared/_save_box): facts about
+   the record, then a gray strip with the delete and the primary button,
+   ruled off when there are facts above it. */
+@layer components {
+  .save-box__lines {
+    color: var(--gray-700);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-5);
+  }
+
+  .save-box__line {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-1-5);
+  }
+
+  .save-box__actions {
+    align-items: center;
+    background-color: var(--gray-50);
+    border-end-end-radius: var(--radius-xl);
+    border-end-start-radius: var(--radius-xl);
+    display: flex;
+    gap: var(--space-2);
+    justify-content: space-between;
+    padding: var(--space-3) var(--space-5);
+  }
+
+  .save-box__actions--ruled {
+    border-block-start: 1px solid var(--gray-200);
+  }
+}
+
+/* A delete that reads as a red link (layouts/shared/_delete_dialog's
+   trigger_text: a row's Trash, a box's Move to Trash). library candidate */
+@layer components {
+  .delete-link {
+    color: var(--red-600);
+
+    &:hover {
+      color: var(--red-700);
+      text-decoration: underline;
+    }
+  }
+
+  /* A list with bullets (a notice's errors). library candidate */
+  .bullet-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-0-5);
+    list-style: disc;
+    padding-inline-start: var(--space-5);
+  }
+
+  /* The site's logo (layouts/shared/_logo), the height of a button. */
+  .site-logo {
+    block-size: var(--space-8);
+    inline-size: auto;
   }
 }
 
@@ -379,6 +743,28 @@
 /* its caret turned up while it's open, and the column choices the controller
 /* builds. */
 @layer components {
+  .screen-options {
+    align-items: center;
+    display: flex;
+    position: relative;
+  }
+
+  .screen-options__panel {
+    inline-size: 18rem;
+    inset: calc(100% + var(--space-1)) 0 auto auto;
+    padding: var(--space-3) var(--space-4);
+    position: absolute;
+    z-index: var(--z-bar);
+  }
+
+  .screen-options__choices {
+    color: var(--gray-700);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-5);
+    margin-block-start: var(--space-2);
+  }
+
   .screen-options__tab[aria-expanded="true"] .icon {
     rotate: 180deg;
   }
@@ -386,22 +772,16 @@
   .screen-options__choice {
     align-items: center;
     display: inline-flex;
-    gap: calc(var(--spacing) * 2);
+    gap: var(--space-2);
   }
-}
-
-/* The classic look's admin bar: the menu's gray, across the top. Unlayered,
-   so it wins over the bg-white its markup carries. */
-.admin-bar {
-  background-color: var(--color-gray-50);
 }
 
 /* The editor's Preview tab: the website, framed, the height of the window. */
 @layer components {
   .website-preview__frame {
-    background-color: var(--color-white);
+    background-color: var(--surface);
     block-size: calc(100dvh - var(--admin-bar-height) - 10rem);
-    border: 1px solid var(--color-gray-200);
+    border: 1px solid var(--gray-200);
     border-radius: var(--radius-xl);
     inline-size: 100%;
     min-block-size: 30rem;

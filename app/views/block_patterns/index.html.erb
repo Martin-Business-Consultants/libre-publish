@@ -2,43 +2,43 @@
 
 <% content_for :page_actions do %>
   <% if Current.user.can?("pages:write") %>
-    <%= link_to "Add new", new_block_pattern_path, class: ui(:button, :primary, :small) %>
+    <%= link_to "Add new", new_block_pattern_path, class: "btn btn--primary btn--sm" %>
   <% end %>
 <% end %>
 <%= render "layouts/shared/page_header", title: "Patterns",
       description: "Sets of blocks to use again. Add one to a page from the block picker’s Patterns section." %>
 
 <% if @patterns.any? %>
-  <section class="<%= ui(:panel, "overflow-x-auto") %>">
-    <table class="<%= ui(:table) %>">
-      <thead class="border-b border-gray-200 text-xs text-gray-500">
+  <section class="panel panel--scroll">
+    <table class="data-table">
+      <thead>
         <tr>
-          <th class="px-4 py-2.5 font-medium">Name</th>
-          <th class="px-4 py-2.5 font-medium">Blocks</th>
-          <th class="px-4 py-2.5 font-medium">Kind</th>
-          <th class="px-4 py-2.5 font-medium">Updated</th>
+          <th>Name</th>
+          <th>Blocks</th>
+          <th>Kind</th>
+          <th>Updated</th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-gray-100">
+      <tbody>
         <% @patterns.each do |pattern| %>
           <%# herb:key pattern.id %>
           <tr>
-            <td class="px-4 py-3">
-              <%= link_to pattern.name, edit_block_pattern_path(pattern), class: "font-medium text-gray-900 hover:underline" %>
+            <td>
+              <%= link_to pattern.name, edit_block_pattern_path(pattern), class: "title-link" %>
               <% if pattern.description.present? %>
-                <div class="text-xs text-gray-500"><%= pattern.description %></div>
+                <div class="text-small text-muted"><%= pattern.description %></div>
               <% end %>
             </td>
-            <td class="px-4 py-3 text-gray-700"><%= Array(pattern.blocks).size %></td>
-            <td class="px-4 py-3"><%= status_tag pattern.synced? ? "Synced" : "Copied" %></td>
-            <td class="px-4 py-3 text-gray-500"><%= time_ago_tag pattern.updated_at %></td>
+            <td><%= Array(pattern.blocks).size %></td>
+            <td><%= status_tag pattern.synced? ? "Synced" : "Copied" %></td>
+            <td class="text-muted"><%= time_ago_tag pattern.updated_at %></td>
           </tr>
         <% end %>
       </tbody>
     </table>
   </section>
 <% else %>
-  <div class="<%= ui(:panel, "px-6 py-12 text-center text-sm text-gray-500") %>">
+  <div class="panel empty-state">
     No patterns yet. A pattern is a set of blocks — a call to action, a pricing table, a team section — saved to add
     to any page.
   </div>

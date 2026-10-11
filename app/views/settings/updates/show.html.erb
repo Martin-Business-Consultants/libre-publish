@@ -1,55 +1,53 @@
 <% @page_title = "Updates" %>
 <% release_tag = UpdateCheck.latest_tag %>
-<% fact_label_classes = "text-xs font-medium text-gray-500" %>
-<% fact_value_classes = "mt-0.5 text-sm text-gray-900" %>
 
 <%= render "layouts/shared/page_header", title: "Updates" %>
 
 <%# While an update runs the page reloads itself (refresh), and stops once
     it has settled and the server leaves the controller off. %>
-<%= tag.div class: "space-y-6", data: ({ controller: "refresh", refresh_interval_value: 5 } if @upgrade) do %>
-  <section class="<%= ui(:panel, "space-y-5 p-6") %>">
-    <dl class="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
-      <div><dt class="<%= fact_label_classes %>">Running</dt><dd class="<%= fact_value_classes %>">CMS <%= cms_version %></dd></div>
+<%= tag.div class: "stack stack--lg", data: ({ controller: "refresh", refresh_interval_value: 5 } if @upgrade) do %>
+  <section class="panel panel--padded stack">
+    <dl class="fact-list">
+      <div><dt>Running</dt><dd>CMS <%= cms_version %></dd></div>
       <div>
-        <dt class="<%= fact_label_classes %>">Newest release</dt>
-        <dd class="<%= fact_value_classes %>">
+        <dt>Newest release</dt>
+        <dd>
           <% if UpdateCheck.latest_version %>
             <%= external_link UpdateCheck.release_url, "CMS #{UpdateCheck.latest_version}" %>
-            <span class="text-gray-500"><%= UpdateCheck.update_available? ? "(newer)" : "(up to date)" %></span>
+            <span class="text-muted"><%= UpdateCheck.update_available? ? "(newer)" : "(up to date)" %></span>
           <% else %>
-            <span class="text-gray-500">Not checked yet</span>
+            <span class="text-muted">Not checked yet</span>
           <% end %>
         </dd>
       </div>
       <div>
-        <dt class="<%= fact_label_classes %>">Checked</dt>
-        <dd class="<%= fact_value_classes %>">
+        <dt>Checked</dt>
+        <dd>
           <% if UpdateCheck.checked_at %>
             <%= time_ago_tag UpdateCheck.checked_at %><% if UpdateCheck.checking? %>, and every day<% end %>
           <% else %>
-            <span class="text-gray-500">Never<% unless UpdateCheck.checking? %> (CMS_UPDATE_CHECK=false)<% end %></span>
+            <span class="text-muted">Never<% unless UpdateCheck.checking? %> (CMS_UPDATE_CHECK=false)<% end %></span>
           <% end %>
         </dd>
       </div>
-      <div><dt class="<%= fact_label_classes %>">Updates by</dt><dd class="<%= fact_value_classes %>"><%= update_method_description %></dd></div>
+      <div><dt>Updates by</dt><dd><%= update_method_description %></dd></div>
     </dl>
-    <div><%= button_to "Check now", settings_updates_check_path, class: ui(:button, :small) %></div>
+    <div><%= button_to "Check now", settings_updates_check_path, class: "btn btn--sm" %></div>
   </section>
 
   <% if @upgrade %>
-    <section class="<%= ui(:panel, "space-y-3 p-6") %>">
-      <h2 class="<%= ui(:heading) %>">Updating to <%= @upgrade.to_version %></h2>
-      <p class="text-sm text-gray-700">
+    <section class="panel panel--padded stack stack--md">
+      <h2 class="heading">Updating to <%= @upgrade.to_version %></h2>
+      <p class="text-body">
         Started <%= time_ago_tag @upgrade.created_at %> by <%= upgrade_requester @upgrade %>.
         The install backs up its data, migrates and restarts on <%= @upgrade.to_version %>; until then <%= cms_version %> keeps running.
         This page checks every few seconds.
       </p>
       <% if (note = @upgrade.runner.try(:note)) %>
-        <p class="text-sm text-gray-700"><%= note %></p>
+        <p class="text-body"><%= note %></p>
       <% end %>
       <% if @upgrade.external_url %>
-        <p class="text-sm"><%= external_link @upgrade.external_url, upgrade_follow_text(@upgrade) %></p>
+        <p><%= external_link @upgrade.external_url, upgrade_follow_text(@upgrade) %></p>
       <% end %>
       <% if Current.user.admin? %>
         <div>
@@ -60,21 +58,21 @@
       <% end %>
     </section>
   <% elsif UpdateCheck.update_available? %>
-    <section class="<%= ui(:panel, "space-y-4 p-6") %>">
-      <div class="space-y-1">
-        <h2 class="<%= ui(:heading) %>">CMS <%= UpdateCheck.latest_version %></h2>
+    <section class="panel panel--padded stack">
+      <div class="stack stack--xs">
+        <h2 class="heading">CMS <%= UpdateCheck.latest_version %></h2>
         <% if UpdateCheck.published_at %>
-          <p class="text-sm text-gray-500">Released <%= l UpdateCheck.published_at.to_date, format: :long %>.</p>
+          <p class="text-muted">Released <%= l UpdateCheck.published_at.to_date, format: :long %>.</p>
         <% end %>
       </div>
       <% if UpdateCheck.notes %>
-        <div class="max-h-80 space-y-2 overflow-y-auto rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700"><%= simple_format UpdateCheck.notes %></div>
+        <div class="release-notes"><%= simple_format UpdateCheck.notes %></div>
       <% end %>
 
       <% if !Upgrade.available? %>
-        <p class="text-sm text-gray-700"><%= Upgrade.unavailable_reason %> On the server:</p>
+        <p class="text-body"><%= Upgrade.unavailable_reason %> On the server:</p>
         <pre class="<%= settings_code_classes %>"><code><%= manual_update_command(release_tag) %></code></pre>
-        <p class="text-xs text-gray-500">
+        <p class="help">
           To use a button instead, run from a checkout made by <code>bin/install</code>, or for a Docker install set
           <code>CMS_GITHUB_TOKEN</code> and <code>CMS_DEPLOY_DESTINATION</code>. See <code>docs/install.md</code>.
         </p>
@@ -85,34 +83,34 @@
                 path: settings_updates_path, button: "Update now", primary: true %>
         </div>
       <% else %>
-        <p class="text-sm text-gray-500">An admin can update to it from here.</p>
+        <p class="text-muted">An admin can update to it from here.</p>
       <% end %>
     </section>
   <% end %>
 
   <% if @upgrades.any? %>
-    <section class="<%= ui(:panel, "space-y-3 p-6") %>">
-      <div class="flex flex-wrap items-center justify-between gap-2">
-        <h2 class="<%= ui(:heading) %>">Past updates</h2>
+    <section class="panel panel--padded stack stack--md">
+      <div class="cluster cluster--between">
+        <h2 class="heading">Past updates</h2>
         <% if Current.user.admin? && @upgrades.any?(&:failed?) %>
-          <%= button_to "Clear failed updates", settings_updates_failures_path, method: :delete, class: ui(:button, :small),
+          <%= button_to "Clear failed updates", settings_updates_failures_path, method: :delete, class: "btn btn--sm",
                 form: { data: { turbo_confirm: "Clear the failed updates from this list?" } } %>
         <% end %>
       </div>
-      <ul class="divide-y divide-gray-100 text-sm">
+      <ul class="log-list">
         <% @upgrades.each do |upgrade| %>
           <%# herb:key upgrade.id %>
-          <li class="flex flex-col gap-1 py-2.5">
+          <li>
             <span>
               <%= status_tag upgrade.status %>
-              <strong class="font-semibold text-gray-900"><%= upgrade.from_version %> → <%= upgrade.to_version %></strong>
-              <span class="text-gray-500"> · <%= upgrade_requester upgrade %> · <%= time_ago_tag upgrade.created_at %></span>
+              <strong class="text-semibold text-ink"><%= upgrade.from_version %> → <%= upgrade.to_version %></strong>
+              <span class="text-muted"> · <%= upgrade_requester upgrade %> · <%= time_ago_tag upgrade.created_at %></span>
               <% if upgrade.external_url %>
-                <span class="text-gray-500"> · </span><%= external_link upgrade.external_url, "Deploy log" %>
+                <span class="text-muted"> · </span><%= external_link upgrade.external_url, "Deploy log" %>
               <% end %>
             </span>
             <% if upgrade.message.present? %>
-              <pre class="overflow-x-auto whitespace-pre-wrap text-xs text-red-600"><%= upgrade.message %></pre>
+              <pre class="log-list__error"><%= upgrade.message %></pre>
             <% end %>
           </li>
         <% end %>

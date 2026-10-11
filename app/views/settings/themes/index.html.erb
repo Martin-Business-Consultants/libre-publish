@@ -4,87 +4,89 @@
 
 <%# While a theme is being installed or updated the page reloads itself
     (refresh), as Settings › Plugins does. %>
-<%= tag.div class: "space-y-6", data: ({ controller: "refresh", refresh_interval_value: 5 } if @change) do %>
+<%= tag.div class: "stack stack--lg", data: ({ controller: "refresh", refresh_interval_value: 5 } if @change) do %>
   <% if @change %>
-    <section class="<%= ui(:panel, "space-y-2 p-6") %>">
-      <h2 class="<%= ui(:heading) %>"><%= @change.summary %></h2>
-      <p class="text-sm text-gray-700">The CMS restarts when it’s in place, which takes a few seconds. This page checks every few seconds.</p>
+    <section class="panel panel--padded stack stack--sm">
+      <h2 class="heading"><%= @change.summary %></h2>
+      <p class="text-body">The CMS restarts when it’s in place, which takes a few seconds. This page checks every few seconds.</p>
     </section>
   <% end %>
 
-  <section class="<%= ui(:panel, "p-6") %>">
-    <p class="text-sm text-gray-500">
+  <section class="panel panel--padded stack">
+    <p class="text-muted">
       A theme draws the website at “/” from this install’s content. It’s a plugin: it comes with the install
       (<code>CMS_THEME</code>) or is added below, and updates like one. Without one switched on, the CMS is headless.
     </p>
 
     <% if @themes.any? %>
-      <ul class="mt-4 divide-y divide-gray-100 border-t border-gray-100">
+      <ul class="item-list">
         <% @themes.each do |theme| %>
           <%# herb:key theme.key %>
           <% plugin = Cms::Plugins.manifests[theme.key.to_sym] %>
           <% drawing = Website.theme&.key == theme.key && Website.enabled? %>
           <% source = InstalledPlugins.repo(theme.key) %>
           <% newer = UpdateCheck::Plugins.latest_version(theme.key) %>
-          <li class="flex flex-wrap items-center justify-between gap-3 py-4">
-            <div class="flex min-w-0 flex-col gap-0.5">
-              <span class="text-sm font-semibold text-gray-900">
-                <% if plugin %>
-                  <%= link_to theme.name, settings_plugin_path(plugin.key), class: "hover:underline" %>
-                <% else %>
-                  <%= theme.name %>
+          <li class="item">
+            <div class="item__row">
+              <div class="item__text">
+                <span class="item__name">
+                  <% if plugin %>
+                    <%= link_to theme.name, settings_plugin_path(plugin.key) %>
+                  <% else %>
+                    <%= theme.name %>
+                  <% end %>
+                  <span class="item__meta"><%= theme.version %><% if source %> · <%= source %><% end %></span>
+                  <% if newer %>
+                    <span class="item__accent"><%= newer %> available</span>
+                  <% end %>
+                </span>
+                <% if plugin&.description.present? %>
+                  <span class="item__description"><%= plugin.description %></span>
                 <% end %>
-                <span class="ml-1 text-xs font-normal text-gray-500"><%= theme.version %><% if source %> · <%= source %><% end %></span>
-                <% if newer %>
-                  <span class="ml-1 text-xs font-semibold text-blue-600"><%= newer %> available</span>
+              </div>
+              <div class="item__actions">
+                <%= status_tag drawing ? "Active" : "Off" %>
+                <% if drawing %>
+                  <%= link_to "View site", root_path, class: "btn btn--sm", target: "_blank", rel: "noopener" %>
                 <% end %>
-              </span>
-              <% if plugin&.description.present? %>
-                <span class="text-sm text-gray-500"><%= plugin.description %></span>
-              <% end %>
-            </div>
-            <div class="flex shrink-0 items-center gap-2">
-              <%= status_tag drawing ? "Active" : "Off" %>
-              <% if drawing %>
-                <%= link_to "View site", root_path, class: ui(:button, :small), target: "_blank", rel: "noopener" %>
-              <% end %>
-              <% if theme.settings.any? %>
-                <%= link_to "Customize", edit_settings_theme_design_path(theme.key), class: ui(:button, :small) %>
-              <% end %>
-              <% if plugin && Current.user.can?("settings:write") %>
-                <% if Cms::Plugins.switched_on?(plugin) %>
-                  <%= button_to "Switch off", settings_plugin_activation_path(plugin.key, from: "themes"), method: :delete, class: ui(:button, :small) %>
-                <% elsif plugin.compatible? %>
-                  <%= button_to "Switch on", settings_plugin_activation_path(plugin.key, from: "themes"), class: ui(:button, :small) %>
+                <% if theme.settings.any? %>
+                  <%= link_to "Customize", edit_settings_theme_design_path(theme.key), class: "btn btn--sm" %>
                 <% end %>
-              <% end %>
-              <% if plugin && source && Current.user.admin? %>
-                <%= button_to "Update", settings_plugin_upgrade_path(plugin.key, from: "themes"), class: ui(:button, newer ? :primary : nil, :small),
-                      title: "Install " + source + "’s latest release in place of this one" %>
-              <% end %>
+                <% if plugin && Current.user.can?("settings:write") %>
+                  <% if Cms::Plugins.switched_on?(plugin) %>
+                    <%= button_to "Switch off", settings_plugin_activation_path(plugin.key, from: "themes"), method: :delete, class: "btn btn--sm" %>
+                  <% elsif plugin.compatible? %>
+                    <%= button_to "Switch on", settings_plugin_activation_path(plugin.key, from: "themes"), class: "btn btn--sm" %>
+                  <% end %>
+                <% end %>
+                <% if plugin && source && Current.user.admin? %>
+                  <%= button_to "Update", settings_plugin_upgrade_path(plugin.key, from: "themes"), class: class_names("btn btn--sm", "btn--primary": newer),
+                        title: "Install " + source + "’s latest release in place of this one" %>
+                <% end %>
+              </div>
             </div>
           </li>
         <% end %>
       </ul>
     <% else %>
-      <p class="py-12 text-center text-sm text-gray-500">No theme is installed, so the CMS is headless.</p>
+      <p class="empty-state">No theme is installed, so the CMS is headless.</p>
     <% end %>
   </section>
 
   <% if Current.user.admin? %>
     <%= render "settings/plugins/directory", entries: @directory, kind: "theme", from: "themes" %>
 
-    <section class="<%= ui(:panel, "space-y-3 p-6") %>">
-      <h2 class="<%= ui(:heading) %>">Or any theme, by its repository</h2>
-      <p class="text-sm text-gray-500">
+    <section class="panel panel--padded stack stack--md">
+      <h2 class="heading">Or any theme, by its repository</h2>
+      <p class="text-muted">
         Its GitHub repository: the CMS installs its latest release on this server, where it stays through deploys
         and updates, and restarts. One the directory doesn’t list hasn’t been reviewed: install only code you trust,
         since a plugin runs with the CMS’s full access. Then switch it on here.
       </p>
-      <%= form_with url: settings_plugins_installations_path(from: "themes"), class: "flex flex-wrap gap-2" do |form| %>
-        <%= form.text_field :repo, class: "min-w-0 flex-1", placeholder: "owner/acme-theme", autocomplete: "off", required: true,
+      <%= form_with url: settings_plugins_installations_path(from: "themes"), class: "cluster" do |form| %>
+        <%= form.text_field :repo, class: "grow", placeholder: "owner/acme-theme", autocomplete: "off", required: true,
               aria: { label: "GitHub repository" } %>
-        <button type="submit" class="<%= ui(:button, :primary) %>">Install</button>
+        <button type="submit" class="btn btn--primary">Install</button>
       <% end %>
     </section>
   <% end %>

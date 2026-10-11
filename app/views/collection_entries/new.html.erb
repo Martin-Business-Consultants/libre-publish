@@ -4,6 +4,6 @@
 <%= render "layouts/shared/page_header", title: @page_title %>
 
 <%= render "layouts/shared/errors", record: @entry %>
-<div class="mt-6">
+<div>
   <%= render "collection_entries/form", collection: @collection, entry: @entry, invalid_json: @invalid_json %>
 </div>

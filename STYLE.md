@@ -200,80 +200,123 @@ ERB with Herb/ReActionView, Stimulus and Turbo, no build step.
 `bundle exec herb lint app/views engines` must pass. Every partial declares
 strict locals; no ERB output in attribute names; no inline styles.
 
-### Styling: utility classes, our own
+### Styling: the admin's own CSS
 
-The admin is styled with Tailwind's utility classes in the markup, from our
-own stylesheet, `lib/assets/stylesheets/utilities.css`: Tailwind v4's
-definitions (MIT) of exactly the classes the admin uses, with its theme
-variables and preflight, loaded first by `app_stylesheet_tags`. No build
-step: it's served as written, and a class the markup needs is added to it by
-hand. The look is the admin's classic one (Fizzy's): ink grays, a gray menu
-and admin bar, hairlines, 3px corners, semibold controls, the accent in blue
-until the branding sets a primary color.
+The admin is drawn with its own small CSS library, written for this CMS:
+`app/assets/stylesheets`, served as written (no build, no framework). The
+markup names what a thing *is* (`panel`, `btn btn--primary`, `field`,
+`data-table`); the stylesheets say how it looks. The look is the admin's
+classic one (Fizzy's): ink grays, a gray menu and admin bar, hairlines, 3px
+corners, semibold controls, the accent in blue until the branding sets a
+primary color.
 
-- **Classes, not stylesheets, say how a thing looks.** Spacing, type, color,
-  borders, corners and shadows go in `class`. `app/assets/stylesheets` holds
-  only what classes can't say: state the markup doesn't carry (`:hover` on a
-  parent, `:focus-within`, `:has()`, `[open]`, `html[data-menu="folded"]`,
-  classes JavaScript toggles), behaviour (fixed positioning that reads a
-  variable, animations, dialogs), third-party DOM (Lexxy), element
-  defaults (`base.css`: native form controls, focus rings) and the tokens
-  (`_global.css`). Those rules hang on a BEM hook (`admin-menu__submenu`) and
-  read the tokens (`var(--color-gray-200)`, `var(--radius-lg)`).
-- **Repeated pieces come from `UiHelper#ui`**: `ui(:button)`,
-  `ui(:button, :primary)`, `ui(:button, :plain, :small)`, `ui(:button, :danger)`
-  (outlined) and `ui(:button, :destructive)` (filled, for the confirming
-  button in a delete dialog), `ui(:panel)`, `ui(:dialog)` (on a
-  `<dialog class="dialog …">`, dialog.css), `ui(:sheet)` (a `<dialog>` that
-  slides in from the right; it carries its hooks),
-  `ui(:menu)`, `ui(:menu_item)`, `ui(:badge, :green)`, `ui(:notice, :red)`,
-  `ui(:page_title)`, `ui(:heading)`, `ui(:label)`, `ui(:help)`, `ui(:link)`,
-  `ui(:table)`, `ui(:th)`, `ui(:td)`. Add layout as a string,
-  `ui(:button, :small, "w-full")`, never a class the recipe already sets a
-  property for (no `items-center` beside a recipe's `items-start`).
-- **Only the classes in `utilities.css` exist.** A class the markup needs
-  that isn't there is added to it under Tailwind's name and definition
-  (`tailwind-extras.css` holds the app's own few). No `dark:` variant: the
-  dark theme re-points the tokens instead.
-  `spec/architecture/utility_classes_spec.rb` fails on a class nothing
-  defines and on two classes that set the same property on one element;
-  in specs, `ui` and `class_names` raise on the second (`spec/support/utility_classes.rb`).
-  Class lists kept in a variable are named `*_classes` so the spec reads them.
+Layers, in the order they win (`_global.css`): `reset` (reset.css), `base`
+(element defaults, base.css: body type, native form controls, focus rings),
+`components` (everything else), `helpers` (helpers.css).
+
+**The vocabulary.** Reach for these before writing a new class; each file's
+header comment has the details.
+
+- *Layout* (layout.css): `stack` (a column), `row` (a line that doesn't
+  wrap), `cluster` (a line that wraps), `grid` with `grid--2|3|4` (columns
+  from a breakpoint) or `grid--tiles`. A stack and a grid space their
+  children 16px apart, a row and a cluster 8px; a modifier picks another
+  step of the scale (`2xs|xs|sm|md|base|lg|xl`: 2, 4, 8, 12, 16, 24, 32px).
+  layout.css defines the steps in use (`stack--2xs|xs|sm|md|lg`,
+  `row--2xs|xs|md|base`, `cluster--xs|sm|md|base`, `grid--sm|md`): add a
+  step to its line when a screen needs one. Alignment:
+  `row--between|end|top|baseline`, `cluster--between|end|top`,
+  `stack--start`.
+  `with-sidebar` (main column + 20rem sidebar from 64rem; its first child
+  is the main column, its last the sidebar; `with-sidebar--sticky`),
+  `measure--sm|md|lg|xl` (max width; `measure--centered`), `divided`
+  (hairlines between children).
+- *Type* (type.css): `page-title`, `title`, `heading` (`heading--lg`,
+  `heading--sm`), `eyebrow` (small caps over a group), `link`,
+  `title-link` (a record's name that opens it), `code` (inline),
+  `code-block` (`code-block--wrap`), `prose`.
+- *Buttons* (buttons.css): `btn` (outlined), `btn--primary`, `btn--danger`
+  (outlined red), `btn--destructive` (filled red, confirms a delete),
+  `btn--plain`, `btn--sm`, `btn--icon`, `btn--block`.
+- *Boxes* (panels.css): `panel` (`panel--padded`, `panel--scroll`,
+  `panel__header`, `panel__footer`; a `<details class="panel">` stands its
+  summary off its contents), `well`, `empty-state`, `details` (a `<dl>` of
+  labels and values; `details--wide`).
+- *Status* (badges.css): `badge` and `notice`, toned `--success`,
+  `--danger`, `--warning`, `--info` (a badge without a tone is neutral).
+  `status_tag` picks a badge's tone from its words.
+- *Tables* (tables.css): `data-table` styles its own `<th>` and `<td>`;
+  `data-table__check`, `data-table__num`, `data-table__empty`,
+  `row-actions`.
+- *Forms* (forms.css): `fields` (a form's fields, 20px apart), `field`
+  (label, control, help; a text control in it fills its width), `label`
+  (`label__required`, `label__note`), `help`, `field-error`, `choice` (a
+  checkbox and its words; `choice--top`), `form-actions`, a `<legend
+  class="label">` (spaced off its fieldset's contents),
+  `input-with-icon` (`input-with-icon__icon`), `title-input`,
+  `switch-field`/`switch`, `secret-field`. `settings_field` and
+  `settings_switch` write fields for you.
+- *Menus and dialogs* (menus.css, dialog.css): `menu`, `menu__item`,
+  `popup` in a `popup-anchor`; `dialog` (`dialog--action`, `dialog--sheet`, `dialog--sheet-half`,
+  `dialog__header`, `dialog__actions`).
+- *Icons* (icons.css): `icon_tag "name"`, 1em unless sized
+  `icon--xs|sm|md|lg|xl` (12, 16, 20, 24, 40px).
+- *Helpers* (helpers.css), for text inside a component that the component
+  doesn't decide: `text-ink|body|muted|faint|accent|danger`,
+  `text-small` (12px), `text-large` (16px), `text-medium`,
+  `text-semibold`, `text-mono`, `text-center|end`, `text-tabular`,
+  `truncate`, `nowrap`, `break-all`, `grow`, `no-shrink`, `push-end`,
+  `full-width`, `visually-hidden`, `contents`, `wide-only`.
+
+**Rules.**
+
+- **A look that repeats is a component.** When a screen needs something
+  the vocabulary doesn't have, add a class for it (a BEM block named for
+  what it is: `media-tile`, `media-tile__name`) to the stylesheet for that
+  screen or, when it's general, to the library's file for its kind, and
+  write it there in full. Don't stack helpers to draw it: helpers adjust a
+  component, they don't build one.
+- **No variant classes.** States and breakpoints (`:hover`, `:focus-within`,
+  `[open]`, `@media (width >= 40rem)`) live in the component's rule, not
+  the markup.
+- **Only classes that exist.** `spec/architecture/css_classes_spec.rb`
+  fails on a class nothing defines, on a variant class, and on a rule
+  nothing uses (unless something else puts the class in the DOM:
+  `BUILT_ELSEWHERE`, or `BUILT_ELSEWHERE_PATTERNS` for a family, like
+  `icon--*` and Lexxy's). Class lists kept in a constant or variable are named
+  `*_CLASSES`/`*_classes` so the spec reads them.
 - **Everything respects Settings › Branding's color, type and surface.**
-  Markup draws only with tokens the branding sets (`_global.css`,
-  `Branding#stylesheet`), so a workspace's branding reaches every screen:
-  - *Color*: two families mean something. `gray` is the neutral, every step
-    mixed from `--neutral-tint` (the secondary color tints it, faintly).
-    `blue` is the accent, read from `--accent-*`: the primary color, or an
-    blue until one is set. Use blue for primary buttons, links, focus,
-    selection and what's current. `red`, `green` and `yellow` are for status.
-    There's no `dark:` variant, so the dark theme re-points these families'
-    steps: write the light theme's classes and the dark one follows. No
-    other family, no `black`, no hex. Words on a `bg-blue-*` fill are
-    `text-on-accent`.
-  - *Type*: `--font-sans`, the branding's font. Don't set another family
-    (`font-mono` for code is fine).
-  - *Surface*: corners are `rounded-sm|md|lg|xl` (and `-t-`, `-b-`… with a
-    size), which the branding's corners set; never bare `rounded`. Shadows
-    are `shadow-surface` (panels) and `shadow-overlay` (menus, dialogs,
-    sheets, toasts), which its shadow sets; never `shadow-sm|lg|xl`.
-  CSS follows the same rule (`var(--color-gray-200)`, `var(--radius-lg)`,
-  `var(--shadow-overlay)`). The classes spec fails on a class that bypasses
-  a token.
-- **Don't put a display utility on something a stylesheet shows and hides**
-  (`flex`, `hidden`, `block` beat a component rule's `display: none`): let
-  the stylesheet set its display.
-- **Which corner where**: `rounded-md` for controls (buttons, inputs, menu
-  items), `rounded-lg` for notices, `rounded-xl` for panels, menus and
-  dialogs, `rounded-sm` for badges, `rounded-full` only for true circles.
+  Rules draw only with the tokens (`_global.css`), which the branding sets
+  (`Branding#stylesheet`) and the dark theme re-points, so a rule written
+  for the light theme reads in the dark one:
+  - *Color*: `--gray-50…900` is the neutral, mixed from `--neutral-tint`
+    (the secondary color tints it, faintly); `--surface` is the canvas.
+    `--accent-50…900` is the primary color (blue until one is set), for
+    primary buttons, links, focus, selection and what's current; words on
+    an accent fill are `--on-accent`. `--red-*`, `--green-*` and
+    `--yellow-*` are for status. No other color, no hex (except pure white
+    or black on a photo).
+  - *Type*: `--font-sans` (the branding's font) and `--font-mono`; sizes
+    `--text-xs…3xl` with `--leading-*`, weights `--weight-*`.
+  - *Space*: `--space-*` (`--space-4` is 16px; `--space-1-5` 6px).
+  - *Surface*: corners `--radius-sm|md|lg|xl` (which the branding's
+    corners set): `md` for controls, `lg` for notices and wells, `xl` for
+    panels, menus and dialogs, `sm` for badges, `--radius-full` only for
+    true circles. Shadows `--shadow-surface` (panels) and
+    `--shadow-overlay` (menus, dialogs, sheets, toasts).
+- **Don't give a display class to something a stylesheet shows and hides**
+  (a `stack` on an element a rule sets `display: none`): let the
+  stylesheet set its display.
 - **Hooks**: keep a BEM class only while a stylesheet, JavaScript or a spec
   reads it; the classes spec reports one nothing reads.
+- **Plugins** use the same vocabulary, and ship their own stylesheet for
+  what's theirs (docs/plugins.md).
 - Mailers keep their own inline styles: email clients don't load the admin's.
 
 Screens follow WordPress's admin conventions:
 
-- One primary action per screen, `ui(:button, :primary)`; everything else
-  is a secondary, outlined `ui(:button)`. A title row's "Add New" is secondary.
+- One primary action per screen, `btn btn--primary`; everything else is a
+  secondary, outlined `btn`. A title row's "Add New" is secondary.
 - Editors (pages, entries, globals) put the title and permalink first and
   the content in the main column, with a sidebar of boxes
   (`content_form_helper#postbox`) led by the Publish box

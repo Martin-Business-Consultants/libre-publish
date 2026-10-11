@@ -2,30 +2,30 @@
 <%= render "layouts/shared/page_header", title: "Settings history",
       description: "Every change to General, Branding, Search, Forms and Email delivery, newest first. Open one to compare it with now and restore it. Secrets are never kept." %>
 
-<nav class="mb-4 flex flex-wrap gap-1.5" aria-label="Setting">
-  <%= link_to "All", settings_histories_path, class: ui(:button, :small), aria: { current: (@key.nil? ? "page" : nil) } %>
+<nav class="cluster cluster--sm" aria-label="Setting">
+  <%= link_to "All", settings_histories_path, class: "btn btn--sm", aria: { current: (@key.nil? ? "page" : nil) } %>
   <% SettingVersion::VERSIONED.each do |key, label| %>
     <%# herb:key key %>
-    <%= link_to label, settings_histories_path(key: key), class: ui(:button, :small), aria: { current: (@key == key ? "page" : nil) } %>
+    <%= link_to label, settings_histories_path(key: key), class: "btn btn--sm", aria: { current: (@key == key ? "page" : nil) } %>
   <% end %>
 </nav>
 
-<section class="<%= ui(:panel, "overflow-x-auto") %>">
-  <table class="data-table <%= ui(:table) %>">
+<section class="panel panel--scroll">
+  <table class="data-table">
     <thead>
       <tr>
-        <th class="<%= ui(:th) %>">Saved</th>
-        <th class="<%= ui(:th) %>">Setting</th>
-        <th class="<%= ui(:th) %>">By</th>
+        <th>Saved</th>
+        <th>Setting</th>
+        <th>By</th>
       </tr>
     </thead>
     <tbody>
       <% @versions.each do |version| %>
         <%# herb:key version.id %>
-        <tr class="hover:bg-gray-50">
-          <td class="<%= ui(:td) %>"><%= link_to site_time_tag(version.created_at), settings_history_path(version), class: "font-medium text-gray-900 hover:underline" %></td>
-          <td class="<%= ui(:td) %>"><%= version.label %></td>
-          <td class="<%= ui(:td) %>"><span class="text-gray-500"><%= version.author&.name.presence || version.author&.email || "—" %></span></td>
+        <tr>
+          <td><%= link_to site_time_tag(version.created_at), settings_history_path(version), class: "title-link" %></td>
+          <td><%= version.label %></td>
+          <td><span class="text-muted"><%= version.author&.name.presence || version.author&.email || "—" %></span></td>
         </tr>
       <% end %>
       <%= table_empty_row("No changes kept yet.", columns: 3) if @versions.empty? %>

@@ -40,7 +40,7 @@ module PaginationHelper
   def table_next_page_row(_name, page, columns:)
     return unless page.respond_to?(:many?) && page.many?
 
-    tag.tr { tag.td(pagination_nav(page), colspan: columns, class: "px-3") }
+    tag.tr { tag.td(pagination_nav(page), colspan: columns) }
   end
 
   def pagination_frame_id_for(namespace, page_number)
@@ -60,8 +60,8 @@ module PaginationHelper
   #   <%= table_empty_row "No pages match.", columns: 5, link: ["Show all", pages_path] %>
   def table_empty_row(message, columns:, link: nil)
     tag.tr do
-      tag.td colspan: columns, class: "px-3 py-12 text-center text-sm text-gray-500" do
-        safe_join([message, (link_to(link.first, link.last, class: ui(:link)) if link)].compact, " ")
+      tag.td colspan: columns, class: "data-table__empty" do
+        safe_join([message, (link_to(link.first, link.last, class: "link") if link)].compact, " ")
       end
     end
   end

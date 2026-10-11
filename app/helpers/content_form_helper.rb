@@ -137,7 +137,7 @@ module ContentFormHelper
     if asset.image? && source
       image_tag source, alt: asset.alt.to_s, loading: "lazy", decoding: "async"
     else
-      icon_tag "attachment", class: "size-6"
+      icon_tag "attachment", class: "icon--lg"
     end
   end
 
@@ -164,13 +164,13 @@ module ContentFormHelper
   # Its fields stay in the form when collapsed. flush: a body without padding,
   # for a box that lays out its own rows (the Publish box).
   def postbox(key, title, open: true, klass: nil, flush: false, &block)
-    tag.details(class: class_names("postbox", ui(:panel), klass), open: open,
+    tag.details(class: class_names("postbox panel", klass), open: open,
       data: {postbox: key, controller: "postbox", action: "toggle->postbox#remember"}) do
       safe_join([
-        tag.summary(class: "postbox__header flex select-none items-center justify-between gap-2 px-5 py-3.5") do
-          safe_join([tag.h2(title.is_a?(String) && !title.html_safe? ? tx(title) : title, class: ui(:heading)), icon_tag("caret-down", class: "postbox__toggle size-4 text-gray-400")])
+        tag.summary(class: "postbox__header") do
+          safe_join([tag.h2(title.is_a?(String) && !title.html_safe? ? tx(title) : title, class: "heading"), icon_tag("caret-down", class: "postbox__toggle")])
         end,
-        tag.div(class: flush ? "text-sm" : "space-y-5 p-5 text-sm", &block)
+        tag.div(class: flush ? "postbox__body" : "postbox__body postbox__body--padded", &block)
       ])
     end
   end

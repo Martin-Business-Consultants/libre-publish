@@ -4,12 +4,12 @@
     new_block_url for a list of other block types — with_content_block_types)
     with its type's defaults. `record` is the page or entry whose top-level
     list this is, for its validation messages. %>
-<div class="flex flex-col gap-3" data-controller="sortable-list"
+<div class="stack stack--md" data-controller="sortable-list"
      data-sortable-list-url-value="<%= new_block_url || new_content_block_path %>"
      data-sortable-list-scope-value="<%= scope.name %>"
      data-sortable-list-depth-value="<%= depth %>">
   <%= hidden_field_tag scope[ContentForm::LIST_MARKER].name, "1", id: nil %>
-  <ol class="flex flex-col gap-2" data-sortable-list-target="list">
+  <ol class="content-blocks__list" data-sortable-list-target="list">
     <% Array(blocks).each_with_index do |block, index| %>
       <%# herb:key index %>
       <%= render "content_form/block", block: block, scope: scope[content_row_key], depth: depth,
@@ -17,11 +17,11 @@
     <% end %>
   </ol>
   <% if Array(blocks).empty? %>
-    <p class="content-blocks__empty rounded-lg bg-gray-50 py-8 text-center text-sm text-gray-500">No blocks yet.</p>
+    <p class="content-blocks__empty">No blocks yet.</p>
   <% end %>
   <div>
-    <button type="button" class="<%= ui(:button, :small) %>" data-action="sortable-list#openPicker">
-      <%= icon_tag "add", class: "size-4" %>
+    <button type="button" class="btn btn--sm" data-action="sortable-list#openPicker">
+      <%= icon_tag "add" %>
       <span>Add block</span>
     </button>
   </div>

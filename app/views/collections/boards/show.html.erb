@@ -2,17 +2,17 @@
 <%= parent_page @collection.name, collection_entries_path(@collection.slug) %>
 
 <% content_for :page_actions do %>
-  <%= link_to "Entries", collection_entries_path(@collection.slug), class: ui(:button) %>
+  <%= link_to "Entries", collection_entries_path(@collection.slug), class: "btn" %>
   <% if Current.user.can?("collections:write") %>
-    <%= link_to "Board settings", collection_schema_path(@collection.slug), class: ui(:button) %>
+    <%= link_to "Board settings", collection_schema_path(@collection.slug), class: "btn" %>
   <% end %>
 <% end %>
 <%= render "layouts/shared/page_header", title: @page_title %>
 
 <% if can_move_cards? %>
-  <p class="<%= ui(:notice, :blue, "mb-6") %>"><%= board_move_description(@collection) %></p>
+  <p class="notice notice--info"><%= board_move_description(@collection) %></p>
 <% else %>
-  <p class="<%= ui(:notice, :yellow, "mb-6") %>">
+  <p class="notice notice--warning">
     <% if @collection.build_publishes? %>
       Moving a card on this board publishes or unpublishes the entry, which needs publish access. You can still change the fields on its cards.
     <% else %>
