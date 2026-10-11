@@ -8,6 +8,8 @@ out.
 
 ## Unreleased
 
+## 1.30.0
+
 ### Added
 - **The `website.cache_version` filter** (docs/plugins.md, Hooks): a plugin
   adds a stamp of what it draws into a website page to what the page's
