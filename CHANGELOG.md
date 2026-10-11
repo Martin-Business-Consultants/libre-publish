@@ -6,6 +6,14 @@ section below. An install is brought to one with `bin/update v1.0.0`, or a
 Kamal site with `kamal deploy -d <site>`. Settings shows when a newer one is
 out.
 
+## 1.18.3
+
+### Fixed
+- **Saving from the preview** keeps you on the Preview tab, with the page
+  drawn as saved, to keep editing. It used to come back on the Edit tab.
+- **A link to an editor's `#preview`** opens with the preview drawn. It used
+  to show an empty frame.
+
 ## 1.18.2
 
 ### Fixed
