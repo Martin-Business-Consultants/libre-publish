@@ -8,6 +8,15 @@ out.
 
 ## Unreleased
 
+### Added
+- **`cms connect`: the CMS in Claude, Codex, Cursor and other AI apps.** It
+  prints the setup for each (Claude Code, Codex, Claude Desktop, Cursor, any
+  app that takes a local MCP server), ready to paste, with this machine's
+  path to `cms` and the site's profile filled in. That makes it work from a
+  desktop app on a Mac, which doesn't get the shell's PATH, and with several
+  sites on one machine, where each becomes its own server. The installer,
+  Developers, the dashboard and the Working with AI guide point to it.
+
 ## 1.30.2
 
 ### Fixed

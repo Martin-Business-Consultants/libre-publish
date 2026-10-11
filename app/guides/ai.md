@@ -17,13 +17,24 @@ curl -fsSL {{cms_url}}/agent/install.sh | sh
 
 It connects in your browser — you approve the machine, signed in here — and
 writes an `AGENTS.md` (and a Claude Code skill) into the directory you ran it
-in, telling the agent what this CMS is and how to use `cms`. Then:
+in, telling the agent what this CMS is and how to use `cms`.
 
-- **Claude Code** reads the skill and `AGENTS.md`. For the commands as MCP
-  tools: `claude mcp add cms -- cms mcp`.
-- **Codex, opencode** and others read `AGENTS.md` and run `cms` in the shell.
-- **Any other MCP client** (Cursor, Claude Desktop…): add a stdio server
-  whose command is `cms mcp`.
+Then, to use the CMS from an AI app:
+
+```sh
+cms connect
+```
+
+It prints the setup for Claude Code, Codex, Claude Desktop, Cursor and any
+other app that takes a local MCP server, with this machine's paths filled in,
+ready to paste. For Claude Code and Codex that's one command; for the desktop
+apps, a few lines of their config. The app then calls every `cms` command as
+a tool. With more than one site connected on the machine, `cms connect
+--profile <name>` sets each up as its own server.
+
+An app that only takes a URL (a remote connector) can't use it: the server
+runs on your machine. Agents that work in a terminal (Codex, opencode and
+others) don't need it either: they read `AGENTS.md` and run `cms` directly.
 
 Every answer comes back with what to call next, and `cms commands --json`
 is the whole surface in one call. An agent should start with `cms manifest`

@@ -211,8 +211,9 @@ cat <<EOF
   cms commands --json   the whole surface at once, for an agent
   cms help              everything else
 
-  Optional, for Claude Code — the same commands as MCP tools:
-      claude mcp add cms -- $BIN_DIR/cms mcp
+  To use it from Claude, Codex, Cursor or another AI app (as MCP tools),
+  this prints the setup for each, ready to paste:
+      $BIN_DIR/cms connect
 
 Then point your agent at this directory and tell it what to do. It reads
 AGENTS.md, pulls your Astro repo from the CMS (asking you for it only if it

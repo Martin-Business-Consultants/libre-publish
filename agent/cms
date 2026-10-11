@@ -1176,10 +1176,76 @@ end
 
 # ----- the MCP server -----
 
+# What `cms connect` prints for each app. The command is spelled out in full,
+# with this machine's path and the profile pinned: a desktop app on a Mac
+# doesn't get the shell's PATH, and with several sites configured `cms mcp`
+# alone would serve whichever is the default.
+MCP_CLIENTS = {
+  "claude-code" => "Claude Code",
+  "codex" => "Codex (its CLI, IDE extension and the ChatGPT desktop app share this)",
+  "claude-desktop" => "Claude Desktop",
+  "cursor" => "Cursor",
+  "other" => "Any other app that takes a local (stdio) MCP server"
+}.freeze
+
+def mcp_setup(client, name, bin, args)
+  line = [bin, *args].join(" ")
+  server = JSON.pretty_generate({mcpServers: {name => {command: bin, args: args}}})
+  case client
+  when "claude-code" then "Run once:\n\n    claude mcp add --scope user #{name} -- #{line}"
+  when "codex" then "Run once:\n\n    codex mcp add #{name} -- #{line}"
+  when "claude-desktop"
+    "Settings › Developer › Edit Config opens claude_desktop_config.json. Add this under \"mcpServers\" " \
+      "(keeping any servers already there), save, and quit and reopen Claude:\n\n#{server.gsub(/^/, "    ")}"
+  when "cursor"
+    "Settings › MCP › Add new MCP server (or edit ~/.cursor/mcp.json) and add:\n\n#{server.gsub(/^/, "    ")}"
+  else
+    "In the app's MCP, tools or connectors settings, add a local (stdio) server:\n\n" \
+      "    name:       #{name}\n    command:    #{bin}\n    arguments:  #{args.join(" ")}\n\n" \
+      "Apps that ask for a JSON config take the same shape as Claude Desktop's:\n\n#{server.gsub(/^/, "    ")}\n\n" \
+      "An app that only takes a URL (a remote connector) can't run it: it needs a server on this machine."
+  end
+end
+
+command("connect", group: "Setup",
+  summary: "Show how to use this CMS from Claude, Codex, Cursor or another AI app",
+  usage: "cms connect [#{MCP_CLIENTS.keys.join("|")}]",
+  notes: "Prints the setup with this machine's path to cms and the active profile filled in, ready to paste. " \
+         "--profile NAME connects another site; each one gets its own server, named after its profile.",
+  nexts: ["cms doctor"]) do |args|
+  require_credentials!
+  client = args.first
+  die "usage: cms connect [#{MCP_CLIENTS.keys.join("|")}]" if client && !MCP_CLIENTS.key?(client)
+
+  mcp_args = [*("--profile" if PROFILE), *PROFILE, "mcp"]
+  # The installer's command pins its Ruby (CMS_BIN says it ran). A copy of
+  # this file run as itself finds `ruby` on PATH, which a desktop app's PATH
+  # may answer with macOS's own, too old: name the Ruby running now instead.
+  if ENV["CMS_BIN"]
+    bin = File.expand_path(ENV["CMS_BIN"])
+  else
+    bin = RbConfig.ruby
+    mcp_args.unshift(File.expand_path($PROGRAM_NAME))
+  end
+  name = (profiles.size > 1 && PROFILE) ? "cms-#{PROFILE}" : "cms"
+  chosen = client ? MCP_CLIENTS.slice(client) : MCP_CLIENTS
+
+  if envelope_wanted?
+    emit(status: "ok", summary: "Setup for #{BASE} as the MCP server '#{name}'.",
+         data: {server: {name: name, command: bin, args: mcp_args, url: BASE},
+                clients: chosen.map { |key, label| {client: key, label: label, setup: mcp_setup(key, name, bin, mcp_args)} }},
+         breadcrumbs: [{description: "Check this machine can work", command: "cms doctor --agent"}])
+  else
+    puts "Use #{BASE} from an AI app: the app runs `cms mcp`, and every cms command becomes a tool it can call."
+    chosen.each { |key, label| puts "\n── #{label}\n\n#{mcp_setup(key, name, bin, mcp_args)}" }
+    puts "\nThen ask it something like \"What pages does the CMS have?\" to check it's connected."
+  end
+end
+
 command("mcp", group: "Setup",
   summary: "Speak MCP on stdio, so an editor can call the CMS directly",
   usage: "cms mcp",
-  notes: "Wire it up once: `claude mcp add cms -- #{ENV.fetch("CMS_BIN", $PROGRAM_NAME)} mcp`. Every curated " \
+  notes: "Not run by hand: an app runs it. `cms connect` shows how to set one up. Every curated " \
          "command becomes a tool, with the same catalogue behind it, so the two never drift.") do |_args|
   require_credentials!
   run_mcp_server
@@ -1191,7 +1257,7 @@ end
 def run_mcp_server
   $stdout.sync = true
 
-  tools = COMMANDS.reject { |c| %w[mcp login help commands version].include?(c[:name]) }.map do |c|
+  tools = COMMANDS.reject { |c| %w[mcp connect login help commands version].include?(c[:name]) }.map do |c|
     {name: c[:name].tr("-", "_"),
       description: [c[:summary], c[:notes]].compact.join(" — "),
       inputSchema: {type: "object",

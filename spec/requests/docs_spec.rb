@@ -31,7 +31,7 @@ RSpec.describe "Docs", type: :request do
     expect(response.parsed_body["guides"].map { it["slug"] }).to eq(%w[how-it-works ai])
 
     get "/api/docs/ai", headers: api_headers
-    expect(response.parsed_body.dig("guide", "markdown")).to include("claude mcp add cms -- cms mcp")
+    expect(response.parsed_body.dig("guide", "markdown")).to include("cms connect")
 
     get "/api/go_live", headers: api_headers
     expect(response).to have_http_status(:not_found)

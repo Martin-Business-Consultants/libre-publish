@@ -3,6 +3,7 @@
 require "json"
 require "tmpdir"
 require "open3"
+require "fileutils"
 
 # The `cms` CLI is a single stdlib-only Ruby file, so it can be exercised as
 # itself rather than through Rails. What is worth pinning here is the part an
@@ -80,6 +81,43 @@ RSpec.describe "cms CLI" do
       _stdout, stderr, = run("login", "--profile", "acme")
 
       expect(stderr).not_to include("no profile named")
+    end
+  end
+
+  # A desktop app runs what `cms connect` prints with none of the shell's PATH,
+  # so the command must stand on its own, on the right site.
+  describe "connect" do
+    def connect(*args, env: {})
+      config = Dir.mktmpdir
+      FileUtils.mkdir_p(File.join(config, "cms"))
+      %w[acme other].each do |name|
+        File.write(File.join(config, "cms", "#{name}.env"), %(export CMS_URL="https://#{name}.test"\nexport USER_AGENT_TOKEN="lp_x"\n))
+      end
+      stdout, = Open3.capture3({"CMS_URL" => "", "USER_AGENT_TOKEN" => "", "CMS_TOKEN" => "", "CMS_PROFILE" => "",
+                                "CMS_BIN" => nil, "XDG_CONFIG_HOME" => config, **env},
+                               "ruby", CLI, "connect", *args, "--agent")
+      JSON.parse(stdout).fetch("data")
+    end
+
+    it "pins the profile, and names the server after it when there are several" do
+      server = connect("--profile", "acme", env: {"CMS_BIN" => "/opt/cms/bin/cms"})["server"]
+
+      expect(server).to include("name" => "cms-acme", "command" => "/opt/cms/bin/cms", "args" => %w[--profile acme mcp],
+                                "url" => "https://acme.test")
+    end
+
+    it "names the Ruby running it when it wasn't started through the installer's command" do
+      server = connect("--profile", "acme")["server"]
+
+      expect(server["command"]).to end_with("ruby")
+      expect(server["args"]).to eq([CLI, "--profile", "acme", "mcp"])
+    end
+
+    it "gives the setup for one app when asked" do
+      clients = connect("codex", "--profile", "acme", env: {"CMS_BIN" => "/opt/cms/bin/cms"})["clients"]
+
+      expect(clients.map { it["client"] }).to eq(%w[codex])
+      expect(clients.first["setup"]).to include("codex mcp add cms-acme -- /opt/cms/bin/cms --profile acme mcp")
     end
   end
 

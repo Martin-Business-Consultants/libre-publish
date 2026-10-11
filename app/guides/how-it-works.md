@@ -14,7 +14,7 @@ fetches the JSON when it builds and renders it with its own components.
 |---|---|---|
 | **The API** | Sites, scripts, anything that speaks HTTP | `{{cms_url}}/api`, JSON, a bearer token |
 | **The `cms` CLI** | People and agents in a terminal | `curl -fsSL {{cms_url}}/agent/install.sh \| sh` |
-| **MCP** | Claude Code, and any MCP client | `claude mcp add cms -- cms mcp`, once the CLI is in |
+| **MCP** | Claude Code, Codex, Claude Desktop, Cursor, any MCP client | `cms connect` prints the setup, once the CLI is in |
 | **This admin** | Doing things by hand | You're in it |
 
 The CLI and MCP do everything the admin does to content, structure and

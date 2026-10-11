@@ -169,8 +169,15 @@ those differ, and only one of them is reachable from here.
 ## MCP
 
 `cms mcp` speaks JSON-RPC on stdio and exposes every catalogue command as a
-tool, so `claude mcp add cms -- cms mcp` is the whole setup. It shares the
-catalogue with the CLI, so the two cannot drift.
+tool. It shares the catalogue with the CLI, so the two cannot drift.
+
+`cms connect` prints the setup for each app (Claude Code, Codex, Claude
+Desktop, Cursor, any other stdio client) with the command spelled out in
+full. A desktop app on a Mac doesn't get the shell's PATH, so the path to
+`cms` is absolute, and a copy of the CLI run without the installer's wrapper
+is given the Ruby running it, not whatever `ruby` the app's PATH finds
+(macOS's own is too old). The profile is pinned too: with several sites on
+one machine, `cms mcp` alone would serve the default.
 
 Tool calls always get the envelope and always capture **both** streams: an MCP
 client has no terminal and no stderr, so an error written to stderr would reach
