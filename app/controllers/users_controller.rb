@@ -9,6 +9,11 @@ class UsersController < ApplicationController
   requires_capability "users:delete", only: [:destroy]
 
   before_action :set_user, only: [:edit, :update, :destroy]
+  include GrantGuard
+  # An account holding more than you (an admin's) isn't yours to change,
+  # and no one gets a role you couldn't give (GrantGuard).
+  before_action -> { refuse_unless_role_grantable!(@user.role) }, only: [:edit, :update, :destroy]
+  before_action -> { refuse_unless_role_grantable!(Role.find_by(id: params.dig(:user, :role_id))) }, only: [:create, :update]
 
   def index
     @users = paginate(User.includes(:role).order(:name, :email).search_list(search_term))

@@ -15,6 +15,7 @@
 class Settings::ServiceTokensController < Settings::BaseController
   requires_capability "settings:read",  only: [:index]
   requires_capability "settings:write", only: [:create]
+  include GrantGuard
 
   def index
     tokens = ServiceToken.includes(:role, :created_by).ordered.to_a
@@ -25,6 +26,7 @@ class Settings::ServiceTokensController < Settings::BaseController
   def create
     role = Role.find_by(id: params[:role_id])
     return redirect_to(settings_service_tokens_path, alert: "Pick a role for the token.") if role.nil?
+    refuse_unless_role_grantable!(role)
 
     token = ServiceToken.issue(
       name: params[:name].to_s.strip,

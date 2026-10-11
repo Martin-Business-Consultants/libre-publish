@@ -5,6 +5,31 @@ class ApplicationController < ActionController::Base
   allow_browser versions: :modern
 
   around_action :use_site_time_zone, if: :admin_page_request?
+  # The admin's Content-Security-Policy, and the editor's preview's, which
+  # the admin draws: scripts only from this site (its own files, and inline
+  # ones it marks with the request's nonce) and Cloudflare Turnstile, so a
+  # script in content — a javascript: link, HTML that got through somewhere —
+  # can't run as whoever is signed in. Styles may be inline (themes and the
+  # editors set them); images from anywhere https. Framed only by itself.
+  content_security_policy do |policy|
+    policy.default_src :self
+    policy.script_src :self, "https://challenges.cloudflare.com"
+    policy.style_src :self, :unsafe_inline, "https://fonts.googleapis.com"
+    policy.font_src :self, :data, "https://fonts.gstatic.com"
+    policy.img_src :self, :data, :blob, :https
+    policy.media_src :self, :blob, :https
+    policy.connect_src :self
+    policy.frame_src :self, "https://challenges.cloudflare.com"
+    policy.worker_src :self, :blob
+    policy.object_src :none
+    policy.base_uri :self
+    policy.form_action :self
+    policy.frame_ancestors :self
+  end
+  # Development's tooling (Herb's dev tools) adds scripts of its own: there
+  # the policy reports rather than blocks.
+  content_security_policy_report_only Rails.env.development? && ENV["CMS_CSP_ENFORCE"].blank?
+
   before_action :set_current_request_details
   before_action :authenticate
 

@@ -90,6 +90,8 @@ module WebsiteHelper
 
   # A link field ({kind, value}) as an href: a URL as written ("#contact"
   # too), a page by its path ("home" is "/"), an entry at its own address.
+  # Nothing for an address that would run script (SafeUrl), whatever got it
+  # stored.
   def website_href(link)
     link = link.to_h.stringify_keys
     value = link["value"].to_s
@@ -98,7 +100,7 @@ module WebsiteHelper
     case link["kind"]
     when "page" then Page.find_by(path: value)&.public_path || (value == "home" ? "/" : "/#{value}")
     when "entry" then "/#{link["collection"]}/#{value}"
-    else value
+    else value if SafeUrl.safe?(value)
     end
   end
 
@@ -293,14 +295,18 @@ module WebsiteHelper
     trail = [["Home", "/"]]
     case record
     when Page
-      record.ancestors.each { trail << [it.title, it.public_path] } if record.respond_to?(:ancestors)
+      # Only what visitors can open: a draft parent's title stays private
+      # (except in an editor's preview, which shows drafts anyway).
+      record.ancestors.each { trail << [it.title, it.public_path] if website_visible?(it) } if record.respond_to?(:ancestors)
     when CollectionEntry
       listing = Page.find_by(path: record.collection.slug)
-      trail << [listing.title, listing.public_path] if listing
+      trail << [listing.title, listing.public_path] if listing && website_visible?(listing)
     end
     trail << [record.title, record.public_path] unless record.public_path == "/"
     trail
   end
+
+  def website_visible?(record) = record.try(:status) == "published" || previewing?
 
   def website_logo_url
     logo = Setting.get("branding")["logo_id"].presence

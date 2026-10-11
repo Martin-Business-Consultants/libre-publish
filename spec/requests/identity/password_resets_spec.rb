@@ -36,8 +36,9 @@ RSpec.describe "Identity::PasswordResets", type: :request do
         expect {
           post identity_password_reset_url, params: {email: "invalid_email@hey.com"}
         }.not_to have_enqueued_email(UserMailer, :password_reset)
-        expect(response).to redirect_to(new_identity_password_reset_url)
-        expect(flash[:alert]).to eq("You can't reset your password until you verify your email")
+        # The same answer as for an account, so the form doesn't tell who has one.
+        expect(response).to redirect_to(sign_in_url)
+        expect(flash[:notice]).to eq("If that address has an account, a reset link is on its way.")
       end
     end
 
@@ -48,8 +49,9 @@ RSpec.describe "Identity::PasswordResets", type: :request do
         expect {
           post identity_password_reset_url, params: {email: user.email}
         }.not_to have_enqueued_email(UserMailer, :password_reset)
-        expect(response).to redirect_to(new_identity_password_reset_url)
-        expect(flash[:alert]).to eq("You can't reset your password until you verify your email")
+        # The same answer as for an account, so the form doesn't tell who has one.
+        expect(response).to redirect_to(sign_in_url)
+        expect(flash[:notice]).to eq("If that address has an account, a reset link is on its way.")
       end
     end
   end

@@ -12,6 +12,8 @@ class GlobalsController < ApplicationController
   requires_capability "globals:delete", only: :destroy
 
   before_action :set_global, only: [:edit, :update, :destroy]
+  include GlobalScriptsGuard
+  before_action :guard_scripts_global!, only: [:create, :edit, :update, :destroy]
 
   def index
     @globals = paginate(Global.ordered.search_list(search_term))

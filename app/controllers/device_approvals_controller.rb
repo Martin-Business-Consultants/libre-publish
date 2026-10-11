@@ -21,6 +21,10 @@ class DeviceApprovalsController < ApplicationController
     if authorization.nil? || authorization.expired?
       return redirect_to(connect_path, alert: "That code has expired or doesn't exist. Run `cms login` again.")
     end
+    # Decided already (approved by someone, or denied): not again, by anyone.
+    unless authorization.pending?
+      return redirect_to(connect_path, alert: "That code has been used. Run `cms login` again for a new one.")
+    end
 
     if params[:decision] == "deny"
       authorization.deny!

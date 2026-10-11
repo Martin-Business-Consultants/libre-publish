@@ -9,6 +9,10 @@ class RolesController < ApplicationController
 
   before_action :set_role, only: [:edit, :update, :destroy]
   before_action :reject_system_edit, only: [:update, :destroy]
+  include GrantGuard
+  # A role can't be written to hold more than its writer does (GrantGuard).
+  before_action -> { refuse_unless_role_grantable!(@role) }, only: [:edit, :update, :destroy]
+  before_action -> { refuse_unless_grantable!(Array(params.dig(:role, :permissions)).compact_blank) }, only: [:create, :update]
 
   def index
     @roles = paginate(Role.ordered.includes(:users).search_list(search_term))

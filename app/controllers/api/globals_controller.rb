@@ -15,6 +15,8 @@ class Api::GlobalsController < Api::BaseController
   requires_capability "globals:delete", only: :destroy
 
   before_action :set_global, only: [:show, :update, :destroy]
+  include GlobalScriptsGuard
+  before_action :guard_scripts_global!, only: [:create, :update, :destroy]
   advertises_lock_version :@global
 
   def index

@@ -6,6 +6,64 @@ section below. An install is brought to one with `bin/update v1.0.0`, or a
 Kamal site with `kamal deploy -d <site>`. Settings shows when a newer one is
 out.
 
+## 1.24.0
+
+A security release, from a review of the whole CMS (Brakeman and the gem
+and JavaScript audits found nothing; these came from reading the code).
+
+### Security
+- **Backups are for admins.** Downloading a backup (Tools › Backup, the
+  archives listed there, and `POST /api/tools/backup`) now takes the Admin
+  role. A backup holds every account and secret, and an archive of the data
+  directory the key that decrypts them, so `tools:use` (which the Marketer
+  role has) was enough to become an admin.
+- **No more handing out more than you hold.** `users:write` can't assign a
+  role, or change an account, holding capabilities the person doesn't;
+  `roles:write` can't write a role with more than its writer holds (or
+  `manage:all`); `settings:write` can't issue, reveal, rotate or revoke a
+  service token on such a role. Each was a way for a non-admin to become one.
+- **The Scripts global takes its own capability**, `globals:scripts` (Roles ›
+  Globals › Site scripts), which only admins hold unless a role is given it.
+  Its items run on every page as written, and `globals:write` (Editors and
+  the Agent role have it) is for content. Give it to a role that should add
+  analytics or a chat widget.
+- **Links can't run script.** A link or URL field takes http(s), mailto:,
+  tel:, a path or #anchor only, through the editor and the API, and the site
+  draws nothing for one that got stored otherwise. A `javascript:` link from
+  a draft could run as an admin who clicked it in the preview.
+- **A Content-Security-Policy for the admin** and the editor's preview:
+  scripts only from the CMS itself (and inline ones it marks) and Cloudflare
+  Turnstile, objects never, framed only by itself. The public website is
+  unchanged.
+- **Uploads need a signed-in library writer.** Rails' direct-upload endpoint
+  took files from anyone; now it takes someone signed in who holds
+  `assets:write`, at most 200 MB a file.
+- **The API signed in by a browser's session needs its CSRF token for a
+  write** (tokens are unaffected), so a page on a sibling site can't act as
+  whoever is signed in.
+- **Settings the CMS keeps itself are read-only over the API**: the signed
+  plugin directory (Install trusted whatever it held), update checks, and
+  which plugins are on and set up.
+- **Secrets are masked by name parts too** over the API (`smtp_password`,
+  `github_token`), and the deploy hook's URL is masked.
+- **The sitemap endpoint** (`PATCH /api/sitemap/:source/:id`) waits for
+  Approvals like any other write, takes `entries:write` for an entry and the
+  publish capability for anything live; its full list shows a read-only
+  token only what's live. **Restoring from the trash over the API** waits
+  for Approvals too, and a global takes `globals:publish`.
+- **Drafts on the website** (`?preview`) show only to someone who can read
+  pages and entries, not to any signed-in account; breadcrumbs leave out a
+  parent that isn't live.
+- **Password reset** answers the same for any address, and is rate-limited
+  per IP, so it no longer tells who has an account.
+- **A device-login code** (`cms login`) can be approved or denied once.
+- **libvips refuses its untrusted decoders** for uploaded images.
+
+### Changed
+- An Editor (or any role with `globals:write` but not `globals:scripts`) can
+  no longer edit the Scripts global. Add `globals:scripts` to a role that
+  should.
+
 ## 1.23.0
 
 ### Added

@@ -20,6 +20,10 @@ Rails.application.routes.draw do
   # Public sitemap for search engines.
   get "sitemap.xml", to: "sitemaps#xml", as: :sitemap_xml, defaults: {format: :xml}
 
+  # Direct uploads, signed in and within limits (DirectUploadsController),
+  # ahead of Active Storage's own route, which takes them from anyone.
+  post "/rails/active_storage/direct_uploads", to: "direct_uploads#create", as: :guarded_direct_uploads
+
   # The admin: everything an editor signs in to. A path-only scope, so the
   # route helpers keep their names (pages_path is /cms/pages).
   scope path: Cms::PATH do

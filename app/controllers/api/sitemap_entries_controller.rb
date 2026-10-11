@@ -10,10 +10,18 @@ class Api::SitemapEntriesController < Api::BaseController
   requires_capability "pages:read",  only: :index
   requires_capability "pages:write", only: :update
 
+  # Sitemap settings are a change to the page or entry: while a plugin holds
+  # API writes for a person (Approvals), they go through the record's own
+  # endpoint, one at a time, as any other change does.
+  include Api::HeldWrites
+  refuse_while_held only: :update
+
   def index
     sitemap = Sitemap.new
     @all = sitemap.all_entries
     @included = sitemap.entries
+    # A token that can't write content (the site's own) sees only what's live.
+    @all = @all.select { it.status == "published" } if published_only?("pages")
   end
 
   def update
@@ -26,7 +34,9 @@ class Api::SitemapEntriesController < Api::BaseController
       render json: {error: "invalid", message: "status must be one of #{Page::STATUSES.join(", ")}"},
         status: :unprocessable_content
     else
-      if settings.key?(:status) && settings[:status] != @record.status
+      require_capability!("entries:write") if params[:source].to_s == "collection_entry"
+      # A status change, or any change to what's live, takes publishing it.
+      if (settings.key?(:status) && settings[:status] != @record.status) || @record.try(:status) == "published"
         require_capability!(Sitemap.publish_capability(params[:source]))
       end
 

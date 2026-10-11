@@ -208,10 +208,14 @@ class BlockType::Validator
           (out[path] ||= []) << "must be a string" unless val.is_a?(String)
         when "url"
           (out[path] ||= []) << "must be a URL" unless val.is_a?(String) && !val.strip.empty?
+          (out[path] ||= []) << SafeUrl::MESSAGE if val.is_a?(String) && !SafeUrl.safe?(val)
         when "link"
           unless val.is_a?(Hash) && LINK_KINDS.include?(val["kind"]) && val["value"].is_a?(String) && !val["value"].strip.empty?
             (out[path] ||= []) << "must be { kind: url|page|entry, value: string }"
             next
+          end
+          if val["kind"] == "url" && !SafeUrl.safe?(val["value"])
+            (out[path] ||= []) << SafeUrl::MESSAGE
           end
           if val["kind"] == "entry" && (!val["collection"].is_a?(String) || val["collection"].strip.empty?)
             (out[path] ||= []) << "kind=entry requires a collection"

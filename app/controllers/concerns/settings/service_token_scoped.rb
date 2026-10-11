@@ -5,7 +5,10 @@ module Settings::ServiceTokenScoped
   extend ActiveSupport::Concern
 
   included do
+    include GrantGuard
     before_action :set_service_token
+    # Revealing, rotating or revoking a token on a role you couldn't give.
+    before_action -> { refuse_unless_role_grantable!(@token.role) }
   end
 
   private

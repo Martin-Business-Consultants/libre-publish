@@ -67,7 +67,15 @@ class Api::BaseController < ApplicationController
       return
     end
 
-    return if perform_authentication
+    if perform_authentication
+      # Signed in by the session cookie rather than a token: a write must
+      # carry the page's CSRF token, or a page on a sibling site (the cookie
+      # goes along to same-site requests) could act as whoever is signed in.
+      return if verified_request?
+
+      return render(json: {error: "invalid_authenticity_token", message: "A write signed in by the browser's session needs the page's CSRF token (X-CSRF-Token), or use a Bearer token."},
+        status: :unprocessable_content)
+    end
 
     render json: {error: "unauthorized"}, status: :unauthorized
   end

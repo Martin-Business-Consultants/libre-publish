@@ -24,6 +24,7 @@ require "securerandom"
 # Revoking sets `revoked_at` rather than deleting: audit rows name the token
 # that acted, and that name should still resolve months later.
 class ServiceToken < ApplicationRecord
+  include Granting
   include Eventable
 
   PREFIX = "lps_"

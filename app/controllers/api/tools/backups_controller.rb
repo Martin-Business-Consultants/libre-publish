@@ -11,6 +11,8 @@
 class Api::Tools::BackupsController < Api::BaseController
   enforce_authorization
   requires_capability "tools:use", only: [:show, :create]
+  include AdminOnly
+  admin_only only: :create
 
   def show
   end

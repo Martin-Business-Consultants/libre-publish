@@ -8,6 +8,9 @@ module Api::ServiceTokenScoped
     enforce_authorization
     requires_capability "settings:write", only: [:create]
     before_action :set_service_token
+    include GrantGuard
+    # Revealing, rotating or revoking a token on a role you couldn't give.
+    before_action -> { refuse_unless_role_grantable!(@service_token.role) }
   end
 
   private
