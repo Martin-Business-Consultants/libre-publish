@@ -3,7 +3,9 @@
 # Content writes over the API with a token — the CLI, MCP, a script: the work
 # an agent does — go to a plugin that holds them for a person when one is on
 # (Cms::Plugins.hold_api_writes). The write isn't applied; the API answers
-# 202 with what the plugin says about it (where to follow it up). A signed-in
+# 202 with what the plugin says about it (where to follow it up). A write the
+# record wouldn't take is refused first (422, the errors a direct write gets),
+# so nobody is asked to approve what can't be applied. A signed-in
 # person's writes, and every write while no plugin holds them, apply as usual.
 #
 #   @page.assign_attributes(page_params)
@@ -26,6 +28,7 @@ module Api::HeldWrites
   # Whether the write was held, and the response rendered.
   def hold_write(action, record, attributes, prefix:)
     hold = held_writes_hold or return false
+    raise ActiveRecord::RecordInvalid, record if action.to_s != "destroy" && record.invalid?
 
     held = hold.call(Cms::Plugins::HeldWrite.new(action: action.to_s, record: record,
       attributes: attributes.to_h.stringify_keys, prefix: prefix))

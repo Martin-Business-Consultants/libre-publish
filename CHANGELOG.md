@@ -6,6 +6,15 @@ section below. An install is brought to one with `bin/update v1.0.0`, or a
 Kamal site with `kamal deploy -d <site>`. Settings shows when a newer one is
 out.
 
+## 1.20.2
+
+### Changed
+- **A proposal that couldn't be applied is refused when it's made.** With
+  Approvals (or any plugin that holds API writes) on, a token's write is
+  now checked the way a direct one is before it's held: one the record
+  wouldn't take (no title, a bad slug…) answers 422 with the errors, so the
+  agent fixes it at once instead of a person finding out at Approve.
+
 ## 1.20.1
 
 ### Added
