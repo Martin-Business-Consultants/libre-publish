@@ -8,6 +8,8 @@ out.
 
 ## Unreleased
 
+## 1.30.1
+
 ### Fixed
 - **A plugin present when the database is created gets its tables.**
   Loading `db/schema.rb` into a new database (`db:prepare` on a fresh
