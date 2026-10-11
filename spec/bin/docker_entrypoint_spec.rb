@@ -26,14 +26,19 @@ RSpec.describe "bin/docker-entrypoint" do
       esac
     SH
     dir.join("bin/rails").chmod(0o755)
+    dir.join("bin/web").write(%(#!/bin/bash\necho "web #{version} from $CMS_APP_DIR in $(pwd)"\n))
+    dir.join("bin/web").chmod(0o755)
+    dir.join("bin/thrust").write(%(#!/bin/bash\nexec "$@"\n))
+    dir.join("bin/thrust").chmod(0o755)
   end
 
   # As the container runs it: in the image's directory, without this
   # process's bundle.
-  def boot
+  def boot(*command)
+    command = ["./bin/rails", "server"] if command.empty?
     Bundler.with_unbundled_env do
       Open3.capture2e({"CMS_IMAGE_ROOT" => image.to_s, "CMS_DATA_DIR" => data.to_s, "BUNDLE_PATH" => "/image/bundle"},
-        Rails.root.join("bin/docker-entrypoint").to_s, "./bin/rails", "server", chdir: image.to_s)
+        Rails.root.join("bin/docker-entrypoint").to_s, *command, chdir: image.to_s)
     end
   end
 
@@ -47,6 +52,17 @@ RSpec.describe "bin/docker-entrypoint" do
 
     expect(status).to be_success
     expect(output).to include("Running CMS 9.0.0", "prepared 9.0.0", "serving 9.0.0")
+  end
+
+  it "runs the web server from releases/live, pointed at the release that runs, for updates without downtime" do
+    app(release, version: "9.0.0", prepares: true)
+    data.join("releases/current").make_symlink("v9.0.0")
+
+    output, status = boot("./bin/thrust", "./bin/web")
+
+    expect(status).to be_success
+    expect(output).to include("prepared 9.0.0", "web 9.0.0 from #{data.join("releases/live")} in #{data.join("releases/live")}")
+    expect(data.join("releases/live").realpath).to eq(release.realpath)
   end
 
   it "goes back to the image when that release won't start, and says why" do

@@ -18,6 +18,16 @@ if [ -f "$current/VERSION" ] && ruby -e 'exit Gem::Version.new(File.read(ARGV[0]
   echo "Running CMS $(cat VERSION) from $PWD (the image holds $(cat "$image/VERSION"))"
 fi
 
+# The release that runs, as a symlink (releases/live) Puma runs from: an
+# update without downtime points it at the next release and Puma's workers
+# restart onto it one at a time (config/puma.rb, Upgrade::InPlace).
+point_live() {
+  mkdir -p "$CMS_DATA_DIR/releases"
+  ln -sfn "$1" "$CMS_DATA_DIR/releases/.live.next"
+  mv -T "$CMS_DATA_DIR/releases/.live.next" "$CMS_DATA_DIR/releases/live"
+}
+export CMS_IMAGE_ROOT="$image" CMS_IMAGE_BUNDLE_PATH="$image_bundle_path"
+
 # Back up the data directory when this release has migrations to run
 # (cms:backup_if_pending; a plain restart takes none), and create or migrate
 # the database. A fresh data directory gets the site's starter content and no
@@ -26,7 +36,12 @@ prepare() {
   ./bin/rails cms:backup_if_pending && ./bin/rails db:prepare
 }
 
-if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
+serving=""
+if { [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; } || [ "${@: -1:1}" == "./bin/web" ]; then
+  serving=1
+fi
+
+if [ -n "$serving" ]; then
   if [ -n "$release" ]; then
     log="$CMS_DATA_DIR/releases/.prepare.log"
     set +e
@@ -48,6 +63,13 @@ if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
   else
     prepare
   fi
+fi
+
+# The web server runs from releases/live, whichever release that is.
+if [ -n "$serving" ]; then
+  point_live "$(pwd -P)"
+  export CMS_APP_DIR="$CMS_DATA_DIR/releases/live"
+  cd "$CMS_APP_DIR"
 fi
 
 exec "${@}"

@@ -33,11 +33,44 @@ threads threads_count, threads_count
 # Specifies the `port` that Puma will listen on to receive requests; default is 3000.
 port ENV.fetch("PORT", 3000)
 
-# Allow puma to be restarted by `bin/rails restart` command.
-plugin :tmp_restart
+# Workers, restarted one at a time, so a plugin, a theme or an update going
+# live never leaves a visitor waiting (lib/puma/plugin/cms_restart.rb). Only
+# when Puma itself is the server (bin/web): `rails server` loads the app
+# before Puma starts, so a restart there is the ordinary kind. Two in
+# production unless WEB_CONCURRENCY says otherwise; none elsewhere.
+workers_count = Integer(ENV.fetch("WEB_CONCURRENCY") { (ENV["RAILS_ENV"] == "production") ? "2" : "0" })
+clustered = workers_count.positive? && !defined?(Rails::Server)
 
-# Run the Solid Queue supervisor inside of Puma for single-server deployments.
-plugin :solid_queue if ENV["SOLID_QUEUE_IN_PUMA"]
+if clustered
+  # Upgrade::InPlace switches without downtime only when it is.
+  ENV["CMS_PUMA_CLUSTERED"] = "1"
+  workers workers_count
+  # Puma's parent holds no gems of the app's, so a worker can load a newer
+  # release's bundle (Upgrade::InPlace).
+  prune_bundler
+  # A symlink to the release that runs (bin/docker-entrypoint): each worker
+  # a phased restart starts changes into it again, and loads what it points at.
+  directory ENV["CMS_APP_DIR"] unless ENV["CMS_APP_DIR"].to_s.empty?
+
+  before_worker_boot do
+    dir = File.realpath(ENV["CMS_APP_DIR"].to_s.empty? ? Dir.pwd : ENV["CMS_APP_DIR"])
+    bundle = File.join(dir, "bundle")
+    ENV["BUNDLE_GEMFILE"] = File.join(dir, "Gemfile")
+    ENV["BUNDLE_PATH"] = File.directory?(bundle) ? bundle : (ENV["CMS_IMAGE_BUNDLE_PATH"] || ENV["BUNDLE_PATH"])
+    # This Ruby runs the release (the update checked it's the same version),
+    # rather than its own copy (config/bundled_ruby.rb).
+    ENV["CMS_BUNDLED_RUBY"] ||= RbConfig.ruby
+  end
+end
+
+# `bin/rails restart` (tmp/restart.txt): a phased restart with workers, the
+# ordinary kind without; and, with workers, the background jobs.
+require_relative "../lib/puma/plugin/cms_restart"
+plugin :cms_restart
+
+# Without workers, the Solid Queue supervisor runs inside Puma for
+# single-server deployments, as Rails sets it up.
+plugin :solid_queue if ENV["SOLID_QUEUE_IN_PUMA"] && !clustered
 
 # Specify the PID file. Defaults to tmp/pids/server.pid in development.
 # In other environments, only set the PID file if requested.
