@@ -6,6 +6,19 @@ section below. An install is brought to one with `bin/update v1.0.0`, or a
 Kamal site with `kamal deploy -d <site>`. Settings shows when a newer one is
 out.
 
+## 1.18.6
+
+### Added
+- **Search in a modal**: the admin bar's search (or ⌘K / Ctrl+K) opens a
+  box over the page, half the window each way. Results come as you type,
+  from the first letter: titles match fuzzily ("hmpg" finds "Home page",
+  the matched letters marked), then records whose text holds the term. The
+  arrow keys and Enter open one; "All results" goes to the Search screen.
+- **Update progress**: while a CMS update or a plugin or theme install,
+  update or removal runs, every admin page shows a modal with a spinner and
+  a progress bar for each, through the restart. When it's done, a Settings
+  page reloads and any other closes it; one that fails says why.
+
 ## 1.18.5
 
 ### Added

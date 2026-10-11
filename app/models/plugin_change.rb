@@ -138,6 +138,22 @@ class PluginChange < ApplicationRecord
   def succeeded? = status == "succeeded"
   def failed? = status == "failed"
 
+  # How far along it is, for the progress modal (UpdateProgress): a percent
+  # and what it's doing, read from what it has done so far.
+  def progress
+    return [100, finished_step] unless running?
+
+    if report.join("restart.log").exist?
+      [75, "Restarting the CMS"]
+    elsif action == "remove"
+      [35, "Removing #{key}"]
+    elsif to_version.present?
+      [35, "Downloading #{key || repo} #{to_version}"]
+    else
+      [10, "Finding the latest release"]
+    end
+  end
+
   def summary
     name = key || repo
     case action
@@ -156,6 +172,8 @@ class PluginChange < ApplicationRecord
   def target = InstalledPlugins.directory.join(key)
   def previous = InstalledPlugins.directory.join(".#{key}.previous")
   def scratch = @scratch ||= InstalledPlugins.directory.join(".download-#{id}").tap { FileUtils.mkdir_p(it) }
+
+  def finished_step = succeeded? ? "Done" : "Didn't finish"
 
   def restart_failed?
     status = report.join("exit_status")

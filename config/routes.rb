@@ -170,6 +170,8 @@ Rails.application.routes.draw do
     get "settings", to: "settings/sections#index", as: :settings
     # The admin bar's search, across everything (GlobalSearch).
     resource :search, only: :show
+    # The update progress modal's poll (UpdateProgress).
+    resource :update_progress, only: :show
 
     namespace :settings do
       resource :general, only: [:show, :update], controller: "generals"
