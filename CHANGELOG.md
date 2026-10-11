@@ -8,6 +8,8 @@ out.
 
 ## Unreleased
 
+## 1.31.0
+
 ### Added
 - **`cms connect`: the CMS in Claude, Codex, Cursor and other AI apps.** It
   prints the setup for each (Claude Code, Codex, Claude Desktop, Cursor, any
