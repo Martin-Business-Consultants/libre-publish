@@ -4,14 +4,14 @@
       <% @choices.each do |label, value, detail| %>
         <%# herb:key value %>
         <li role="option">
-          <button type="button" class="dropdown-item picker__choice justify-between" data-value="<%= value %>" data-label="<%= label %>" data-action="picker#choose">
+          <button type="button" class="<%= ui(:menu_item, "picker__choice justify-between") %>" data-value="<%= value %>" data-label="<%= label %>" data-action="picker#choose">
             <span class="truncate"><%= label %></span>
-            <span class="shrink-0 font-mono text-xs text-muted-foreground"><%= detail %></span>
+            <span class="shrink-0 font-mono text-xs text-gray-500"><%= detail %></span>
           </button>
         </li>
       <% end %>
     </ul>
   <% else %>
-    <p class="px-2.5 py-1.5 text-sm text-muted-foreground">Nothing matches.</p>
+    <p class="px-2.5 py-1.5 text-sm text-gray-500">Nothing matches.</p>
   <% end %>
 </turbo-frame>

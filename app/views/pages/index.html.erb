@@ -26,36 +26,36 @@
       deletion_path: (pages_bulk_deletions_path if can_delete) %>
 
 <% site_url = public_site_url %>
-<section class="card overflow-x-auto" data-controller="select-all">
-  <table class="data-table table">
+<section class="<%= ui(:panel, "overflow-x-auto") %>" data-controller="select-all">
+  <table class="data-table <%= ui(:table) %>">
     <thead>
-      <tr class="table-row">
+      <tr>
         <% if ticks %>
-          <th class="table-head data-table__check">
+          <th class="<%= ui(:th, "data-table__check") %>">
             <% if @pages.any? %>
               <input type="checkbox" aria-label="Select every page" data-select-all-target="all" data-action="select-all#toggle">
             <% end %>
           </th>
         <% end %>
-        <th class="table-head">Title</th>
-        <th class="table-head">Path</th>
-        <th class="table-head">Status</th>
-        <th class="table-head">Locale</th>
-        <th class="table-head">Updated</th>
+        <th class="<%= ui(:th) %>">Title</th>
+        <th class="<%= ui(:th) %>">Path</th>
+        <th class="<%= ui(:th) %>">Status</th>
+        <th class="<%= ui(:th) %>">Locale</th>
+        <th class="<%= ui(:th) %>">Updated</th>
       </tr>
     </thead>
     <tbody>
       <% @pages.each do |page| %>
         <%# herb:key page.id %>
-        <tr id="<%= dom_id(page) %>" class="table-row hover:bg-muted" data-filter-target="item">
+        <tr id="<%= dom_id(page) %>" class="hover:bg-gray-50" data-filter-target="item">
           <% if ticks %>
-            <td class="table-cell data-table__check">
+            <td class="<%= ui(:td, "data-table__check") %>">
               <input type="checkbox" data-select-all-target="box" data-action="select-all#sync" name="slugs[]" value="<%= page.path %>" form="pages_bulk" aria-label="Select <%= page.title %>">
             </td>
           <% end %>
-          <td class="table-cell">
+          <td class="<%= ui(:td) %>">
             <span class="page-tree__title" data-depth="<%= [ page.depth.to_i, 6 ].min %>">
-              <%= link_to page.title, (can_write ? edit_page_path(page.path) : page_schema_path(page.path)), class: "font-medium text-foreground hover:underline" %>
+              <%= link_to page.title, (can_write ? edit_page_path(page.path) : page_schema_path(page.path)), class: "font-medium text-gray-900 hover:underline" %>
             </span>
             <%= render "layouts/shared/row_links",
                   links: [ ([ "Edit", edit_page_path(page.path) ] if can_write), ([ "Fields", page_schema_path(page.path) ] if can_write),
@@ -63,10 +63,10 @@
                   delete_path: (page_path(page.path) if can_delete), delete_name: page.title, delete_label: "Trash",
                   delete_message: "It goes to the trash, where it can be restored." %>
           </td>
-          <td class="table-cell"><span class="font-mono text-xs text-muted-foreground">/<%= page.path %></span></td>
-          <td class="table-cell"><%= status_tag page.status %></td>
-          <td class="table-cell"><span class="text-muted-foreground"><%= page.locale %></span></td>
-          <td class="table-cell"><span class="whitespace-nowrap text-xs text-muted-foreground"><%= time_ago_tag page.updated_at %></span></td>
+          <td class="<%= ui(:td) %>"><span class="font-mono text-xs text-gray-500">/<%= page.path %></span></td>
+          <td class="<%= ui(:td) %>"><%= status_tag page.status %></td>
+          <td class="<%= ui(:td) %>"><span class="text-gray-500"><%= page.locale %></span></td>
+          <td class="<%= ui(:td) %>"><span class="whitespace-nowrap text-xs text-gray-500"><%= time_ago_tag page.updated_at %></span></td>
         </tr>
       <% end %>
       <%= table_empty_row((@status || @locale) ? "No pages match." : "No pages yet. The first one is usually the home page.", columns: ticks ? 6 : 5, link: (["Show all", pages_path] if @status || @locale)) if @pages.none? %>

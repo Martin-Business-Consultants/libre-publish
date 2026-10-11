@@ -5,17 +5,17 @@
 
 <div class="max-w-3xl space-y-6">
   <% if @theme.settings.none? %>
-    <section class="card p-6">
-      <p class="text-sm text-muted-foreground">This theme has nothing to customize: its design is in its code.</p>
+    <section class="<%= ui(:panel, "p-6") %>">
+      <p class="text-sm text-gray-500">This theme has nothing to customize: its design is in its code.</p>
     </section>
   <% else %>
     <%= form_with url: settings_theme_design_path(@theme.key), method: :patch, scope: :design, class: "space-y-6" do |form| %>
-      <section class="card space-y-5 p-6">
+      <section class="<%= ui(:panel, "space-y-5 p-6") %>">
         <% @theme.settings.each do |setting| %>
           <%# herb:key setting.name %>
           <% value = @values[setting.name] %>
           <% if setting.type == "boolean" %>
-            <label class="flex items-start gap-2 text-sm text-foreground">
+            <label class="flex items-start gap-2 text-sm text-gray-900">
               <%= form.check_box setting.name, { checked: value }, "1", "0" %>
               <span><%= setting.label %></span>
             </label>
@@ -34,10 +34,10 @@
         <% end %>
       </section>
       <div class="flex flex-wrap items-center gap-2">
-        <button type="submit" class="btn">Save</button>
-        <%= link_to "View site", root_path, class: "btn", data: {variant: "outline"}, target: "_blank", rel: "noopener" %>
+        <button type="submit" class="<%= ui(:button, :primary) %>">Save</button>
+        <%= link_to "View site", root_path, class: ui(:button), target: "_blank", rel: "noopener" %>
       </div>
     <% end %>
-    <%= button_to "Reset to the theme’s defaults", settings_theme_design_path(@theme.key), method: :delete, class: "font-medium text-primary underline underline-offset-2 text-sm" %>
+    <%= button_to "Reset to the theme’s defaults", settings_theme_design_path(@theme.key), method: :delete, class: ui(:link, "text-sm") %>
   <% end %>
 </div>

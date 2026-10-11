@@ -1,30 +1,30 @@
 <%# locals: (versions:, pagination:, show_path:) %>
 <%# A record's saved versions, newest first. show_path: a lambda from a version
     to its page. %>
-<section class="card overflow-x-auto">
-  <table class="data-table table">
+<section class="<%= ui(:panel, "overflow-x-auto") %>">
+  <table class="data-table <%= ui(:table) %>">
     <thead>
-      <tr class="table-row">
-        <th class="table-head">Saved</th>
-        <th class="table-head">By</th>
-        <th class="table-head">Differs from now</th>
+      <tr>
+        <th class="<%= ui(:th) %>">Saved</th>
+        <th class="<%= ui(:th) %>">By</th>
+        <th class="<%= ui(:th) %>">Differs from now</th>
       </tr>
     </thead>
     <tbody>
       <% versions.each do |version| %>
         <%# herb:key version.id %>
         <% changed = version.changes_from_current[:fields].map { it[:key] } %>
-        <tr id="<%= dom_id(version) %>" class="table-row hover:bg-muted" data-filter-target="item">
-          <td class="table-cell">
-            <%= link_to show_path.call(version), class: "font-medium text-foreground hover:underline" do %>
+        <tr id="<%= dom_id(version) %>" class="hover:bg-gray-50" data-filter-target="item">
+          <td class="<%= ui(:td) %>">
+            <%= link_to show_path.call(version), class: "font-medium text-gray-900 hover:underline" do %>
               <%= site_time_tag version.created_at %>
             <% end %>
             <%= render "layouts/shared/row_links", links: [ [ "Compare", show_path.call(version) ] ] %>
           </td>
-          <td class="table-cell"><span class="text-muted-foreground"><%= version.author&.name.presence || version.author&.email || "—" %></span></td>
-          <td class="table-cell">
+          <td class="<%= ui(:td) %>"><span class="text-gray-500"><%= version.author&.name.presence || version.author&.email || "—" %></span></td>
+          <td class="<%= ui(:td) %>">
             <% if changed.empty? %>
-              <span class="text-muted-foreground">Same as now</span>
+              <span class="text-gray-500">Same as now</span>
             <% else %>
               <%= changed.map(&:humanize).to_sentence %>
             <% end %>

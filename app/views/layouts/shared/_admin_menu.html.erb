@@ -6,33 +6,33 @@
     it sits, how wide it is and when submenus show is admin.css's; the rest is
     here. %>
 <% submenu_link_classes = "admin-menu__submenu-link flex items-center gap-2 rounded-md py-1.5 pr-2.5 text-sm" %>
-<nav id="admin-menu" class="admin-menu flex flex-col border-r border-sidebar-border bg-sidebar text-sm text-sidebar-foreground" aria-label="<%= tx("Admin menu") %>">
+<nav id="admin-menu" class="admin-menu flex flex-col border-r border-gray-200 bg-gray-50 text-sm" aria-label="<%= tx("Admin menu") %>">
   <ul class="grow shrink-0 space-y-0.5 px-3 py-4">
     <% admin_menu.each_with_index do |(group, entries), index| %>
       <%# herb:key group.to_s %>
       <% if index.positive? %>
-        <li class="mx-2.5 my-3 border-t border-sidebar-border" aria-hidden="true"></li>
+        <li class="mx-2.5 my-3 border-t border-gray-200" aria-hidden="true"></li>
       <% end %>
       <% entries.each do |entry| %>
         <%# herb:key entry.id %>
         <% current_link = entry.submenu.find(&:current) %>
         <li class="<%= class_names("admin-menu__item", "admin-menu__item--current": entry.current) %>" data-menu-group="<%= group %>">
           <%= link_to entry.url, class: class_names("admin-menu__link flex items-center gap-3 rounded-md px-2.5 py-2 font-medium",
-                entry.current ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground"),
+                entry.current ? "bg-blue-50 text-blue-700" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"),
                 aria: { current: ("page" if entry.current && current_link.nil?) } do %>
-            <%= icon_tag entry.icon, class: class_names("admin-menu__icon size-5", entry.current ? "text-sidebar-primary" : "text-muted-foreground") %>
+            <%= icon_tag entry.icon, class: class_names("admin-menu__icon size-5", entry.current ? "text-blue-600" : "text-gray-400") %>
             <span class="admin-menu__label truncate"><%= tx(entry.label) %></span>
           <% end %>
           <% if entry.submenu.any? %>
             <ul class="admin-menu__submenu space-y-0.5 py-1" aria-label="<%= tx(entry.label) %>">
-              <li class="admin-menu__submenu-head px-2.5 pb-1 pt-0.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground" aria-hidden="true"><%= tx(entry.label) %></li>
+              <li class="admin-menu__submenu-head px-2.5 pb-1 pt-0.5 text-xs font-semibold uppercase tracking-wide text-gray-500" aria-hidden="true"><%= tx(entry.label) %></li>
               <% entry.submenu.each do |link| %>
                 <%# herb:key link.url %>
                 <li>
-                  <% link_classes = class_names(submenu_link_classes, link.current ? "font-medium text-sidebar-accent-foreground" : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground") %>
+                  <% link_classes = class_names(submenu_link_classes, link.current ? "font-medium text-blue-700" : "text-gray-500 hover:bg-gray-100 hover:text-gray-900") %>
                   <% if link.icon %>
                     <%= link_to link.url, class: link_classes, aria: { current: ("page" if link.current) } do %>
-                      <%= icon_tag link.icon, class: "size-4 text-muted-foreground" %>
+                      <%= icon_tag link.icon, class: "size-4 text-gray-400" %>
                       <span><%= tx(link.label) %></span>
                     <% end %>
                   <% else %>
@@ -47,7 +47,7 @@
     <% end %>
   </ul>
 
-  <button type="button" class="admin-menu__collapse flex items-center gap-3 border-t border-sidebar-border px-5 py-3 text-left text-muted-foreground hover:bg-sidebar-accent hover:text-foreground"
+  <button type="button" class="admin-menu__collapse flex items-center gap-3 border-t border-gray-200 px-5 py-3 text-left text-gray-500 hover:bg-gray-100 hover:text-gray-900"
     data-admin-menu-target="foldToggle" data-action="admin-menu#toggleFold" aria-pressed="false">
     <%= icon_tag "collapse-menu", class: "admin-menu__icon size-5" %>
     <span class="admin-menu__label"><%= tx("Collapse menu") %></span>

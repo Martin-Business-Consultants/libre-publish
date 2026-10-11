@@ -30,8 +30,15 @@
     display: none;
   }
 
-  html.dark .theme-toggle {
+  html[data-theme="dark"] .theme-toggle {
     .theme-toggle__moon { display: none; }
     .theme-toggle__sun { display: inline-block; }
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html:not([data-theme]) .theme-toggle {
+      .theme-toggle__moon { display: none; }
+      .theme-toggle__sun { display: inline-block; }
+    }
   }
 }

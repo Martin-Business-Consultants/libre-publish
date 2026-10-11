@@ -37,9 +37,9 @@
     <%= render "content_form/blocks", blocks: value, scope: scope, allowed_types: field["allowed_types"], depth: depth + 1, record: nil %>
   <% else %>
     <%= render "content_form/label", field: field, for_id: nil %>
-    <p class="text-sm text-muted-foreground">This field’s type (<code><%= type %></code>) has no editor; its value is kept as it is.</p>
+    <p class="<%= ui(:help) %>">This field’s type (<code><%= type %></code>) has no editor; its value is kept as it is.</p>
   <% end %>
   <% if field["help"].present? %>
-    <p class="text-sm text-muted-foreground"><%= field["help"] %></p>
+    <p class="<%= ui(:help) %>"><%= field["help"] %></p>
   <% end %>
 <% end %>

@@ -9,10 +9,10 @@
   <aside class="space-y-6">
     <%= postbox "site-health-summary", "In good order?" do %>
       <div class="space-y-1">
-        <p class="text-base font-semibold text-foreground">
+        <p class="text-base font-semibold text-gray-900">
           <%= @summary[:ready] ? "Everything checks out" : "#{pluralize(@summary[:failing], "thing")} to fix" %>
         </p>
-        <p class="text-muted-foreground"><%= @summary[:passing] %> of <%= @summary[:total] %> checks pass. The ones marked ? are yours to judge.</p>
+        <p class="text-gray-500"><%= @summary[:passing] %> of <%= @summary[:total] %> checks pass. The ones marked ? are yours to judge.</p>
       </div>
     <% end %>
     <%= render "docs/nav", guides: @guides, current: :site_health %>

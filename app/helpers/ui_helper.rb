@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 
-# The class lists the admin's repeated pieces were drawn with before it took
-# shadcn-html (vendor/shadcn-html, STYLE.md), kept so plugins written against
-# them (`class: ui(:button, :primary)`) still draw. The core writes shadcn-html's
-# markup instead: `class="btn" data-variant="outline"`, `card`, `badge`,
-# `alert`, `table`, `label`. The gray and blue they use follow shadcn-html's
-# tokens (_global.css), so a plugin's screen still matches until it moves over.
+# The class lists for the admin's repeated pieces (buttons, panels, menus,
+# badges, notices, tables, form text), in one place so every screen draws
+# them alike, in the admin's classic look (Fizzy's): ink grays, a blue
+# accent, small corners, semibold controls, flat panels. They draw
+# only with the tokens Settings › Branding sets (_global.css): blue is the
+# accent (the primary color; black until one's set), gray the neutral,
+# rounded-* the corners, shadow-surface/-overlay the shadow. A view writes `class: ui(:button, :primary)`, adding its own layout
+# classes as a string: `ui(:button, :small, "w-full")`.
 #
 # Each recipe has a base and groups of variants. One variant from each group
 # applies, the first unless the call names another, so a recipe never puts
@@ -30,18 +32,17 @@ module UiHelper
     panel: {
       base: "rounded-xl border border-gray-200 bg-white shadow-surface"
     },
-    # On a <dialog class="dialog">, which shadcn-html draws.
     dialog: {
-      base: "gap-4 p-6 text-left"
+      base: "gap-4 rounded-xl border border-gray-200 bg-white p-6 text-left text-gray-900 shadow-overlay"
     },
     sheet: {
-      base: "sheet gap-6 p-6 text-left"
+      base: "dialog dialog--sheet gap-6 overflow-y-auto rounded-l-xl border-l border-gray-200 bg-white p-6 text-left text-gray-900 shadow-overlay"
     },
     menu: {
-      base: "rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-overlay"
+      base: "rounded-xl border border-gray-200 bg-white p-1 shadow-overlay"
     },
     menu_item: {
-      base: "dropdown-item"
+      base: "flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
     },
     badge: {
       base: "inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 text-xs font-semibold tracking-wide whitespace-nowrap uppercase",

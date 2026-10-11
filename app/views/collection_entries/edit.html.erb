@@ -3,7 +3,7 @@
 
 <% content_for :page_actions do %>
   <% if Current.user.can?("entries:write") %>
-    <%= link_to "Add New", new_collection_entry_path(@collection.slug), class: "btn", data: {variant: "outline"} %>
+    <%= link_to "Add New", new_collection_entry_path(@collection.slug), class: ui(:button) %>
   <% end %>
 <% end %>
 <%= render "layouts/shared/page_header", title: @page_title %>

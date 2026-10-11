@@ -7,22 +7,22 @@
 <% seo = record.seo.is_a?(Hash) ? record.seo : {} %>
 <% seo = seo.merge("json_ld" => invalid_json["json_ld"]) if invalid_json&.key?("json_ld") %>
 <% seo_scope = content_scope(scope)["seo"] %>
-<%= tag.section class: "card", data: ({ tab: "seo", tabs_target: "panel" } if record.persisted?), hidden: record.persisted? do %>
-  <h2 class="text-base font-semibold text-foreground border-b border-border px-5 py-3.5">SEO</h2>
+<%= tag.section class: ui(:panel), data: ({ tab: "seo", tabs_target: "panel" } if record.persisted?), hidden: record.persisted? do %>
+  <h2 class="<%= ui(:heading, "border-b border-gray-200 px-5 py-3.5") %>">SEO</h2>
   <% checks = record.persisted? ? SeoAudit.new.for_record(record) : [] %>
   <% if checks.any? %>
-    <ul class="space-y-1 border-b border-border px-5 py-3.5 text-sm" aria-label="SEO checks">
+    <ul class="space-y-1 border-b border-gray-200 px-5 py-3.5 text-sm" aria-label="SEO checks">
       <% checks.each_with_index do |issue, index| %>
         <%# herb:key index %>
-        <li class="<%= issue.problem? ? "text-red-600" : "text-foreground" %>"><%= issue.message %></li>
+        <li class="<%= issue.problem? ? "text-red-600" : "text-gray-700" %>"><%= issue.message %></li>
       <% end %>
     </ul>
   <% end %>
-  <div class="divide-y divide-border">
+  <div class="divide-y divide-gray-200">
     <% [ [ "Search", SeoFields::SEARCH ], [ "Social sharing", SeoFields::SOCIAL ], [ "Structured data", SeoFields::STRUCTURED ] ].each do |title, fields| %>
       <%# herb:key title %>
       <section class="flex flex-col gap-4 p-5">
-        <h3 class="text-xs font-medium text-muted-foreground"><%= title %></h3>
+        <h3 class="text-xs font-medium text-gray-500"><%= title %></h3>
         <%= render "content_form/fields", fields: fields, values: seo, scope: seo_scope, depth: 1 %>
       </section>
     <% end %>

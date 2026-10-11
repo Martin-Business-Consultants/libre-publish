@@ -23,15 +23,15 @@
     <%= postbox "role-permissions", "Permissions" do %>
       <%= tag.fieldset class: "space-y-4", disabled: locked do %>
         <legend class="sr-only">Permissions</legend>
-        <p class="text-sm text-muted-foreground">Pick which capabilities this role grants. Users with this role can do only what’s ticked.</p>
+        <p class="text-sm text-gray-500">Pick which capabilities this role grants. Users with this role can do only what’s ticked.</p>
         <%= hidden_field_tag "role[permissions][]", "", id: nil %>
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <% Permissions.catalog.each do |group, capabilities| %>
             <%# herb:key group %>
-            <div class="card p-4">
+            <div class="<%= ui(:panel, "p-4") %>">
               <fieldset class="space-y-2" data-controller="select-all">
                 <legend class="w-full">
-                  <label class="flex items-center gap-2 text-sm font-semibold text-foreground">
+                  <label class="flex items-center gap-2 text-sm font-semibold text-gray-900">
                     <input type="checkbox" aria-label="Every <%= group %> capability" data-select-all-target="all" data-action="select-all#toggle">
                     <span><%= group %></span>
                   </label>
@@ -40,8 +40,8 @@
                   <%# herb:key capability %>
                   <label class="flex items-center gap-2">
                     <%= check_box_tag "role[permissions][]", capability, role.admin? || role.permissions.include?(capability), id: "role_permission_" + capability.tr(":", "_"), data: { select_all_target: "box", action: "select-all#sync" } %>
-                    <span class="font-mono text-xs text-foreground"><%= capability %></span>
-                    <span class="ml-auto text-xs text-muted-foreground"><%= capability_action_label(capability) %></span>
+                    <span class="font-mono text-xs text-gray-700"><%= capability %></span>
+                    <span class="ml-auto text-xs text-gray-500"><%= capability_action_label(capability) %></span>
                   </label>
                 <% end %>
               </fieldset>
@@ -55,7 +55,7 @@
   <aside class="flex min-w-0 flex-col gap-4 top-16 lg:sticky">
     <% note = capture do %>
       <% if locked %>
-        <p class="text-sm text-muted-foreground">A system role. It can’t be edited or deleted.</p>
+        <p class="text-sm text-gray-500">A system role. It can’t be edited or deleted.</p>
       <% end %>
     <% end %>
     <%= render "layouts/shared/save_box", key: "role-save", title: (role.new_record? ? "Add role" : "Save"),

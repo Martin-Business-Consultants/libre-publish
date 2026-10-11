@@ -62,7 +62,6 @@
 
     &[open] {
       display: flex;
-      max-width: none;
     }
   }
 

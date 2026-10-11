@@ -7,11 +7,11 @@
       <% items.each do |title, path, key| %>
         <%# herb:key path %>
         <li>
-          <%= link_to title, path, class: class_names("block rounded-md px-2.5 py-1.5", current == key ? "bg-muted font-medium text-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"),
+          <%= link_to title, path, class: class_names("block rounded-md px-2.5 py-1.5", current == key ? "bg-gray-100 font-medium text-gray-900" : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"),
                 aria: { current: ("page" if current == key) } %>
         </li>
       <% end %>
     </ul>
   </nav>
-  <p class="text-sm text-muted-foreground">From the CLI or MCP: <code class="font-mono text-foreground">cms docs</code>, <code class="font-mono text-foreground">cms site-health</code>.</p>
+  <p class="<%= ui(:help) %>">From the CLI or MCP: <code class="font-mono text-gray-700">cms docs</code>, <code class="font-mono text-gray-700">cms site-health</code>.</p>
 <% end %>

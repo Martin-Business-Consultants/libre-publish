@@ -1,21 +1,11 @@
 <%# locals: () %>
 <%# Applies the saved light/dark choice before first paint
-    (localStorage "appearance": light, dark or system), and keeps
-    shadcn-html's .dark class on <html> in step with it: dark when chosen,
-    or with no choice when the system is (theme_controller sets data-theme;
-    the system can change while the page is open). %>
+    (localStorage "appearance": light, dark or system). %>
 <%= javascript_tag nonce: true do %>
   {
-    const root = document.documentElement
     const stored = localStorage.getItem("appearance")
     if (stored === "light" || stored === "dark") {
-      root.dataset.theme = stored
+      document.documentElement.dataset.theme = stored
     }
-
-    const systemDark = window.matchMedia("(prefers-color-scheme: dark)")
-    const sync = () => root.classList.toggle("dark", root.dataset.theme ? root.dataset.theme === "dark" : systemDark.matches)
-    sync()
-    systemDark.addEventListener("change", sync)
-    new MutationObserver(sync).observe(root, { attributeFilter: ["data-theme"] })
   }
 <% end %>

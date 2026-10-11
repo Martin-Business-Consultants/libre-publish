@@ -17,10 +17,10 @@
     <% end %>
   </ol>
   <% if Array(blocks).empty? %>
-    <p class="content-blocks__empty rounded-lg bg-muted py-8 text-center text-sm text-muted-foreground">No blocks yet.</p>
+    <p class="content-blocks__empty rounded-lg bg-gray-50 py-8 text-center text-sm text-gray-500">No blocks yet.</p>
   <% end %>
   <div>
-    <button type="button" class="btn" data-variant="outline" data-size="sm" data-action="sortable-list#openPicker">
+    <button type="button" class="<%= ui(:button, :small) %>" data-action="sortable-list#openPicker">
       <%= icon_tag "add", class: "size-4" %>
       <span>Add block</span>
     </button>

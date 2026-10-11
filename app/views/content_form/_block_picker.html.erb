@@ -1,11 +1,11 @@
 <%# locals: (allowed_types: nil) %>
 <%# The block types a list may add, grouped by category, with the "/"-style
     filter. Picking one asks the server for its row (sortable-list#insert). %>
-<dialog class="dialog content-picker gap-5 overflow-y-auto p-6 text-left" data-sortable-list-target="picker"
+<dialog class="dialog content-picker flex-col gap-5 overflow-y-auto rounded-xl border border-gray-200 bg-white p-6 text-left shadow-overlay" data-sortable-list-target="picker"
         aria-label="Add a block">
   <header class="flex items-center justify-between gap-4">
-    <h2 class="text-lg font-semibold text-foreground">Add a block</h2>
-    <button type="button" class="btn" data-variant="outline" data-size="sm" data-action="sortable-list#closePicker">Close</button>
+    <h2 class="text-lg font-semibold text-gray-900">Add a block</h2>
+    <button type="button" class="<%= ui(:button, :small) %>" data-action="sortable-list#closePicker">Close</button>
   </header>
   <input type="search" class="w-full" placeholder="Filter block types…" autocomplete="off" aria-label="Filter block types"
          data-action="input->sortable-list#filterPicker">
@@ -13,23 +13,23 @@
     <% content_block_type_groups(allowed_types).each do |category, types| %>
       <%# herb:key category %>
       <section class="flex flex-col gap-2">
-        <h3 class="text-xs font-medium text-muted-foreground"><%= category %></h3>
+        <h3 class="text-xs font-medium text-gray-500"><%= category %></h3>
         <%= render "content_form/picker_types", types: types %>
       </section>
     <% end %>
     <% patterns = allowed_types.nil? ? BlockPattern.ordered.to_a : [] %>
     <% if patterns.any? %>
       <section class="flex flex-col gap-2">
-        <h3 class="text-xs font-medium text-muted-foreground">Patterns</h3>
+        <h3 class="text-xs font-medium text-gray-500">Patterns</h3>
         <ul class="grid gap-2 sm:grid-cols-2">
           <% patterns.each do |pattern| %>
             <%# herb:key pattern.slug %>
             <li data-picker-text="<%= [ "pattern", pattern.slug, pattern.name, pattern.description ].compact.join(" ").downcase %>">
-              <button type="button" class="flex h-full w-full flex-col items-start gap-0.5 rounded-lg border border-border bg-background px-3 py-2.5 text-left hover:border-input hover:bg-muted"
+              <button type="button" class="flex h-full w-full flex-col items-start gap-0.5 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-left hover:border-gray-400 hover:bg-gray-50"
                       data-type="pattern:<%= pattern.slug %>" data-action="sortable-list#insert">
-                <span class="text-sm font-medium text-foreground"><%= pattern.name %><span class="ml-1 text-xs font-normal text-muted-foreground"><%= pattern.synced? ? "synced" : "copy" %></span></span>
+                <span class="text-sm font-medium text-gray-900"><%= pattern.name %><span class="ml-1 text-xs font-normal text-gray-500"><%= pattern.synced? ? "synced" : "copy" %></span></span>
                 <% if pattern.description.present? %>
-                  <span class="text-xs text-muted-foreground"><%= pattern.description %></span>
+                  <span class="text-xs text-gray-500"><%= pattern.description %></span>
                 <% end %>
               </button>
             </li>
@@ -40,8 +40,8 @@
     <% deprecated = content_deprecated_block_types(allowed_types) %>
     <% if deprecated.any? %>
       <details class="content-picker__deprecated space-y-2">
-        <summary class="text-xs font-medium text-muted-foreground">Deprecated (<%= deprecated.size %>)</summary>
-        <p class="text-sm text-muted-foreground">Kept for content that already uses them. They're still added like any other, but a newer type usually does the same job.</p>
+        <summary class="text-xs font-medium text-gray-500">Deprecated (<%= deprecated.size %>)</summary>
+        <p class="<%= ui(:help) %>">Kept for content that already uses them. They're still added like any other, but a newer type usually does the same job.</p>
         <%= render "content_form/picker_types", types: deprecated %>
       </details>
     <% end %>

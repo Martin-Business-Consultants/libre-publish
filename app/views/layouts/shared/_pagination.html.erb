@@ -4,38 +4,38 @@
     Next ». The current page is the primary button; Previous and Next are
     shown but off on the first and last pages, so the row doesn't jump. %>
 <nav class="mt-4 flex flex-wrap items-center justify-between gap-3" aria-label="Pages">
-  <p class="text-sm text-muted-foreground">
+  <p class="text-sm text-gray-500">
     <%= number_with_delimiter(pagination.first_row) %>–<%= number_with_delimiter(pagination.last_row) %> of <%= number_with_delimiter(pagination.total_count) %>
   </p>
   <ul class="flex flex-wrap items-center gap-1">
     <li>
       <% if pagination.previous_number %>
-        <%= link_to pagination_path(pagination.previous_number), class: "btn", data: {variant: "outline", size: "sm"}, rel: "prev" do %>
+        <%= link_to pagination_path(pagination.previous_number), class: ui(:button, :small), rel: "prev" do %>
           <span aria-hidden="true">«</span> Previous
         <% end %>
       <% else %>
-        <span class="btn pointer-events-none opacity-50" data-variant="outline" data-size="sm" aria-disabled="true"><span aria-hidden="true">«</span> Previous</span>
+        <span class="<%= ui(:button, :small, "pointer-events-none opacity-50") %>" aria-disabled="true"><span aria-hidden="true">«</span> Previous</span>
       <% end %>
     </li>
     <% pagination.window.each_with_index do |number, index| %>
       <%# herb:key index %>
       <li>
         <% if number.nil? %>
-          <span class="px-1.5 text-sm text-muted-foreground" aria-hidden="true">…</span>
+          <span class="px-1.5 text-sm text-gray-500" aria-hidden="true">…</span>
         <% elsif number == pagination.number %>
-          <span class="btn min-w-7" data-size="sm" aria-current="page"><%= number %></span>
+          <span class="<%= ui(:button, :primary, :small, "min-w-7") %>" aria-current="page"><%= number %></span>
         <% else %>
-          <%= link_to number, pagination_path(number), class: "btn min-w-7", data: {variant: "outline", size: "sm"}, aria: { label: "Page #{number}" } %>
+          <%= link_to number, pagination_path(number), class: ui(:button, :small, "min-w-7"), aria: { label: "Page #{number}" } %>
         <% end %>
       </li>
     <% end %>
     <li>
       <% if pagination.next_number %>
-        <%= link_to pagination_path(pagination.next_number), class: "btn", data: {variant: "outline", size: "sm"}, rel: "next" do %>
+        <%= link_to pagination_path(pagination.next_number), class: ui(:button, :small), rel: "next" do %>
           Next <span aria-hidden="true">»</span>
         <% end %>
       <% else %>
-        <span class="btn pointer-events-none opacity-50" data-variant="outline" data-size="sm" aria-disabled="true">Next <span aria-hidden="true">»</span></span>
+        <span class="<%= ui(:button, :small, "pointer-events-none opacity-50") %>" aria-disabled="true">Next <span aria-hidden="true">»</span></span>
       <% end %>
     </li>
   </ul>

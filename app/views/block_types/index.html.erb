@@ -6,7 +6,7 @@
   <% if can_write %>
     <%= render "layouts/shared/new_link", text: "New block type", path: new_block_type_path %>
     <% if BlockType.none? %>
-      <%= button_to "Install the starter block types", block_types_seeding_path, class: "btn", data: {variant: "outline"}, form_class: "contents" %>
+      <%= button_to "Install the starter block types", block_types_seeding_path, class: ui(:button), form_class: "contents" %>
     <% end %>
   <% end %>
 <% end %>
@@ -24,45 +24,45 @@
         delete_message: "Pages using them keep their blocks, which stop validating until the type is back. This can’t be undone." %>
 <% end %>
 
-<section class="card overflow-x-auto" data-controller="select-all">
-  <table class="data-table table">
+<section class="<%= ui(:panel, "overflow-x-auto") %>" data-controller="select-all">
+  <table class="data-table <%= ui(:table) %>">
     <thead>
-      <tr class="table-row">
+      <tr>
         <% if can_delete %>
-          <th class="table-head data-table__check"><% if @block_types.any? %><input type="checkbox" aria-label="Select every row" data-select-all-target="all" data-action="select-all#toggle"><% end %></th>
+          <th class="<%= ui(:th, "data-table__check") %>"><% if @block_types.any? %><input type="checkbox" aria-label="Select every row" data-select-all-target="all" data-action="select-all#toggle"><% end %></th>
         <% end %>
-        <th class="table-head">Label</th>
-        <th class="table-head">Slug</th>
-        <th class="table-head">Category</th>
-        <th class="table-head text-right">Fields</th>
-        <th class="table-head">Source</th>
+        <th class="<%= ui(:th) %>">Label</th>
+        <th class="<%= ui(:th) %>">Slug</th>
+        <th class="<%= ui(:th) %>">Category</th>
+        <th class="<%= ui(:th, "text-right") %>">Fields</th>
+        <th class="<%= ui(:th) %>">Source</th>
       </tr>
     </thead>
     <tbody>
       <% @block_types.each do |block_type| %>
         <%# herb:key block_type.id %>
-        <tr id="<%= dom_id(block_type) %>" class="table-row hover:bg-muted" data-filter-target="item">
+        <tr id="<%= dom_id(block_type) %>" class="hover:bg-gray-50" data-filter-target="item">
           <% if can_delete %>
-            <td class="table-cell data-table__check"><input type="checkbox" data-select-all-target="box" data-action="select-all#sync" name="slugs[]" value="<%= block_type.slug %>" form="block_types_bulk" aria-label="Select <%= block_type.label %>"></td>
+            <td class="<%= ui(:td, "data-table__check") %>"><input type="checkbox" data-select-all-target="box" data-action="select-all#sync" name="slugs[]" value="<%= block_type.slug %>" form="block_types_bulk" aria-label="Select <%= block_type.label %>"></td>
           <% end %>
-          <td class="table-cell">
+          <td class="<%= ui(:td) %>">
             <% if can_write %>
-              <%= link_to block_type.label, edit_block_type_path(block_type.slug), class: "font-medium text-foreground hover:underline" %>
+              <%= link_to block_type.label, edit_block_type_path(block_type.slug), class: "font-medium text-gray-900 hover:underline" %>
             <% else %>
-              <span class="font-medium text-foreground"><%= block_type.label %></span>
+              <span class="font-medium text-gray-900"><%= block_type.label %></span>
             <% end %>
             <% if block_type.deprecated %>
-              <span class="badge" data-variant="secondary">Deprecated</span>
+              <span class="<%= ui(:badge, :gray) %>">Deprecated</span>
             <% end %>
 <%= render "layouts/shared/row_links", name: block_type.label,
                 edit_path: (edit_block_type_path(block_type.slug) if can_write),
                 delete_path: (block_type_path(block_type.slug) if can_delete),
                 delete_message: "Pages using it keep their blocks, which stop validating. This can’t be undone." %>
           </td>
-          <td class="table-cell"><span class="font-mono text-xs text-muted-foreground"><%= block_type.slug %></span></td>
-          <td class="table-cell"><span class="text-muted-foreground"><%= block_type.category.presence || "—" %></span></td>
-          <td class="table-cell text-right tabular-nums"><%= Array(block_type.fields).size %></td>
-          <td class="table-cell"><%= block_type.built_in ? "Built-in" : "Custom" %></td>
+          <td class="<%= ui(:td) %>"><span class="font-mono text-xs text-gray-500"><%= block_type.slug %></span></td>
+          <td class="<%= ui(:td) %>"><span class="text-gray-500"><%= block_type.category.presence || "—" %></span></td>
+          <td class="<%= ui(:td, "text-right tabular-nums") %>"><%= Array(block_type.fields).size %></td>
+          <td class="<%= ui(:td) %>"><%= block_type.built_in ? "Built-in" : "Custom" %></td>
         </tr>
       <% end %>
       <%= table_empty_row(@category ? "No block types in #{@category}." : "No block types yet. The starter pack covers a hero, text, media, calls to action and more.", columns: can_delete ? 6 : 5, link: (["Show all", block_types_path] if @category)) if @block_types.none? %>

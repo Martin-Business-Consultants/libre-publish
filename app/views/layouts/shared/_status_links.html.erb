@@ -10,11 +10,11 @@
     <li>
       <%= link_to url_for(request.query_parameters.except("page").merge(param.to_s => value.presence).compact),
             class: class_names("inline-flex h-7 items-center gap-1.5 rounded-md px-2.5",
-              chosen ? "bg-muted font-medium text-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"),
+              chosen ? "bg-gray-100 font-medium text-gray-900" : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"),
             aria: { current: ("page" if chosen) } do %>
         <%= label %>
         <% if count %>
-          <span class="<%= class_names("text-xs tabular-nums", chosen ? "text-muted-foreground" : "text-muted-foreground") %>"><%= count %></span>
+          <span class="<%= class_names("text-xs tabular-nums", chosen ? "text-gray-500" : "text-gray-400") %>"><%= count %></span>
         <% end %>
       <% end %>
     </li>

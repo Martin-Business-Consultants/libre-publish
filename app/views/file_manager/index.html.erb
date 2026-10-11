@@ -16,23 +16,23 @@
 <%= render "layouts/shared/page_header", title: "Media Library", description: "Every file the site uses: images, documents and the rest, in folders." %>
 
 <% if can_write %>
-  <div class="file-drop__overlay pointer-events-none absolute inset-0 z-30 items-center justify-center rounded-xl border-2 border-dashed border-primary" data-media--file-drop-target="overlay" hidden>
-    <p class="rounded-lg border border-border bg-background px-4 py-3 text-sm text-foreground shadow-overlay">Drop files to upload them into <strong class="font-semibold"><%= upload_place %></strong>, or onto a folder.</p>
+  <div class="file-drop__overlay pointer-events-none absolute inset-0 z-30 items-center justify-center rounded-xl border-2 border-dashed border-blue-600" data-media--file-drop-target="overlay" hidden>
+    <p class="rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-overlay">Drop files to upload them into <strong class="font-semibold"><%= upload_place %></strong>, or onto a folder.</p>
   </div>
-  <p class="alert border-yellow-200 bg-yellow-50 text-yellow-800 mb-4" data-media--file-drop-target="message" hidden></p>
+  <p class="<%= ui(:notice, :yellow, "mb-4") %>" data-media--file-drop-target="message" hidden></p>
   <%# The drop zone, always there, as Payload's and WordPress's uploaders are;
       a drop anywhere on the page works too. Focused when "+ New › Media" led
       here. %>
-  <section class="mb-6 flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-input bg-muted px-6 py-6 text-center"
+  <section class="mb-6 flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 px-6 py-6 text-center"
            aria-label="Upload files" data-drop-folder="<%= upload_folder %>">
-    <span class="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background text-muted-foreground">
+    <span class="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500">
       <%= icon_tag "picture-add", class: "size-5" %>
     </span>
     <p class="flex flex-col gap-1">
-      <strong class="text-sm font-medium text-foreground">Drop files to upload</strong>
-      <span class="text-xs text-muted-foreground">into <%= upload_place %>. A zip of images, dropped on its own, is unpacked.</span>
+      <strong class="text-sm font-medium text-gray-900">Drop files to upload</strong>
+      <span class="text-xs text-gray-500">into <%= upload_place %>. A zip of images, dropped on its own, is unpacked.</span>
     </p>
-    <%= tag.button "Select files", type: "button", class: "btn", autofocus: params[:upload].present?, data: {variant: "outline", size: "sm", action: "media--file-drop#choose"} %>
+    <%= tag.button "Select files", type: "button", class: ui(:button, :small), autofocus: params[:upload].present?, data: { action: "media--file-drop#choose" } %>
   </section>
 <% end %>
 
@@ -48,7 +48,7 @@
       <%= form.hidden_field :month, value: @month, id: nil if @month %>
       <%= form.hidden_field :folder, value: @folder, id: nil if @folder %>
       <label for="media_search" class="sr-only">Search</label>
-      <%= icon_tag "search", class: "pointer-events-none absolute left-2.5 top-2 size-4 text-muted-foreground" %>
+      <%= icon_tag "search", class: "pointer-events-none absolute left-2.5 top-2 size-4 text-gray-400" %>
       <%= form.search_field :q, value: @query, id: "media_search", class: "w-full pl-8", placeholder: "Search by name…", autocomplete: "off" %>
     <% end %>
 
@@ -64,7 +64,7 @@
     <% end %>
 
     <% if @view == "cards" && @assets.any? && ticks %>
-      <label class="btn cursor-pointer" data-variant="outline">
+      <label class="<%= ui(:button, "cursor-pointer") %>">
         <input type="checkbox" class="sr-only" data-media-bulk>
         <span class="media-toolbar__bulk-on">Bulk select</span>
         <span class="media-toolbar__bulk-off">Cancel</span>
@@ -72,12 +72,12 @@
     <% end %>
 
     <%# Grid or list, keeping the other filters; V switches. %>
-    <nav class="inline-flex items-center gap-0.5 rounded-md border border-input bg-background p-0.5" aria-label="View">
+    <nav class="inline-flex items-center gap-0.5 rounded-md border border-gray-300 bg-white p-0.5" aria-label="View">
       <% [ [ "cards", "Grid", "grid" ], [ "table", "List", "menu" ] ].each do |key, view_label, icon| %>
         <%# herb:key key %>
         <% current = key == @view %>
         <%= link_to url_for(request.query_parameters.except("page").merge("view" => key)),
-              class: class_names("inline-flex h-7 w-7 items-center justify-center rounded-sm", current ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground"),
+              class: class_names("inline-flex h-7 w-7 items-center justify-center rounded-sm", current ? "bg-gray-100 text-gray-900" : "text-gray-500 hover:text-gray-900"),
               title: view_label, aria: { current: ("page" if current) }, data: { keys: ("v" unless current) } do %>
           <%= icon_tag icon, class: "size-4" %>
           <span class="sr-only"><%= view_label %></span>
@@ -95,9 +95,9 @@
       <% @subfolders.each do |folder| %>
         <%# herb:key folder %>
         <li data-filter-target="item">
-          <%= link_to file_manager_path(folder: folder, view: @view), class: "flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2.5 text-sm font-medium text-foreground hover:border-input hover:bg-muted",
+          <%= link_to file_manager_path(folder: folder, view: @view), class: "flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm font-medium text-gray-900 hover:border-gray-300 hover:bg-gray-50",
                 data: { drop_folder: folder } do %>
-            <%= icon_tag "folder", class: "size-4 shrink-0 text-muted-foreground" %>
+            <%= icon_tag "folder", class: "size-4 shrink-0 text-gray-400" %>
             <span class="truncate"><%= AssetFolders.name(folder) %></span>
           <% end %>
         </li>
@@ -126,25 +126,25 @@
       <%# Under the grid, on its own row: inside it, it took a tile's cell. %>
       <%= pagination_nav @page %>
     <% else %>
-      <p class="rounded-xl border border-border py-12 text-center text-sm text-muted-foreground"><%= empty %></p>
+      <p class="rounded-xl border border-gray-200 py-12 text-center text-sm text-gray-500"><%= empty %></p>
     <% end %>
   <% else %>
-    <section class="card overflow-x-auto" data-controller="select-all">
-      <table class="table data-table" data-controller="pagination" data-pagination-paginate-on-intersection-value="true" data-pagination-discard-frame-value="true">
+    <section class="<%= ui(:panel, "overflow-x-auto") %>" data-controller="select-all">
+      <table class="<%= ui(:table, "data-table") %>" data-controller="pagination" data-pagination-paginate-on-intersection-value="true" data-pagination-discard-frame-value="true">
         <thead>
-          <tr class="table-row">
+          <tr>
             <% if ticks %>
-              <th class="table-head data-table__check">
+              <th class="<%= ui(:th, "data-table__check") %>">
                 <% if @assets.any? %>
                   <input type="checkbox" aria-label="Select every row" data-select-all-target="all" data-action="select-all#toggle">
                 <% end %>
               </th>
             <% end %>
-            <th class="table-head">File</th>
-            <th class="table-head">Type</th>
-            <th class="table-head">Folder</th>
-            <th class="table-head text-right">Size</th>
-            <th class="table-head">Added</th>
+            <th class="<%= ui(:th) %>">File</th>
+            <th class="<%= ui(:th) %>">Type</th>
+            <th class="<%= ui(:th) %>">Folder</th>
+            <th class="<%= ui(:th, "text-right") %>">Size</th>
+            <th class="<%= ui(:th) %>">Added</th>
           </tr>
         </thead>
         <tbody id="<%= pagination_frame_id_for(:assets_rows, @page.number) %>">
@@ -159,16 +159,16 @@
     </section>
   <% end %>
   <% if @assets.any? %>
-    <p class="text-center text-xs text-muted-foreground"><%= pluralize(@total, "media item") %></p>
+    <p class="text-center text-xs text-gray-500"><%= pluralize(@total, "media item") %></p>
   <% end %>
 
-  <dialog class="sheet sheet--wide gap-6 p-6 text-left" data-dialog-target="dialog" aria-label="Attachment details" closedby="any">
+  <dialog class="<%= ui(:sheet, "dialog--sheet-half") %>" data-dialog-target="dialog" aria-label="Attachment details" closedby="any">
     <header class="flex items-center justify-between gap-4">
-      <h2 class="text-lg font-semibold text-foreground">Attachment details</h2>
-      <button type="button" class="btn" data-variant="outline" data-size="sm" data-action="dialog#close">Close</button>
+      <h2 class="text-lg font-semibold text-gray-900">Attachment details</h2>
+      <button type="button" class="<%= ui(:button, :small) %>" data-action="dialog#close">Close</button>
     </header>
     <turbo-frame id="asset_details">
-      <p class="text-sm text-muted-foreground">Loading…</p>
+      <p class="text-sm text-gray-500">Loading…</p>
     </turbo-frame>
   </dialog>
 </div>

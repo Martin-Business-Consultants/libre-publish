@@ -5,8 +5,8 @@
      [ "unpublish_at", "Unpublish at", "The status flips to archived when this time arrives, for time-limited content." ] ].each do |key, label, help| %>
   <%# herb:key key %>
   <div class="flex flex-col gap-1.5">
-    <label class="label" for="<%= scope + "_" + key %>"><%= label %></label>
+    <label class="<%= ui(:label) %>" for="<%= scope + "_" + key %>"><%= label %></label>
     <%= datetime_local_field_tag scope + "[" + key + "]", content_datetime_input(record.public_send(key)), id: scope + "_" + key, class: "w-full", step: 1, autocomplete: "off" %>
-    <p class="text-sm text-muted-foreground"><%= help %> Times are <%= Time.zone.tzinfo.name %>.</p>
+    <p class="<%= ui(:help) %>"><%= help %> Times are <%= Time.zone.tzinfo.name %>.</p>
   </div>
 <% end %>

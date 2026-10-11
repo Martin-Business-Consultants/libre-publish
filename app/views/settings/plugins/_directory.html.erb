@@ -1,26 +1,26 @@
 <%# locals: (entries:, kind:, from: nil) %>
 <%# The plugin directory's plugins (or themes): each pinned to a reviewed
     release, and installed at exactly that commit (PluginDirectory). %>
-<section class="card space-y-3 p-6">
+<section class="<%= ui(:panel, "space-y-3 p-6") %>">
   <div class="space-y-1">
-    <h2 class="text-base font-semibold text-foreground">From the directory</h2>
-    <p class="text-sm text-muted-foreground">
+    <h2 class="<%= ui(:heading) %>">From the directory</h2>
+    <p class="text-sm text-gray-500">
       <%= kind.capitalize.pluralize %> Libre Publish has reviewed. Each installs at the release that was checked, from a
       signed list, so what you get is what was reviewed.
       <% if PluginDirectory.checked_at %>Checked <%= time_ago_tag PluginDirectory.checked_at %>.<% end %>
     </p>
   </div>
   <% if entries.any? %>
-    <ul class="divide-y divide-border border-t border-border">
+    <ul class="divide-y divide-gray-100 border-t border-gray-100">
       <% entries.each do |entry| %>
         <%# herb:key entry.key %>
         <li class="flex flex-wrap items-center justify-between gap-3 py-4">
           <div class="flex min-w-0 flex-col gap-0.5">
-            <span class="text-sm font-semibold text-foreground">
+            <span class="text-sm font-semibold text-gray-900">
               <%= entry.name %>
-              <span class="ml-1 text-xs font-normal text-muted-foreground"><%= entry.version %><% if entry.author.present? %> · <%= entry.author %><% end %></span>
+              <span class="ml-1 text-xs font-normal text-gray-500"><%= entry.version %><% if entry.author.present? %> · <%= entry.author %><% end %></span>
             </span>
-            <span class="text-sm text-muted-foreground"><%= entry.description %></span>
+            <span class="text-sm text-gray-500"><%= entry.description %></span>
             <% unless entry.compatible? %>
               <span class="text-xs text-red-600">Needs CMS <%= entry.requires %>; this is <%= cms_version %>.</span>
             <% end %>
@@ -28,15 +28,15 @@
           <div class="flex shrink-0 items-center gap-2">
             <%= status_tag "Verified", highlight: true %>
             <% if entry.installed? %>
-              <span class="text-sm text-muted-foreground">Installed</span>
+              <span class="text-sm text-gray-500">Installed</span>
             <% elsif entry.compatible? %>
-              <%= button_to "Install", settings_plugins_installations_path(from: from), params: { repo: entry.repo }, class: "btn", data: {variant: "outline", size: "sm"} %>
+              <%= button_to "Install", settings_plugins_installations_path(from: from), params: { repo: entry.repo }, class: ui(:button, :small) %>
             <% end %>
           </div>
         </li>
       <% end %>
     </ul>
   <% else %>
-    <p class="text-sm text-muted-foreground">The directory hasn’t been fetched yet; it is now, and shows here in a moment.</p>
+    <p class="text-sm text-gray-500">The directory hasn’t been fetched yet; it is now, and shows here in a moment.</p>
   <% end %>
 </section>

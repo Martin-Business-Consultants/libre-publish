@@ -5,7 +5,7 @@
 
 <div class="max-w-4xl space-y-6">
   <%= form_with url: tools_search_replace_path, method: :get, class: "space-y-4" do |form| %>
-    <section class="card space-y-4 p-6">
+    <section class="<%= ui(:panel, "space-y-4 p-6") %>">
       <div class="grid gap-4 sm:grid-cols-2">
         <%= settings_field "Find" do %>
           <%= form.text_field :term, value: params[:term], class: "w-full", required: true, minlength: SearchReplace::MIN_LENGTH, autocomplete: "off" %>
@@ -14,40 +14,40 @@
           <%= form.text_field :replacement, value: params[:replacement], class: "w-full", autocomplete: "off" %>
         <% end %>
       </div>
-      <label class="flex items-center gap-2 text-sm text-foreground">
+      <label class="flex items-center gap-2 text-sm text-gray-900">
         <%= form.check_box :case_sensitive, { checked: params[:case_sensitive] == "1" }, "1", nil %>
         <span>Match case</span>
       </label>
-      <button type="submit" class="btn" data-variant="outline">Find</button>
+      <button type="submit" class="<%= ui(:button) %>">Find</button>
     </section>
   <% end %>
 
   <% if @search.valid? %>
-    <section class="card space-y-4 p-6">
-      <h2 class="text-base font-semibold text-foreground">
+    <section class="<%= ui(:panel, "space-y-4 p-6") %>">
+      <h2 class="<%= ui(:heading) %>">
         <%= pluralize(@matches.sum(&:count), "match") %> in <%= pluralize(@matches.size, "record") %>
       </h2>
       <% if @matches.any? %>
-        <ul class="divide-y divide-border text-sm">
+        <ul class="divide-y divide-gray-100 text-sm">
           <% @matches.each do |match| %>
             <%# herb:key match.record.class.name + match.record.id.to_s %>
             <li class="flex items-center justify-between gap-3 py-2.5">
               <span class="min-w-0 truncate">
-                <span class="text-xs text-muted-foreground"><%= match.record.model_name.human %></span>
-                <span class="ml-1 font-medium text-foreground"><%= match.record.try(:title).presence || match.record.try(:name) %></span>
+                <span class="text-xs text-gray-500"><%= match.record.model_name.human %></span>
+                <span class="ml-1 font-medium text-gray-900"><%= match.record.try(:title).presence || match.record.try(:name) %></span>
               </span>
-              <span class="shrink-0 text-muted-foreground"><%= pluralize(match.count, "match") %></span>
+              <span class="shrink-0 text-gray-500"><%= pluralize(match.count, "match") %></span>
             </li>
           <% end %>
         </ul>
         <% if Current.user.can?("pages:write") %>
-          <%= form_with url: tools_search_replace_path, method: :post, class: "flex flex-wrap items-center gap-3 border-t border-border pt-4",
+          <%= form_with url: tools_search_replace_path, method: :post, class: "flex flex-wrap items-center gap-3 border-t border-gray-100 pt-4",
                 data: { turbo_confirm: "Replace every match? Each record is saved, and its previous version is kept in its history." } do |form| %>
             <%= form.hidden_field :term, value: @search.term %>
             <%= form.hidden_field :replacement, value: @search.replacement %>
             <%= form.hidden_field :case_sensitive, value: params[:case_sensitive] %>
-            <button type="submit" class="btn">Replace all with “<%= @search.replacement %>”</button>
-            <span class="text-xs text-muted-foreground">Each record keeps its previous version in its history.</span>
+            <button type="submit" class="<%= ui(:button, :primary) %>">Replace all with “<%= @search.replacement %>”</button>
+            <span class="text-xs text-gray-500">Each record keeps its previous version in its history.</span>
           <% end %>
         <% end %>
       <% end %>

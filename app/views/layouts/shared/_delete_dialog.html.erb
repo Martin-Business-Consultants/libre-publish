@@ -11,23 +11,23 @@
   <% if trigger_text %>
     <button type="button" class="<%= class_names("text-red-600 hover:text-red-700 hover:underline", trigger_class) %>" title="<%= title %>" data-action="dialog#open"><%= trigger_text %></button>
   <% else %>
-    <button type="button" class="<%= class_names("btn text-destructive", trigger_class) %>" data-variant="outline" data-size="icon" title="<%= title %>" data-keys="<%= keys %>" data-action="dialog#open">
+    <button type="button" class="<%= ui(:button, :danger, :icon, *trigger_class) %>" title="<%= title %>" data-keys="<%= keys %>" data-action="dialog#open">
       <%= icon_tag "trash", class: "size-4" %>
       <span class="sr-only"><%= title %></span>
     </button>
   <% end %>
-  <dialog class="dialog gap-4 p-6 text-left" data-dialog-target="dialog">
-    <h3 class="text-lg font-semibold text-foreground"><%= title %></h3>
-    <p class="text-sm text-muted-foreground"><%= message || "This can’t be undone." %></p>
+  <dialog class="<%= ui(:dialog, "dialog dialog--action") %>" data-dialog-target="dialog">
+    <h3 class="text-lg font-semibold text-gray-900"><%= title %></h3>
+    <p class="text-sm text-gray-600"><%= message || "This can’t be undone." %></p>
     <div class="mt-2 flex justify-end gap-2">
-      <button type="button" class="btn" data-variant="outline" data-action="dialog#close">Cancel</button>
+      <button type="button" class="<%= ui(:button) %>" data-action="dialog#close">Cancel</button>
       <% if form %>
-        <button type="submit" form="<%= form %>" class="btn" data-variant="destructive">
+        <button type="submit" form="<%= form %>" class="<%= ui(:button, :destructive) %>">
           <%= icon_tag "trash", class: "size-4" %>
           <span>Delete</span>
         </button>
       <% else %>
-        <%= button_to path, method: :delete, class: "btn", data: {variant: "destructive", turbo_frame: "_top"} do %>
+        <%= button_to path, method: :delete, class: ui(:button, :destructive), data: { turbo_frame: "_top" } do %>
           <%= icon_tag "trash", class: "size-4" %>
           <span>Delete</span>
         <% end %>

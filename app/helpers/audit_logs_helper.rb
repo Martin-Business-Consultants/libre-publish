@@ -9,9 +9,9 @@ module AuditLogsHelper
     return entry.target_label unless path
 
     if record.try(:discarded?)
-      safe_join([link_to(entry.target_label, trash_path, class: "font-medium text-primary underline underline-offset-2"), tag.span(" in the trash", class: "text-xs text-muted-foreground")])
+      safe_join([link_to(entry.target_label, trash_path, class: ui(:link)), tag.span(" in the trash", class: "text-xs text-gray-500")])
     else
-      link_to entry.target_label, path, class: "font-medium text-primary underline underline-offset-2"
+      link_to entry.target_label, path, class: ui(:link)
     end
   end
 

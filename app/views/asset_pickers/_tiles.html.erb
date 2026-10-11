@@ -7,18 +7,18 @@
     <button type="button" class="media-tile flex w-full flex-col gap-1.5 rounded-lg text-left outline-none"
             data-action="media--asset-picker#pick" data-asset-id="<%= asset.id %>" data-asset-name="<%= asset.title %>"
             title="<%= asset.title %>">
-      <span class="media-thumb flex aspect-square w-full items-center justify-center overflow-hidden rounded-lg border border-border bg-muted text-muted-foreground">
+      <span class="media-thumb flex aspect-square w-full items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-gray-50 text-gray-400">
         <%= asset_thumbnail asset, size: 240 %>
       </span>
       <span class="flex min-w-0 flex-col px-0.5">
-        <span class="truncate text-xs font-medium text-foreground"><%= asset.title %></span>
-        <span class="truncate text-xs text-muted-foreground"><%= asset_meta(asset) %></span>
+        <span class="truncate text-xs font-medium text-gray-900"><%= asset.title %></span>
+        <span class="truncate text-xs text-gray-500"><%= asset_meta(asset) %></span>
       </span>
     </button>
   </li>
 <% end %>
 <% if more %>
-  <li class="col-span-full py-4 text-center text-sm text-muted-foreground" data-media--infinite-scroll-target="next">
+  <li class="col-span-full py-4 text-center text-sm text-gray-500" data-media--infinite-scroll-target="next">
     <%= link_to "More", asset_picker_path(q: query.presence, folder: folder, page: page + 1), data: { turbo: false, action: "media--infinite-scroll#load" } %>
   </li>
 <% end %>

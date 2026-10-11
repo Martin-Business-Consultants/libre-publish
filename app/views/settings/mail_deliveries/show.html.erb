@@ -8,10 +8,10 @@
 
 <%= form_with url: settings_mail_delivery_path, id: "mail_delivery_form", method: :patch, scope: :mail_delivery do |form| %>
   <%= tag.fieldset class: "space-y-6", disabled: !can_write do %>
-    <section class="card space-y-5 p-6">
+    <section class="<%= ui(:panel, "space-y-5 p-6") %>">
       <div class="space-y-1">
-        <h2 class="text-base font-semibold text-foreground">SMTP server</h2>
-        <p class="text-sm text-muted-foreground">The server every email from the site goes through: form notifications and confirmations, password resets, collection notifications. Leave the host empty to use this install’s own. Who email comes from is set in Settings › Forms.</p>
+        <h2 class="<%= ui(:heading) %>">SMTP server</h2>
+        <p class="text-sm text-gray-500">The server every email from the site goes through: form notifications and confirmations, password resets, collection notifications. Leave the host empty to use this install’s own. Who email comes from is set in Settings › Forms.</p>
       </div>
       <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
         <div class="sm:col-span-2">
@@ -43,11 +43,11 @@
 <% end %>
 
 <% if can_write %>
-  <section class="card mt-6 flex flex-wrap items-center justify-between gap-3 p-6">
+  <section class="<%= ui(:panel, "mt-6 flex flex-wrap items-center justify-between gap-3 p-6") %>">
     <div class="space-y-1">
-      <h2 class="text-base font-semibold text-foreground">Send a test email</h2>
-      <p class="text-sm text-muted-foreground">To <%= Current.user.email %>, through the server saved above. Save your changes first.</p>
+      <h2 class="<%= ui(:heading) %>">Send a test email</h2>
+      <p class="text-sm text-gray-500">To <%= Current.user.email %>, through the server saved above. Save your changes first.</p>
     </div>
-    <%= button_to "Send test email", settings_mail_delivery_test_path, class: "btn", data: {variant: "outline"} %>
+    <%= button_to "Send test email", settings_mail_delivery_test_path, class: ui(:button) %>
   </section>
 <% end %>

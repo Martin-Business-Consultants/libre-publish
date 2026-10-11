@@ -13,33 +13,33 @@
         message: "Users holding them are left with no role. System roles are never included." %>
 <% end %>
 
-<section class="card overflow-x-auto" data-controller="select-all">
-  <table class="table data-table">
+<section class="<%= ui(:panel, "overflow-x-auto") %>" data-controller="select-all">
+  <table class="<%= ui(:table, "data-table") %>">
     <thead>
-      <tr class="table-row">
+      <tr>
         <% if can_delete %>
-          <th class="table-head data-table__check w-10 text-center"><input type="checkbox" aria-label="Select every row" data-select-all-target="all" data-action="select-all#toggle"></th>
+          <th class="<%= ui(:th, "data-table__check w-10 text-center") %>"><input type="checkbox" aria-label="Select every row" data-select-all-target="all" data-action="select-all#toggle"></th>
         <% end %>
-        <th class="table-head">Name</th>
-        <th class="table-head">Description</th>
-        <th class="table-head text-right">Capabilities</th>
-        <th class="table-head text-right">Users</th>
+        <th class="<%= ui(:th) %>">Name</th>
+        <th class="<%= ui(:th) %>">Description</th>
+        <th class="<%= ui(:th, "text-right") %>">Capabilities</th>
+        <th class="<%= ui(:th, "text-right") %>">Users</th>
       </tr>
     </thead>
     <tbody>
       <% @roles.each do |role| %>
         <%# herb:key role.id %>
-        <tr id="<%= dom_id(role) %>" class="table-row hover:bg-muted" data-filter-target="item">
+        <tr id="<%= dom_id(role) %>" class="hover:bg-gray-50" data-filter-target="item">
           <% if can_delete %>
-            <td class="table-cell text-center">
+            <td class="<%= ui(:td, "text-center") %>">
               <% unless role.system? %>
                 <input type="checkbox" data-select-all-target="box" data-action="select-all#sync" name="ids[]" value="<%= role.id %>" form="roles_bulk_deletion" aria-label="Select <%= role.name %>">
               <% end %>
             </td>
           <% end %>
-          <td class="table-cell">
+          <td class="<%= ui(:td) %>">
             <span class="flex items-center gap-2">
-              <%= link_to role.name, edit_role_path(role), class: "font-medium text-foreground hover:underline" %>
+              <%= link_to role.name, edit_role_path(role), class: "font-medium text-gray-900 hover:underline" %>
               <% if role.system? %>
                 <%= status_tag "System" %>
               <% end %>
@@ -49,9 +49,9 @@
                   delete_path: (role_path(role) if can_delete && !role.system?),
                   delete_message: "Users holding it are left with no role." %>
           </td>
-          <td class="table-cell"><span class="text-muted-foreground"><%= role.description %></span></td>
-          <td class="table-cell text-right tabular-nums"><%= role.admin? ? "All" : role.permissions.size %></td>
-          <td class="table-cell text-right tabular-nums"><%= role.users.size %></td>
+          <td class="<%= ui(:td) %>"><span class="text-gray-500"><%= role.description %></span></td>
+          <td class="<%= ui(:td, "text-right tabular-nums") %>"><%= role.admin? ? "All" : role.permissions.size %></td>
+          <td class="<%= ui(:td, "text-right tabular-nums") %>"><%= role.users.size %></td>
         </tr>
       <% end %>
     </tbody>

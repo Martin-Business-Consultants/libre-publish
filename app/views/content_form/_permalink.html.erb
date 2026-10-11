@@ -4,14 +4,14 @@
     public address once it's saved. %>
 <% url = record.persisted? ? record.public_url : nil %>
 <label class="flex flex-col gap-1.5">
-  <span class="label">Slug</span>
+  <span class="<%= ui(:label) %>">Slug</span>
   <%= form.text_field :slug, required: required, class: "w-full font-mono", placeholder: "lowercase-with-dashes", autocomplete: "off", spellcheck: false,
         data: { slug_target: "slug", action: "slug#take" } %>
-  <span class="text-sm text-muted-foreground"><%= hint %></span>
+  <span class="<%= ui(:help) %>"><%= hint %></span>
 </label>
 <% if url.present? %>
   <div class="flex min-w-0 flex-col gap-1.5">
-    <span class="label">Permalink</span>
-    <%= external_link url, url, link_class: "font-medium text-primary underline underline-offset-2 block truncate text-sm" %>
+    <span class="<%= ui(:label) %>">Permalink</span>
+    <%= external_link url, url, link_class: ui(:link, "block truncate text-sm") %>
   </div>
 <% end %>

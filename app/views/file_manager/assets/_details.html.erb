@@ -8,10 +8,10 @@
 <% fact_classes = "flex gap-4 py-1.5" %>
 <div class="flex flex-col gap-6 pb-2">
   <% if flash[:notice].present? && turbo_frame_request? %>
-    <p class="alert border-green-200 bg-green-50 text-green-800"><%= flash[:notice] %></p>
+    <p class="<%= ui(:notice, :green) %>"><%= flash[:notice] %></p>
   <% end %>
 
-  <div class="media-details__preview flex min-h-40 items-center justify-center rounded-lg border border-border bg-muted p-3 text-muted-foreground">
+  <div class="media-details__preview flex min-h-40 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 p-3 text-gray-400">
     <% if asset.image? %>
       <%= image_tag(asset.variantable? && ApplicationHelper.variants_supported? ? asset.thumb_url(1024) : asset.url, alt: asset.alt.to_s) %>
     <% else %>
@@ -19,27 +19,27 @@
     <% end %>
   </div>
 
-  <dl class="divide-y divide-border text-sm">
-    <div class="<%= fact_classes %>"><dt class="w-24 shrink-0 text-muted-foreground">Uploaded</dt><dd class="min-w-0 text-foreground"><%= time_ago_tag asset.created_at %></dd></div>
-    <div class="<%= fact_classes %>"><dt class="w-24 shrink-0 text-muted-foreground">File name</dt><dd class="min-w-0 break-all font-mono text-xs text-foreground"><%= asset.filename %></dd></div>
-    <div class="<%= fact_classes %>"><dt class="w-24 shrink-0 text-muted-foreground">File type</dt><dd class="min-w-0 text-foreground"><%= asset.content_type %></dd></div>
-    <div class="<%= fact_classes %>"><dt class="w-24 shrink-0 text-muted-foreground">File size</dt><dd class="min-w-0 text-foreground"><%= number_to_human_size(asset.byte_size) %><% if asset.optimized? then %> <span class="text-muted-foreground">(optimized from <%= number_to_human_size(asset.original_file.byte_size) %>)</span><% end %></dd></div>
+  <dl class="divide-y divide-gray-100 text-sm">
+    <div class="<%= fact_classes %>"><dt class="w-24 shrink-0 text-gray-500">Uploaded</dt><dd class="min-w-0 text-gray-900"><%= time_ago_tag asset.created_at %></dd></div>
+    <div class="<%= fact_classes %>"><dt class="w-24 shrink-0 text-gray-500">File name</dt><dd class="min-w-0 break-all font-mono text-xs text-gray-900"><%= asset.filename %></dd></div>
+    <div class="<%= fact_classes %>"><dt class="w-24 shrink-0 text-gray-500">File type</dt><dd class="min-w-0 text-gray-900"><%= asset.content_type %></dd></div>
+    <div class="<%= fact_classes %>"><dt class="w-24 shrink-0 text-gray-500">File size</dt><dd class="min-w-0 text-gray-900"><%= number_to_human_size(asset.byte_size) %><% if asset.optimized? then %> <span class="text-gray-500">(optimized from <%= number_to_human_size(asset.original_file.byte_size) %>)</span><% end %></dd></div>
     <% if asset.file.metadata["width"] %>
-      <div class="<%= fact_classes %>"><dt class="w-24 shrink-0 text-muted-foreground">Dimensions</dt><dd class="min-w-0 text-foreground"><%= asset.file.metadata["width"] %> × <%= asset.file.metadata["height"] %> pixels</dd></div>
+      <div class="<%= fact_classes %>"><dt class="w-24 shrink-0 text-gray-500">Dimensions</dt><dd class="min-w-0 text-gray-900"><%= asset.file.metadata["width"] %> × <%= asset.file.metadata["height"] %> pixels</dd></div>
     <% end %>
   </dl>
 
   <div class="flex flex-wrap items-center gap-2">
-    <button type="button" class="btn" data-variant="outline" data-size="sm" data-controller="copy-to-clipboard" data-copy-to-clipboard-content-value="<%= asset.url %>"
+    <button type="button" class="<%= ui(:button, :small) %>" data-controller="copy-to-clipboard" data-copy-to-clipboard-content-value="<%= asset.url %>"
       data-copy-to-clipboard-success-class="btn--success" data-action="copy-to-clipboard#copy">
       <%= icon_tag "copy-paste", class: "size-4" %>
       <span>Copy URL</span>
     </button>
-    <%= link_to rails_blob_path(asset.file, disposition: "attachment"), class: "btn", data: {variant: "outline", size: "sm", turbo: false} do %>
+    <%= link_to rails_blob_path(asset.file, disposition: "attachment"), class: ui(:button, :small), data: { turbo: false } do %>
       <span>Download</span>
     <% end %>
     <% if can_write && asset.optimized? %>
-      <%= button_to "Restore original", file_manager_asset_restoration_path(asset), class: "btn", data: {variant: "outline", size: "sm"},
+      <%= button_to "Restore original", file_manager_asset_restoration_path(asset), class: ui(:button, :small),
             title: "Put back the " + asset.original_file.filename.to_s + " (" + number_to_human_size(asset.original_file.byte_size) + ") the Image Optimizer replaced",
             form: { data: { turbo_confirm: "Put the original " + asset.original_file.filename.to_s + " back in place of this WebP?" } } %>
     <% end %>
@@ -53,49 +53,49 @@
   <%= form_with model: asset, url: file_manager_asset_path(asset), scope: :asset do |form| %>
     <%= tag.fieldset class: "flex flex-col gap-5", disabled: !can_write do %>
       <label class="flex flex-col gap-1.5">
-        <span class="label">Alternative text</span>
+        <span class="<%= ui(:label) %>">Alternative text</span>
         <%= form.text_area :alt, rows: 2, class: "w-full", placeholder: "What the image shows, for people who can’t see it." %>
-        <span class="text-sm text-muted-foreground">Read aloud by screen readers, and shown when the image can’t load. Leave it empty if the image is purely decorative.</span>
+        <span class="<%= ui(:help) %>">Read aloud by screen readers, and shown when the image can’t load. Leave it empty if the image is purely decorative.</span>
       </label>
       <label class="flex flex-col gap-1.5">
-        <span class="label">Title</span>
+        <span class="<%= ui(:label) %>">Title</span>
         <%= form.text_field :name, placeholder: asset.filename, class: "w-full", autocomplete: "off" %>
       </label>
       <label class="flex flex-col gap-1.5">
-        <span class="label">Caption</span>
+        <span class="<%= ui(:label) %>">Caption</span>
         <%= form.text_area :caption, rows: 2, class: "w-full" %>
-        <span class="text-sm text-muted-foreground">Shown with it on the site, where the site shows captions.</span>
+        <span class="<%= ui(:help) %>">Shown with it on the site, where the site shows captions.</span>
       </label>
       <label class="flex flex-col gap-1.5">
-        <span class="label">Description</span>
+        <span class="<%= ui(:label) %>">Description</span>
         <%= form.text_area :description, rows: 3, class: "w-full" %>
       </label>
       <label class="flex flex-col gap-1.5">
-        <span class="label">Folder</span>
+        <span class="<%= ui(:label) %>">Folder</span>
         <%= form.select :folder, options_for_select([["Top level", "/"]] + folders.map { [it, it] }, asset.folder), {}, class: "w-full" %>
       </label>
       <% if can_write %>
         <div>
-          <%= form.button "Save", class: "btn" %>
+          <%= form.button "Save", class: ui(:button, :primary) %>
         </div>
       <% end %>
     <% end %>
   <% end %>
 
-  <section class="flex flex-col gap-2 border-t border-border pt-5">
-    <h3 class="text-base font-semibold text-foreground">Used in</h3>
+  <section class="flex flex-col gap-2 border-t border-gray-200 pt-5">
+    <h3 class="<%= ui(:heading) %>">Used in</h3>
     <% if usages.any? %>
       <ul class="flex flex-col gap-1 text-sm">
         <% usages.each do |record| %>
           <%# herb:key record.class.name + record.id.to_s %>
           <li>
-            <%= link_to record.try(:title).presence || record.try(:slug) || record.class.name, admin_record_path(record), class: "font-medium text-primary underline underline-offset-2", data: { turbo_frame: "_top" } %>
-            <span class="text-muted-foreground"><%= record.class.model_name.human %></span>
+            <%= link_to record.try(:title).presence || record.try(:slug) || record.class.name, admin_record_path(record), class: ui(:link), data: { turbo_frame: "_top" } %>
+            <span class="text-gray-500"><%= record.class.model_name.human %></span>
           </li>
         <% end %>
       </ul>
     <% else %>
-      <p class="text-sm text-muted-foreground">Nothing on the site uses it yet.</p>
+      <p class="text-sm text-gray-500">Nothing on the site uses it yet.</p>
     <% end %>
   </section>
 </div>

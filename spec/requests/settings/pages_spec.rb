@@ -193,26 +193,27 @@ RSpec.describe "Settings pages", type: :request do
 
       get branding_stylesheet_path
       expect(response.media_type).to eq("text/css")
-      expect(response.body).to include("--primary: #b45309;", "--ring: #b45309;", %(--font-sans: "Lora"))
-      # Light words on a dark primary; dark ones on a light primary.
-      expect(response.body).to include("--primary-foreground: oklch(0.985 0 0);")
+      expect(response.body).to include("--accent-600: #b45309;", %(--font-sans: "Lora"))
+      expect(response.body).to include("--accent-50: color-mix(in oklch, #b45309 8%, white);")
+      # White words on a dark accent; dark ones on a light accent.
+      expect(response.body).not_to include("--on-accent")
 
       Setting.set("branding", primary_color: "#fde68a")
       get branding_stylesheet_path
-      expect(response.body).to include("--primary: #fde68a;", "--primary-foreground: oklch(0.205 0 0);")
+      expect(response.body).to include("--accent-600: #fde68a;", "--on-accent: #1c1917;")
     end
 
     it "keeps the top bar dark in light mode when asked" do
       sign_in_as admin
 
       get settings_branding_path
-      expect(Nokogiri::HTML(response.body).at_css("header#header")["class"].split).not_to include("dark")
+      expect(response.body).not_to include("admin-bar--dark")
 
       patch settings_branding_path, params: {branding: {top_bar: "dark"}}
       expect(Setting.get("branding")).to include("top_bar" => "dark")
 
       get settings_branding_path
-      expect(Nokogiri::HTML(response.body).at_css("header#header")["class"].split).to include("dark")
+      expect(Nokogiri::HTML(response.body).at_css("header#header")["class"]).to include("admin-bar--dark")
     end
 
     it "serves the secondary color, corners and shadow as the admin's tokens too" do
@@ -220,10 +221,10 @@ RSpec.describe "Settings pages", type: :request do
 
       get branding_stylesheet_path
 
-      expect(response.body).to include("--muted: color-mix(in oklch, #1e3a5f 8%, var(--background));")
-      expect(response.body).to include("--radius: 0.875rem;", "--radius-md: 0.625rem;", "--radius-xl: 1.25rem;")
+      expect(response.body).to include("--neutral-tint: #1e3a5f;")
+      expect(response.body).to include("--radius-md: 0.625rem;", "--radius-xl: 1.25rem;")
       expect(response.body).to include("--shadow-surface: 0 1px 2px 0 rgb(0 0 0 / 0.05);", "--shadow-overlay: ")
-      expect(response.body).not_to include("--primary")
+      expect(response.body).not_to include("--accent-")
     end
 
     it "leaves anything that isn't a hex color or a listed font, corner or shadow out of the stylesheet" do

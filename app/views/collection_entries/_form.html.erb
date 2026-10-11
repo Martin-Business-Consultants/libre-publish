@@ -25,23 +25,23 @@
     <% end %>
 
     <% if collection.enable_blocks? %>
-      <section class="card">
-        <h2 class="text-base font-semibold text-foreground border-b border-border px-5 py-3.5">Blocks</h2>
+      <section class="<%= ui(:panel) %>">
+        <h2 class="<%= ui(:heading, "border-b border-gray-200 px-5 py-3.5") %>">Blocks</h2>
         <div class="p-3 sm:p-5">
           <%= render "content_form/blocks", blocks: entry.blocks, scope: content_scope("entry")["blocks"], depth: 1, record: entry %>
         </div>
-        <p class="rounded-b-xl border-t border-border bg-muted px-5 py-2.5 text-xs text-muted-foreground"><%= editor_status_line(entry) %></p>
+        <p class="rounded-b-xl border-t border-gray-200 bg-gray-50 px-5 py-2.5 text-xs text-gray-500"><%= editor_status_line(entry) %></p>
       </section>
     <% end %>
 
-    <section class="card">
-      <h2 class="text-base font-semibold text-foreground border-b border-border px-5 py-3.5">Body</h2>
+    <section class="<%= ui(:panel) %>">
+      <h2 class="<%= ui(:heading, "border-b border-gray-200 px-5 py-3.5") %>">Body</h2>
       <div class="flex flex-col gap-1.5 p-5">
         <%= render "content_form/fields/rich_text", field: { "name" => "body_markdown", "label" => "Body" }, value: entry.body_markdown,
               scope: content_scope("entry")["body_markdown"], markdown: true %>
       </div>
       <% unless collection.enable_blocks? %>
-        <p class="rounded-b-xl border-t border-border bg-muted px-5 py-2.5 text-xs text-muted-foreground"><%= editor_status_line(entry) %></p>
+        <p class="rounded-b-xl border-t border-gray-200 bg-gray-50 px-5 py-2.5 text-xs text-gray-500"><%= editor_status_line(entry) %></p>
       <% end %>
     </section>
     <% end %>
@@ -57,7 +57,7 @@
     <%= postbox "entry-attributes", "Entry Attributes" do %>
       <%= render "content_form/permalink", record: entry, form: form, hint: "Made from the name when blank." %>
       <label class="flex flex-col gap-1.5">
-        <span class="label">Locale</span>
+        <span class="<%= ui(:label) %>">Locale</span>
         <%= form.text_field :locale, required: true, class: "w-full", placeholder: "en", autocomplete: "off" %>
       </label>
       <% if sidebar_fields.any? %>

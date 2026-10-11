@@ -3,12 +3,12 @@
     a link to it instead. %>
 <% running = ImageOptimization.current %>
 <% if running %>
-  <%= link_to file_manager_image_optimization_path(running), class: "btn", data: {variant: "outline"} do %>
+  <%= link_to file_manager_image_optimization_path(running), class: ui(:button) do %>
     <%= icon_tag "refresh", class: "size-4" %>
     <span>Optimizing images…</span>
   <% end %>
 <% else %>
-  <%= button_to file_manager_image_optimizations_path, class: "btn", data: {variant: "outline"}, title: "Make large images lighter WebPs",
+  <%= button_to file_manager_image_optimizations_path, class: ui(:button), title: "Make large images lighter WebPs",
         form: { data: { turbo_confirm: "Every JPEG, PNG or WebP over #{ImageLimits.max_size_label} or #{ImageLimits.max_side} pixels across becomes a WebP within those limits (Settings › Media), in the background. Each keeps its place on the site, and its original is kept, to restore from its details. Start?" } } do %>
     <%= icon_tag "bolt", class: "size-4" %>
     <span>Image Optimizer</span>

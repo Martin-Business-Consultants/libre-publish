@@ -4,22 +4,22 @@
       description: "How search engines and AI answer engines find, read and describe this site." %>
 
 <div class="max-w-3xl space-y-6">
-  <section class="card space-y-3 p-6">
-    <h2 class="text-base font-semibold text-foreground">What the site already does</h2>
-    <ul class="list-disc space-y-1 pl-5 text-sm text-foreground">
+  <section class="<%= ui(:panel, "space-y-3 p-6") %>">
+    <h2 class="<%= ui(:heading) %>">What the site already does</h2>
+    <ul class="list-disc space-y-1 pl-5 text-sm text-gray-700">
       <li>Every page has a canonical address, its title and description, Open Graph and Twitter tags, and its translations (hreflang).</li>
       <li>Structured data (schema.org) is made from the content: who you are, the site, each page or article, and its breadcrumbs.</li>
-      <li><%= link_to "/sitemap.xml", "#{@base_url}/sitemap.xml", class: "font-medium text-primary underline underline-offset-2" %> lists every published page and entry, with their translations.</li>
-      <li><%= link_to "/llms.txt", "#{@base_url}/llms.txt", class: "font-medium text-primary underline underline-offset-2" %> and a Markdown copy of each page (add <code>.md</code> to its address) give AI readers the content without the design.</li>
-      <li><%= link_to "/robots.txt", "#{@base_url}/robots.txt", class: "font-medium text-primary underline underline-offset-2" %> keeps the admin and the API out, and points to the sitemap.</li>
+      <li><%= link_to "/sitemap.xml", "#{@base_url}/sitemap.xml", class: ui(:link) %> lists every published page and entry, with their translations.</li>
+      <li><%= link_to "/llms.txt", "#{@base_url}/llms.txt", class: ui(:link) %> and a Markdown copy of each page (add <code>.md</code> to its address) give AI readers the content without the design.</li>
+      <li><%= link_to "/robots.txt", "#{@base_url}/robots.txt", class: ui(:link) %> keeps the admin and the API out, and points to the sitemap.</li>
     </ul>
   </section>
 
   <%= form_with url: settings_search_path, method: :patch, scope: :search, class: "space-y-6" do |form| %>
-    <section class="card space-y-5 p-6">
+    <section class="<%= ui(:panel, "space-y-5 p-6") %>">
       <div class="space-y-1">
-        <h2 class="text-base font-semibold text-foreground">AI crawlers</h2>
-        <p class="text-sm text-muted-foreground">
+        <h2 class="<%= ui(:heading) %>">AI crawlers</h2>
+        <p class="<%= ui(:help) %>">
           Search engines (Google, Bing) always crawl the site. These choose which AI services may read it, by what they do.
         </p>
       </div>
@@ -31,10 +31,10 @@
       <% end %>
     </section>
 
-    <section class="card space-y-5 p-6">
+    <section class="<%= ui(:panel, "space-y-5 p-6") %>">
       <div class="space-y-1">
-        <h2 class="text-base font-semibold text-foreground">Who the site is</h2>
-        <p class="text-sm text-muted-foreground">
+        <h2 class="<%= ui(:heading) %>">Who the site is</h2>
+        <p class="<%= ui(:help) %>">
           Search engines and AI tie what they say about you to this. The name, description and contact details come from
           Settings › General, the logo from Branding.
         </p>
@@ -47,8 +47,8 @@
       <% end %>
     </section>
 
-    <section class="card space-y-5 p-6">
-      <label class="flex items-start gap-2 text-sm text-foreground">
+    <section class="<%= ui(:panel, "space-y-5 p-6") %>">
+      <label class="flex items-start gap-2 text-sm text-gray-900">
         <%= form.check_box :indexnow, { checked: @search["indexnow"] != false }, "1", "0" %>
         <span>
           Tell search engines the moment a page is published, changed or taken down (IndexNow: Bing, which ChatGPT
@@ -58,7 +58,7 @@
       <%= settings_field "More for robots.txt", hint: "Added as written, for a crawler or a path the choices above don’t cover." do %>
         <%= form.text_area :robots_extra, value: @search["robots_extra"], rows: 4, class: "w-full font-mono text-xs", placeholder: "User-agent: SomeBot\nDisallow: /" %>
       <% end %>
-      <button type="submit" class="btn">Save</button>
+      <button type="submit" class="<%= ui(:button, :primary) %>">Save</button>
     </section>
   <% end %>
 </div>

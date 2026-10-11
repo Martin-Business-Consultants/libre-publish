@@ -1,13 +1,13 @@
 <% @page_title = @plugin.name %>
 <%= parent_page "Plugins", settings_plugins_path %>
 <% additions = Cms::Plugins.additions(@plugin.key) %>
-<% fact_label_classes = "text-xs font-medium text-muted-foreground" %>
-<% fact_value_classes = "mt-0.5 text-sm text-foreground" %>
+<% fact_label_classes = "text-xs font-medium text-gray-500" %>
+<% fact_value_classes = "mt-0.5 text-sm text-gray-900" %>
 
 <%= render "layouts/shared/page_header", title: @plugin.name %>
 
-<section class="card space-y-5 p-6">
-  <p class="text-sm text-foreground"><%= @plugin.description %></p>
+<section class="<%= ui(:panel, "space-y-5 p-6") %>">
+  <p class="text-sm text-gray-700"><%= @plugin.description %></p>
 
   <dl class="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
     <div><dt class="<%= fact_label_classes %>">Version</dt><dd class="<%= fact_value_classes %>"><%= @plugin.version %></dd></div>
@@ -26,21 +26,21 @@
       <div><dt class="<%= fact_label_classes %>">Its data</dt><dd class="<%= fact_value_classes %>"><%= tables.to_sentence %></dd></div>
     <% end %>
     <% if @plugin.homepage.present? %>
-      <div><dt class="<%= fact_label_classes %>">Homepage</dt><dd class="<%= fact_value_classes %>"><%= link_to @plugin.homepage, @plugin.homepage, class: "font-medium text-primary underline underline-offset-2", rel: "noopener" %></dd></div>
+      <div><dt class="<%= fact_label_classes %>">Homepage</dt><dd class="<%= fact_value_classes %>"><%= link_to @plugin.homepage, @plugin.homepage, class: ui(:link), rel: "noopener" %></dd></div>
     <% end %>
   </dl>
 </section>
 
-<section class="card space-y-3 p-6">
-  <h2 class="text-base font-semibold text-foreground">What it adds</h2>
+<section class="<%= ui(:panel, "space-y-3 p-6") %>">
+  <h2 class="<%= ui(:heading) %>">What it adds</h2>
   <% if additions.any? %>
-    <ul class="list-disc space-y-1 pl-5 text-sm text-foreground">
+    <ul class="list-disc space-y-1 pl-5 text-sm text-gray-700">
       <% additions.each do |addition| %>
         <%# herb:key addition %>
         <li><%= addition %></li>
       <% end %>
     </ul>
   <% else %>
-    <p class="text-sm text-muted-foreground">Nothing the core shows.</p>
+    <p class="text-sm text-gray-500">Nothing the core shows.</p>
   <% end %>
 </section>

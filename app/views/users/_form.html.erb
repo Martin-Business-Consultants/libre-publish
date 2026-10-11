@@ -38,7 +38,7 @@
         <%= settings_field "Role" do %>
           <%= form.select :role_id, Role.ordered.map { |role| [role.name, role.id] }, { include_blank: "No role" }, class: "w-full" %>
         <% end %>
-        <label class="flex items-center gap-2 text-sm text-foreground">
+        <label class="flex items-center gap-2 text-sm text-gray-700">
           <%= form.check_box :verified %>
           <span>Email is verified</span>
         </label>

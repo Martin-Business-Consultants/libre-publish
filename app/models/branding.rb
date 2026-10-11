@@ -6,7 +6,7 @@
 #
 # The public site reads the raw setting. The admin reads it through here:
 # `stylesheet` turns all of it — color, type and surface — into overrides of
-# shadcn-html's tokens (vendor/shadcn-html, _global.css), served as /branding.css, and only ever
+# the admin's tokens (_global.css), served as /branding.css, and only ever
 # from values that passed the checks below: the setting is written by admins,
 # but it still ends up inside CSS.
 class Branding
@@ -23,7 +23,7 @@ class Branding
   }.freeze
 
   # The admin's top bar: as the appearance draws everything, or dark in
-  # either (shadcn-html's .dark on the bar, which takes the dark tokens).
+  # either (.admin-bar--dark, which takes the dark tokens, _global.css).
   TOP_BARS = {"match" => "Match the appearance", "dark" => "Dark"}.freeze
 
   RADII   = %w[none small medium large].freeze
@@ -109,19 +109,25 @@ class Branding
     [primary_color, secondary_color, font, border_radius, box_shadow].any?(&:present?)
   end
 
-  # Words on a primary fill: near-black on a light color, near-white on a
-  # dark one (shadcn-html's foregrounds).
-  ON_LIGHT = "oklch(0.205 0 0)"
-  ON_DARK = "oklch(0.985 0 0)"
+  # The accent scale the markup's blue classes read (_global.css), mixed from
+  # the color as Tailwind's steps are spaced around its 600, with dark words
+  # on an accent fill when white wouldn't read on it. Unlayered, like the
+  # defaults it replaces; the dark theme mixes its accents from these.
+  ACCENT_STEPS = {
+    50 => "color-mix(in oklch, %s 8%%, white)",
+    100 => "color-mix(in oklch, %s 16%%, white)",
+    200 => "color-mix(in oklch, %s 30%%, white)",
+    300 => "color-mix(in oklch, %s 50%%, white)",
+    400 => "color-mix(in oklch, %s 72%%, white)",
+    500 => "color-mix(in oklch, %s 88%%, white)",
+    600 => "%s",
+    700 => "color-mix(in oklch, %s 84%%, black)",
+    800 => "color-mix(in oklch, %s 70%%, black)",
+    900 => "color-mix(in oklch, %s 56%%, black)"
+  }.freeze
 
-  # How strongly the secondary color tints the neutral surfaces, mixed into
-  # whichever background the appearance has.
-  TINTED = {secondary: 10, muted: 8, accent: 10, sidebar: 4, "sidebar-accent": 10}.freeze
-
-  # Corners: shadcn-html's --radius and the steps around it, which its
-  # components and the utilities' rounded-sm/-md/-lg/-xl read (badges,
-  # controls, notices, cards and menus). Each step is given, so "none" never
-  # works out a negative one.
+  # Corners: the radii the utilities' rounded-sm/-md/-lg/-xl read (badges,
+  # controls, notices, panels and menus).
   CORNERS = {
     "none" => {sm: "0", md: "0", lg: "0", xl: "0"},
     "small" => {sm: "0.125rem", md: "0.1875rem", lg: "0.25rem", xl: "0.375rem"},
@@ -129,7 +135,7 @@ class Branding
     "large" => {sm: "0.375rem", md: "0.625rem", lg: "0.875rem", xl: "1.25rem"}
   }.freeze
 
-  # Shadow: a card's (shadow-surface) and what floats over the page
+  # Shadow: a panel's (shadow-surface) and what floats over the page
   # (shadow-overlay: menus, dialogs, sheets, toasts).
   SHADOW_TOKENS = {
     "none" => {surface: "0 0 #0000", overlay: "0 0 #0000"},
@@ -150,23 +156,16 @@ class Branding
   def stylesheet
     declarations = []
     if (color = primary_color)
-      on = light?(color) ? ON_LIGHT : ON_DARK
-      declarations << "--primary: #{color};" << "--primary-foreground: #{on};" << "--ring: #{color};"
-      declarations << "--sidebar-primary: #{color};" << "--sidebar-primary-foreground: #{on};"
+      ACCENT_STEPS.each { |step, mix| declarations << "--accent-#{step}: #{format(mix, color)};" }
+      declarations << "--on-accent: #1c1917;" if light?(color)
     end
-    if (color = secondary_color)
-      TINTED.each { |token, percent| declarations << "--#{token}: color-mix(in oklch, #{color} #{percent}%, var(--background));" }
-    end
+    # The grays take the secondary color's hue, faintly (_global.css).
+    declarations << "--neutral-tint: #{secondary_color};" if secondary_color
     declarations << %(--font-sans: "#{font}", #{FALLBACK_STACK};) if font
-    if (corners = CORNERS[border_radius])
-      declarations << "--radius: #{corners[:lg]};"
-      corners.each { |size, value| declarations << "--radius-#{size}: #{value};" }
-    end
+    CORNERS.fetch(border_radius, {}).each { |size, value| declarations << "--radius-#{size}: #{value};" }
     SHADOW_TOKENS.fetch(box_shadow, {}).each { |kind, value| declarations << "--shadow-#{kind}: #{value};" }
 
-    # On .dark too: shadcn-html's dark theme sets these there, and the dark
-    # admin bar (.admin-bar.dark) is a .dark of its own.
-    declarations.any? ? ":root,\n.dark {\n  #{declarations.join("\n  ")}\n}\n" : ""
+    declarations.any? ? ":root {\n  #{declarations.join("\n  ")}\n}\n" : ""
   end
 
   private

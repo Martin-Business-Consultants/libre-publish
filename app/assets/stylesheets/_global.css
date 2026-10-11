@@ -1,79 +1,94 @@
-/* The admin is drawn with shadcn-html (vendor/shadcn-html): its components'
-   classes and its tokens (--background, --foreground, --primary, --muted,
-   --border, --ring, --radius, …), light on :root and dark on .dark, with
-   Tailwind's utility classes for layout, our own copy of the ones it uses
-   (lib/assets/stylesheets/utilities.css), served as written. STYLE.md has
-   the conventions.
+/* The admin is styled with Tailwind's utility classes, our own copy of the
+   ones it uses (lib/assets/stylesheets/utilities.css), served as written:
+   classes in the markup, and app/assets/stylesheets only for what classes
+   can't say (state, behaviour, third-party DOM). STYLE.md has the
+   conventions.
 
    utilities.css's @layer statement loads first and fixes the order; the
-   components and the app's rules join the same layers, so a utility in the
-   markup beats a component rule. */
+   app's rules join the same layers, so a utility in the markup beats a
+   component rule. */
 @layer theme, base, components, utilities;
 
-/* Tokens are unlayered. shadcn-html's theme (theme/default-semantic-tokens.css)
-   loads before this file and sets the semantic ones; /branding.css
-   (Branding#stylesheet) loads after and points them at Settings › Branding:
-   --primary (and --ring) at its primary color, the neutrals tinted by its
-   secondary, --font-sans, --radius-*, and the two shadows.
+/* Tokens are unlayered: they win over utilities.css's theme layer, and
+   /branding.css (Branding#stylesheet) and the dark theme below win over these.
 
-   Everything else here is derived from those tokens, so it follows the
-   branding and the dark theme by itself:
+   Every screen is drawn from Settings › Branding's color, type and surface,
+   through these tokens and nothing else:
 
-   - The utilities' gray (the neutral) and blue (the accent) families, which
-     markup not yet written with the semantic utilities (bg-background,
-     text-muted-foreground, border-border, bg-primary, …) and plugins still
-     use: grays mix --foreground into --background, blues mix --primary.
-     red, green and yellow are Tailwind's, for status, with darker steps on
-     .dark. No other family: the classes spec refuses them.
-   - shadow-surface (panels) and shadow-overlay (menus, dialogs, sheets,
-     toasts).
-
-   They're declared on .dark as well as :root because a custom property is
-   worked out where it's declared: a dark subtree (the admin bar Branding
-   makes dark, .admin-bar.dark) needs its own. */
-:root,
-.dark {
-  --color-white: var(--background);
-  --color-black: var(--foreground);
-
-  --color-gray-50: color-mix(in oklch, var(--foreground) 2%, var(--background));
-  --color-gray-100: color-mix(in oklch, var(--foreground) 4%, var(--background));
-  --color-gray-200: color-mix(in oklch, var(--foreground) 9%, var(--background));
-  --color-gray-300: color-mix(in oklch, var(--foreground) 15%, var(--background));
-  --color-gray-400: color-mix(in oklch, var(--foreground) 34%, var(--background));
-  --color-gray-500: color-mix(in oklch, var(--foreground) 52%, var(--background));
-  --color-gray-600: color-mix(in oklch, var(--foreground) 64%, var(--background));
-  --color-gray-700: color-mix(in oklch, var(--foreground) 74%, var(--background));
-  --color-gray-800: color-mix(in oklch, var(--foreground) 85%, var(--background));
-  --color-gray-900: var(--foreground);
-
-  --color-blue-50: color-mix(in oklch, var(--primary) 6%, var(--background));
-  --color-blue-100: color-mix(in oklch, var(--primary) 12%, var(--background));
-  --color-blue-200: color-mix(in oklch, var(--primary) 25%, var(--background));
-  --color-blue-300: color-mix(in oklch, var(--primary) 45%, var(--background));
-  --color-blue-400: color-mix(in oklch, var(--primary) 70%, var(--background));
-  --color-blue-500: color-mix(in oklch, var(--primary) 85%, var(--background));
-  --color-blue-600: var(--primary);
-  --color-blue-700: color-mix(in oklch, var(--primary) 85%, var(--foreground));
-  --color-blue-800: color-mix(in oklch, var(--primary) 70%, var(--foreground));
-  --color-blue-900: color-mix(in oklch, var(--primary) 55%, var(--foreground));
-  /* Words on an accent fill (text-on-accent, tailwind-extras.css). */
-  --on-accent: var(--primary-foreground);
-
-  --focus-ring: 2px solid var(--ring);
-}
-
+   - Color. Two families mean something. gray is the neutral (a bg-white
+     canvas, the bg-gray-50 sidebar, gray-200 hairlines, gray-900 text), every
+     step mixed from --neutral-tint: the branding's secondary color tints the
+     grays with its hue, at fixed lightness. blue is the accent (primary
+     buttons, links, focus, selection, what's current), read from --accent-*:
+     the branding's primary color, or until one is set the classic blue. red,
+     green and yellow are for status. There's no dark: variant, so the dark theme re-points
+     these families' steps instead and the same classes read in both. Other
+     families don't, so the markup doesn't use them.
+   - Type. --font-sans, the branding's font; every class and control reads it.
+   - Surface. rounded-* read --radius-* (3px until the branding's
+     corners set them); shadow-surface (panels) and shadow-overlay (menus,
+     dialogs, sheets, toasts) read --shadow-*, which its shadow sets. */
 :root {
   --font-sans: "Inter", "InterVariable", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Text", "Segoe UI", "Adwaita Sans", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
 
-  /* shadcn-html's scale has sm to xl, from --radius; the utilities have
-     these two besides. */
-  --radius-xs: max(0px, calc(var(--radius) - 6px));
-  --radius-2xl: calc(var(--radius) + 8px);
+  /* Fizzy's ink until branding sets a secondary color: cool grays, tinted a
+     little more as they darken. The branding's secondary color sets the hue
+     and how strongly (capped, so text stays text). */
+  --neutral-tint: oklch(50% 0.05 262);
+  --color-gray-50: oklch(from var(--neutral-tint) 96.5% min(calc(c * 0.04), 0.004) h);
+  --color-gray-100: oklch(from var(--neutral-tint) 94% min(calc(c * 0.06), 0.006) h);
+  --color-gray-200: oklch(from var(--neutral-tint) 91% min(calc(c * 0.08), 0.008) h);
+  --color-gray-300: oklch(from var(--neutral-tint) 84% min(calc(c * 0.1), 0.01) h);
+  --color-gray-400: oklch(from var(--neutral-tint) 70% min(calc(c * 0.16), 0.016) h);
+  --color-gray-500: oklch(from var(--neutral-tint) 56% min(calc(c * 0.28), 0.028) h);
+  --color-gray-600: oklch(from var(--neutral-tint) 48% min(calc(c * 0.4), 0.04) h);
+  --color-gray-700: oklch(from var(--neutral-tint) 40% min(calc(c * 0.52), 0.05) h);
+  --color-gray-800: oklch(from var(--neutral-tint) 33% min(calc(c * 0.7), 0.06) h);
+  --color-gray-900: oklch(from var(--neutral-tint) 26% min(calc(c * 1), 0.07) h);
 
-  /* A card's hairline lift and what floats, until branding sets a shadow. */
-  --shadow-surface: var(--shadow-xs);
-  --shadow-overlay: var(--shadow-lg);
+  /* Fizzy's blue until branding sets a primary color: links, the primary
+     button, focus, what's current. */
+  --accent-50: oklch(96% 0.016 252);
+  --accent-100: oklch(92% 0.026 254);
+  --accent-200: oklch(84% 0.072 255);
+  --accent-300: oklch(75% 0.13 256);
+  --accent-400: oklch(66% 0.196 258);
+  --accent-500: oklch(62% 0.195 259);
+  --accent-600: oklch(57% 0.19 260);
+  --accent-700: oklch(48% 0.18 261);
+  --accent-800: oklch(40% 0.166 262);
+  --accent-900: oklch(26% 0.126 264);
+  /* Words on an accent fill (text-on-accent, tailwind-extras.css). */
+  --on-accent: #fff;
+
+  --color-blue-50: var(--accent-50);
+  --color-blue-100: var(--accent-100);
+  --color-blue-200: var(--accent-200);
+  --color-blue-300: var(--accent-300);
+  --color-blue-400: var(--accent-400);
+  --color-blue-500: var(--accent-500);
+  --color-blue-600: var(--accent-600);
+  --color-blue-700: var(--accent-700);
+  --color-blue-800: var(--accent-800);
+  --color-blue-900: var(--accent-900);
+
+  /* Fizzy's corners, 3px, until branding sets its own. */
+  --radius-xs: 2px;
+  --radius-sm: 3px;
+  --radius-md: 3px;
+  --radius-lg: 3px;
+  --radius-xl: 3px;
+  --radius-2xl: 4px;
+
+  --page-dark: oklch(from var(--neutral-tint) 19.5% min(calc(c * 0.25), 0.03) h);
+  --surface-dark: oklch(from var(--neutral-tint) 16% min(calc(c * 0.25), 0.03) h);
+
+  /* Flat panels and a soft lift for what floats, until branding sets a
+     shadow. */
+  --shadow-surface: 0 0 #0000;
+  --shadow-overlay: 0 0 0 1px oklch(0% 0 0 / 4%), 0 2px 4px oklch(0% 0 0 / 4%), 0 12px 32px -8px oklch(0% 0 0 / 12%);
+
+  --focus-ring: 2px solid var(--color-blue-500);
 
   /* Z-index */
   --z-popup: 10;
@@ -84,10 +99,35 @@
   --z-nav-open: 100;
 }
 
-/* Status colors on a dark surface: deeper fills, lighter words. */
-.dark {
-  --color-red-50: color-mix(in oklch, oklch(39.6% 0.141 25.723) 45%, var(--background));
-  --color-red-100: color-mix(in oklch, oklch(39.6% 0.141 25.723) 70%, var(--background));
+/* Dark: surfaces go dark and the scales turn over, so gray-900 text is light,
+   bg-gray-50 lifts the sidebar off the canvas, and an accent fill lightens with
+   dark words on it. Grays stay mixed from --neutral-tint and accents from
+   --accent-*, so both follow branding. The admin's top bar takes them in
+   light mode too when Settings › Branding says so (.admin-bar--dark). */
+/* Light chosen by the theme toggle: the browser's own controls (checkboxes,
+   radios, scrollbars, date pickers) draw light too, whatever the system's
+   setting, since the page says it supports both (<meta name="color-scheme">). */
+html[data-theme="light"] {
+  color-scheme: light;
+}
+
+html[data-theme="dark"],
+.admin-bar--dark {
+  color-scheme: dark;
+  --color-white: var(--surface-dark);
+  --color-black: #fff;
+  --color-gray-50: oklch(from var(--neutral-tint) 19.5% min(calc(c * 0.25), 0.03) h);
+  --color-gray-100: oklch(from var(--neutral-tint) 23.5% min(calc(c * 0.25), 0.03) h);
+  --color-gray-200: oklch(from var(--neutral-tint) 28.5% min(calc(c * 0.25), 0.03) h);
+  --color-gray-300: oklch(from var(--neutral-tint) 36% min(calc(c * 0.25), 0.03) h);
+  --color-gray-400: oklch(from var(--neutral-tint) 46% min(calc(c * 0.25), 0.03) h);
+  --color-gray-500: oklch(from var(--neutral-tint) 63% min(calc(c * 0.25), 0.03) h);
+  --color-gray-600: oklch(from var(--neutral-tint) 73% min(calc(c * 0.25), 0.03) h);
+  --color-gray-700: oklch(from var(--neutral-tint) 83% min(calc(c * 0.25), 0.03) h);
+  --color-gray-800: oklch(from var(--neutral-tint) 91% min(calc(c * 0.25), 0.03) h);
+  --color-gray-900: oklch(from var(--neutral-tint) 97% min(calc(c * 0.25), 0.03) h);
+  --color-red-50: color-mix(in oklch, oklch(39.6% 0.141 25.723) 45%, var(--surface-dark));
+  --color-red-100: color-mix(in oklch, oklch(39.6% 0.141 25.723) 70%, var(--surface-dark));
   --color-red-200: oklch(44.4% 0.177 26.899);
   --color-red-300: oklch(50.5% 0.213 27.518);
   --color-red-400: oklch(63.7% 0.237 25.331);
@@ -96,8 +136,8 @@
   --color-red-700: oklch(80.8% 0.114 19.571);
   --color-red-800: oklch(88.5% 0.062 18.334);
   --color-red-900: oklch(93.6% 0.032 17.717);
-  --color-green-50: color-mix(in oklch, oklch(39.3% 0.095 152.535) 45%, var(--background));
-  --color-green-100: color-mix(in oklch, oklch(39.3% 0.095 152.535) 70%, var(--background));
+  --color-green-50: color-mix(in oklch, oklch(39.3% 0.095 152.535) 45%, var(--surface-dark));
+  --color-green-100: color-mix(in oklch, oklch(39.3% 0.095 152.535) 70%, var(--surface-dark));
   --color-green-200: oklch(44.8% 0.119 151.328);
   --color-green-300: oklch(52.7% 0.154 150.069);
   --color-green-400: oklch(72.3% 0.219 149.579);
@@ -106,8 +146,8 @@
   --color-green-700: oklch(87.1% 0.15 154.449);
   --color-green-800: oklch(92.5% 0.084 155.995);
   --color-green-900: oklch(96.2% 0.044 156.743);
-  --color-yellow-50: color-mix(in oklch, oklch(42.1% 0.095 57.708) 45%, var(--background));
-  --color-yellow-100: color-mix(in oklch, oklch(42.1% 0.095 57.708) 70%, var(--background));
+  --color-yellow-50: color-mix(in oklch, oklch(42.1% 0.095 57.708) 45%, var(--surface-dark));
+  --color-yellow-100: color-mix(in oklch, oklch(42.1% 0.095 57.708) 70%, var(--surface-dark));
   --color-yellow-200: oklch(47.6% 0.114 61.907);
   --color-yellow-300: oklch(55.4% 0.135 66.442);
   --color-yellow-400: oklch(79.5% 0.184 86.047);
@@ -116,8 +156,8 @@
   --color-yellow-700: oklch(90.5% 0.182 98.111);
   --color-yellow-800: oklch(94.5% 0.129 101.54);
   --color-yellow-900: oklch(97.3% 0.071 103.193);
-  --color-sky-50: color-mix(in oklch, oklch(39.1% 0.09 240.876) 45%, var(--background));
-  --color-sky-100: color-mix(in oklch, oklch(39.1% 0.09 240.876) 70%, var(--background));
+  --color-sky-50: color-mix(in oklch, oklch(39.1% 0.09 240.876) 45%, var(--surface-dark));
+  --color-sky-100: color-mix(in oklch, oklch(39.1% 0.09 240.876) 70%, var(--surface-dark));
   --color-sky-200: oklch(44.3% 0.11 240.79);
   --color-sky-300: oklch(50% 0.134 242.749);
   --color-sky-400: oklch(68.5% 0.169 237.323);
@@ -126,4 +166,84 @@
   --color-sky-700: oklch(82.8% 0.111 230.318);
   --color-sky-800: oklch(90.1% 0.058 230.902);
   --color-sky-900: oklch(95.1% 0.026 236.824);
+  --color-blue-50: color-mix(in oklch, var(--accent-400) 14%, var(--surface-dark));
+  --color-blue-100: color-mix(in oklch, var(--accent-400) 22%, var(--surface-dark));
+  --color-blue-200: color-mix(in oklch, var(--accent-400) 36%, var(--surface-dark));
+  --color-blue-300: color-mix(in oklch, var(--accent-400) 55%, var(--surface-dark));
+  --color-blue-400: color-mix(in oklch, var(--accent-400) 78%, var(--surface-dark));
+  --color-blue-500: var(--accent-400);
+  --color-blue-600: color-mix(in oklch, var(--accent-300) 75%, white);
+  --color-blue-700: color-mix(in oklch, var(--accent-200) 75%, white);
+  --color-blue-800: var(--accent-100);
+  --color-blue-900: var(--accent-50);
+  --on-accent: var(--surface-dark);
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme]) {
+    color-scheme: dark;
+    --color-white: var(--surface-dark);
+    --color-black: #fff;
+    --color-gray-50: oklch(from var(--neutral-tint) 19.5% min(calc(c * 0.25), 0.03) h);
+    --color-gray-100: oklch(from var(--neutral-tint) 23.5% min(calc(c * 0.25), 0.03) h);
+    --color-gray-200: oklch(from var(--neutral-tint) 28.5% min(calc(c * 0.25), 0.03) h);
+    --color-gray-300: oklch(from var(--neutral-tint) 36% min(calc(c * 0.25), 0.03) h);
+    --color-gray-400: oklch(from var(--neutral-tint) 46% min(calc(c * 0.25), 0.03) h);
+    --color-gray-500: oklch(from var(--neutral-tint) 63% min(calc(c * 0.25), 0.03) h);
+    --color-gray-600: oklch(from var(--neutral-tint) 73% min(calc(c * 0.25), 0.03) h);
+    --color-gray-700: oklch(from var(--neutral-tint) 83% min(calc(c * 0.25), 0.03) h);
+    --color-gray-800: oklch(from var(--neutral-tint) 91% min(calc(c * 0.25), 0.03) h);
+    --color-gray-900: oklch(from var(--neutral-tint) 97% min(calc(c * 0.25), 0.03) h);
+    --color-red-50: color-mix(in oklch, oklch(39.6% 0.141 25.723) 45%, var(--surface-dark));
+    --color-red-100: color-mix(in oklch, oklch(39.6% 0.141 25.723) 70%, var(--surface-dark));
+    --color-red-200: oklch(44.4% 0.177 26.899);
+    --color-red-300: oklch(50.5% 0.213 27.518);
+    --color-red-400: oklch(63.7% 0.237 25.331);
+    --color-red-500: oklch(70.4% 0.191 22.216);
+    --color-red-600: oklch(70.4% 0.191 22.216);
+    --color-red-700: oklch(80.8% 0.114 19.571);
+    --color-red-800: oklch(88.5% 0.062 18.334);
+    --color-red-900: oklch(93.6% 0.032 17.717);
+    --color-green-50: color-mix(in oklch, oklch(39.3% 0.095 152.535) 45%, var(--surface-dark));
+    --color-green-100: color-mix(in oklch, oklch(39.3% 0.095 152.535) 70%, var(--surface-dark));
+    --color-green-200: oklch(44.8% 0.119 151.328);
+    --color-green-300: oklch(52.7% 0.154 150.069);
+    --color-green-400: oklch(72.3% 0.219 149.579);
+    --color-green-500: oklch(79.2% 0.209 151.711);
+    --color-green-600: oklch(79.2% 0.209 151.711);
+    --color-green-700: oklch(87.1% 0.15 154.449);
+    --color-green-800: oklch(92.5% 0.084 155.995);
+    --color-green-900: oklch(96.2% 0.044 156.743);
+    --color-yellow-50: color-mix(in oklch, oklch(42.1% 0.095 57.708) 45%, var(--surface-dark));
+    --color-yellow-100: color-mix(in oklch, oklch(42.1% 0.095 57.708) 70%, var(--surface-dark));
+    --color-yellow-200: oklch(47.6% 0.114 61.907);
+    --color-yellow-300: oklch(55.4% 0.135 66.442);
+    --color-yellow-400: oklch(79.5% 0.184 86.047);
+    --color-yellow-500: oklch(85.2% 0.199 91.936);
+    --color-yellow-600: oklch(85.2% 0.199 91.936);
+    --color-yellow-700: oklch(90.5% 0.182 98.111);
+    --color-yellow-800: oklch(94.5% 0.129 101.54);
+    --color-yellow-900: oklch(97.3% 0.071 103.193);
+    --color-sky-50: color-mix(in oklch, oklch(39.1% 0.09 240.876) 45%, var(--surface-dark));
+    --color-sky-100: color-mix(in oklch, oklch(39.1% 0.09 240.876) 70%, var(--surface-dark));
+    --color-sky-200: oklch(44.3% 0.11 240.79);
+    --color-sky-300: oklch(50% 0.134 242.749);
+    --color-sky-400: oklch(68.5% 0.169 237.323);
+    --color-sky-500: oklch(74.6% 0.16 232.661);
+    --color-sky-600: oklch(74.6% 0.16 232.661);
+    --color-sky-700: oklch(82.8% 0.111 230.318);
+    --color-sky-800: oklch(90.1% 0.058 230.902);
+    --color-sky-900: oklch(95.1% 0.026 236.824);
+    --color-blue-50: color-mix(in oklch, var(--accent-400) 14%, var(--surface-dark));
+    --color-blue-100: color-mix(in oklch, var(--accent-400) 22%, var(--surface-dark));
+    --color-blue-200: color-mix(in oklch, var(--accent-400) 36%, var(--surface-dark));
+    --color-blue-300: color-mix(in oklch, var(--accent-400) 55%, var(--surface-dark));
+    --color-blue-400: color-mix(in oklch, var(--accent-400) 78%, var(--surface-dark));
+    --color-blue-500: var(--accent-400);
+    --color-blue-600: color-mix(in oklch, var(--accent-300) 75%, white);
+    --color-blue-700: color-mix(in oklch, var(--accent-200) 75%, white);
+    --color-blue-800: var(--accent-100);
+    --color-blue-900: var(--accent-50);
+    --on-accent: var(--surface-dark);
+  }
 }
