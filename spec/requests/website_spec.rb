@@ -135,6 +135,25 @@ RSpec.describe "Website", type: :request do
     end
   end
 
+  # The "scripts" global (analytics, a chat widget): each item's head in
+  # <head>, its body before </body>, as pasted.
+  it "puts the scripts global's items in the head and at the end of the body" do
+    SiteSetup.new(name: "Acme", owner_email: "owner@example.com").call if Global.find_by(slug: "scripts").nil?
+    Global.find_by!(slug: "scripts").update!(data: {"items" => [
+      {"name" => "GA4", "head" => %(<script async src="https://www.googletagmanager.com/gtag/js?id=G-TEST"></script>), "body" => ""},
+      {"name" => "Chat", "head" => "", "body" => "<script>window.chat = true</script>"},
+      {"name" => "Old pixel", "head" => "<script>window.pixel = true</script>", "enabled" => false}
+    ]})
+
+    get "/"
+
+    expect(response).to have_http_status(:ok)
+    head, body = response.body.split("</head>", 2)
+    expect(head).to include("googletagmanager.com/gtag/js?id=G-TEST")
+    expect(body).to include("<script>window.chat = true</script></body>")
+    expect(response.body).not_to include("window.pixel")
+  end
+
   describe "plugins' filters" do
     before { Cms::Plugins.register(:seo_plus, name: "SEO+", version: "1", description: "x", enabled_by_default: true) }
     after { forget_plugin(:seo_plus) }

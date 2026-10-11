@@ -6,6 +6,16 @@ section below. An install is brought to one with `bin/update v1.0.0`, or a
 Kamal site with `kamal deploy -d <site>`. Settings shows when a newer one is
 out.
 
+## 1.20.3
+
+### Fixed
+- **The Scripts global took the website down.** Adding any script (an
+  analytics tag, a chat widget) to Globals › Scripts made every page of a
+  theme's website answer with an error, because the scripts were read for an
+  "enabled" field the global doesn't have. They're read as stored now: each
+  one's Head goes at the end of `<head>`, its Body just before `</body>`,
+  and one set `"enabled": false` over the API is left out.
+
 ## 1.20.2
 
 ### Changed
