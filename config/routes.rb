@@ -183,6 +183,10 @@ Rails.application.routes.draw do
     namespace :settings do
       resource :general, only: [:show, :update], controller: "generals"
       resource :search, only: [:show, :update], controller: "searches"
+      # The SMTP server email goes through (MailDelivery), and a test email.
+      resource :mail_delivery, only: [:show, :update] do
+        resource :test, only: :create, module: :mail_deliveries
+      end
       resource :profile, only: [:show, :update, :destroy]
       resource :password, only: [:show, :update]
       resource :email, only: [:show, :update]

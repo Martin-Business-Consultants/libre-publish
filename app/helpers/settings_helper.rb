@@ -33,7 +33,8 @@ module SettingsHelper
     ],
     "Integrations" => [
       ["GitHub", :settings_github_path, "settings:read", "Access token and the site's repository."],
-      ["Deploy", :settings_deploy_path, "settings:read", "The build hook the CMS pings on publish."]
+      ["Deploy", :settings_deploy_path, "settings:read", "The build hook the CMS pings on publish."],
+      ["Email delivery", :settings_mail_delivery_path, "settings:read", "The SMTP server the site's email goes through, and a test email."]
     ]
   }.freeze
 

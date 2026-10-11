@@ -10,8 +10,6 @@ class Settings::GeneralsController < Settings::BaseController
 
   IDENTITY_FIELDS = %w[title description default_locale site_base_url public_origins_raw].freeze
   CONTACT_FIELDS  = %w[phone email address_line1 city state zip].freeze
-  # Who the CMS's notification emails (collection events) come from.
-  EMAIL_FIELDS    = %w[email_from_name email_from_address].freeze
   # The zone the admin shows and reads times in (Site.time_zone).
   TIME_FIELDS     = %w[timezone].freeze
 
@@ -39,7 +37,7 @@ class Settings::GeneralsController < Settings::BaseController
   private
 
   def scalar_params
-    params.require(:settings).permit(*(IDENTITY_FIELDS + CONTACT_FIELDS + EMAIL_FIELDS + TIME_FIELDS))
+    params.require(:settings).permit(*(IDENTITY_FIELDS + CONTACT_FIELDS + TIME_FIELDS))
   end
 
   def current_settings
@@ -57,9 +55,7 @@ class Settings::GeneralsController < Settings::BaseController
       "address_line1"   => data["address_line1"].to_s,
       "city"            => data["city"].to_s,
       "state"           => data["state"].to_s,
-      "zip"             => data["zip"].to_s,
-      "email_from_name"    => data["email_from_name"].to_s,
-      "email_from_address" => data["email_from_address"].to_s
+      "zip"             => data["zip"].to_s
     }
   end
 end

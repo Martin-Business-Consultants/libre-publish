@@ -62,20 +62,5 @@
         <% end %>
       </div>
     </section>
-
-    <section class="<%= ui(:panel, "space-y-5 p-6") %>">
-      <div class="space-y-1">
-        <h2 class="<%= ui(:heading) %>">Email sender</h2>
-        <p class="text-sm text-gray-500">Who the CMS's notification emails (collection events) come from. Blank uses the Forms plugin's sender, then the install's default.</p>
-      </div>
-      <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
-        <%= settings_field "From name" do %>
-          <%= form.text_field :email_from_name, value: @settings["email_from_name"], placeholder: "Acme", class: "w-full" %>
-        <% end %>
-        <%= settings_field "From address" do %>
-          <%= form.email_field :email_from_address, value: @settings["email_from_address"], placeholder: "notifications@example.com", class: "w-full" %>
-        <% end %>
-      </div>
-    </section>
   <% end %>
 <% end %>
