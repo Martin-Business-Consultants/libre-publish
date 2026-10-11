@@ -5,15 +5,15 @@
     from; its panel drops down from it, and closes on a click elsewhere or Esc. %>
 <div class="relative flex items-center" data-controller="screen-options" data-screen-options-screen-value="<%= controller_path %>#<%= action_name %>"
      data-action="click@window->screen-options#closeOutside keydown.esc@window->screen-options#close">
-  <button type="button" class="<%= ui(:button, :plain, :small, "screen-options__tab") %>" aria-expanded="false" aria-controls="screen_options_panel" hidden
+  <button type="button" class="btn screen-options__tab" data-variant="ghost" data-size="sm" aria-expanded="false" aria-controls="screen_options_panel" hidden
           data-screen-options-target="tab" data-action="screen-options#toggle">
     Screen options
     <%= icon_tag "caret-down", class: "size-3" %>
   </button>
-  <div class="<%= ui(:menu, "absolute top-full right-0 z-50 mt-1 w-72 px-4 py-3") %>" id="screen_options_panel" hidden data-screen-options-target="panel">
+  <div class="rounded-lg border border-border bg-popover px-4 py-3 text-popover-foreground shadow-overlay absolute top-full right-0 z-50 mt-1 w-72" id="screen_options_panel" hidden data-screen-options-target="panel">
     <fieldset>
-      <legend class="text-sm font-medium text-gray-900">Columns</legend>
-      <div class="mt-2 flex flex-wrap gap-x-5 gap-y-2 text-sm text-gray-700" data-screen-options-target="choices"></div>
+      <legend class="text-sm font-medium text-foreground">Columns</legend>
+      <div class="mt-2 flex flex-wrap gap-x-5 gap-y-2 text-sm text-foreground" data-screen-options-target="choices"></div>
     </fieldset>
   </div>
 </div>

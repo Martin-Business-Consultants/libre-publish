@@ -71,37 +71,43 @@
     touch-action: manipulation;
   }
 
-  /* Text-like controls, selects and textareas: the forms plugin's look. */
-  :where(input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"], [type="hidden"], [type="submit"], [type="button"], [type="reset"], [type="image"])),
-  :where(select),
-  :where(textarea) {
-    background-color: var(--color-white);
-    border: 1px solid var(--color-gray-300);
+  /* Text-like controls, selects and textareas: shadcn-html's input
+     (vendor/shadcn-html/components/input), on the native elements so every
+     field the admin draws has it without a class. Its .input also sets a
+     height and full width, which a field's own layout classes decide here.
+     Not in :where(), so it beats the preflight's reset of the same elements
+     (utilities.css, same layer); the utilities' classes still beat it. */
+  input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"], [type="hidden"], [type="submit"], [type="button"], [type="reset"], [type="image"]),
+  select,
+  textarea {
+    background-color: var(--background);
+    border: 1px solid var(--input);
     border-radius: var(--radius-md);
-    color: var(--color-gray-900);
+    box-shadow: var(--shadow-xs);
+    color: var(--foreground);
     font-size: var(--text-sm);
     line-height: var(--text-sm--line-height);
     max-inline-size: 100%;
-    min-block-size: calc(var(--spacing) * 8);
-    padding: calc(var(--spacing) * 1.25) calc(var(--spacing) * 2.5);
+    min-block-size: calc(var(--spacing) * 9);
+    padding: calc(var(--spacing) * 1.75) calc(var(--spacing) * 3);
 
     &::placeholder {
-      color: var(--color-gray-400);
+      color: var(--muted-foreground);
       opacity: 1;
     }
 
-    &:hover:not(:focus, :disabled) {
-      border-color: var(--color-gray-400);
-    }
-
-    /* Payload's field focus: the border darkens, no ring. */
     &:focus {
-      border-color: var(--color-gray-900);
+      border-color: var(--ring);
+      box-shadow: 0 0 0 2px oklch(from var(--ring) l c h / 0.2);
       outline: none;
     }
 
-    &[aria-invalid="true"] {
-      border-color: var(--color-red-500);
+    &:is([aria-invalid="true"], :user-invalid) {
+      border-color: var(--destructive);
+
+      &:focus {
+        box-shadow: 0 0 0 2px oklch(from var(--destructive) l c h / 0.2);
+      }
     }
   }
 
@@ -120,7 +126,7 @@
   }
 
   :where(input[type="checkbox"], input[type="radio"], progress, input[type="range"]) {
-    accent-color: var(--color-blue-600);
+    accent-color: var(--primary);
   }
 
   :where(input[type="checkbox"], input[type="radio"]) {
@@ -134,8 +140,8 @@
     font-size: var(--text-sm);
 
     &::file-selector-button {
-      background: var(--color-white);
-      border: 1px solid var(--color-gray-300);
+      background: var(--background);
+      border: 1px solid var(--input);
       border-radius: var(--radius-md);
       color: var(--color-gray-900);
       cursor: pointer;

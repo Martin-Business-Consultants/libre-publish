@@ -3,10 +3,11 @@
     a notice, which fades after a few seconds (held while hovered), and red
     for an alert, which stays until it's dismissed. %>
 <%= turbo_frame_tag :flash, class: "toasts" do %>
-  <% { notice: ["success", :green], alert: ["error", :red] }.each do |type, (tone, color)| %>
+  <% { notice: "success", alert: "error" }.each do |type, tone| %>
     <%# herb:key type %>
     <% if (message = flash[type]).present? %>
-      <div class="<%= ui(:notice, color, "notice--#{tone} toast shadow-overlay") %>" role="<%= type == :alert ? "alert" : "status" %>" data-controller="element-removal"
+      <% tone_classes = (type == :notice) ? "border-green-200 bg-green-50 text-green-800" : nil %>
+      <div class="<%= class_names("alert toast shadow-overlay notice--#{tone}", tone_classes) %>" data-variant="<%= "destructive" if type == :alert %>" role="<%= type == :alert ? "alert" : "status" %>" data-controller="element-removal"
            data-action="<%= "animationend->element-removal#remove" if type == :notice %>">
         <%= icon_tag(type == :alert ? "close-circle" : "check-circle", class: "size-5 shrink-0") %>
         <p class="flex-1 font-medium"><%= message %></p>

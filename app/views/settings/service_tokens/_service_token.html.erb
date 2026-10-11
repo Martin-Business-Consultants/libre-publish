@@ -3,7 +3,7 @@
   <div class="flex flex-wrap items-center justify-between gap-3">
     <div class="flex min-w-0 flex-col gap-0.5">
       <span class="flex flex-wrap items-center gap-2">
-        <span class="text-sm font-semibold text-gray-900"><%= service_token.name %></span>
+        <span class="text-sm font-semibold text-foreground"><%= service_token.name %></span>
         <% if service_token.role %>
           <%= status_tag service_token.role.name %>
         <% end %>
@@ -12,9 +12,9 @@
         <% end %>
       </span>
       <% if service_token.description.present? %>
-        <span class="text-xs text-gray-500"><%= service_token.description %></span>
+        <span class="text-xs text-muted-foreground"><%= service_token.description %></span>
       <% end %>
-      <span class="text-xs text-gray-500">
+      <span class="text-xs text-muted-foreground">
         <% if service_token.last_used_at %>
           Last used <%= time_ago_tag service_token.last_used_at %><% if service_token.last_used_ip.present? %> from <%= service_token.last_used_ip %><% end %>
         <% else %>
@@ -42,6 +42,6 @@
   <% end %>
 
   <% if service_token.capabilities.any? %>
-    <p class="font-mono text-xs text-gray-500"><%= service_token.capabilities.join(", ") %></p>
+    <p class="font-mono text-xs text-muted-foreground"><%= service_token.capabilities.join(", ") %></p>
   <% end %>
 </li>

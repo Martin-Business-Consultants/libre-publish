@@ -13,46 +13,46 @@
         message: "They can no longer sign in. Your own account is never included." %>
 <% end %>
 
-<section class="<%= ui(:panel, "overflow-x-auto") %>" data-controller="select-all">
-  <table class="<%= ui(:table, "data-table") %>">
+<section class="card overflow-x-auto" data-controller="select-all">
+  <table class="table data-table">
     <thead>
-      <tr>
+      <tr class="table-row">
         <% if can_delete %>
-          <th class="<%= ui(:th, "data-table__check w-10 text-center") %>"><input type="checkbox" aria-label="Select every row" data-select-all-target="all" data-action="select-all#toggle"></th>
+          <th class="table-head data-table__check w-10 text-center"><input type="checkbox" aria-label="Select every row" data-select-all-target="all" data-action="select-all#toggle"></th>
         <% end %>
-        <th class="<%= ui(:th) %>">Name</th>
-        <th class="<%= ui(:th) %>">Email</th>
-        <th class="<%= ui(:th) %>">Role</th>
-        <th class="<%= ui(:th) %>">Verified</th>
-        <th class="<%= ui(:th) %>">2FA</th>
+        <th class="table-head">Name</th>
+        <th class="table-head">Email</th>
+        <th class="table-head">Role</th>
+        <th class="table-head">Verified</th>
+        <th class="table-head">2FA</th>
       </tr>
     </thead>
     <tbody>
       <% @users.each do |user| %>
         <%# herb:key user.id %>
         <% yourself = user == Current.user %>
-        <tr id="<%= dom_id(user) %>" class="hover:bg-gray-50" data-filter-target="item">
+        <tr id="<%= dom_id(user) %>" class="table-row hover:bg-muted" data-filter-target="item">
           <% if can_delete %>
-            <td class="<%= ui(:td, "text-center") %>">
+            <td class="table-cell text-center">
               <% unless yourself %>
                 <input type="checkbox" data-select-all-target="box" data-action="select-all#sync" name="ids[]" value="<%= user.id %>" form="users_bulk_deletion" aria-label="Select <%= user.email %>">
               <% end %>
             </td>
           <% end %>
-          <td class="<%= ui(:td) %>">
-            <%= link_to user.name, edit_user_path(user), class: "font-medium text-gray-900 hover:underline" %>
+          <td class="table-cell">
+            <%= link_to user.name, edit_user_path(user), class: "font-medium text-foreground hover:underline" %>
             <% if yourself %>
-              <span class="text-xs text-gray-500">(you)</span>
+              <span class="text-xs text-muted-foreground">(you)</span>
             <% end %>
             <%= render "layouts/shared/row_links", name: user.name,
                   edit_path: (edit_user_path(user) if Current.user.can?("users:write")),
                   delete_path: (user_path(user) if can_delete && !yourself),
                   delete_message: "They can no longer sign in to this workspace." %>
           </td>
-          <td class="<%= ui(:td) %>"><span class="text-gray-500"><%= user.email %></span></td>
-          <td class="<%= ui(:td) %>"><%= user.role&.name || "No role" %></td>
-          <td class="<%= ui(:td) %>"><%= user.verified ? "Yes" : "No" %></td>
-          <td class="<%= ui(:td) %>"><%= user.totp_enabled ? "On" : "Off" %></td>
+          <td class="table-cell"><span class="text-muted-foreground"><%= user.email %></span></td>
+          <td class="table-cell"><%= user.role&.name || "No role" %></td>
+          <td class="table-cell"><%= user.verified ? "Yes" : "No" %></td>
+          <td class="table-cell"><%= user.totp_enabled ? "On" : "Off" %></td>
         </tr>
       <% end %>
     </tbody>

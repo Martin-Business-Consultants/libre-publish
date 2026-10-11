@@ -6,10 +6,10 @@
 <%= form_with url: collection_entry_card_field_path(collection.slug, entry.slug), method: :patch,
       class: "flex items-center gap-2", data: { controller: "form" } do %>
   <%= hidden_field_tag :field, field["name"], id: nil %>
-  <span class="w-24 shrink-0 truncate text-xs text-gray-500" aria-hidden="true"><%= label %></span>
+  <span class="w-24 shrink-0 truncate text-xs text-muted-foreground" aria-hidden="true"><%= label %></span>
   <% if field["type"] == "boolean" %>
     <%= hidden_field_tag :value, (!value).to_s, id: nil %>
-    <button type="submit" class="<%= ui(:button, :small, "mr-auto") %>" aria-pressed="<%= value == true %>" title="<%= label %>">
+    <button type="submit" class="btn mr-auto" data-variant="outline" data-size="sm" aria-pressed="<%= value == true %>" title="<%= label %>">
       <span class="<%= class_names("h-2 w-2 rounded-full", value ? "bg-green-500" : "bg-gray-300") %>" aria-hidden="true"></span>
       <%= value ? "On" : "Off" %>
     </button>

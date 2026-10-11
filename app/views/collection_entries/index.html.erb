@@ -8,10 +8,10 @@
 
 <% content_for :page_actions do %>
   <% if @collection.build_board? %>
-    <%= link_to "Build", build_collection_entries_path(@collection.slug), class: ui(:button) %>
+    <%= link_to "Build", build_collection_entries_path(@collection.slug), class: "btn", data: {variant: "outline"} %>
   <% end %>
   <% if Current.user.can?("collections:write") %>
-    <%= link_to "Schema", collection_schema_path(@collection.slug), class: ui(:button) %>
+    <%= link_to "Schema", collection_schema_path(@collection.slug), class: "btn", data: {variant: "outline"} %>
   <% end %>
   <% if can_write %>
     <%= render "layouts/shared/new_link", text: "New entry", path: new_collection_entry_path(@collection.slug) %>
@@ -26,44 +26,44 @@
       status_path: (collection_entries_bulk_status_changes_path(@collection.slug) if can_publish), statuses: CollectionEntry::STATUSES,
       deletion_path: (collection_entries_bulk_deletions_path(@collection.slug) if can_delete) %>
 
-<section class="<%= ui(:panel, "overflow-x-auto") %>" data-controller="select-all">
-  <table class="data-table <%= ui(:table) %>">
+<section class="card overflow-x-auto" data-controller="select-all">
+  <table class="data-table table">
     <thead>
-      <tr>
+      <tr class="table-row">
         <% if ticks %>
-          <th class="<%= ui(:th, "data-table__check") %>"><% if @entries.any? %><input type="checkbox" aria-label="Select every row" data-select-all-target="all" data-action="select-all#toggle"><% end %></th>
+          <th class="table-head data-table__check"><% if @entries.any? %><input type="checkbox" aria-label="Select every row" data-select-all-target="all" data-action="select-all#toggle"><% end %></th>
         <% end %>
-        <th class="<%= ui(:th) %>">Title</th>
-        <th class="<%= ui(:th) %>">Slug</th>
-        <th class="<%= ui(:th) %>">Status</th>
+        <th class="table-head">Title</th>
+        <th class="table-head">Slug</th>
+        <th class="table-head">Status</th>
         <% @flag_fields.each do |field| %>
           <%# herb:key field["name"] %>
-          <th class="<%= ui(:th) %>"><%= field_label_text(field) %></th>
+          <th class="table-head"><%= field_label_text(field) %></th>
         <% end %>
-        <th class="<%= ui(:th) %>">Updated</th>
+        <th class="table-head">Updated</th>
       </tr>
     </thead>
     <tbody>
       <% @entries.each do |entry| %>
         <%# herb:key entry.id %>
-        <tr id="<%= dom_id(entry) %>" class="hover:bg-gray-50" data-filter-target="item">
+        <tr id="<%= dom_id(entry) %>" class="table-row hover:bg-muted" data-filter-target="item">
           <% if ticks %>
-            <td class="<%= ui(:td, "data-table__check") %>"><input type="checkbox" data-select-all-target="box" data-action="select-all#sync" name="slugs[]" value="<%= entry.slug %>" form="entries_bulk" aria-label="Select <%= entry.title %>"></td>
+            <td class="table-cell data-table__check"><input type="checkbox" data-select-all-target="box" data-action="select-all#sync" name="slugs[]" value="<%= entry.slug %>" form="entries_bulk" aria-label="Select <%= entry.title %>"></td>
           <% end %>
-          <td class="<%= ui(:td) %>">
-            <%= link_to entry.title, edit_collection_entry_path(@collection.slug, entry.slug), class: "font-medium text-gray-900 hover:underline" %>
+          <td class="table-cell">
+            <%= link_to entry.title, edit_collection_entry_path(@collection.slug, entry.slug), class: "font-medium text-foreground hover:underline" %>
             <%= render "layouts/shared/row_links", name: entry.title,
                 edit_path: (edit_collection_entry_path(@collection.slug, entry.slug) if can_write),
                 delete_path: (collection_entry_path(@collection.slug, entry.slug) if can_delete),
                 delete_message: "It goes to the trash, where it can be restored." %>
           </td>
-          <td class="<%= ui(:td) %>"><span class="font-mono text-xs text-gray-500"><%= entry.slug %></span></td>
-          <td class="<%= ui(:td) %>"><%= status_tag entry.status %></td>
+          <td class="table-cell"><span class="font-mono text-xs text-muted-foreground"><%= entry.slug %></span></td>
+          <td class="table-cell"><%= status_tag entry.status %></td>
           <% @flag_fields.each do |field| %>
             <%# herb:key field["name"] %>
-            <td class="<%= ui(:td) %>"><%= render "collection_entries/flag", collection: @collection, entry: entry, field: field, can_write: can_write %></td>
+            <td class="table-cell"><%= render "collection_entries/flag", collection: @collection, entry: entry, field: field, can_write: can_write %></td>
           <% end %>
-          <td class="<%= ui(:td) %>"><span class="whitespace-nowrap text-xs text-gray-500"><%= time_ago_tag entry.updated_at %></span></td>
+          <td class="table-cell"><span class="whitespace-nowrap text-xs text-muted-foreground"><%= time_ago_tag entry.updated_at %></span></td>
         </tr>
       <% end %>
       <%= table_empty_row(@status ? "No #{@status} entries." : "No entries yet.", columns: columns, link: (["Show all", collection_entries_path(@collection.slug)] if @status)) if @entries.none? %>

@@ -141,8 +141,8 @@
 
   @media (min-width: 783px) {
     #global-container:has(#admin-menu)::before {
-      background-color: var(--color-gray-50);
-      border-inline-end: 1px solid var(--color-gray-200);
+      background-color: var(--sidebar);
+      border-inline-end: 1px solid var(--sidebar-border);
       content: "";
       inline-size: var(--admin-menu-width);
       inset: var(--admin-bar-height) auto 0 0;
@@ -180,8 +180,8 @@
   /* An item keeps its hover look while the pointer is anywhere in it, its
      fly-out included, so it's clear which item the fly-out belongs to. */
   .admin-menu__item:not(.admin-menu__item--current):is(:hover, .admin-menu__item--open, :focus-within) > .admin-menu__link {
-    background-color: var(--color-gray-100);
-    color: var(--color-gray-900);
+    background-color: var(--sidebar-accent);
+    color: var(--sidebar-accent-foreground);
   }
 
   @media (min-width: 783px) {
@@ -218,10 +218,11 @@
   @media (min-width: 783px) {
     .admin-menu__item:not(.admin-menu__item--current):is(.admin-menu__item--open, :focus-within) > .admin-menu__submenu,
     :root[data-menu="folded"] .admin-menu__item:is(.admin-menu__item--open, :focus-within) > .admin-menu__submenu {
-      background-color: var(--color-white);
-      border: 1px solid var(--color-gray-200);
-      border-radius: var(--radius-xl);
+      background-color: var(--popover);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
       box-shadow: var(--shadow-overlay);
+      color: var(--popover-foreground);
       display: block;
       /* Beside the menu, at the item's height (--flyout-top, set by
          admin_menu_controller, which also shifts it up to fit the window). */
@@ -229,7 +230,6 @@
       max-block-size: calc(100dvh - var(--admin-bar-height));
       min-inline-size: 13rem;
       overflow-y: auto;
-      color: inherit;
       margin: 0;
       padding: 0.375rem;
       position: fixed;
@@ -390,10 +390,13 @@
   }
 }
 
-/* The classic look's admin bar: the menu's gray, across the top. Unlayered,
-   so it wins over the bg-white its markup carries. */
-.admin-bar {
-  background-color: var(--color-gray-50);
+/* The admin bar: the sidebar's surface (shadcn-html's --sidebar), across
+   the top, so the bar and the menu frame the page as one. */
+@layer components {
+  .admin-bar {
+    background-color: var(--sidebar);
+    color: var(--sidebar-foreground);
+  }
 }
 
 /* The editor's Preview tab: the website, framed, the height of the window. */

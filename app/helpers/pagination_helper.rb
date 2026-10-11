@@ -60,8 +60,8 @@ module PaginationHelper
   #   <%= table_empty_row "No pages match.", columns: 5, link: ["Show all", pages_path] %>
   def table_empty_row(message, columns:, link: nil)
     tag.tr do
-      tag.td colspan: columns, class: "px-3 py-12 text-center text-sm text-gray-500" do
-        safe_join([message, (link_to(link.first, link.last, class: ui(:link)) if link)].compact, " ")
+      tag.td colspan: columns, class: "px-3 py-12 text-center text-sm text-muted-foreground" do
+        safe_join([message, (link_to(link.first, link.last, class: "font-medium text-primary underline underline-offset-2") if link)].compact, " ")
       end
     end
   end

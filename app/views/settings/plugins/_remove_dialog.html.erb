@@ -3,23 +3,23 @@
     the plugin's data too: its tables, named here. %>
 <% title = "Remove " + plugin.name + "?" %>
 <div class="contents" data-controller="dialog" data-dialog-modal-value="true" data-action="keydown.esc->dialog#close:stop">
-  <button type="button" class="<%= ui(:button, :danger, :icon) %>" title="<%= title %>" data-action="dialog#open">
+  <button type="button" class="btn text-destructive" data-variant="outline" data-size="icon" title="<%= title %>" data-action="dialog#open">
     <%= icon_tag "trash", class: "size-4" %>
     <span class="sr-only"><%= title %></span>
   </button>
-  <dialog class="<%= ui(:dialog, "dialog dialog--action") %>" data-dialog-target="dialog">
-    <h3 class="text-lg font-semibold text-gray-900"><%= title %></h3>
+  <dialog class="dialog gap-4 p-6 text-left" data-dialog-target="dialog">
+    <h3 class="text-lg font-semibold text-foreground"><%= title %></h3>
     <%= form_with url: settings_plugin_path(plugin.key), method: :delete, class: "space-y-3", data: { turbo_frame: "_top" } do |form| %>
-      <p class="text-sm text-gray-600">Its code comes off this server and the CMS restarts. Its tables and data stay, so installing it again brings them back.</p>
+      <p class="text-sm text-muted-foreground">Its code comes off this server and the CMS restarts. Its tables and data stay, so installing it again brings them back.</p>
       <% if tables.any? %>
-        <label class="flex items-start gap-2 text-sm text-gray-700">
+        <label class="flex items-start gap-2 text-sm text-foreground">
           <%= form.check_box :purge_data, class: "mt-0.5" %>
           <span>Delete its data too: <%= safe_join(tables.map { |table| tag.code(table) }, ", ") %>. This can’t be undone.</span>
         </label>
       <% end %>
       <div class="mt-2 flex justify-end gap-2">
-        <button type="button" class="<%= ui(:button) %>" data-action="dialog#close">Cancel</button>
-        <button type="submit" class="<%= ui(:button, :destructive) %>">
+        <button type="button" class="btn" data-variant="outline" data-action="dialog#close">Cancel</button>
+        <button type="submit" class="btn" data-variant="destructive">
           <%= icon_tag "trash", class: "size-4" %>
           <span>Remove</span>
         </button>

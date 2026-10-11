@@ -2,13 +2,13 @@
 
 <%= render "layouts/shared/page_header", title: "Settings" %>
 
-<p class="text-sm text-gray-500">
+<p class="text-sm text-muted-foreground">
   CMS <%= cms_version %>
   <% if UpdateCheck.update_available? %>
-    · <strong class="font-semibold text-gray-900"><%= tx("Version %{version} is available.", version: UpdateCheck.latest_version) %></strong>
-    <%= link_to tx("What’s new"), UpdateCheck.release_url || UpdateCheck.changelog_url, class: ui(:link), rel: "noopener" %>
+    · <strong class="font-semibold text-foreground"><%= tx("Version %{version} is available.", version: UpdateCheck.latest_version) %></strong>
+    <%= link_to tx("What’s new"), UpdateCheck.release_url || UpdateCheck.changelog_url, class: "font-medium text-primary underline underline-offset-2", rel: "noopener" %>
     <% if Current.user.can?("settings:read") %>
-      · <%= link_to tx("Update in Settings › Updates"), settings_updates_path, class: ui(:link) %>
+      · <%= link_to tx("Update in Settings › Updates"), settings_updates_path, class: "font-medium text-primary underline underline-offset-2" %>
     <% end %>
   <% end %>
 </p>
@@ -16,14 +16,14 @@
 <% settings_sections.each do |group, links| %>
   <%# herb:key group %>
   <section class="space-y-3">
-    <h2 class="<%= ui(:heading) %>"><%= tx(group) %></h2>
+    <h2 class="text-base font-semibold text-foreground"><%= tx(group) %></h2>
     <ul class="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <% links.each do |text, path, description| %>
         <%# herb:key path %>
         <li>
-          <%= link_to path, class: ui(:panel, "flex h-full flex-col gap-1 p-5 hover:border-gray-300 hover:bg-gray-50") do %>
-            <span class="text-sm font-semibold text-gray-900"><%= tx(text) %></span>
-            <span class="text-sm text-gray-500"><%= tx(description.to_s) %></span>
+          <%= link_to path, class: "card flex h-full flex-col gap-1 p-5 hover:border-input hover:bg-muted" do %>
+            <span class="text-sm font-semibold text-foreground"><%= tx(text) %></span>
+            <span class="text-sm text-muted-foreground"><%= tx(description.to_s) %></span>
           <% end %>
         </li>
       <% end %>

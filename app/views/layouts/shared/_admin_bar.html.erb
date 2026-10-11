@@ -6,11 +6,11 @@
 <% site_url = public_site_url %>
 <% new_items = admin_new_items %>
 <%# .admin-bar__item lays an item out (admin.css), so the drawer toggle can hide on wide screens. %>
-<% item_classes = "admin-bar__item items-center gap-2 rounded-md px-2.5 hover:bg-gray-100" %>
-<% muted_item_classes = class_names(item_classes, "text-gray-600 hover:text-gray-900") %>
-<% menu_classes = ui(:menu, "admin-bar__menu w-56") %>
-<% menu_link_classes = ui(:menu_item) %>
-<% bar_classes = class_names("admin-bar flex items-stretch gap-1 border-b border-gray-200 bg-white px-2 py-2 text-sm", "admin-bar--dark" => Branding.current.dark_top_bar?) %>
+<% item_classes = "admin-bar__item items-center gap-2 rounded-md px-2.5 hover:bg-sidebar-accent" %>
+<% muted_item_classes = class_names(item_classes, "text-muted-foreground hover:text-foreground") %>
+<% menu_classes = "rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-overlay admin-bar__menu w-56" %>
+<% menu_link_classes = "dropdown-item" %>
+<% bar_classes = class_names("admin-bar flex items-stretch gap-1 border-b border-sidebar-border px-2 py-2 text-sm", "dark" => Branding.current.dark_top_bar?) %>
 <header class="<%= bar_classes %>" id="header">
   <button type="button" class="<%= class_names(muted_item_classes, "admin-bar__drawer-toggle") %>" aria-controls="admin-menu" aria-expanded="false"
     data-admin-menu-target="drawerToggle" data-action="admin-menu#toggleDrawer">
@@ -21,12 +21,12 @@
   <div class="admin-bar__dropdown relative flex">
     <% branding = current_branding %>
     <% site_name = branding[:site_title].presence || Site.key %>
-    <%= link_to dashboard_path, class: class_names(item_classes, "font-semibold text-gray-900"), title: tx("Dashboard (g h)"), data: { keys: "g h" } do %>
+    <%= link_to dashboard_path, class: class_names(item_classes, "font-semibold text-foreground"), title: tx("Dashboard (g h)"), data: { keys: "g h" } do %>
       <% if branding[:logo_url_small].present? %>
         <%# Settings › Branding's logo, as tall as the bar and as wide as it is. %>
         <%= image_tag branding[:logo_url_small], alt: site_name, class: "admin-bar__logo" %>
       <% else %>
-        <span class="flex h-7 w-7 items-center justify-center rounded-md bg-blue-600 text-on-accent"><%= icon_tag "home", class: "size-4" %></span>
+        <span class="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground"><%= icon_tag "home", class: "size-4" %></span>
         <span class="admin-bar__label"><%= site_name %></span>
       <% end %>
     <% end %>
@@ -53,7 +53,7 @@
   <% end %>
 
   <% if UpdateCheck.update_available? && Current.user.can?("settings:read") %>
-    <%= link_to settings_updates_path, class: class_names(item_classes, "admin-bar__update font-medium text-blue-600"), title: tx("A newer version is available") do %>
+    <%= link_to settings_updates_path, class: class_names(item_classes, "admin-bar__update font-medium text-primary"), title: tx("A newer version is available") do %>
       <%= icon_tag "refresh", class: "size-4" %>
       <span class="admin-bar__label"><%= tx("Version %{version} available", version: UpdateCheck.latest_version) %></span>
     <% end %>
@@ -61,13 +61,13 @@
 
   <% plugin_updates = UpdateCheck::Plugins.available %>
   <% if plugin_updates.any? && Current.user.admin? %>
-    <%= link_to settings_plugins_path, class: class_names(item_classes, "admin-bar__update font-medium text-blue-600"), title: tx("Newer plugin releases are available") do %>
+    <%= link_to settings_plugins_path, class: class_names(item_classes, "admin-bar__update font-medium text-primary"), title: tx("Newer plugin releases are available") do %>
       <%= icon_tag "refresh", class: "size-4" %>
       <span class="admin-bar__label"><%= tx(plugin_updates.size == 1 ? "1 plugin update" : "%{count} plugin updates", count: plugin_updates.size) %></span>
     <% end %>
   <% end %>
 
-  <div class="flex items-center gap-2 px-2 text-gray-500">
+  <div class="flex items-center gap-2 px-2 text-muted-foreground">
     <%= plugin_slots(:nav_actions) %>
   </div>
 
@@ -76,7 +76,7 @@
       <%= render "layouts/shared/nav_filter" %>
     <% end %>
     <%# Opens the search modal (layouts/shared/global_search); a link, so it still goes to Search without it. %>
-    <%= link_to search_path, class: ui(:button, :plain, :icon), title: tx("Search everything (⌘K)"), data: { global_search_open: true } do %>
+    <%= link_to search_path, class: "btn", title: tx("Search everything (⌘K)"), data: {variant: "ghost", size: "icon", global_search_open: true} do %>
       <%= icon_tag "search", class: "size-4" %>
       <span class="sr-only"><%= tx("Search everything") %></span>
     <% end %>
@@ -85,10 +85,10 @@
     <div class="admin-bar__dropdown admin-bar__dropdown--end relative flex">
       <%= link_to settings_profile_path, class: muted_item_classes do %>
         <span class="admin-bar__label"><%= tx("Howdy, %{name}", name: Current.user.name.to_s.split.first.presence || Current.user.email) %></span>
-        <span class="flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 text-gray-600"><%= icon_tag "person", class: "size-4" %></span>
+        <span class="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-muted-foreground"><%= icon_tag "person", class: "size-4" %></span>
       <% end %>
       <ul class="<%= menu_classes %>">
-        <li class="truncate border-b border-gray-100 px-3 pb-2 pt-1.5 text-xs text-gray-500"><%= Current.user.email %></li>
+        <li class="truncate border-b border-border px-3 pb-2 pt-1.5 text-xs text-muted-foreground"><%= Current.user.email %></li>
         <li class="pt-1"><%= link_to tx("Edit profile"), settings_profile_path, class: menu_link_classes %></li>
         <li><%= link_to tx("Settings"), settings_path, class: menu_link_classes, data: { keys: "g s" } %></li>
         <li><%= button_to tx("Sign out"), session_path(Current.session), method: :delete, class: menu_link_classes, form_class: "contents" %></li>

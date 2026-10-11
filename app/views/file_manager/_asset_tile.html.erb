@@ -6,12 +6,12 @@
 <div id="<%= dom_id(asset) %>" class="media-tile relative min-w-0" data-filter-target="item">
   <%= link_to file_manager_asset_path(asset), class: "flex flex-col gap-2 rounded-lg text-left outline-none", title: asset.title,
         data: { turbo_frame: "asset_details", action: "dialog#open" } do %>
-    <span class="media-thumb flex aspect-square w-full items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-gray-50 text-gray-400">
+    <span class="media-thumb flex aspect-square w-full items-center justify-center overflow-hidden rounded-lg border border-border bg-muted text-muted-foreground">
       <%= asset_thumbnail asset, size: 320 %>
     </span>
     <span class="flex min-w-0 flex-col gap-0.5 px-0.5">
-      <span class="truncate text-sm font-medium text-gray-900"><%= asset.title %></span>
-      <span class="truncate text-xs text-gray-500"><%= asset_meta(asset) %></span>
+      <span class="truncate text-sm font-medium text-foreground"><%= asset.title %></span>
+      <span class="truncate text-xs text-muted-foreground"><%= asset_meta(asset) %></span>
     </span>
   <% end %>
   <% if selectable %>

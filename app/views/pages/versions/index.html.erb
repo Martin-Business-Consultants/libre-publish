@@ -1,7 +1,7 @@
 <% @page_title = "Revisions" %>
 <%= parent_page @page.title, edit_page_path(@page.path) %>
 <% content_for :page_actions do %>
-  <%= link_to "Back to the page", edit_page_path(@page.path), class: ui(:button) %>
+  <%= link_to "Back to the page", edit_page_path(@page.path), class: "btn", data: {variant: "outline"} %>
 <% end %>
 <%= render "layouts/shared/page_header", title: "Revisions of “" + @page.title + "”" %>
 <%= render "versions/list", versions: @versions, pagination: @pagination, show_path: ->(version) { page_version_path(@page.path, version) } %>

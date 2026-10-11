@@ -6,36 +6,36 @@
     itself (refresh), and stops once the server leaves the controller off. %>
 <%= tag.div class: "space-y-6", data: ({ controller: "refresh", refresh_interval_value: 5 } if @change) do %>
   <% if @change %>
-    <section class="<%= ui(:panel, "space-y-2 p-6") %>">
-      <h2 class="<%= ui(:heading) %>"><%= @change.summary %></h2>
-      <p class="text-sm text-gray-700">
+    <section class="card space-y-2 p-6">
+      <h2 class="text-base font-semibold text-foreground"><%= @change.summary %></h2>
+      <p class="text-sm text-foreground">
         Started <%= time_ago_tag @change.created_at %><% if @change.requested_by %> by <%= @change.requested_by.name.presence || @change.requested_by.email %><% end %>.
         The CMS restarts when it’s in place, which takes a few seconds. This page checks every few seconds.
       </p>
     </section>
   <% end %>
 
-  <section class="<%= ui(:panel, "p-6") %>">
-    <p class="text-sm text-gray-500">
+  <section class="card p-6">
+    <p class="text-sm text-muted-foreground">
       What this install adds to the core. Bundled plugins ship with the CMS; installed ones were added below, or with
       <code>CMS_PLUGINS</code> or <code>bin/rails "plugins:install[…]"</code>. A plugin starts off: switch it on here.
       Switching one off hides it and keeps its data.
     </p>
 
     <% if @plugins.any? %>
-      <ul class="mt-4 divide-y divide-gray-100 border-t border-gray-100">
+      <ul class="mt-4 divide-y divide-border border-t border-border">
         <% @plugins.each do |plugin| %>
           <%# herb:key plugin.key %>
           <%= render "settings/plugins/plugin", plugin: plugin %>
         <% end %>
       </ul>
     <% else %>
-      <p class="py-12 text-center text-sm text-gray-500">No plugins are installed.</p>
+      <p class="py-12 text-center text-sm text-muted-foreground">No plugins are installed.</p>
     <% end %>
 
     <% InstalledPlugins.absorbed.each_key do |name| %>
       <%# herb:key name %>
-      <p class="mt-3 text-xs text-gray-500"><strong><%= name %></strong> is part of the CMS since <%= InstalledPlugins::ABSORBED[name] %>, so its plugin isn’t loaded. It can be removed.</p>
+      <p class="mt-3 text-xs text-muted-foreground"><strong><%= name %></strong> is part of the CMS since <%= InstalledPlugins::ABSORBED[name] %>, so its plugin isn’t loaded. It can be removed.</p>
     <% end %>
     <% InstalledPlugins.failed.each do |name, error| %>
       <%# herb:key name %>
@@ -46,9 +46,9 @@
   <% if Current.user.admin? %>
     <%= render "settings/plugins/directory", entries: @directory, kind: "plugin" %>
 
-    <section class="<%= ui(:panel, "space-y-3 p-6") %>">
-      <h2 class="<%= ui(:heading) %>">Or any plugin, by its repository</h2>
-      <p class="text-sm text-gray-500">
+    <section class="card space-y-3 p-6">
+      <h2 class="text-base font-semibold text-foreground">Or any plugin, by its repository</h2>
+      <p class="text-sm text-muted-foreground">
         Its GitHub repository: the CMS installs its latest release on this server, where it stays through deploys
         and updates, and restarts. One the directory doesn’t list hasn’t been reviewed: install only code you trust,
         since a plugin runs with the CMS’s full access.
@@ -56,28 +56,28 @@
       <%= form_with url: settings_plugins_installations_path, class: "flex flex-wrap gap-2" do |form| %>
         <%= form.text_field :repo, class: "min-w-0 flex-1", placeholder: "owner/cms-thing", autocomplete: "off", required: true,
               aria: { label: "GitHub repository" } %>
-        <button type="submit" class="<%= ui(:button, :primary) %>">Install</button>
+        <button type="submit" class="btn">Install</button>
       <% end %>
     </section>
   <% end %>
 
   <% if @changes.any? %>
-    <section class="<%= ui(:panel, "space-y-3 p-6") %>">
+    <section class="card space-y-3 p-6">
       <div class="flex flex-wrap items-center justify-between gap-2">
-        <h2 class="<%= ui(:heading) %>">Recent changes</h2>
+        <h2 class="text-base font-semibold text-foreground">Recent changes</h2>
         <% if Current.user.admin? && @changes.any?(&:failed?) %>
-          <%= button_to "Clear failed updates", settings_plugins_failures_path, method: :delete, class: ui(:button, :small),
+          <%= button_to "Clear failed updates", settings_plugins_failures_path, method: :delete, class: "btn", data: {variant: "outline", size: "sm"},
                 form: { data: { turbo_confirm: "Clear the failed changes from this list?" } } %>
         <% end %>
       </div>
-      <ul class="divide-y divide-gray-100">
+      <ul class="divide-y divide-border">
         <% @changes.each do |change| %>
           <%# herb:key change.id %>
           <li class="space-y-1 py-2.5 text-sm">
             <div class="flex flex-wrap items-center gap-2">
-              <span class="font-medium text-gray-900"><%= change.summary %></span>
+              <span class="font-medium text-foreground"><%= change.summary %></span>
               <%= status_tag change.status %>
-              <span class="text-xs text-gray-500"><%= time_ago_tag change.created_at %><% if change.requested_by %> · <%= change.requested_by.email %><% end %></span>
+              <span class="text-xs text-muted-foreground"><%= time_ago_tag change.created_at %><% if change.requested_by %> · <%= change.requested_by.email %><% end %></span>
             </div>
             <% if change.message.present? %>
               <pre class="<%= settings_code_classes("text-xs") %>"><code><%= change.message %></code></pre>
@@ -89,4 +89,4 @@
   <% end %>
 <% end %>
 
-<p class="text-xs text-gray-500">CMS <%= cms_version %></p>
+<p class="text-xs text-muted-foreground">CMS <%= cms_version %></p>

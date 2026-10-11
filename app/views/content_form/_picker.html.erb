@@ -14,7 +14,7 @@
   <input type="search" class="w-full" value="<%= label %>" placeholder="Search…" autocomplete="off" hidden
          aria-label="<%= aria_label || "Search" %>" aria-autocomplete="list"
          data-picker-target="query" data-action="input->picker#search focus->picker#open change->picker#clear">
-  <div class="<%= ui(:menu, "absolute left-0 right-0 top-full z-10 mt-1 max-h-72 overflow-y-auto") %>" data-picker-target="results" hidden>
+  <div class="rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-overlay absolute left-0 right-0 top-full z-10 mt-1 max-h-72 overflow-y-auto" data-picker-target="results" hidden>
     <turbo-frame id="<%= frame_id %>" data-picker-target="frame"></turbo-frame>
   </div>
 </div>

@@ -15,7 +15,7 @@
     <%= render "content_form/repeater_item", field: field, item: {}, scope: scope[token], depth: depth, index: nil %>
   </template>
   <div>
-    <button type="button" class="<%= ui(:button, :small) %>" data-action="sortable-list#add">
+    <button type="button" class="btn" data-variant="outline" data-size="sm" data-action="sortable-list#add">
       <%= icon_tag "add" %>
       <span>Add <%= content_field_label(field).singularize.downcase %></span>
     </button>

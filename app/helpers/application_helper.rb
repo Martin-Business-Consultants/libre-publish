@@ -3,6 +3,15 @@
 module ApplicationHelper
   UTILITIES_STYLESHEET = "utilities"
 
+  # shadcn-html (vendor/shadcn-html): its tokens, then the stylesheet of
+  # each component the admin draws with, in @layer components.
+  SHADCN_THEME = "theme/default-semantic-tokens"
+  SHADCN_COMPONENTS = %w[
+    alert avatar badge breadcrumb button card checkbox dialog dropdown input label
+    pagination popover radio select separator sheet skeleton spinner switch table
+    tabs textarea tooltip
+  ].freeze
+
   def page_title_tag
     tag.title [(tx(@page_title) if @page_title), current_branding[:site_title].presence || "CMS"].compact.join(" | ")
   end
@@ -11,7 +20,10 @@ module ApplicationHelper
   # Propshaft's :app expansion, so the layout calls this instead. The utility
   # classes (lib/assets/stylesheets/utilities.css, Tailwind's, ours, no
   # build) come first: their @layer statement sets the order the app's
-  # layers join (_global.css).
+  # layers join (_global.css). shadcn-html's theme and components follow,
+  # then the app's own stylesheets, whose _global.css derives the rest of
+  # the tokens from the theme's (and /branding.css, after, points them at
+  # Settings › Branding).
   #
   # A plugin's stylesheets load only where it shows something
   # (page_plugins), each in its own tag, which Turbo adds and drops as pages
@@ -22,6 +34,7 @@ module ApplicationHelper
   def app_stylesheet_tags
     safe_join([
       stylesheet_link_tag(UTILITIES_STYLESHEET, "data-turbo-track": "reload"),
+      stylesheet_link_tag(SHADCN_THEME, *SHADCN_COMPONENTS.map { "components/#{it}/#{it}" }, "data-turbo-track": "reload"),
       stylesheet_link_tag(:app, "data-turbo-track": "reload"),
       *Cms::Plugins.enabled_stylesheets(page_plugins).filter_map { plugin_stylesheet_tag(it) }
     ], "\n")
@@ -71,15 +84,21 @@ module ApplicationHelper
     STATUS_TONES.fetch(label.to_s.downcase) { highlight ? "progress" : "neutral" }
   end
 
-  # The badge color for each tone: green for what's live or done, red for
-  # what failed, yellow for what waits, the accent for what's under way.
-  STATUS_BADGES = {"positive" => :green, "negative" => :red, "waiting" => :yellow, "progress" => :blue, "neutral" => :gray}.freeze
+  # The badge for each tone (shadcn-html's badge): green for what's live or
+  # done, red for what failed, yellow for what waits, the accent for what's
+  # under way, plain for the rest.
+  STATUS_BADGES = {
+    "positive" => "border-green-200 bg-green-50 text-green-700",
+    "negative" => "border-red-200 bg-red-50 text-red-700",
+    "waiting" => "border-yellow-200 bg-yellow-50 text-yellow-800",
+    "progress" => "border-blue-200 bg-blue-50 text-primary"
+  }.freeze
 
   # A status label as a small chip tinted by what it means (data-tone names
   # the meaning).
   def status_tag(label, highlight: false)
     tone = status_tone(label, highlight: highlight)
-    tag.span label, class: ui(:badge, STATUS_BADGES.fetch(tone)), data: {tone: tone}
+    tag.span label, class: class_names("badge", STATUS_BADGES[tone]), data: {variant: (STATUS_BADGES.key?(tone) ? "outline" : "secondary"), tone: tone}
   end
 
   # The site's color and font (Settings › Branding) on top of the app's
@@ -122,7 +141,7 @@ module ApplicationHelper
   # shows as text.
   def external_link(url, text = url, link_class: nil)
     if external_url?(url)
-      link_to text, url.to_s, class: link_class || ui(:link), target: "_blank", rel: "noopener"
+      link_to text, url.to_s, class: link_class || "font-medium text-primary underline underline-offset-2", target: "_blank", rel: "noopener"
     else
       text.to_s
     end
@@ -152,8 +171,8 @@ module ApplicationHelper
       safe_join([
         form.password_field(method, value: form.object.try(method), class: "w-full pr-10 font-mono", autocomplete: "off",
           spellcheck: false, placeholder: placeholder, data: {reveal_target: "input", "1p-ignore": true}, **options),
-        tag.button(type: "button", class: ui(:button, :plain, :icon, "absolute right-0"), title: "Show", aria: {pressed: false},
-          data: {reveal_target: "button", action: "reveal#toggle"}) do
+        tag.button(type: "button", class: "btn absolute right-0", title: "Show", aria: {pressed: false},
+          data: {variant: "ghost", size: "icon", reveal_target: "button", action: "reveal#toggle"}) do
           safe_join([icon_tag("eye", class: "secret-field__show size-4"), icon_tag("eye-off", class: "secret-field__hide size-4"),
             tag.span("Show or hide", class: "sr-only")])
         end

@@ -121,14 +121,14 @@ RSpec.describe "Content screens", type: :request do
       get new_collection_path
 
       expect(response).to have_http_status(:ok)
-      expect(response.body).to include("Posts", "dialog--sheet", 'data-dialog-auto-open-value="true"')
+      expect(response.body).to include("Posts", "class=\"sheet ", 'data-dialog-auto-open-value="true"')
     end
 
     it "reopens the sheet with the errors when a collection can't be created" do
       post collections_path, params: {collection: {name: "", slug: "Nope Nope"}}
 
       expect(response).to have_http_status(:unprocessable_content)
-      expect(response.body).to include("That didn’t work", "dialog--sheet", 'data-dialog-auto-open-value="true"')
+      expect(response.body).to include("That didn’t work", "class=\"sheet ", 'data-dialog-auto-open-value="true"')
     end
 
     # Every template is a real schema, so saving each one unchanged through the
@@ -188,14 +188,14 @@ RSpec.describe "Content screens", type: :request do
       get new_global_path
 
       expect(response).to have_http_status(:ok)
-      expect(response.body).to include("Footer", "dialog--sheet", 'data-dialog-auto-open-value="true"')
+      expect(response.body).to include("Footer", "class=\"sheet ", 'data-dialog-auto-open-value="true"')
     end
 
     it "reopens the sheet with the errors when a create fails" do
       post globals_path, params: {global: {name: "", slug: ""}}
 
       expect(response).to have_http_status(:unprocessable_content)
-      expect(response.body).to include("dialog--sheet", 'data-dialog-auto-open-value="true"')
+      expect(response.body).to include("class=\"sheet ", 'data-dialog-auto-open-value="true"')
     end
 
     it "edits a global's fields" do

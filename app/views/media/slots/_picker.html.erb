@@ -2,13 +2,13 @@
 <%# One picker for every asset field on the page, a sheet from the right. It
     loads the library the first time it opens (a lazy frame) and hands the
     chosen asset to the field that opened it. %>
-<dialog id="asset_picker_dialog" class="<%= ui(:sheet, "dialog--sheet-half") %>"
+<dialog id="asset_picker_dialog" class="sheet sheet--wide gap-6 p-6 text-left"
         aria-label="Choose a file" data-controller="media--asset-picker" closedby="any">
   <header class="flex items-center justify-between gap-4">
-    <h2 class="text-lg font-semibold text-gray-900">Choose a file</h2>
-    <button type="button" class="<%= ui(:button, :small) %>" data-action="media--asset-picker#close">Close</button>
+    <h2 class="text-lg font-semibold text-foreground">Choose a file</h2>
+    <button type="button" class="btn" data-variant="outline" data-size="sm" data-action="media--asset-picker#close">Close</button>
   </header>
   <turbo-frame id="asset_picker" src="<%= asset_picker_path %>" loading="lazy">
-    <p class="text-sm text-gray-500">Loading…</p>
+    <p class="text-sm text-muted-foreground">Loading…</p>
   </turbo-frame>
 </dialog>

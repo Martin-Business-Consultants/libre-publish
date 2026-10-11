@@ -4,17 +4,17 @@
     The trigger is a small secondary button, red when negative; primary: the
     screen's one primary button instead, full size. trigger_class: layout
     classes for the trigger. %>
-<% trigger_style = primary ? [:primary, :regular] : [(negative ? :danger : :secondary), :small] %>
+
 <div class="contents" data-controller="dialog" data-dialog-modal-value="true" data-action="keydown.esc->dialog#close:stop">
-  <button type="button" class="<%= ui(:button, *trigger_style, *trigger_class) %>" data-action="dialog#open"><%= label %></button>
-  <dialog class="<%= ui(:dialog, "dialog dialog--action") %>" data-dialog-target="dialog">
-    <h3 class="text-lg font-semibold text-gray-900"><%= title %></h3>
+  <button type="button" class="<%= class_names("btn", trigger_class, "text-destructive": negative && !primary) %>" data-variant="<%= "outline" unless primary %>" data-size="<%= "sm" unless primary %>" data-action="dialog#open"><%= label %></button>
+  <dialog class="dialog gap-4 p-6 text-left" data-dialog-target="dialog">
+    <h3 class="text-lg font-semibold text-foreground"><%= title %></h3>
     <% if message %>
-      <p class="text-sm text-gray-600"><%= message %></p>
+      <p class="text-sm text-muted-foreground"><%= message %></p>
     <% end %>
     <div class="mt-2 flex justify-end gap-2">
-      <button type="button" class="<%= ui(:button) %>" data-action="dialog#close">Cancel</button>
-      <%= button_to(button || label, path, method: method || :post, params: params || {}, class: ui(:button, negative ? :danger : :primary), data: { turbo_frame: "_top" }) %>
+      <button type="button" class="btn" data-variant="outline" data-action="dialog#close">Cancel</button>
+      <%= button_to(button || label, path, method: method || :post, params: params || {}, class: class_names("btn", "text-destructive": negative), data: { variant: ("outline" if negative), turbo_frame: "_top" }) %>
     </div>
   </dialog>
 </div>

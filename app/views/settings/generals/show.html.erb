@@ -7,10 +7,10 @@
 
 <%= form_with url: settings_general_path, id: "settings_form", method: :patch, scope: :settings do |form| %>
   <%= tag.fieldset class: "space-y-6", disabled: !Current.user.can?("settings:write") do %>
-    <section class="<%= ui(:panel, "space-y-5 p-6") %>">
+    <section class="card space-y-5 p-6">
       <div class="space-y-1">
-        <h2 class="<%= ui(:heading) %>">Identity</h2>
-        <p class="text-sm text-gray-500">Site title and description used as defaults across SEO, headers, and emails.</p>
+        <h2 class="text-base font-semibold text-foreground">Identity</h2>
+        <p class="text-sm text-muted-foreground">Site title and description used as defaults across SEO, headers, and emails.</p>
       </div>
       <%= settings_field "Business name" do %>
         <%= form.text_field :title, value: @settings["title"], class: "w-full" %>
@@ -37,25 +37,25 @@
       <% end %>
     </section>
 
-    <section class="<%= ui(:panel, "space-y-5 p-6") %>" id="serving">
+    <section class="card space-y-5 p-6" id="serving">
       <div class="space-y-1">
-        <h2 class="<%= ui(:heading) %>">How the site is served</h2>
-        <p class="text-sm text-gray-500">Most sites are the theme’s website alone. Serve content as JSON too only when something else reads it: an app, another site, a frontend built elsewhere.</p>
+        <h2 class="text-base font-semibold text-foreground">How the site is served</h2>
+        <p class="text-sm text-muted-foreground">Most sites are the theme’s website alone. Serve content as JSON too only when something else reads it: an app, another site, a frontend built elsewhere.</p>
       </div>
       <div class="flex flex-col gap-5" data-controller="show-if">
         <div data-field-name="serving">
           <%= settings_field "Served as" do %>
             <%= form.select :serving, Serving::MODES.invert.to_a, { selected: @settings["serving"] }, class: "w-full" %>
           <% end %>
-          <ul class="mt-2 flex flex-col gap-1 text-xs text-gray-500">
-            <li><strong class="font-medium text-gray-700">Website</strong>: the theme draws the site. The delivery API (/api/v1) is off.</li>
-            <li><strong class="font-medium text-gray-700">Website + API</strong>: the theme draws the site, and what you choose below is served as JSON too.</li>
-            <li><strong class="font-medium text-gray-700">API only</strong>: a frontend elsewhere draws the site from /api/v1; this address shows a blank page.</li>
+          <ul class="mt-2 flex flex-col gap-1 text-xs text-muted-foreground">
+            <li><strong class="font-medium text-foreground">Website</strong>: the theme draws the site. The delivery API (/api/v1) is off.</li>
+            <li><strong class="font-medium text-foreground">Website + API</strong>: the theme draws the site, and what you choose below is served as JSON too.</li>
+            <li><strong class="font-medium text-foreground">API only</strong>: a frontend elsewhere draws the site from /api/v1; this address shows a blank page.</li>
           </ul>
         </div>
         <div class="flex flex-col gap-3" data-show-if='{"field":"serving","equals":"website_api"}'>
-          <p class="<%= ui(:label) %>">Served over the API</p>
-          <label class="flex items-center gap-2 text-sm text-gray-700">
+          <p class="label">Served over the API</p>
+          <label class="flex items-center gap-2 text-sm text-foreground">
             <%= hidden_field_tag "settings[api_pages]", "0", id: nil %>
             <%= check_box_tag "settings[api_pages]", "1", @settings["api_pages"], id: nil %>
             <span>Pages, with the globals (navigation, footer)</span>
@@ -63,7 +63,7 @@
           <%= hidden_field_tag "settings[api_collections][]", "", id: nil %>
           <% @collections.each do |collection| %>
             <%# herb:key collection.id %>
-            <label class="flex items-center gap-2 text-sm text-gray-700">
+            <label class="flex items-center gap-2 text-sm text-foreground">
               <%= check_box_tag "settings[api_collections][]", collection.slug, collection.api_enabled?, id: nil %>
               <span><%= collection.name %></span>
             </label>
@@ -71,7 +71,7 @@
         </div>
       </div>
       <% if @tokens_reading.any? then %>
-        <div class="<%= ui(:notice, :yellow, "flex-col items-start") %>">
+        <div class="alert border-yellow-200 bg-yellow-50 text-yellow-800 flex-col items-start">
           <p>These machine tokens read the site in the last 30 days. Choosing <strong>Website</strong> turns the API off, and they’d get nothing:</p>
           <ul class="list-disc pl-5">
             <% @tokens_reading.each do |token| %>
@@ -83,10 +83,10 @@
       <% end %>
     </section>
 
-    <section class="<%= ui(:panel, "space-y-5 p-6") %>">
+    <section class="card space-y-5 p-6">
       <div class="space-y-1">
-        <h2 class="<%= ui(:heading) %>">Contact</h2>
-        <p class="text-sm text-gray-500">Surfaces on the public site footer, contact pages, and SEO structured data.</p>
+        <h2 class="text-base font-semibold text-foreground">Contact</h2>
+        <p class="text-sm text-muted-foreground">Surfaces on the public site footer, contact pages, and SEO structured data.</p>
       </div>
       <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <%= settings_field "Phone" do %>

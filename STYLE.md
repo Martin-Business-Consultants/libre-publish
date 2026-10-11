@@ -200,17 +200,60 @@ ERB with Herb/ReActionView, Stimulus and Turbo, no build step.
 `bundle exec herb lint app/views engines` must pass. Every partial declares
 strict locals; no ERB output in attribute names; no inline styles.
 
-### Styling: utility classes, our own
+### Styling: shadcn-html, with utility classes for layout
 
-The admin is styled with Tailwind's utility classes in the markup, from our
-own stylesheet, `lib/assets/stylesheets/utilities.css`: Tailwind v4's
-definitions (MIT) of exactly the classes the admin uses, with its theme
-variables and preflight, loaded first by `app_stylesheet_tags`. No build
-step: it's served as written, and a class the markup needs is added to it by
-hand. The look is the admin's classic one (Fizzy's): ink grays, a gray menu
-and admin bar, hairlines, 3px corners, semibold controls, the accent in blue
-until the branding sets a primary color.
+The admin is drawn with [shadcn-html](https://shadcn-html.com)
+(`vendor/shadcn-html`, its README says where it came from): shadcn's look
+as plain HTML and CSS, one stylesheet per component and a theme of tokens.
+Layout, spacing and type are Tailwind's utility classes, from our own
+stylesheet, `lib/assets/stylesheets/utilities.css` (Tailwind v4's
+definitions, MIT, of exactly the classes the admin uses, with its theme
+variables and preflight). No build step: everything is served as written,
+`app_stylesheet_tags` loads the utilities, shadcn-html's theme and the
+components listed in `ApplicationHelper::SHADCN_COMPONENTS`, then the app's
+stylesheets.
 
+- **Components are shadcn-html's markup.** Each one's
+  `vendor/shadcn-html/components/<name>/component-skill.md` gives its
+  structure, variants and ARIA. A class names the component, attributes its
+  variant and size:
+  - buttons `class="btn"` (primary) with `data-variant="outline"` (secondary),
+    `"ghost"`, `"destructive"`, and `data-size="sm"` or `"icon"`; a
+    `button_to`/`link_to` takes `class: "btn", data: {variant: "outline"}`.
+    A red outlined button (Delete) is `btn text-destructive` with
+    `data-variant="outline"`.
+  - `card` for a panel (its padding is the markup's: `card p-6`), `badge`
+    (`data-variant="secondary"`, or `"outline"` with a status color), `alert`
+    (`data-variant="destructive"`), `table` with `table-row`, `table-head`
+    and `table-cell`, `label`, `dropdown-item` in a menu, `switch` on a
+    checkbox (`role="switch"`).
+  - Modals are `<dialog class="dialog">` (a box in the middle) and
+    `<dialog class="sheet">` (from the right; `sheet--wide` for half the
+    screen), opened by `dialog_controller`; their padding and gap are the
+    markup's (`dialog gap-4 p-6`). dialog.css has the rest.
+  - A menu that isn't a popover (the admin bar's, a field's results) draws
+    as shadcn's dropdown with classes: `rounded-lg border border-border
+    bg-popover p-1 text-popover-foreground shadow-overlay`, items
+    `dropdown-item`. shadcn-html's `.dropdown-content` is for a `popover`.
+  - Native fields (`<input>`, `<select>`, `<textarea>`) take shadcn's input
+    look from `base.css` without a class, so a field's width and height are
+    its layout classes'.
+  - shadcn-html's JavaScript isn't used: behaviour is Stimulus's, on the
+    same markup (most of it is native: `<dialog>`, `popover`, `<details>`).
+  - What the admin changes about a component is in `shadcn.css`;
+    `vendor/shadcn-html` stays as published.
+- **Colors are shadcn's semantic ones**, as its Tailwind setup names them
+  (`tailwind-extras.css`): `bg-background`, `bg-card`, `bg-muted`,
+  `bg-accent`, `bg-primary`, `text-foreground`, `text-muted-foreground`,
+  `text-primary`, `text-primary-foreground`, `text-destructive`,
+  `border-border`, `border-input`, `divide-border`, `hover:bg-muted`,
+  `hover:bg-accent`; the admin menu and bar use the `sidebar` ones. They
+  follow Settings › Branding and the dark theme by themselves, so there's no
+  `dark:` variant. `red`, `green` and `yellow` are for status (`bg-green-50
+  text-green-700`). The utilities' `gray` and `blue` families still work,
+  derived from the tokens (`_global.css`: grays mix `--foreground` into
+  `--background`, blues mix `--primary`), for plugins written before; new
+  markup uses the semantic names. No other family, no `black`, no hex.
 - **Classes, not stylesheets, say how a thing looks.** Spacing, type, color,
   borders, corners and shadows go in `class`. `app/assets/stylesheets` holds
   only what classes can't say: state the markup doesn't carry (`:hover` on a
@@ -219,61 +262,40 @@ until the branding sets a primary color.
   variable, animations, dialogs), third-party DOM (Lexxy), element
   defaults (`base.css`: native form controls, focus rings) and the tokens
   (`_global.css`). Those rules hang on a BEM hook (`admin-menu__submenu`) and
-  read the tokens (`var(--color-gray-200)`, `var(--radius-lg)`).
-- **Repeated pieces come from `UiHelper#ui`**: `ui(:button)`,
-  `ui(:button, :primary)`, `ui(:button, :plain, :small)`, `ui(:button, :danger)`
-  (outlined) and `ui(:button, :destructive)` (filled, for the confirming
-  button in a delete dialog), `ui(:panel)`, `ui(:dialog)` (on a
-  `<dialog class="dialog …">`, dialog.css), `ui(:sheet)` (a `<dialog>` that
-  slides in from the right; it carries its hooks),
-  `ui(:menu)`, `ui(:menu_item)`, `ui(:badge, :green)`, `ui(:notice, :red)`,
-  `ui(:page_title)`, `ui(:heading)`, `ui(:label)`, `ui(:help)`, `ui(:link)`,
-  `ui(:table)`, `ui(:th)`, `ui(:td)`. Add layout as a string,
-  `ui(:button, :small, "w-full")`, never a class the recipe already sets a
-  property for (no `items-center` beside a recipe's `items-start`).
-- **Only the classes in `utilities.css` exist.** A class the markup needs
-  that isn't there is added to it under Tailwind's name and definition
-  (`tailwind-extras.css` holds the app's own few). No `dark:` variant: the
-  dark theme re-points the tokens instead.
+  read the tokens (`var(--border)`, `var(--radius-lg)`).
+- **Only the classes that exist.** A class the markup needs is one of
+  shadcn-html's components, one `utilities.css` has, or one added under
+  Tailwind's name and definition to `tailwind-extras.css`.
   `spec/architecture/utility_classes_spec.rb` fails on a class nothing
   defines and on two classes that set the same property on one element;
   in specs, `ui` and `class_names` raise on the second (`spec/support/utility_classes.rb`).
   Class lists kept in a variable are named `*_classes` so the spec reads them.
 - **Everything respects Settings › Branding's color, type and surface.**
-  Markup draws only with tokens the branding sets (`_global.css`,
-  `Branding#stylesheet`), so a workspace's branding reaches every screen:
-  - *Color*: two families mean something. `gray` is the neutral, every step
-    mixed from `--neutral-tint` (the secondary color tints it, faintly).
-    `blue` is the accent, read from `--accent-*`: the primary color, or an
-    blue until one is set. Use blue for primary buttons, links, focus,
-    selection and what's current. `red`, `green` and `yellow` are for status.
-    There's no `dark:` variant, so the dark theme re-points these families'
-    steps: write the light theme's classes and the dark one follows. No
-    other family, no `black`, no hex. Words on a `bg-blue-*` fill are
-    `text-on-accent`.
-  - *Type*: `--font-sans`, the branding's font. Don't set another family
-    (`font-mono` for code is fine).
-  - *Surface*: corners are `rounded-sm|md|lg|xl` (and `-t-`, `-b-`… with a
-    size), which the branding's corners set; never bare `rounded`. Shadows
-    are `shadow-surface` (panels) and `shadow-overlay` (menus, dialogs,
-    sheets, toasts), which its shadow sets; never `shadow-sm|lg|xl`.
-  CSS follows the same rule (`var(--color-gray-200)`, `var(--radius-lg)`,
-  `var(--shadow-overlay)`). The classes spec fails on a class that bypasses
-  a token.
+  `/branding.css` (`Branding#stylesheet`) points shadcn-html's tokens at it:
+  `--primary` and `--ring` at the primary color, the neutral surfaces tinted
+  by the secondary, `--font-sans`, `--radius` and its steps, and the two
+  shadows. Corners are `rounded-sm|md|lg|xl` (never bare `rounded`), shadows
+  `shadow-surface` (cards) and `shadow-overlay` (menus, dialogs, sheets,
+  toasts), never `shadow-sm|lg|xl`. The classes spec fails on a class that
+  bypasses a token.
+- **Dark** is shadcn-html's `.dark` on `<html>`, which
+  `layouts/_theme_preference` keeps in step with the person's choice (or the
+  system's); `.dark` on an element darkens just it (the admin bar Branding
+  makes dark).
 - **Don't put a display utility on something a stylesheet shows and hides**
   (`flex`, `hidden`, `block` beat a component rule's `display: none`): let
   the stylesheet set its display.
-- **Which corner where**: `rounded-md` for controls (buttons, inputs, menu
-  items), `rounded-lg` for notices, `rounded-xl` for panels, menus and
-  dialogs, `rounded-sm` for badges, `rounded-full` only for true circles.
 - **Hooks**: keep a BEM class only while a stylesheet, JavaScript or a spec
   reads it; the classes spec reports one nothing reads.
+- `ui(...)` (`UiHelper`) is the class recipes the admin used before
+  shadcn-html, kept for plugins written against them. The core doesn't call it.
 - Mailers keep their own inline styles: email clients don't load the admin's.
 
 Screens follow WordPress's admin conventions:
 
-- One primary action per screen, `ui(:button, :primary)`; everything else
-  is a secondary, outlined `ui(:button)`. A title row's "Add New" is secondary.
+- One primary action per screen, `class="btn"`; everything else is a
+  secondary, `class="btn" data-variant="outline"`. A title row's "Add New"
+  is secondary.
 - Editors (pages, entries, globals) put the title and permalink first and
   the content in the main column, with a sidebar of boxes
   (`content_form_helper#postbox`) led by the Publish box

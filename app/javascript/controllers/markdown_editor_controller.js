@@ -14,7 +14,7 @@ export default class extends Controller {
   }
 
   async preview() {
-    this.outputTarget.innerHTML = "<p class=\"text-gray-500\">Rendering…</p>"
+    this.outputTarget.innerHTML = "<p class=\"text-muted-foreground\">Rendering…</p>"
     this.#show(true)
     const response = await post(this.urlValue, { body: { text: this.inputTarget.value }, responseKind: "html" })
     this.outputTarget.innerHTML = response.ok ? await response.text : "<p class=\"text-red-600\">The preview couldn’t be drawn.</p>"

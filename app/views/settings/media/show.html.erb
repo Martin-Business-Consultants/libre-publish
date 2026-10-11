@@ -8,10 +8,10 @@
 
 <%= form_with url: settings_media_path, id: "media_form", method: :patch, scope: :media do |form| %>
   <%= tag.fieldset class: "space-y-6", disabled: !can_write do %>
-    <section class="<%= ui(:panel, "space-y-5 p-6") %>">
+    <section class="card space-y-5 p-6">
       <div class="space-y-1">
-        <h2 class="<%= ui(:heading) %>">Image limits</h2>
-        <p class="text-sm text-gray-500">How heavy an image on the website may be. Heavy images make pages slow, most of all on phones. A JPEG, PNG or WebP over either limit is made a lighter WebP within them; its original is kept, to restore from its details. GIFs and SVGs are left as they are.</p>
+        <h2 class="text-base font-semibold text-foreground">Image limits</h2>
+        <p class="text-sm text-muted-foreground">How heavy an image on the website may be. Heavy images make pages slow, most of all on phones. A JPEG, PNG or WebP over either limit is made a lighter WebP within them; its original is kept, to restore from its details. GIFs and SVGs are left as they are.</p>
       </div>
       <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <%= settings_field "Largest file (KB)", hint: "#{ImageLimits::DEFAULT_MAX_KB} KB suits most sites; 1000 KB is 1 MB." do %>
@@ -27,10 +27,10 @@
   <% end %>
 <% end %>
 
-<section class="<%= ui(:panel, "mt-6 flex flex-wrap items-center justify-between gap-3 p-6") %>">
+<section class="card mt-6 flex flex-wrap items-center justify-between gap-3 p-6">
   <div class="space-y-1">
-    <h2 class="<%= ui(:heading) %>">Images already in the library</h2>
-    <p class="text-sm text-gray-500">
+    <h2 class="text-base font-semibold text-foreground">Images already in the library</h2>
+    <p class="text-sm text-muted-foreground">
       <% if @over.zero? then %>
         Every image is within the limits.
       <% else %>
@@ -38,5 +38,5 @@
       <% end %>
     </p>
   </div>
-  <%= link_to "Open the Media Library", file_manager_path, class: ui(:button) unless @over.zero? %>
+  <%= link_to "Open the Media Library", file_manager_path, class: "btn", data: {variant: "outline"} unless @over.zero? %>
 </section>

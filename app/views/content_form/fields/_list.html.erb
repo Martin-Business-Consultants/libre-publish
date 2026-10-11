@@ -24,9 +24,9 @@
             url: content_picker_path(kind: "entries", collection: collection), label: "",
             placeholder: "Add an entry…", aria_label: "Add an entry", extra_class: "flex-1" %>
     <% elsif refs %>
-      <span class="<%= ui(:help) %>">No collection is set for this field (of_collection).</span>
+      <span class="text-sm text-muted-foreground">No collection is set for this field (of_collection).</span>
     <% else %>
-      <button type="button" class="<%= ui(:button, :small) %>" data-action="sortable-list#add">
+      <button type="button" class="btn" data-variant="outline" data-size="sm" data-action="sortable-list#add">
         <%= icon_tag "add" %>
         <span>Add</span>
       </button>

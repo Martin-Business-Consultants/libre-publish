@@ -92,7 +92,7 @@ RSpec.describe "Tools › Redirects", type: :request do
       expect(response.body).to include('data-dialog-auto-open-value="true"', "Edit redirect", "Last hit")
 
       get tools_redirects_path
-      expect(response.body).to include('data-turbo-frame="redirect_sheet"', "dialog--sheet")
+      expect(response.body).to include('data-turbo-frame="redirect_sheet"', "class=\"sheet ")
     end
 
     it "reopens the sheet when a save is refused" do

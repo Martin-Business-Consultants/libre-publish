@@ -1,19 +1,19 @@
 <% @page_title = "Docs" %>
 <%= render "layouts/shared/page_header", title: "Docs", icon: "help-circle" %>
 
-<% card_classes = ui(:panel, "flex flex-col gap-1.5 p-5 hover:border-gray-300 hover:bg-gray-50") %>
+<% card_classes = "card flex flex-col gap-1.5 p-5 hover:border-input hover:bg-muted" %>
 <div class="grid items-start gap-6 lg:grid-cols-3">
   <div class="grid gap-4 sm:grid-cols-2 lg:col-span-2">
     <% @guides.each do |guide| %>
       <%# herb:key guide.slug %>
       <%= link_to doc_path(guide.slug), class: card_classes do %>
-        <strong class="<%= ui(:heading) %>"><%= guide.title %></strong>
-        <span class="text-sm text-gray-500"><%= guide.summary %></span>
+        <strong class="text-base font-semibold text-foreground"><%= guide.title %></strong>
+        <span class="text-sm text-muted-foreground"><%= guide.summary %></span>
       <% end %>
     <% end %>
     <%= link_to site_health_docs_path, class: card_classes do %>
-      <strong class="<%= ui(:heading) %>">Site health</strong>
-      <span class="text-sm text-gray-500">
+      <strong class="text-base font-semibold text-foreground">Site health</strong>
+      <span class="text-sm text-muted-foreground">
         The details a site needs in good order — NAP, tracking, spam protection, search. <%= @health[:passing] %> of <%= @health[:total] %> pass.
       </span>
     <% end %>

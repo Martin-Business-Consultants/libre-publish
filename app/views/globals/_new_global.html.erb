@@ -4,35 +4,35 @@
     /globals/new (the menus link there) and when a submit came back with
     errors. %>
 <div class="contents" data-controller="dialog" data-dialog-modal-value="true" data-dialog-auto-open-value="<%= open %>" data-action="keydown.esc->dialog#close:stop">
-  <button type="button" class="<%= ui(:button) %>" data-keys="n" data-action="dialog#open">
+  <button type="button" class="btn" data-variant="outline" data-keys="n" data-action="dialog#open">
     <%= icon_tag "add", class: "size-4" %>
     <span class="truncate">New global</span>
     <kbd class="hidden md:inline">N</kbd>
   </button>
-  <dialog class="<%= ui(:sheet) %>" data-dialog-target="dialog" aria-label="New global" closedby="any">
-    <h2 class="text-lg font-semibold text-gray-900">New global</h2>
+  <dialog class="sheet gap-6 p-6 text-left" data-dialog-target="dialog" aria-label="New global" closedby="any">
+    <h2 class="text-lg font-semibold text-foreground">New global</h2>
     <%= render "layouts/shared/errors", record: global %>
     <%= form_with model: global, url: globals_path, class: "flex flex-col gap-5", data: { controller: "slug", slug_separator_value: "_" } do |form| %>
       <label class="flex flex-col gap-1.5">
-        <span class="<%= ui(:label) %>">Name</span>
+        <span class="label">Name</span>
         <%= form.text_field :name, class: "w-full", placeholder: "General", autocomplete: "off", data: { slug_target: "source", action: "slug#fill" } %>
       </label>
       <label class="flex flex-col gap-1.5">
-        <span class="<%= ui(:label) %>">Slug</span>
+        <span class="label">Slug</span>
         <%= form.text_field :slug, class: "w-full font-mono", placeholder: "general", autocomplete: "off", spellcheck: false, data: { slug_target: "slug", action: "slug#take" } %>
-        <span class="<%= ui(:help) %>">How the site and the API name it. It can’t change later.</span>
+        <span class="text-sm text-muted-foreground">How the site and the API name it. It can’t change later.</span>
       </label>
       <label class="flex flex-col gap-1.5">
-        <span class="<%= ui(:label) %>">Description <span class="font-normal text-gray-500">(optional)</span></span>
+        <span class="label">Description <span class="font-normal text-muted-foreground">(optional)</span></span>
         <%= form.text_area :description, rows: 2, class: "w-full" %>
       </label>
       <label class="flex flex-col gap-1.5">
-        <span class="<%= ui(:label) %>">Icon <span class="font-normal text-gray-500">(optional)</span></span>
+        <span class="label">Icon <span class="font-normal text-muted-foreground">(optional)</span></span>
         <%= form.text_field :icon, class: "w-full", placeholder: "Globe", autocomplete: "off" %>
       </label>
       <div class="dialog__actions flex justify-end gap-2">
-        <button type="button" class="<%= ui(:button) %>" data-action="dialog#close">Cancel</button>
-        <%= form.button "Create global", class: ui(:button, :primary) %>
+        <button type="button" class="btn" data-variant="outline" data-action="dialog#close">Cancel</button>
+        <%= form.button "Create global", class: "btn" %>
       </div>
     <% end %>
   </dialog>

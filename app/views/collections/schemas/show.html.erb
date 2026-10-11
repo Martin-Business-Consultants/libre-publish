@@ -5,9 +5,9 @@
 <% card_candidates = @collection.fields.select { Collection::BUILD_INLINE_TYPES.include?(it["type"]) && it["name"] != settings["field"] } %>
 
 <% content_for :page_actions do %>
-  <%= link_to "Entries", collection_entries_path(@collection.slug), class: ui(:button) %>
+  <%= link_to "Entries", collection_entries_path(@collection.slug), class: "btn", data: {variant: "outline"} %>
   <% if @collection.build_board? %>
-    <%= link_to "Build", build_collection_entries_path(@collection.slug), class: ui(:button) %>
+    <%= link_to "Build", build_collection_entries_path(@collection.slug), class: "btn", data: {variant: "outline"} %>
   <% end %>
 <% end %>
 <%= render "layouts/shared/page_header", title: @page_title %>
@@ -15,19 +15,19 @@
 <%= render "layouts/shared/errors", record: @collection %>
 
 <% panel_classes = "flex flex-col gap-4 p-5" %>
-<% check_classes = "flex items-center gap-2 text-sm text-gray-700" %>
+<% check_classes = "flex items-center gap-2 text-sm text-foreground" %>
 <div class="flex flex-col gap-6 lg:flex-row lg:items-start">
   <%= form_with url: collection_schema_path(@collection.slug), method: :patch, id: "collection_schema", class: "flex min-w-0 flex-1 flex-col gap-6" do %>
     <%= render "schemas/editor", fields: @collection.fields, scope: "collection", field_types: Collection::FIELD_TYPES,
           collection_slugs: Collection.where.not(id: @collection.id).order(:slug).pluck(:slug) %>
     <div>
-      <button type="submit" class="<%= ui(:button, :primary) %>">Save schema</button>
+      <button type="submit" class="btn">Save schema</button>
     </div>
   <% end %>
 
   <aside class="flex shrink-0 flex-col gap-4 text-left lg:w-80">
-    <section class="<%= ui(:panel, panel_classes) %>">
-      <h2 class="<%= ui(:heading) %>">Blocks</h2>
+    <section class="card <%= panel_classes %>">
+      <h2 class="text-base font-semibold text-foreground">Blocks</h2>
       <label class="<%= check_classes %>">
         <%= hidden_field_tag "collection[enable_blocks]", "0", id: nil, form: "collection_schema" %>
         <%= check_box_tag "collection[enable_blocks]", "1", @collection.enable_blocks, id: nil, form: "collection_schema" %>
@@ -35,26 +35,26 @@
       </label>
     </section>
 
-    <section class="<%= ui(:panel, panel_classes) %>">
-      <h2 class="<%= ui(:heading) %>">Build board</h2>
-      <p class="<%= ui(:help) %>">Two columns standing for one yes/no field; dragging a card across is the edit. Fields added above can be picked once the schema is saved.</p>
+    <section class="card <%= panel_classes %>">
+      <h2 class="text-base font-semibold text-foreground">Build board</h2>
+      <p class="text-sm text-muted-foreground">Two columns standing for one yes/no field; dragging a card across is the edit. Fields added above can be picked once the schema is saved.</p>
       <label class="flex flex-col gap-1.5">
-        <span class="<%= ui(:label) %>">Column field</span>
+        <span class="label">Column field</span>
         <%= select_tag "collection[build_config][field]", options_for_select(booleans.map { [ field_label_text(it), it["name"] ] }, settings["field"]),
               include_blank: "No board", id: nil, class: "w-full", form: "collection_schema" %>
       </label>
       <div class="flex gap-3">
         <label class="flex min-w-0 flex-1 flex-col gap-1.5">
-          <span class="<%= ui(:label) %>">Left column</span>
+          <span class="label">Left column</span>
           <%= text_field_tag "collection[build_config][off_label]", settings["off_label"], id: nil, class: "w-full", placeholder: "Off", form: "collection_schema" %>
         </label>
         <label class="flex min-w-0 flex-1 flex-col gap-1.5">
-          <span class="<%= ui(:label) %>">Right column</span>
+          <span class="label">Right column</span>
           <%= text_field_tag "collection[build_config][on_label]", settings["on_label"], id: nil, class: "w-full", placeholder: "On", form: "collection_schema" %>
         </label>
       </div>
       <fieldset class="flex flex-col gap-2">
-        <legend class="<%= ui(:label, "mb-2") %>">The right column also</legend>
+        <legend class="label mb-2">The right column also</legend>
         <label class="<%= check_classes %>">
           <%= hidden_field_tag "collection[build_config][also_publish]", "0", id: nil, form: "collection_schema" %>
           <%= check_box_tag "collection[build_config][also_publish]", "1", settings["also_publish"].present?, id: nil, form: "collection_schema" %>
@@ -70,7 +70,7 @@
       </fieldset>
       <% if card_candidates.any? %>
         <fieldset class="flex flex-col gap-2">
-          <legend class="<%= ui(:label, "mb-2") %>">Edit on the card</legend>
+          <legend class="label mb-2">Edit on the card</legend>
           <% card_candidates.each do |field| %>
             <%# herb:key field["name"] %>
             <label class="<%= check_classes %>">
@@ -82,11 +82,11 @@
       <% end %>
     </section>
 
-    <details class="<%= ui(:panel, "p-5") %>">
-      <summary class="<%= ui(:heading) %>">Notifications</summary>
+    <details class="card p-5">
+      <summary class="text-base font-semibold text-foreground">Notifications</summary>
       <div class="mt-4 flex flex-col gap-4">
         <fieldset class="flex flex-col gap-2">
-          <legend class="<%= ui(:label, "mb-2") %>">Email on</legend>
+          <legend class="label mb-2">Email on</legend>
           <%= hidden_field_tag "collection[notification_events][]", "", id: nil, form: "collection_schema" %>
           <% Collection::NOTIFICATION_EVENTS.each do |event| %>
             <%# herb:key event %>
@@ -97,32 +97,32 @@
           <% end %>
         </fieldset>
         <label class="flex flex-col gap-1.5">
-          <span class="<%= ui(:label) %>">Send to</span>
+          <span class="label">Send to</span>
           <%= text_area_tag "collection[notification_emails]", @collection.notification_emails, id: nil, rows: 2, class: "w-full",
                 placeholder: "alice@example.com, bob@example.com", form: "collection_schema" %>
-          <span class="<%= ui(:help) %>">Comma- or newline-separated. Saved with the schema.</span>
+          <span class="text-sm text-muted-foreground">Comma- or newline-separated. Saved with the schema.</span>
         </label>
       </div>
     </details>
 
-    <section class="<%= ui(:panel, panel_classes) %>">
-      <h2 class="<%= ui(:heading) %>">Name and icon</h2>
+    <section class="card <%= panel_classes %>">
+      <h2 class="text-base font-semibold text-foreground">Name and icon</h2>
       <%= form_with model: @collection, url: collection_path(@collection.slug), method: :patch, class: "flex flex-col gap-3" do |form| %>
         <%= form.text_field :name, class: "w-full", autocomplete: "off", aria: { label: "Name" } %>
         <div class="flex items-center gap-2">
-          <%= icon_tag @collection.admin_icon, class: "size-5 text-gray-500" %>
+          <%= icon_tag @collection.admin_icon, class: "size-5 text-muted-foreground" %>
           <%= form.select :icon, Collection::Iconic.options, { include_blank: "No icon (stack)" }, class: "min-w-0 flex-1", aria: { label: "Icon" } %>
         </div>
         <% if Serving.mode == "website_api" then %>
           <%# Website + API (Serving): this collection's entries as JSON too, or not. %>
-          <label class="flex items-center gap-2 text-sm text-gray-700">
+          <label class="flex items-center gap-2 text-sm text-foreground">
             <%= form.check_box :api_enabled %>
             <span>Available over the API</span>
           </label>
         <% end %>
-        <div><%= form.button "Save", class: ui(:button, :small) %></div>
+        <div><%= form.button "Save", class: "btn", data: {variant: "outline", size: "sm"} %></div>
       <% end %>
-      <p class="<%= ui(:help) %>">Slug: <span class="font-mono"><%= @collection.slug %></span></p>
+      <p class="text-sm text-muted-foreground">Slug: <span class="font-mono"><%= @collection.slug %></span></p>
     </section>
   </aside>
 </div>

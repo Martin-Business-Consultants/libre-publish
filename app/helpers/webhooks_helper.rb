@@ -21,7 +21,7 @@ module WebhooksHelper
     elsif webhook.last_status == "success"
       status_tag "Delivering", highlight: true
     else
-      tag.span "Failing (#{webhook.failure_count})", class: ui(:badge, :red)
+      tag.span "Failing (#{webhook.failure_count})", class: "badge border-red-200 bg-red-50 text-red-700", data: {variant: "outline"}
     end
   end
 end

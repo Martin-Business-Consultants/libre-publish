@@ -14,7 +14,7 @@
 <% if record.persisted? %>
   <%= tag.div data: { controller: ["tabs", ("website-preview" if preview)].compact.join(" "), action: ("tabs:shown->website-preview#shown" if preview),
         website_preview_form_value: ("#{kind}_form" if preview) } do %>
-    <nav class="mb-6 flex gap-1 overflow-x-auto border-b border-gray-200" role="tablist" aria-label="View">
+    <nav class="mb-6 flex gap-1 overflow-x-auto border-b border-border" role="tablist" aria-label="View">
       <a href="#edit" role="tab" class="<%= tab_classes %>" data-tab="edit" data-tabs-target="tab" data-action="tabs#select">Edit</a>
       <% if seo %>
         <a href="#seo" role="tab" class="<%= tab_classes %>" data-tab="seo" data-tabs-target="tab" data-action="tabs#select">
@@ -39,20 +39,20 @@
       <%= yield %>
     </div>
     <% if json then %>
-      <section class="<%= ui(:panel, "p-6") %>" data-tab="json" data-tabs-target="panel" hidden>
+      <section class="card p-6" data-tab="json" data-tabs-target="panel" hidden>
         <turbo-frame id="api_preview" src="<%= api_preview_path(kind, record.id) %>" loading="lazy">
-          <p class="text-sm text-gray-500">Loading…</p>
+          <p class="text-sm text-muted-foreground">Loading…</p>
         </turbo-frame>
       </section>
     <% end %>
     <% if preview %>
       <section class="space-y-3" data-tab="preview" data-tabs-target="panel" hidden>
         <div class="flex flex-wrap items-center justify-between gap-2">
-          <p class="text-sm text-gray-500">The website with what’s in the form now. Click text outlined on hover to change it there, then Save (or ⌘S). Nothing is saved until you do.</p>
+          <p class="text-sm text-muted-foreground">The website with what’s in the form now. Click text outlined on hover to change it there, then Save (or ⌘S). Nothing is saved until you do.</p>
           <div class="flex gap-2">
-            <button type="button" class="<%= ui(:button, :primary, :small) %>" data-website-preview-target="save" data-action="website-preview#save" disabled>Save</button>
-            <button type="button" class="<%= ui(:button, :small) %>" data-action="website-preview#refresh">Refresh</button>
-            <button type="button" class="<%= ui(:button, :small) %>" data-action="website-preview#openTab">Open in a new tab</button>
+            <button type="button" class="btn" data-size="sm" data-website-preview-target="save" data-action="website-preview#save" disabled>Save</button>
+            <button type="button" class="btn" data-variant="outline" data-size="sm" data-action="website-preview#refresh">Refresh</button>
+            <button type="button" class="btn" data-variant="outline" data-size="sm" data-action="website-preview#openTab">Open in a new tab</button>
           </div>
         </div>
         <iframe name="website-preview-<%= record.id %>" class="website-preview__frame" title="Preview" data-website-preview-target="frame"></iframe>

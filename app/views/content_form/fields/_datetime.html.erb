@@ -4,4 +4,4 @@
     and an untouched field saves back what it held. %>
 <%= render "content_form/label", field: field, for_id: scope.dom_id %>
 <%= datetime_local_field_tag scope.name, content_datetime_input(value), id: scope.dom_id, class: "max-w-xs", step: 1, autocomplete: "off" %>
-<span class="<%= ui(:help) %>"><%= Time.zone.tzinfo.name %></span>
+<span class="text-sm text-muted-foreground"><%= Time.zone.tzinfo.name %></span>

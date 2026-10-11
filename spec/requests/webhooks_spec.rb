@@ -23,7 +23,7 @@ RSpec.describe "Webhooks", type: :request do
       webhook = Webhook.create!(name: "n", url: "https://e.com", events: ["page.published"])
 
       get webhooks_url
-      expect(response.body).to include("dialog--sheet-half", 'data-turbo-frame="webhook_sheet"')
+      expect(response.body).to include("sheet--wide", 'data-turbo-frame="webhook_sheet"')
 
       get edit_webhook_url(webhook), headers: {"Turbo-Frame" => "webhook_sheet"}
       expect(response.body).to include('turbo-frame id="webhook_sheet"', "Signing secret", "Recent deliveries")

@@ -146,11 +146,15 @@ JSON, with its signature at the same address plus `.sig`) and
   subclass, so jobs already queued still run.
 - **API responses** are jbuilder views under the plugin's `app/views/api/`;
   a controller renders JSON itself only for an error body. 
-- **Views** follow the core's frontend rules (STYLE.md: the admin's Tailwind
-  classes and the core's `ui(...)` recipes and partials, strict locals, no
-  inline styles); `bin/ci` lints `engines/` with Herb, and the classes spec
-  checks a plugin's views as it does the core's. A plugin's stylesheet holds
-  only what classes can't say.
+- **Views** follow the core's frontend rules (STYLE.md: shadcn-html's
+  components, `class="btn" data-variant="outline"`, `card`, `badge`,
+  `alert`, `table`, with the admin's Tailwind classes and semantic colors for
+  layout, the core's partials, strict locals, no inline styles); `bin/ci`
+  lints `engines/` with Herb, and the classes spec checks a plugin's views as
+  it does the core's. A plugin's stylesheet holds only what classes can't
+  say. `ui(...)`, the class recipes the admin used before shadcn-html, still
+  works, so a plugin written against it draws, in colors that follow the
+  same tokens; new markup uses the components.
 
 ## Registering
 

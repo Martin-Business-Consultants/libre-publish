@@ -10,17 +10,17 @@ and its cms command, for Site health. %>
     <ul class="space-y-4">
       <% in_group.each do |check| %>
         <%# herb:key check.key %>
-        <% tone_classes = check.ok.nil? ? "bg-gray-100 text-gray-500" : (check.ok ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700") %>
+        <% tone_classes = check.ok.nil? ? "bg-muted text-muted-foreground" : (check.ok ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700") %>
         <li class="flex items-start gap-3" id="check_<%= check.key %>">
           <span class="<%= class_names("flex h-6 w-6 shrink-0 items-center justify-center rounded-full", tone_classes) %>" aria-label="<%= check.ok.nil? ? "Check yourself" : (check.ok ? "Passes" : "To do") %>">
             <%= icon_tag(check.ok ? "check" : (check.ok.nil? ? "help-circle" : "close"), class: "size-3") %>
           </span>
           <span class="flex min-w-0 flex-col gap-0.5">
-            <strong class="text-sm font-medium text-gray-900"><%= check.title %></strong>
-            <span class="text-xs text-gray-500"><%= check.detail %></span>
+            <strong class="text-sm font-medium text-foreground"><%= check.title %></strong>
+            <span class="text-xs text-muted-foreground"><%= check.detail %></span>
             <span class="flex flex-wrap items-center gap-2 text-xs">
-              <% if check.href %><%= link_to (check.ok ? "Open" : "Fix it"), check.href, class: ui(:link) %><% end %>
-              <% if check.cli %><code class="rounded-sm bg-gray-100 px-1 py-0.5 font-mono text-gray-700"><%= check.cli %></code><% end %>
+              <% if check.href %><%= link_to (check.ok ? "Open" : "Fix it"), check.href, class: "font-medium text-primary underline underline-offset-2" %><% end %>
+              <% if check.cli %><code class="rounded-sm bg-muted px-1 py-0.5 font-mono text-foreground"><%= check.cli %></code><% end %>
             </span>
           </span>
         </li>

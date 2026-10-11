@@ -164,11 +164,11 @@ module ContentFormHelper
   # Its fields stay in the form when collapsed. flush: a body without padding,
   # for a box that lays out its own rows (the Publish box).
   def postbox(key, title, open: true, klass: nil, flush: false, &block)
-    tag.details(class: class_names("postbox", ui(:panel), klass), open: open,
+    tag.details(class: class_names("postbox card", klass), open: open,
       data: {postbox: key, controller: "postbox", action: "toggle->postbox#remember"}) do
       safe_join([
         tag.summary(class: "postbox__header flex select-none items-center justify-between gap-2 px-5 py-3.5") do
-          safe_join([tag.h2(title.is_a?(String) && !title.html_safe? ? tx(title) : title, class: ui(:heading)), icon_tag("caret-down", class: "postbox__toggle size-4 text-gray-400")])
+          safe_join([tag.h2(title.is_a?(String) && !title.html_safe? ? tx(title) : title, class: "text-base font-semibold text-foreground"), icon_tag("caret-down", class: "postbox__toggle size-4 text-muted-foreground")])
         end,
         tag.div(class: flush ? "text-sm" : "space-y-5 p-5 text-sm", &block)
       ])

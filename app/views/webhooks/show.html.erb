@@ -4,9 +4,9 @@
 <%= render "layouts/shared/page_header", title: @page_title %>
 
 <div class="max-w-4xl space-y-6">
-  <div class="<%= ui(:panel, "space-y-2 p-5") %>">
-    <p class="font-mono text-sm break-all text-gray-900"><%= @webhook.url %></p>
-    <p class="flex flex-wrap items-center gap-2 text-sm text-gray-500"><%= webhook_health(@webhook) %> <span><%= Array(@webhook.events).join(", ") %></span></p>
+  <div class="card space-y-2 p-5">
+    <p class="font-mono text-sm break-all text-foreground"><%= @webhook.url %></p>
+    <p class="flex flex-wrap items-center gap-2 text-sm text-muted-foreground"><%= webhook_health(@webhook) %> <span><%= Array(@webhook.events).join(", ") %></span></p>
   </div>
   <%= render "webhooks/deliveries", deliveries: @deliveries, pagination: @pagination %>
 </div>

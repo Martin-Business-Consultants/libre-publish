@@ -72,4 +72,60 @@
   .hover\:text-blue-600 { &:hover { @media (hover: hover) { color: var(--color-blue-600); } } }
   .hover\:text-blue-700 { &:hover { @media (hover: hover) { color: var(--color-blue-700); } } }
   .hover\:text-red-700 { &:hover { @media (hover: hover) { color: var(--color-red-700); } } }
+
+  /* Passed to ui() as extras before the admin took shadcn-html, where the
+     classes spec didn't see them, so they were never defined. */
+  .self-start { align-self: flex-start; }
+  .right-0 { right: calc(var(--spacing) * 0); }
+  .z-50 { z-index: 50; }
+  .mb-2 { margin-bottom: calc(var(--spacing) * 2); }
+  .w-56 { width: calc(var(--spacing) * 56); }
+  .min-w-7 { min-width: calc(var(--spacing) * 7); }
+  .max-h-72 { max-height: calc(var(--spacing) * 72); }
+  .text-right { text-align: right; }
+  .opacity-50 { opacity: 50%; }
+
+  /* shadcn's semantic colors, as its Tailwind setup names them (bg-background,
+     text-muted-foreground, border-border…), reading shadcn-html's tokens
+     (vendor/shadcn-html/theme, pointed at Settings › Branding by
+     /branding.css). The markup's colors: they follow the branding and the
+     dark theme by themselves. */
+  .bg-background { background-color: var(--background); }
+  .bg-card { background-color: var(--card); }
+  .bg-popover { background-color: var(--popover); }
+  .bg-primary { background-color: var(--primary); }
+  .bg-secondary { background-color: var(--secondary); }
+  .bg-muted { background-color: var(--muted); }
+  .bg-accent { background-color: var(--accent); }
+  .bg-destructive { background-color: var(--destructive); }
+  .bg-sidebar { background-color: var(--sidebar); }
+  .bg-sidebar-accent { background-color: var(--sidebar-accent); }
+
+  .text-foreground { color: var(--foreground); }
+  .text-card-foreground { color: var(--card-foreground); }
+  .text-popover-foreground { color: var(--popover-foreground); }
+  .text-primary { color: var(--primary); }
+  .text-primary-foreground { color: var(--primary-foreground); }
+  .text-secondary-foreground { color: var(--secondary-foreground); }
+  .text-muted-foreground { color: var(--muted-foreground); }
+  .text-accent-foreground { color: var(--accent-foreground); }
+  .text-destructive { color: var(--destructive); }
+  .text-sidebar-foreground { color: var(--sidebar-foreground); }
+  .text-sidebar-primary { color: var(--sidebar-primary); }
+  .text-sidebar-accent-foreground { color: var(--sidebar-accent-foreground); }
+
+  .border-border { border-color: var(--border); }
+  .border-input { border-color: var(--input); }
+  .border-primary { border-color: var(--primary); }
+  .border-destructive { border-color: var(--destructive); }
+  .border-sidebar-border { border-color: var(--sidebar-border); }
+  .divide-border { :where(& > :not(:last-child)) { border-color: var(--border); } }
+
+  .hover\:bg-muted { &:hover { @media (hover: hover) { background-color: var(--muted); } } }
+  .hover\:bg-accent { &:hover { @media (hover: hover) { background-color: var(--accent); } } }
+  .hover\:bg-sidebar-accent { &:hover { @media (hover: hover) { background-color: var(--sidebar-accent); } } }
+  .hover\:text-foreground { &:hover { @media (hover: hover) { color: var(--foreground); } } }
+  .hover\:text-accent-foreground { &:hover { @media (hover: hover) { color: var(--accent-foreground); } } }
+  .hover\:text-primary { &:hover { @media (hover: hover) { color: var(--primary); } } }
+  .hover\:border-input { &:hover { @media (hover: hover) { border-color: var(--input); } } }
 }

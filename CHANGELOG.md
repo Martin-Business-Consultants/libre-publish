@@ -8,6 +8,28 @@ out.
 
 ## Unreleased
 
+### Changed
+- **The admin is drawn with shadcn-html** (https://shadcn-html.com,
+  `vendor/shadcn-html`): shadcn's look as plain HTML and CSS, no build. Its
+  buttons, cards, badges, alerts, tables, dialogs, sheets, dropdown items and
+  switches, its neutral palette and corners, and its semantic colors in the
+  markup (`text-muted-foreground`, `border-border`, `bg-primary`…); native
+  fields take its input look. Settings › Branding sets its tokens: the
+  primary color is `--primary` and the focus ring, the secondary tints the
+  surfaces, and the font, corners and shadow carry over. Dark mode is its
+  `.dark` theme, following the person's choice or the system's. Behaviour is
+  still Stimulus's.
+- Plugins drawn with `ui(...)` keep working: the recipes are still there, in
+  colors that follow the same tokens. New markup uses the components
+  (STYLE.md, docs/plugins.md).
+
+### Fixed
+- Classes that were passed to `ui(...)` but never defined (`w-56`, `z-50`,
+  `text-right`, `opacity-50` and a few others) now exist: the admin bar's
+  menus are their intended width and on top, and number columns are right
+  aligned.
+- Text fields' corners: the preflight's reset beat them.
+
 ## 1.28.0
 
 ### Added

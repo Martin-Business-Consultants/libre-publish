@@ -5,8 +5,8 @@
 <%= postbox "settings-save", "Save" do %>
   <div class="space-y-3">
     <% if note %>
-      <p class="text-sm text-gray-500"><%= note %></p>
+      <p class="text-sm text-muted-foreground"><%= note %></p>
     <% end %>
-    <%= tag.button tx(button), type: "submit", form: form, class: ui(:button, :primary, "w-full"), disabled: !Current.user.can?(capability) %>
+    <%= tag.button tx(button), type: "submit", form: form, class: "btn w-full", disabled: !Current.user.can?(capability) %>
   </div>
 <% end %>

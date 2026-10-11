@@ -103,7 +103,7 @@ RSpec.describe "The admin layout", type: :request do
     follow_redirect!
 
     main_end = response.body.index("</main>")
-    toast = response.body.index("notice--success toast")
+    toast = response.body.index("toast shadow-overlay notice--success")
     expect(toast).to be > main_end
     expect(response.body).to include("Redirect deleted", "Dismiss this notice", "animationend-&gt;element-removal#remove")
   end

@@ -10,32 +10,32 @@
 <li id="plugin_<%= plugin.key %>" class="space-y-1 py-4">
   <div class="flex flex-wrap items-center justify-between gap-3">
     <div class="flex min-w-0 flex-col gap-0.5">
-      <span class="text-sm font-semibold text-gray-900">
+      <span class="text-sm font-semibold text-foreground">
         <%= link_to plugin.name, settings_plugin_path(plugin.key), class: "hover:underline" %>
-        <span class="ml-1 text-xs font-normal text-gray-500"><%= plugin.version %> · <%= plugin.bundled ? "bundled" : (source || "installed") %></span>
+        <span class="ml-1 text-xs font-normal text-muted-foreground"><%= plugin.version %> · <%= plugin.bundled ? "bundled" : (source || "installed") %></span>
         <% if newer %>
-          <span class="ml-1 text-xs font-semibold text-blue-600"><%= newer %> available</span>
+          <span class="ml-1 text-xs font-semibold text-primary"><%= newer %> available</span>
         <% end %>
       </span>
-      <span class="text-sm text-gray-500"><%= plugin.description %></span>
+      <span class="text-sm text-muted-foreground"><%= plugin.description %></span>
     </div>
     <div class="flex shrink-0 items-center gap-2">
       <%= status_tag enabled ? "Active" : (switched_on ? "Waiting" : "Off") %>
       <% if enabled && settings_page %>
-        <%= link_to instance_exec(&settings_page.path), class: ui(:button, :plain, :icon), title: plugin.name + " settings" do %>
+        <%= link_to instance_exec(&settings_page.path), class: "btn", data: {variant: "ghost", size: "icon"}, title: plugin.name + " settings" do %>
           <%= icon_tag "settings-outline", class: "size-4" %>
           <span class="sr-only"><%= plugin.name %> settings</span>
         <% end %>
       <% end %>
       <% if Current.user.can?("settings:write") %>
         <% if switched_on %>
-          <%= button_to "Switch off", settings_plugin_activation_path(plugin.key), method: :delete, class: ui(:button, :small) %>
+          <%= button_to "Switch off", settings_plugin_activation_path(plugin.key), method: :delete, class: "btn", data: {variant: "outline", size: "sm"} %>
         <% elsif plugin.compatible? %>
-          <%= button_to "Switch on", settings_plugin_activation_path(plugin.key), class: ui(:button, :small) %>
+          <%= button_to "Switch on", settings_plugin_activation_path(plugin.key), class: "btn", data: {variant: "outline", size: "sm"} %>
         <% end %>
       <% end %>
       <% if source && Current.user.admin? %>
-        <%= button_to "Update", settings_plugin_upgrade_path(plugin.key), class: ui(:button, newer ? :primary : nil, :small),
+        <%= button_to "Update", settings_plugin_upgrade_path(plugin.key), class: "btn", data: {variant: (newer ? "default" : "outline"), size: "sm"},
               title: "Install " + source + "’s latest release in place of this one" %>
       <% end %>
       <% if removable && Current.user.admin? %>

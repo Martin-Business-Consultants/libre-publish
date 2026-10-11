@@ -1,11 +1,10 @@
 <%# locals: (field:, prefix:, key:, field_types:, collection_slugs:, block_slugs: nil) %>
 <% name = prefix + "[" + key + "]" %>
 <% control_classes = "flex min-w-0 flex-col gap-1.5" %>
-<% control_label_classes = "text-xs font-medium text-gray-700" %>
-<% check_classes = "flex items-center gap-2 whitespace-nowrap text-sm text-gray-700" %>
+<% control_label_classes = "text-xs font-medium text-foreground" %>
+<% check_classes = "flex items-center gap-2 whitespace-nowrap text-sm text-foreground" %>
 <% setting_classes = "flex-col gap-1.5" %>
-<% move_classes = ui(:button, :plain, :icon) %>
-<li class="schema-field flex flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4" data-schema-editor-target="row">
+<li class="schema-field flex flex-col gap-3 rounded-lg border border-border bg-background p-4" data-schema-editor-target="row">
   <div class="schema-field__main grid grid-cols-2 items-end gap-3 md:flex">
     <label class="<%= class_names(control_classes, "md:flex-1") %>">
       <span class="<%= control_label_classes %>">Name</span>
@@ -27,15 +26,15 @@
       <span>Required</span>
     </label>
     <div class="flex items-center justify-end">
-      <button type="button" class="<%= move_classes %>" title="Move up" data-action="schema-editor#moveUp">
+      <button type="button" class="btn" data-variant="ghost" data-size="icon" title="Move up" data-action="schema-editor#moveUp">
         <%= icon_tag "arrow-up", class: "size-4" %>
         <span class="sr-only">Move up</span>
       </button>
-      <button type="button" class="<%= move_classes %>" title="Move down" data-action="schema-editor#moveDown">
+      <button type="button" class="btn" data-variant="ghost" data-size="icon" title="Move down" data-action="schema-editor#moveDown">
         <%= icon_tag "arrow-up", class: "size-4 rotate-180" %>
         <span class="sr-only">Move down</span>
       </button>
-      <button type="button" class="inline-flex size-8 items-center justify-center rounded-md text-gray-500 hover:bg-red-50 hover:text-red-700" title="Remove this field" data-action="schema-editor#remove">
+      <button type="button" class="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground hover:bg-red-50 hover:text-red-700" title="Remove this field" data-action="schema-editor#remove">
         <%= icon_tag "trash", class: "size-4" %>
         <span class="sr-only">Remove this field</span>
       </button>
@@ -68,14 +67,14 @@
     </fieldset>
   <% end %>
 
-  <div class="<%= class_names(setting_classes, "border-l-2 border-gray-200 pl-4") %>" data-for="nested">
+  <div class="<%= class_names(setting_classes, "border-l-2 border-border pl-4") %>" data-for="nested">
     <span class="<%= control_label_classes %>">Sub-fields</span>
     <%= render "schemas/list", fields: field["of"], prefix: name + "[of]", field_types: field_types,
           collection_slugs: collection_slugs, block_slugs: block_slugs %>
   </div>
 
   <details>
-    <summary class="text-xs font-medium text-gray-500 hover:text-gray-900">More settings</summary>
+    <summary class="text-xs font-medium text-muted-foreground hover:text-foreground">More settings</summary>
     <div class="grid gap-3 pt-3 sm:grid-cols-2">
       <label class="<%= control_classes %>">
         <span class="<%= control_label_classes %>">Help text</span>

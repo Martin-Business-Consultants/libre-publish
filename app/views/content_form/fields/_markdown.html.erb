@@ -9,5 +9,5 @@
     <button type="button" class="markdown-editor__tab rounded-md px-2.5 py-1 text-xs font-medium" role="tab" aria-selected="false" data-markdown-editor-target="previewTab" data-action="markdown-editor#preview">Preview</button>
   </div>
   <%= text_area_tag scope.name, value, id: scope.dom_id, rows: 10, class: "w-full font-mono leading-relaxed", spellcheck: true, data: { markdown_editor_target: "input" } %>
-  <div class="min-h-40 rounded-md border border-gray-200 px-4 py-3" data-markdown-editor-target="output" hidden></div>
+  <div class="min-h-40 rounded-md border border-border px-4 py-3" data-markdown-editor-target="output" hidden></div>
 </div>

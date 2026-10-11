@@ -7,11 +7,13 @@ require "rails_helper"
 # have silently does nothing.
 # So every class the views and helpers write must be one it defines, one the
 # app's stylesheets define (tailwind-extras.css, and the hooks that state and
-# behaviour rules hang on), or a hook JavaScript or a spec looks for.
+# behaviour rules hang on), one of shadcn-html's components (vendor/shadcn-html),
+# or a hook JavaScript or a spec looks for.
 RSpec.describe "Architecture: classes in the markup exist" do
   VIEWS = ["app/views/**/*.erb", "engines/*/app/views/**/*.erb", "plugins/*/app/views/**/*.erb"].freeze
   RUBY = ["app/helpers/**/*.rb", "engines/*/app/helpers/**/*.rb", "plugins/*/app/helpers/**/*.rb"].freeze
-  STYLESHEETS = ["app/assets/stylesheets/**/*.css", "engines/*/app/assets/stylesheets/**/*.css", "plugins/*/app/assets/stylesheets/**/*.css"].freeze
+  STYLESHEETS = ["app/assets/stylesheets/**/*.css", "vendor/shadcn-html/components/**/*.css",
+    "engines/*/app/assets/stylesheets/**/*.css", "plugins/*/app/assets/stylesheets/**/*.css"].freeze
   HOOK_SOURCES = ["app/javascript/**/*.js", "engines/*/app/javascript/**/*.js", "plugins/*/app/javascript/**/*.js", "spec/**/*.rb", "plugins/*/spec/**/*.rb"].freeze
 
   CLASS_ATTRIBUTE = /\bclass="((?:<%.*?%>|[^"])*)"/m

@@ -14,29 +14,29 @@
         delete_message: "Their entries are deleted with them. This can’t be undone." %>
 <% end %>
 
-<section class="<%= ui(:panel, "overflow-x-auto") %>" data-controller="select-all">
-  <table class="data-table <%= ui(:table) %>">
+<section class="card overflow-x-auto" data-controller="select-all">
+  <table class="data-table table">
     <thead>
-      <tr>
+      <tr class="table-row">
         <% if can_delete %>
-          <th class="<%= ui(:th, "data-table__check w-9") %>"><% if @collections.any? %><input type="checkbox" aria-label="Select every row" data-select-all-target="all" data-action="select-all#toggle"><% end %></th>
+          <th class="table-head data-table__check w-9"><% if @collections.any? %><input type="checkbox" aria-label="Select every row" data-select-all-target="all" data-action="select-all#toggle"><% end %></th>
         <% end %>
-        <th class="<%= ui(:th) %>">Name</th>
-        <th class="<%= ui(:th) %>">Slug</th>
-        <th class="<%= ui(:th, "text-right") %>">Fields</th>
-        <th class="<%= ui(:th, "text-right") %>">Entries</th>
+        <th class="table-head">Name</th>
+        <th class="table-head">Slug</th>
+        <th class="table-head text-right">Fields</th>
+        <th class="table-head text-right">Entries</th>
       </tr>
     </thead>
     <tbody>
       <% @collections.each do |collection| %>
         <%# herb:key collection.id %>
-        <tr id="<%= dom_id(collection) %>" class="hover:bg-gray-50" data-filter-target="item">
+        <tr id="<%= dom_id(collection) %>" class="table-row hover:bg-muted" data-filter-target="item">
           <% if can_delete %>
-            <td class="<%= ui(:td, "data-table__check w-9") %>"><input type="checkbox" data-select-all-target="box" data-action="select-all#sync" name="slugs[]" value="<%= collection.slug %>" form="collections_bulk" aria-label="Select <%= collection.name %>"></td>
+            <td class="table-cell data-table__check w-9"><input type="checkbox" data-select-all-target="box" data-action="select-all#sync" name="slugs[]" value="<%= collection.slug %>" form="collections_bulk" aria-label="Select <%= collection.name %>"></td>
           <% end %>
-          <td class="<%= ui(:td) %>">
-            <%= link_to collection_entries_path(collection.slug), class: "inline-flex items-center gap-2 font-medium text-gray-900 hover:underline" do %>
-              <%= icon_tag collection.admin_icon, class: "size-4 text-gray-400" %>
+          <td class="table-cell">
+            <%= link_to collection_entries_path(collection.slug), class: "inline-flex items-center gap-2 font-medium text-foreground hover:underline" do %>
+              <%= icon_tag collection.admin_icon, class: "size-4 text-muted-foreground" %>
               <span><%= collection.name %></span>
             <% end %>
             <%= render "layouts/shared/row_links",
@@ -46,9 +46,9 @@
                   delete_path: (collection_path(collection.slug) if can_delete), delete_name: collection.name,
                   delete_message: "Its entries are deleted with it. This can’t be undone." %>
           </td>
-          <td class="<%= ui(:td) %>"><span class="font-mono text-xs text-gray-500"><%= collection.slug %></span></td>
-          <td class="<%= ui(:td, "text-right tabular-nums") %>"><%= collection.fields.size %></td>
-          <td class="<%= ui(:td, "text-right tabular-nums") %>"><%= @entry_counts.fetch(collection.id, 0) %></td>
+          <td class="table-cell"><span class="font-mono text-xs text-muted-foreground"><%= collection.slug %></span></td>
+          <td class="table-cell text-right tabular-nums"><%= collection.fields.size %></td>
+          <td class="table-cell text-right tabular-nums"><%= @entry_counts.fetch(collection.id, 0) %></td>
         </tr>
       <% end %>
       <%= table_empty_row("No collections yet. Start from a template, or define the fields yourself.", columns: can_delete ? 5 : 4) if @collections.none? %>

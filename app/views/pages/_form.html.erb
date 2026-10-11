@@ -21,12 +21,12 @@
       <% end %>
     <% end %>
 
-    <section class="<%= ui(:panel) %>">
-      <h2 class="<%= ui(:heading, "border-b border-gray-200 px-5 py-3.5") %>">Blocks</h2>
+    <section class="card">
+      <h2 class="text-base font-semibold text-foreground border-b border-border px-5 py-3.5">Blocks</h2>
       <div class="p-3 sm:p-5">
         <%= render "content_form/blocks", blocks: page.blocks, scope: content_scope("page")["blocks"], depth: 1, record: page %>
       </div>
-      <p class="rounded-b-xl border-t border-gray-200 bg-gray-50 px-5 py-2.5 text-xs text-gray-500"><%= editor_status_line(page) %></p>
+      <p class="rounded-b-xl border-t border-border bg-muted px-5 py-2.5 text-xs text-muted-foreground"><%= editor_status_line(page) %></p>
     </section>
     <% end %>
 
@@ -41,13 +41,13 @@
     <%= postbox "page-attributes", "Page Attributes" do %>
       <%= render "content_form/permalink", record: page, form: form, required: true, hint: "Lowercase letters, digits and dashes." %>
       <label class="flex flex-col gap-1.5">
-        <span class="<%= ui(:label) %>">Parent</span>
+        <span class="label">Parent</span>
         <%= form.select :parent_id, parents.map { [ ("  " * it.depth.to_i) + "/" + it.path, it.id ] }, { include_blank: "No parent (top level)" },
               class: "w-full" %>
-        <span class="<%= ui(:help) %>">Nests this page under another; its URL becomes the parent’s path plus its slug.</span>
+        <span class="text-sm text-muted-foreground">Nests this page under another; its URL becomes the parent’s path plus its slug.</span>
       </label>
       <label class="flex flex-col gap-1.5">
-        <span class="<%= ui(:label) %>">Locale</span>
+        <span class="label">Locale</span>
         <%= form.text_field :locale, required: true, class: "w-full", placeholder: "en", autocomplete: "off" %>
       </label>
       <% if page.persisted? %>

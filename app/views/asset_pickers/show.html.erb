@@ -9,7 +9,7 @@
     <div class="flex flex-wrap items-center gap-2">
       <%= form_with url: asset_picker_path, method: :get, class: "relative min-w-0 flex-1" do %>
         <%= hidden_field_tag :folder, @folder, id: nil %>
-        <%= icon_tag "search", class: "pointer-events-none absolute left-2.5 top-2 size-4 text-gray-400" %>
+        <%= icon_tag "search", class: "pointer-events-none absolute left-2.5 top-2 size-4 text-muted-foreground" %>
         <%= search_field_tag :q, @query, id: nil, class: "w-full pl-8", placeholder: (@folder ? "Search #{@folder}…" : "Search every folder…"), autocomplete: "off",
               aria: { label: "Search files" } %>
       <% end %>
@@ -23,18 +23,18 @@
     <% if Current.user.can?("assets:write") %>
       <%= form_with url: asset_picker_path, class: "relative flex flex-wrap items-center gap-2", data: { controller: "form media--direct-upload" } do |form| %>
         <%= form.hidden_field :folder, value: @folder || "/", id: nil %>
-        <label class="<%= ui(:button, :small, "cursor-pointer") %>" title="Upload into this folder">
+        <label class="btn cursor-pointer" data-variant="outline" data-size="sm" title="Upload into this folder">
           <%= icon_tag "add", class: "size-4" %>
           <span>Upload into <%= @folder || "/" %></span>
           <%= form.file_field :files, multiple: true, direct_upload: true, hidden: true,
                 data: { action: "change->form#submit", media__direct_upload_target: "input" } %>
         </label>
-        <ul class="flex w-full flex-col gap-1.5 text-xs text-gray-700" data-media--direct-upload-target="list" hidden></ul>
+        <ul class="flex w-full flex-col gap-1.5 text-xs text-foreground" data-media--direct-upload-target="list" hidden></ul>
       <% end %>
     <% end %>
 
     <% if @upload_errors.present? %>
-      <ul class="<%= ui(:notice, :red, "flex-col") %>">
+      <ul class="alert flex-col" data-variant="destructive">
         <% @upload_errors.each do |message| %>
           <%# herb:key message %>
           <li><%= message %></li>
@@ -48,7 +48,7 @@
         <%= render "tiles", assets: @assets, more: @more, page: @page, query: @query, folder: @folder %>
       </ul>
     <% else %>
-      <p class="rounded-xl border border-gray-200 py-12 text-center text-sm text-gray-500">
+      <p class="rounded-xl border border-border py-12 text-center text-sm text-muted-foreground">
         <% if @query.present? then %>
           Nothing matches “<%= @query %>”.
         <% elsif @folder then %>

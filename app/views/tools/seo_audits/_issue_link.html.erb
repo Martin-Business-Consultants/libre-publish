@@ -1,7 +1,7 @@
 <%# locals: (record:) %>
 <%# Where a record's issue is fixed: its editor's SEO tab. %>
 <% if record.is_a?(Page) %>
-  <%= link_to record.title, edit_page_path(record.path, anchor: "seo"), class: "font-medium text-gray-900 hover:underline" %>
+  <%= link_to record.title, edit_page_path(record.path, anchor: "seo"), class: "font-medium text-foreground hover:underline" %>
 <% elsif record.is_a?(CollectionEntry) %>
-  <%= link_to record.title, edit_collection_entry_path(record.collection.slug, record.slug, anchor: "seo"), class: "font-medium text-gray-900 hover:underline" %>
+  <%= link_to record.title, edit_collection_entry_path(record.collection.slug, record.slug, anchor: "seo"), class: "font-medium text-foreground hover:underline" %>
 <% end %>

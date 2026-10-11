@@ -7,12 +7,12 @@
     the one primary button on the right (none when button is nil). %>
 <%= postbox key, title || "Save", flush: true do %>
   <% if lines.present? || extra %>
-    <div class="flex flex-col gap-3 px-5 py-4 text-gray-700">
+    <div class="flex flex-col gap-3 px-5 py-4 text-foreground">
       <% Array(lines).each do |icon, label, value| %>
         <%# herb:key label %>
         <div class="flex flex-wrap items-center gap-x-1.5 gap-y-1">
-          <%= icon_tag icon, class: "size-4 text-gray-400" %>
-          <span><%= label %>: <strong class="font-semibold text-gray-900"><%= value %></strong></span>
+          <%= icon_tag icon, class: "size-4 text-muted-foreground" %>
+          <span><%= label %>: <strong class="font-semibold text-foreground"><%= value %></strong></span>
         </div>
       <% end %>
       <% if extra %>
@@ -21,13 +21,13 @@
     </div>
   <% end %>
   <% if trash_path || button %>
-    <div class="<%= class_names("flex items-center justify-between gap-2 rounded-b-xl bg-gray-50 px-5 py-3", "border-t border-gray-200": lines.present? || extra) %>">
+    <div class="<%= class_names("flex items-center justify-between gap-2 rounded-b-xl bg-muted px-5 py-3", "border-t border-border": lines.present? || extra) %>">
       <% if trash_path %>
         <%= render "layouts/shared/delete_dialog", name: trash_name || "this", path: trash_path, trigger_text: trash_label || "Delete", form: trash_form,
               message: trash_message %>
       <% end %>
       <% if button %>
-        <button type="submit" class="<%= ui(:button, :primary, "ms-auto") %>"><%= button %></button>
+        <button type="submit" class="btn ms-auto"><%= button %></button>
       <% end %>
     </div>
   <% end %>

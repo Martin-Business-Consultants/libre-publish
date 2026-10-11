@@ -1,15 +1,15 @@
 <%# The dashboard's reminder that this CMS is headless: the site it serves,
     and whether that site's build has reported in (Frontend). %>
 <% build = Frontend.last_build %>
-<section class="<%= ui(:panel, "flex flex-col gap-4 p-5") %>">
+<section class="card flex flex-col gap-4 p-5">
   <header class="flex items-center justify-between gap-4">
-    <h2 class="<%= ui(:heading, "flex items-center gap-2") %>"><%= icon_tag "code", class: "size-4 text-gray-400" %> Your frontend</h2>
-    <%= link_to "Developers", developers_path, class: ui(:button, :small) %>
+    <h2 class="text-base font-semibold text-foreground flex items-center gap-2"><%= icon_tag "code", class: "size-4 text-muted-foreground" %> Your frontend</h2>
+    <%= link_to "Developers", developers_path, class: "btn", data: {variant: "outline", size: "sm"} %>
   </header>
-  <p class="text-sm leading-relaxed text-gray-700">
+  <p class="text-sm leading-relaxed text-foreground">
     This CMS is headless: it serves content as JSON, and
     <% if Frontend.site_url %>
-      <%= external_link Frontend.site_url, Frontend.site_url.sub(%r{\Ahttps?://}, ""), link_class: ui(:link) %>
+      <%= external_link Frontend.site_url, Frontend.site_url.sub(%r{\Ahttps?://}, ""), link_class: "font-medium text-primary underline underline-offset-2" %>
     <% else %>
       your site
     <% end %>

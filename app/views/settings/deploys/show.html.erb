@@ -10,8 +10,8 @@
 <% end %>
 
 
-<section class="<%= ui(:panel, "space-y-5 p-6") %>">
-  <p class="text-sm text-gray-500">When content is published or updated, the CMS asks the site to rebuild — or, for a site that renders on demand, to drop what changed from its cache. Edits are debounced for 60s so a burst of changes produces one deploy.</p>
+<section class="card space-y-5 p-6">
+  <p class="text-sm text-muted-foreground">When content is published or updated, the CMS asks the site to rebuild — or, for a site that renders on demand, to drop what changed from its cache. Edits are debounced for 60s so a burst of changes produces one deploy.</p>
 
   <%= form_with url: settings_deploy_path, id: "settings_form", method: :patch, scope: :settings do |form| %>
     <%= tag.fieldset class: "space-y-5", disabled: !Current.user.can?("settings:write") do %>
@@ -19,11 +19,11 @@
         <%= form.select :provider, Deploys.providers.map { |key, provider| [provider.label, key] }, { selected: @provider.key }, class: "w-full" %>
       <% end %>
       <% if @provider.key == "github" %>
-        <p class="text-sm text-gray-700">
+        <p class="text-sm text-foreground">
           <% if @provider.configured? %>
             Builds go to <span class="font-mono"><%= @provider.target %></span>.
           <% else %>
-            Set the repository and a token in <%= link_to "Settings › GitHub", settings_github_path, class: ui(:link) %> first.
+            Set the repository and a token in <%= link_to "Settings › GitHub", settings_github_path, class: "font-medium text-primary underline underline-offset-2" %> first.
           <% end %>
         </p>
       <% end %>
@@ -37,15 +37,15 @@
 
   <% if Deploys.ready?(@settings) %>
     <% if writable %>
-      <div><%= button_to "Deploy now", settings_deploy_trigger_path, class: ui(:button) %></div>
+      <div><%= button_to "Deploy now", settings_deploy_trigger_path, class: "btn", data: {variant: "outline"} %></div>
     <% end %>
   <% end %>
 </section>
 
-<section id="site" class="<%= ui(:panel, "scroll-mt-20 space-y-4 p-6") %>">
-  <h2 class="<%= ui(:heading) %>">The site</h2>
+<section id="site" class="card scroll-mt-20 space-y-4 p-6">
+  <h2 class="text-base font-semibold text-foreground">The site</h2>
   <% if build %>
-    <p class="text-sm text-gray-700">
+    <p class="text-sm text-foreground">
       <% case Frontend.render %>
       <% when "server" %>
         The site renders on demand, so publishing sends it a cache purge for what changed rather than rebuilding it.
@@ -57,7 +57,7 @@
         The site hasn’t said how it renders, so publishing rebuilds it.
       <% end %>
     </p>
-    <p class="text-sm text-gray-500">
+    <p class="text-sm text-muted-foreground">
       Last build <%= time_ago_tag build[:built_at] %>
       <% if build[:integration] %> · <%= build[:integration] %> <%= build[:integration_version] %><% end %>
       <% if build[:content_cursor] %> · built from content <span class="font-mono"><%= build[:content_cursor].first(16) %></span><% end %>
@@ -70,45 +70,45 @@
           That changes how publishing reaches the site, so it waits for approval: a build’s token can’t change it on its own.
         </p>
         <% if writable %>
-          <div><%= button_to "Approve", settings_deploy_delivery_approval_path, class: ui(:button, :small), form: { data: { turbo_confirm: "Publishing will follow what the site reported. Approve?" } } %></div>
+          <div><%= button_to "Approve", settings_deploy_delivery_approval_path, class: "btn", data: {variant: "outline", size: "sm"}, form: { data: { turbo_confirm: "Publishing will follow what the site reported. Approve?" } } %></div>
         <% end %>
       </div>
     <% end %>
     <% if Frontend.purge_url %>
-      <p class="text-sm text-gray-700">Purges go to <span class="font-mono"><%= Frontend.purge_url %></span>, signed with this secret — the site’s <code>CMS_WEBHOOK_SECRET</code>:</p>
+      <p class="text-sm text-foreground">Purges go to <span class="font-mono"><%= Frontend.purge_url %></span>, signed with this secret — the site’s <code>CMS_WEBHOOK_SECRET</code>:</p>
       <% if writable %>
         <%= render "settings/secret", frame_id: "purge_secret", masked: "•" * 24, visible: true, reveal_path: settings_deploy_purge_secret_reveal_path %>
-        <div><%= button_to "Rotate the secret", settings_deploy_purge_secret_rotation_path, class: ui(:button, :small), form: { data: { turbo_confirm: "The site needs the new secret before it accepts another purge. Rotate it?" } } %></div>
+        <div><%= button_to "Rotate the secret", settings_deploy_purge_secret_rotation_path, class: "btn", data: {variant: "outline", size: "sm"}, form: { data: { turbo_confirm: "The site needs the new secret before it accepts another purge. Rotate it?" } } %></div>
       <% end %>
     <% end %>
   <% else %>
-    <p class="text-sm text-gray-500">No build has reported yet. The Astro integration reports each build, and with it whether the site renders statically or on demand.</p>
+    <p class="text-sm text-muted-foreground">No build has reported yet. The Astro integration reports each build, and with it whether the site renders statically or on demand.</p>
   <% end %>
 </section>
 
-<section class="<%= ui(:panel, "space-y-4 p-6") %>">
+<section class="card space-y-4 p-6">
   <div class="space-y-1">
-    <h2 class="<%= ui(:heading) %>">Recent activity</h2>
-    <p class="text-sm text-gray-500">Last 20 deploy attempts. A scheduled entry means an edit just happened — the hook fires after the debounce window.</p>
+    <h2 class="text-base font-semibold text-foreground">Recent activity</h2>
+    <p class="text-sm text-muted-foreground">Last 20 deploy attempts. A scheduled entry means an edit just happened — the hook fires after the debounce window.</p>
   </div>
   <% if log.empty? && !scheduled %>
-    <p class="py-6 text-center text-sm text-gray-500">Nothing yet.</p>
+    <p class="py-6 text-center text-sm text-muted-foreground">Nothing yet.</p>
   <% else %>
-    <ul class="divide-y divide-gray-100 text-sm">
+    <ul class="divide-y divide-border text-sm">
       <% if scheduled %>
-        <li class="py-2.5"><%= status_tag "scheduled" %><% if @settings["last_reason"].present? %> <span class="text-gray-500">· <%= @settings["last_reason"] %></span><% end %></li>
+        <li class="py-2.5"><%= status_tag "scheduled" %><% if @settings["last_reason"].present? %> <span class="text-muted-foreground">· <%= @settings["last_reason"] %></span><% end %></li>
       <% end %>
       <% log.each_with_index do |entry, index| %>
         <%# herb:key index %>
         <li class="flex flex-col gap-1 py-2.5">
           <span>
             <%= status_tag entry["status"].to_s %>
-            <% if entry["reason"].present? %><span class="text-gray-500"> · <%= entry["reason"] %></span><% end %>
-            <% if entry["via"].present? %><span class="text-gray-500"> · <%= entry["via"] == "purge" ? "purge" : "build" %></span><% end %>
-            <% if entry["changes"].to_i.positive? %><span class="text-gray-500"> · <%= pluralize(entry["changes"], "change") %></span><% end %>
-            <% if entry["http_status"] %><span class="text-gray-500"> · HTTP <%= entry["http_status"] %></span><% end %>
-            <% if entry["duration_ms"] %><span class="text-gray-500"> · <%= entry["duration_ms"] %>ms</span><% end %>
-            <span class="text-gray-500"> · <%= entry["at"].present? ? time_ago_tag(Time.zone.parse(entry["at"].to_s)) : "—" %></span>
+            <% if entry["reason"].present? %><span class="text-muted-foreground"> · <%= entry["reason"] %></span><% end %>
+            <% if entry["via"].present? %><span class="text-muted-foreground"> · <%= entry["via"] == "purge" ? "purge" : "build" %></span><% end %>
+            <% if entry["changes"].to_i.positive? %><span class="text-muted-foreground"> · <%= pluralize(entry["changes"], "change") %></span><% end %>
+            <% if entry["http_status"] %><span class="text-muted-foreground"> · HTTP <%= entry["http_status"] %></span><% end %>
+            <% if entry["duration_ms"] %><span class="text-muted-foreground"> · <%= entry["duration_ms"] %>ms</span><% end %>
+            <span class="text-muted-foreground"> · <%= entry["at"].present? ? time_ago_tag(Time.zone.parse(entry["at"].to_s)) : "—" %></span>
           </span>
           <% if entry["error"].present? %>
             <span class="truncate text-xs text-red-600"><%= entry["error"] %></span>

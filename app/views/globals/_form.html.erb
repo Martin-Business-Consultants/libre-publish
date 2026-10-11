@@ -15,8 +15,8 @@
     </div>
 
     <% if tabs.empty? %>
-      <section class="<%= ui(:panel, "py-12 text-center text-sm text-gray-500") %>">
-        <p>This global has no fields yet. <%= link_to "Define its fields", global_schema_path(global.slug), class: ui(:link) %>.</p>
+      <section class="card py-12 text-center text-sm text-muted-foreground">
+        <p>This global has no fields yet. <%= link_to "Define its fields", global_schema_path(global.slug), class: "font-medium text-primary underline underline-offset-2" %>.</p>
       </section>
     <% end %>
     <% tabs.each do |tab, fields| %>
@@ -33,15 +33,15 @@
 
     <%= postbox "global-identity", "Global" do %>
       <label class="flex flex-col gap-1.5">
-        <span class="<%= ui(:label) %>">Slug</span>
+        <span class="label">Slug</span>
         <%= form.text_field :slug, required: true, class: "w-full font-mono", autocomplete: "off" %>
       </label>
       <label class="flex flex-col gap-1.5">
-        <span class="<%= ui(:label) %>">Description</span>
+        <span class="label">Description</span>
         <%= form.text_field :description, class: "w-full" %>
       </label>
       <label class="flex flex-col gap-1.5">
-        <span class="<%= ui(:label) %>">Icon</span>
+        <span class="label">Icon</span>
         <%= form.text_field :icon, class: "w-full", autocomplete: "off" %>
       </label>
       <%= render "content_form/reference", reference: "globals/" + global.slug %>
