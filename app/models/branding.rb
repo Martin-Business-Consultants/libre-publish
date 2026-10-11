@@ -79,6 +79,28 @@ class Branding
 
   def dark_top_bar? = @data["top_bar"] == "dark"
 
+  # What every mail client draws; anything else (WebP, a large file) goes as
+  # a PNG of it, and an SVG, which few draw and can't be converted, not at all.
+  EMAIL_IMAGE_TYPES = %w[image/png image/jpeg image/gif].freeze
+  EMAIL_LOGO_BYTES = 200.kilobytes
+
+  # The logo as an email carries it (ApplicationMailer#email_logo_src):
+  # {filename:, mime_type:, content:}, or nil without one a mail client can
+  # show.
+  def email_logo
+    file = @data["logo_id"].presence && Asset.with_attached_file.find_by(id: @data["logo_id"])&.file
+    return unless file&.attached?
+
+    if file.content_type.in?(EMAIL_IMAGE_TYPES) && file.byte_size <= EMAIL_LOGO_BYTES
+      {filename: file.filename.to_s, mime_type: file.content_type, content: file.download}
+    elsif file.variable?
+      png = file.variant(resize_to_limit: [600, 240], format: :png).processed
+      {filename: "#{file.filename.base}.png", mime_type: "image/png", content: png.download}
+    end
+  rescue ActiveStorage::Error, SystemCallError, LoadError
+    nil
+  end
+
   def google_font_url
     "https://fonts.googleapis.com/css2?family=#{ERB::Util.url_encode(font)}:wght@400;500;600;700&display=swap" if font
   end

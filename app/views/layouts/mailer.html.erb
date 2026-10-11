@@ -1,3 +1,7 @@
+<%# Every core email: the Branding logo on top (attached inline,
+    ApplicationMailer#email_logo_src), unless the email draws it itself
+    (content_for :logo_drawn, or the @logo_url a Forms plugin before 1.3
+    draws), then the message. %>
 <!DOCTYPE html>
 <html>
   <head>
@@ -8,6 +12,10 @@
   </head>
 
   <body>
-    <%= yield %>
+    <% message = yield %>
+    <% if !content_for?(:logo_drawn) && @logo_url.nil? && (logo = email_logo_src) %>
+      <p style="margin:0 0 16px;"><img src="<%= logo %>" alt="<%= email_site_name %>" style="max-height:48px;max-width:200px;display:block;border:0;"></p>
+    <% end %>
+    <%= message %>
   </body>
 </html>
