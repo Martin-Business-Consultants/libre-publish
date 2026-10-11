@@ -84,10 +84,11 @@ RSpec.describe Upgrade::InPlace do
       prepared = nil
       allow_any_instance_of(described_class).to receive(:run_preparation) { |_, env, command, _log| prepared = [env, command]; true }
 
-      described_class.new(upgrade).install
+      with_env("BUNDLE_WITHOUT" => "development:test", "BUNDLE_DEPLOYMENT" => "1") { described_class.new(upgrade).install }
 
       expect(prepared[1]).to eq("./bin/rails cms:backup_if_pending && ./bin/rails db:migrate")
-      expect(prepared[0]).to include("BUNDLE_GEMFILE" => releases.join("v99.0.0/Gemfile").to_s, "CMS_BUNDLED_RUBY" => RbConfig.ruby)
+      expect(prepared[0]).to include("BUNDLE_GEMFILE" => releases.join("v99.0.0/Gemfile").to_s, "CMS_BUNDLED_RUBY" => RbConfig.ruby,
+                                     "BUNDLE_WITHOUT" => "development:test", "BUNDLE_DEPLOYMENT" => "1")
       expect(live.realpath).to eq(releases.join("v99.0.0").realpath)
       expect(releases.join("current").readlink.to_s).to eq("v99.0.0")
       expect(releases.join("v99.0.0/tmp/restart.txt")).to exist

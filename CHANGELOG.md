@@ -8,6 +8,15 @@ out.
 
 ## Unreleased
 
+### Fixed
+- **An update in place without downtime finds the release's gems.** Backing
+  up and migrating a release before switching to it ran without the image's
+  Bundler settings (`BUNDLE_WITHOUT`, `BUNDLE_DEPLOYMENT`), so Bundler looked
+  for development and test gems the bundle doesn't carry and the update
+  failed with `Bundler::GemNotFound`. They now go along. An install on an
+  earlier release still prepares with its own code: redeploy its image, or
+  update once with `WEB_CONCURRENCY=0` (the container restarts onto it).
+
 ## 1.30.1
 
 ### Fixed

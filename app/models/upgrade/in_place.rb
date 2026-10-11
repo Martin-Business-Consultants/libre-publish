@@ -127,10 +127,13 @@ class Upgrade::InPlace
     @upgrade.update!(message: "#{tag} is ready; the site's workers are moving onto it one at a time, with no downtime.")
   end
 
+  # The image's Bundler settings (BUNDLE_WITHOUT above all: the bundle holds
+  # no development or test gems) go along, as the unbundled env drops them.
   def prepare_release!
     log = self.class.releases.join(".prepare.log")
-    env = {"BUNDLE_GEMFILE" => directory.join("Gemfile").to_s, "BUNDLE_PATH" => directory.join("bundle").to_s,
-           "CMS_BUNDLED_RUBY" => RbConfig.ruby, "CMS_DATA_DIR" => Cms.data_dir.to_s}
+    env = ENV.slice("BUNDLE_WITHOUT", "BUNDLE_WITH", "BUNDLE_DEPLOYMENT").merge(
+      "BUNDLE_GEMFILE" => directory.join("Gemfile").to_s, "BUNDLE_PATH" => directory.join("bundle").to_s,
+      "CMS_BUNDLED_RUBY" => RbConfig.ruby, "CMS_DATA_DIR" => Cms.data_dir.to_s)
     ok = run_preparation(env, "./bin/rails cms:backup_if_pending && ./bin/rails db:migrate", log)
     raise Failed, "#{tag} couldn't be prepared, so nothing was switched:\n#{log.file? ? log.read.lines.last(20).join : "(no output)"}" unless ok
   end
