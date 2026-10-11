@@ -110,11 +110,17 @@ RSpec.describe "Settings pages", type: :request do
       admin.enable_totp!(totp_now(admin.totp_secret))
       old_digests = admin.reload.recovery_code_digests
 
-      post settings_two_factor_recovery_codes_path
+      # Both take the password: an open session alone isn't enough.
+      post settings_two_factor_recovery_codes_path, params: {password_challenge: "wrong"}
+      expect(admin.reload.recovery_code_digests).to eq(old_digests)
+      delete settings_two_factor_path, params: {password_challenge: "wrong"}
+      expect(admin.reload.totp_enabled?).to be(true)
+
+      post settings_two_factor_recovery_codes_path, params: {password_challenge: "Secret1*3*5*"}
       expect(response.body).to include("Save your recovery codes")
       expect(admin.reload.recovery_code_digests).not_to eq(old_digests)
 
-      delete settings_two_factor_path
+      delete settings_two_factor_path, params: {password_challenge: "Secret1*3*5*"}
       expect(response).to redirect_to(settings_profile_path(anchor: "two-factor"))
       expect(admin.reload.totp_enabled?).to be(false)
     end

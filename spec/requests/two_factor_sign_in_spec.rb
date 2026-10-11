@@ -16,15 +16,30 @@ RSpec.describe "Two-factor sign-in", type: :request do
     expect(response).to redirect_to(sessions_challenge_url)
   end
 
+  # The code turning two-factor on used this step's code; the authenticator
+  # shows the next one by the time someone signs in.
+  def next_code = TwoFactor.code_at(user.reload.totp_secret, (Time.current.to_i / TwoFactor::STEP_SECONDS) + 1)
+
   it "completes sign-in with a valid TOTP code" do
     post sign_in_url, params: {email: user.email, password: "Secret1*3*5*"}
 
-    code = TwoFactor.code_at(user.totp_secret, Time.current.to_i / TwoFactor::STEP_SECONDS)
-    post sessions_challenge_url, params: {code: code}
+    post sessions_challenge_url, params: {code: next_code}
     expect(response).to redirect_to(pages_url)
 
     get pages_url
     expect(response).to have_http_status(:success)
+  end
+
+  it "takes each code once" do
+    code = next_code
+    post sign_in_url, params: {email: user.email, password: "Secret1*3*5*"}
+    post sessions_challenge_url, params: {code: code}
+    expect(response).to redirect_to(pages_url)
+
+    reset!
+    post sign_in_url, params: {email: user.email, password: "Secret1*3*5*"}
+    post sessions_challenge_url, params: {code: code}
+    expect(response).to redirect_to(sessions_challenge_url)
   end
 
   it "rejects a wrong code" do

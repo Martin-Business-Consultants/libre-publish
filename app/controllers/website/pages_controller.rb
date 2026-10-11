@@ -99,7 +99,7 @@ class Website::PagesController < ActionController::Base
     end
   end
 
-  def base_url = Setting.get("general")["site_base_url"].presence&.chomp("/") || request.base_url
+  def base_url = Site.public_base_url || request.base_url
 
   # A published page can be cached anywhere (the browser, Thruster,
   # Cloudflare) and revalidates against the content and the theme; a preview

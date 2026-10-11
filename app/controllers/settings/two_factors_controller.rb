@@ -21,7 +21,13 @@ class Settings::TwoFactorsController < Settings::BaseController
     redirect_to account_path("two-factor")
   end
 
+  # Takes the password: a session left open on someone else's screen
+  # mustn't be enough to strip the account's second factor.
   def destroy
+    unless Current.user.authenticate(params[:password_challenge].to_s)
+      return redirect_to(account_path("two-factor"), alert: "That password isn't right, so two-factor stays on.")
+    end
+
     Current.user.disable_totp!
     Event.record("two_factor.disabled", target: Current.user)
     redirect_to account_path("two-factor"), notice: "Two-factor authentication disabled"

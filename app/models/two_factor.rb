@@ -41,14 +41,17 @@ module TwoFactor
     OpenSSL::Digest::SHA256.hexdigest(code.to_s.strip.downcase)
   end
 
-  def valid?(secret, code, at: Time.current.to_i)
-    return false if secret.blank? || code.blank?
+  def valid?(secret, code, at: Time.current.to_i) = !matching_counter(secret, code, at: at).nil?
+
+  # The 30-second step `code` belongs to, within the drift allowed, or nil.
+  def matching_counter(secret, code, at: Time.current.to_i)
+    return if secret.blank? || code.blank?
 
     normalized = code.to_s.gsub(/\s+/, "")
-    return false unless normalized.match?(/\A\d{#{CODE_DIGITS}}\z/)
+    return unless normalized.match?(/\A\d{#{CODE_DIGITS}}\z/)
 
     counter = at / STEP_SECONDS
-    WINDOW_DRIFT.any? { |drift| code_at(secret, counter + drift) == normalized }
+    WINDOW_DRIFT.map { counter + it }.find { code_at(secret, it) == normalized }
   end
 
   def code_at(secret, counter)

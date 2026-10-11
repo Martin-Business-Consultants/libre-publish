@@ -22,6 +22,17 @@ RSpec.describe "Website", type: :request do
     Website.theme = registered
   end
 
+  # The page and its sitemap are cached for everyone: what they print about
+  # their own address can't come from a header the requester chose.
+  it "prints its own address from the install's settings, whatever Host or X-Forwarded-Host a request sends" do
+    get "/", headers: {"Host" => "evil.test", "X-Forwarded-Host" => "evil.test"}
+    expect(response.body).not_to include("evil.test")
+    expect(response.body).to include(%(<link rel="canonical" href="http://example.com/"))
+
+    get "/sitemap.xml", headers: {"X-Forwarded-Host" => "evil.test"}
+    expect(response.body).not_to include("evil.test")
+  end
+
   it "draws the home page at /, from its blocks" do
     get "/"
 

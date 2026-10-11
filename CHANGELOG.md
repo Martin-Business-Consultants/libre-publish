@@ -6,6 +6,27 @@ section below. An install is brought to one with `bin/update v1.0.0`, or a
 Kamal site with `kamal deploy -d <site>`. Settings shows when a newer one is
 out.
 
+## 1.25.0
+
+### Security
+- **The website's own address never comes from the request.** Canonical
+  links, Open Graph, JSON-LD and sitemap.xml are cached for everyone, and
+  were built from the request's Host (or X-Forwarded-Host) when Settings ›
+  General had no site URL. They use the site URL, else APP_HOST, now.
+- **Two-factor takes the password to change.** Switching it off, or making
+  new recovery codes, asks for the account's password: an open session alone
+  isn't enough. **Each code works once**: one already used (seen over a
+  shoulder, or replayed) is refused within its window too.
+
+### Added
+- **The admin on a host of its own** (optional): set `CMS_ADMIN_HOST`
+  (`cms.example.com`, pointed at the same server). Then the admin, its
+  sign-in and its cookie live only there, and the website only on the site's
+  URL, so nothing the website runs shares an origin with a signed-in admin.
+  `/cms` on the website goes to it; the API, files and `/up` answer on both;
+  links into the admin from email use it. Without it, one host serves both,
+  as before. See docs/install.md.
+
 ## 1.24.0
 
 A security release, from a review of the whole CMS (Brakeman and the gem

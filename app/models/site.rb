@@ -19,6 +19,22 @@ module Site
     Rails.configuration.x.app_host.presence || site_url_host || "localhost"
   end
 
+  # The public website's own address, for what its pages and sitemap print
+  # about themselves (canonical, og:url, JSON-LD, sitemap.xml): the site URL
+  # (Settings › General), else this install's APP_HOST. Never the request's
+  # Host header, which whoever sends a request chooses, and which a shared
+  # cache would keep in a page for everyone. nil with neither set (a fresh
+  # development copy), where the caller falls back to the request.
+  def public_base_url
+    configured = Setting.get("general")["site_base_url"].to_s.strip.chomp("/")
+    return configured if configured.present?
+
+    app_host = Rails.configuration.x.app_host.presence or return
+    "#{Rails.configuration.x.app_protocol || "https"}://#{app_host}"
+  rescue ActiveRecord::ActiveRecordError
+    nil
+  end
+
   def site_url_host
     uri = URI.parse(Setting.get("general")["site_base_url"].to_s.strip)
     return unless uri.host
@@ -54,8 +70,13 @@ module Site
   end
 
   # For links built outside a request (mailers, jobs, the CLI bootstrap).
+  # The admin's own host when it has one (CMS_ADMIN_HOST, AdminHost), else nil.
+  def admin_host = Rails.configuration.x.admin_host.presence
+
+  # For links into the admin (a password reset, a notification's "open it"):
+  # the admin's own host when it has one.
   def url_options
-    name, port = host.split(":", 2)
+    name, port = (admin_host || host).split(":", 2)
     {host: name, port: port&.to_i, protocol: Rails.configuration.x.app_protocol}.compact
   end
 end

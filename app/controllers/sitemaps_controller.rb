@@ -54,7 +54,8 @@ class SitemapsController < ApplicationController
     Setting.get("general")["site_base_url"].to_s
   end
 
+  # Never the request's Host (Site.public_base_url): the sitemap is cached.
   def derived_base_url
-    "#{request.protocol}#{request.host_with_port}"
+    Site.public_base_url || "#{request.protocol}#{request.host_with_port}"
   end
 end
