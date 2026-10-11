@@ -15,8 +15,15 @@ export default class extends Controller {
   static values = { url: String, running: Boolean }
 
   connect() {
-    this.watching = new Map()
-    if (this.runningValue) this.start()
+    this.watching ||= new Map()
+  }
+
+  // On the page it's drawn on, and when the page comes back morphed (the
+  // Update button's redirect to the same page keeps this controller, and only
+  // the value changes).
+  runningValueChanged(running) {
+    this.watching ||= new Map()
+    if (running && !this.element.open) this.start()
   }
 
   disconnect() {

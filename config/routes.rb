@@ -33,6 +33,8 @@ Rails.application.routes.draw do
       resources :assets, only: [:show, :create, :update, :destroy] do
         # An optimized image's original back (Asset::Optimizable).
         resource :restoration, only: :create, module: :assets
+        # The preview's image editor: the image, and the edited copy.
+        resource :image_edit, only: [:show, :create], module: :assets
       end
       resource :folder, only: [:create, :update, :destroy]
       resources :moves, only: :create

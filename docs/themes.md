@@ -49,7 +49,7 @@ a Docker build's `CMS_THEME` secret, bin/fetch-theme).
 | `website_entries(:collection)` | A collection's published entries, by their `order` field, then title |
 | `website_href(link)` | A link field as an href (`home` is `/`) |
 | `website_path(record)` | A page's or entry's address |
-| `website_image_tag(id, sizes:)` | An `<img>` with a `srcset` of resized copies, its width and height, its alt text and its focal point |
+| `website_image_tag(id, sizes:)` | An `<img>` with a `srcset` of resized copies, its width and height, its alt text and its focal point. In the editor's preview, the image of a block's field gets Replace and Crop & edit on a click: draw block images with this, not an `<img>` of your own, so editors can change them in place |
 | `website_markdown`, `website_rich_text`, `website_plain_text` | Text fields, made safe |
 | `website_seo_tags(record, …)` | The `<head>` its SEO panel describes |
 | `website_scripts(:head)`, `website_scripts(:body)` | The "scripts" global |

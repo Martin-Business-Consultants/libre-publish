@@ -38,8 +38,10 @@ module WebsiteHelper
       return
     end
 
+    @website_block_row = row
     html = render partial, data: Website::Fields.new(block["data"], website_block_types[type]&.fields, name: type, resolved: block["resolved"],
       inline_edit: website_inline_edit, row: row)
+    @website_block_row = nil
     website_html Cms::Hooks.apply("website.block", html, block: block)
   end
 
@@ -107,8 +109,13 @@ module WebsiteHelper
   # and height so the page doesn't shift as it loads, its alt text (or
   # `alt:`; "" for a decorative image) and its focal point as the crop.
   # Nothing for a missing or deleted asset.
+  # In the editor's preview, one of the block's image fields says which
+  # (data-lp-image, Website::InlineEdit#image), for Replace and Edit.
   def website_image_tag(id, sizes: "100vw", alt: nil, loading: :lazy, fetchpriority: nil, position: nil, **options)
     image = website_image(id) or return
+    if (field = @website_block_row && website_inline_edit&.image_field(@website_block_row, id))
+      options[:data] = (options[:data] || {}).merge(lp_image: field)
+    end
     style = [options.delete(:style), ("object-position: #{position || image[:position]}" if position || image[:position])].compact.join("; ")
     tag.img(src: image[:src], srcset: image[:srcset], sizes: (sizes if image[:srcset]), width: image[:width], height: image[:height],
       alt: alt || image[:alt], loading:, decoding: (loading.to_s == "eager" ? "sync" : "async"), fetchpriority:,

@@ -17,7 +17,14 @@ export default class extends Controller {
   connect() {
     this.receive = this.receive.bind(this)
     this.submitted = this.submitted.bind(this)
+    this.picked = this.picked.bind(this)
+    this.loaded = this.loaded.bind(this)
+    // Fields changed here since the last save: a preview drawn again (after an
+    // image changes) is told, so its Save still counts them.
+    this.pending = new Set()
     window.addEventListener("message", this.receive)
+    window.addEventListener("asset-picker:picked", this.picked)
+    this.frameTarget.addEventListener("load", this.loaded)
     document.addEventListener("turbo:submit-end", this.submitted)
     // Opened on #preview: the tab was shown before this was here to hear it.
     if (!this.frameTarget.closest("[hidden]")) this.refresh()
@@ -25,6 +32,8 @@ export default class extends Controller {
 
   disconnect() {
     window.removeEventListener("message", this.receive)
+    window.removeEventListener("asset-picker:picked", this.picked)
+    this.frameTarget.removeEventListener("load", this.loaded)
     document.removeEventListener("turbo:submit-end", this.submitted)
   }
 
@@ -36,6 +45,7 @@ export default class extends Controller {
     this.saving = false
 
     if (event.detail.success) {
+      this.pending.clear()
       justSaved = true
       const reopen = () => document.querySelector("[data-controller~=website-preview] a[data-tab=preview]")?.click()
       document.addEventListener("turbo:render", reopen, { once: true })
@@ -51,12 +61,52 @@ export default class extends Controller {
   receive(event) {
     if (event.origin !== window.location.origin || event.source !== this.frameTarget.contentWindow) return
     if (event.data?.type === "lp-inline-save") return this.save()
+    if (event.data?.type === "lp-image") return this.#image(event.data.action, event.data.field)
     if (event.data?.type !== "lp-inline-edit") return
 
     const input = this.#input(event.data.field)
     if (!input) return
     input.value = event.data.value
     input.dispatchEvent(new Event("input", { bubbles: true }))
+    this.#changed(event.data.field)
+  }
+
+  // An image's Replace (the media picker the field opens) or Crop & edit
+  // (the image editor, which saves a copy). Either answers with the field's
+  // asset-picker:picked, as the picker does.
+  #image(action, field) {
+    const input = this.#input(field)
+    const assetField = input?.closest("[data-controller~='asset-field']")
+    if (!assetField) return
+    this.awaiting = { field, id: assetField.dataset.assetFieldIdValue }
+
+    if (action === "edit" && input.value) {
+      window.dispatchEvent(new CustomEvent("image-editor:open", { detail: { assetId: input.value, field: this.awaiting.id } }))
+    } else {
+      assetField.querySelector("[data-action~='asset-field#choose']")?.click()
+    }
+  }
+
+  // The image chosen or edited is in the field (asset-field set it): the
+  // preview draws it.
+  picked(event) {
+    if (!this.awaiting || event.detail.field !== this.awaiting.id) return
+    const { field } = this.awaiting
+    this.awaiting = null
+    setTimeout(() => {
+      this.#changed(field)
+      this.refresh()
+    })
+  }
+
+  loaded() {
+    if (this.pending.size) {
+      this.frameTarget.contentWindow?.postMessage({ type: "lp-inline-pending", fields: [ ...this.pending ] }, window.location.origin)
+    }
+  }
+
+  #changed(field) {
+    this.pending.add(field)
     if (this.hasSaveTarget) this.saveTarget.disabled = false
   }
 
