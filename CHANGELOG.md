@@ -8,6 +8,8 @@ out.
 
 ## Unreleased
 
+## 1.30.2
+
 ### Fixed
 - **An update in place without downtime finds the release's gems.** Backing
   up and migrating a release before switching to it ran without the image's
