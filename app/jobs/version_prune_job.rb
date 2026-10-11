@@ -8,5 +8,7 @@ class VersionPruneJob < ApplicationJob
   def perform
     PageVersion.prune
     CollectionEntryVersion.prune
+    GlobalVersion.prune
+    SettingVersion.prune
   end
 end

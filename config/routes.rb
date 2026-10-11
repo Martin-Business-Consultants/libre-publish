@@ -166,6 +166,10 @@ Rails.application.routes.draw do
     end
     resources :globals, param: :slug, except: :show do
       resource :schema, only: [:show, :update], module: :globals
+      # Every change kept (GlobalVersion): compare, and restore.
+      resources :versions, only: [:index, :show], module: :globals do
+        resource :restoration, only: :create, module: :versions
+      end
     end
 
     resources :webhooks do
@@ -186,6 +190,10 @@ Rails.application.routes.draw do
 
     namespace :settings do
       resource :general, only: [:show, :update], controller: "generals"
+      # Every change to the settings people edit (SettingVersion).
+      resources :histories, path: "history", only: [:index, :show] do
+        post :restore, on: :member
+      end
       resource :search, only: [:show, :update], controller: "searches"
       # The SMTP server email goes through (MailDelivery), and a test email.
       resource :mail_delivery, only: [:show, :update] do

@@ -29,6 +29,10 @@ class Global < ApplicationRecord
   include Referencing
   include Searchable
   include Trashable
+
+  # Every change to its name or data is kept (GlobalVersion).
+  has_many :versions, class_name: "GlobalVersion", dependent: :delete_all
+  after_save :snapshot_version, if: -> { saved_change_to_data? || saved_change_to_name? }
   include Redactable
 
   FIELD_TYPES = BlockType::COLLECTION_FIELD_TYPES
@@ -56,5 +60,11 @@ class Global < ApplicationRecord
       name:       name,
       updated_at: updated_at&.iso8601
     })
+  end
+
+  private
+
+  def snapshot_version
+    versions.create!(name: name, data: data, author_id: Current.user&.id, created_at: Time.current)
   end
 end

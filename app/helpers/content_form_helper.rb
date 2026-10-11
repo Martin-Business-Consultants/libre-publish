@@ -10,6 +10,7 @@ module ContentFormHelper
     case record
     when Page            then page_versions_path(record.path)
     when CollectionEntry then collection_entry_versions_path(record.collection.slug, record.slug)
+    when Global          then global_versions_path(record.slug)
     end
   end
 
