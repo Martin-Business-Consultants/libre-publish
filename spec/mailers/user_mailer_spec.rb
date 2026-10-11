@@ -17,6 +17,15 @@ RSpec.describe UserMailer, type: :mailer do
       expect(mail.from).to eq([ApplicationMailer.from_address])
     end
 
+    it "carries the Branding logo inline on top" do
+      asset = Asset.create!(folder: "/branding", name: "Logo", file: Rack::Test::UploadedFile.new(Rails.root.join("public/icon.png"), "image/png"))
+      Setting.set("branding", {"logo_id" => asset.id.to_s})
+      Setting.set("general", {"title" => "Acme"})
+
+      expect(mail.html_part.body.decoded).to include(%(src="cid:logo@cms"), %(alt="Acme"))
+      expect(mail.attachments.sole).to be_inline
+    end
+
     it "links to this install's host" do
       link = mail.body.encoded[%r{https?://[^"\'\s]+}]
 

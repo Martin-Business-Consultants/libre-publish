@@ -34,7 +34,6 @@ class CollectionEventMailer < ApplicationMailer
     from_email = general["email_from_address"].presence || forms["from_email"].presence || self.class.default_from_email
 
     @verb     = EVENT_VERBS[@event] || @event
-    @logo_url = compute_logo_url
     @entry_url = compute_entry_url
 
     mail(
@@ -50,15 +49,6 @@ class CollectionEventMailer < ApplicationMailer
     (@entry&.title.presence) || @payload["title"].to_s.presence || "(untitled)"
   end
 
-  def compute_logo_url
-    logo_id = Setting.get("branding")["logo_id"]
-    return nil if logo_id.blank?
-
-    url = MediaLibrary.find(logo_id)&.url
-    url && cms_url(url)
-  rescue StandardError
-    nil
-  end
 
   def compute_entry_url
     return nil unless @entry
@@ -66,8 +56,8 @@ class CollectionEventMailer < ApplicationMailer
     cms_url("/collections/#{@collection.slug}/entries/#{@entry.slug}/edit")
   end
 
-  # An absolute URL on the CMS itself (APP_HOST, Site.url_options): the logo
-  # is a CMS file and the entry link opens the CMS's editor. Not the site's
+  # An absolute URL on the CMS itself (APP_HOST, Site.url_options): the entry
+  # link opens the CMS's editor. Not the site's
   # URL (Settings › General): that's the public website, which serves
   # neither. A URL the media library already made absolute keeps only its
   # path, since its host is whatever the request that built it was on.

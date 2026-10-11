@@ -6,6 +6,22 @@ section below. An install is brought to one with `bin/update v1.0.0`, or a
 Kamal site with `kamal deploy -d <site>`. Settings shows when a newer one is
 out.
 
+## 1.20.0
+
+### Fixed
+- **The logo in emails**: it was a link to the image on the CMS, which many
+  mail clients don't load (Outlook, Apple Mail and Gmail settings that block
+  remote images), so it showed broken. Emails now carry Settings ›
+  Branding's logo inside the message (an inline attachment), so it shows
+  everywhere. A WebP or very large logo goes as a PNG of it; an SVG, which
+  few mail clients draw, is left out.
+
+### Added
+- **A logo on every email**: password resets and email verification have
+  the logo on top too, not only collection notifications. The Forms plugin
+  (1.3.0) uses the same logo, and a theme's email design marks where it goes
+  with `data-cms-logo`.
+
 ## 1.19.0
 
 ### Changed

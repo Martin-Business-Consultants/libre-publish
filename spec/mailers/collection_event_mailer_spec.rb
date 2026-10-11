@@ -25,23 +25,36 @@ RSpec.describe CollectionEventMailer do
     expect(sent.from).to eq([described_class.default_from_email])
   end
 
-  # The logo and the entry link are the CMS's (APP_HOST, example.com in
-  # tests), never the public website's: the site doesn't serve CMS files or
-  # the editor, so links built on it came out broken.
-  it "links the logo and the entry on the CMS itself, not the public site" do
+  def html(mail) = (mail.html_part || mail).body.decoded
+
+  # The entry link is the CMS's (APP_HOST, example.com in tests), never the
+  # public website's: the site doesn't serve the editor.
+  it "links the entry on the CMS itself, not the public site" do
     Setting.set("general", {"site_base_url" => "https://www.acme.test"})
-    Setting.set("branding", {"logo_id" => "7"})
-    logo = Struct.new(:url).new("https://localhost/rails/active_storage/blobs/redirect/abc--123/logo.png")
-    allow(MediaLibrary).to receive(:find).with("7").and_return(logo)
 
-    html = sent.body.to_s
-
-    expect(html).to include(%(src="http://example.com/rails/active_storage/blobs/redirect/abc--123/logo.png"))
-    expect(html).to include(%(href="http://example.com/collections/posts/entries/hello/edit"))
-    expect(html).not_to include("acme.test/rails", "acme.test/collections", "localhost")
+    expect(html(sent)).to include(%(href="http://example.com/collections/posts/entries/hello/edit"))
+    expect(html(sent)).not_to include("acme.test/collections")
   end
 
-  it "leaves the logo out when Branding has none" do
-    expect(sent.body.to_s).not_to include("<img")
+  # Inline, so it shows in a client that won't fetch remote images.
+  it "carries the Branding logo inline, once" do
+    asset = Asset.create!(folder: "/branding", name: "Logo", file: Rack::Test::UploadedFile.new(Rails.root.join("public/icon.png"), "image/png"))
+    Setting.set("branding", {"logo_id" => asset.id.to_s})
+
+    mail = sent
+
+    expect(mail.attachments.size).to eq(1)
+    expect(mail.attachments.first).to be_inline
+    expect(mail.attachments.first.content_id).to eq("<logo@cms>")
+    expect(html(mail).scan(%(src="cid:logo@cms")).size).to eq(1)
+  end
+
+  it "leaves the logo out when Branding has none, or one no mail client draws" do
+    expect(html(sent)).not_to include("<img")
+
+    svg = Asset.create!(folder: "/branding", name: "Logo", file: Rack::Test::UploadedFile.new(Rails.root.join("public/icon.svg"), "image/svg+xml"))
+    Setting.set("branding", {"logo_id" => svg.id.to_s})
+    expect(html(sent)).not_to include("<img")
+    expect(sent.attachments).to be_empty
   end
 end
