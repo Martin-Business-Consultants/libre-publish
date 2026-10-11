@@ -47,9 +47,13 @@ module WebsiteHelper
   # for the <head> (part: "head") or the end of <body> ("body"): trusted as
   # written, since only someone who can edit globals can put it there.
   # Plugins add theirs after (the website.head and website.body filters).
+  # Read as stored, not through Website::Fields: an item may carry
+  # "enabled": false (switched off over the API) though the global's fields
+  # don't declare it, and Fields raises for a field it doesn't know, which
+  # took every page down once a script was added.
   def website_scripts(part)
-    items = Global.find_by(slug: "scripts") ? website_global(:scripts).items : []
-    pasted = items.filter_map { it[part].to_s.html_safe if it.enabled != false && it[part].present? } # rubocop:disable Rails/OutputSafety
+    items = Array(Global.find_by(slug: "scripts")&.data.to_h["items"]).grep(Hash)
+    pasted = items.filter_map { it[part].to_s.html_safe if it["enabled"] != false && it[part].present? } # rubocop:disable Rails/OutputSafety
     added = website_html Cms::Hooks.apply("website.#{part}", ActiveSupport::SafeBuffer.new, request: request)
     safe_join([*pasted, (added if added.present?)].compact, "\n")
   end
