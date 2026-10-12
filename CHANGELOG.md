@@ -8,6 +8,8 @@ out.
 
 ## Unreleased
 
+## 1.32.2
+
 ### Fixed
 - **An install with a plugin that can't run here starts anyway.** A plugin
   installed from Settings › Plugins that never registers with the CMS (a
