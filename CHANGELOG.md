@@ -8,6 +8,8 @@ out.
 
 ## Unreleased
 
+## 1.32.0
+
 ### Changed
 - **An editor opens with the record's title, level with its sidebar.** The
   page, entry, global, pattern, form and form email editors no longer start
