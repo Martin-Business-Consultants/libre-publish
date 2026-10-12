@@ -79,10 +79,28 @@ module InstalledPlugins
   # Those left unloaded because the core does their work now (ABSORBED).
   def absorbed = @absorbed ||= {}
 
+  # One installed from Settings › Plugins that can't run here: it never
+  # registers with the CMS, so booting it would stop the install starting
+  # (a Runwell plugin's engine calls Runwell::Plugins). It's left unloaded,
+  # with why, for Settings › Plugins to offer its removal.
+  Unloaded = Data.define(:key, :name)
+
+  def foreign?(path)
+    code = path.glob("{lib,config}/**/*.rb").map { it.read rescue "" }
+    return false if code.any? { it.include?("Cms::Plugins.register") }
+
+    code.any? { it.include?("Runwell::Plugins") } ? "it's a Runwell plugin" : "it never registers with the CMS"
+  end
+
   def load!
     chosen.each do |name, copy|
       next if Gem.loaded_specs.key?(name) # still in a Gemfile as a gem: Bundler loaded it
       next absorbed[name] = copy[:path] if ABSORBED.key?(name)
+      if copy[:source] == :installed && (reason = foreign?(copy[:path]))
+        failed[name] = "it isn't a CMS plugin: #{reason}, so it's left unloaded. Remove it."
+        warn "[plugins] #{name} left unloaded: #{failed[name]}"
+        next
+      end
 
       $LOAD_PATH.unshift copy[:path].join("lib").to_s
       require name

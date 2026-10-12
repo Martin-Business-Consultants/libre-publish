@@ -50,6 +50,23 @@ RSpec.describe InstalledPlugins do
     expect(chosen["thing"][:version]).to eq("2.0.0")
   end
 
+  it "leaves an installed plugin unloaded when it never registers with the CMS, so the install still boots" do
+    market = plugin("data/plugins", "market", "0.2.0")
+    market.join("lib/market").tap(&:mkpath).join("engine.rb").write("Runwell::Plugins.register :market")
+    forms = plugin("data/plugins", "forms", "1.7.2")
+    forms.join("lib/forms").tap(&:mkpath).join("engine.rb").write("Cms::Plugins.register :forms")
+    allow(described_class).to receive(:chosen).and_return("market" => {path: market, version: "0.2.0", source: :installed})
+
+    described_class.load!
+
+    expect(described_class.failed["market"]).to eq("it isn't a CMS plugin: it's a Runwell plugin, so it's left unloaded. Remove it.")
+    expect(described_class.loaded).not_to have_key("market")
+    expect(described_class.foreign?(forms)).to be(false)
+    expect(described_class.foreign?(plugin("data/plugins", "other", "1.0.0"))).to eq("it never registers with the CMS")
+  ensure
+    described_class.failed.delete("market")
+  end
+
   it "leaves the data directory's out with CMS_INSTALLED_PLUGINS=off, and the reference plugin out of production" do
     plugin("plugins", "forms", "1.1.0")
     plugin("data/plugins", "forms", "1.2.0")

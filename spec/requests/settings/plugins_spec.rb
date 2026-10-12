@@ -54,6 +54,19 @@ RSpec.describe "Settings › Plugins", type: :request do
     expect(Setting.get("plugins")).not_to have_key("future")
   end
 
+  it "offers to remove an installed plugin that was left unloaded" do
+    InstalledPlugins.failed["market"] = "it isn't a CMS plugin: it's a Runwell plugin, so it's left unloaded. Remove it."
+    allow(InstalledPlugins).to receive(:present).and_return("market" => Rails.root.join("tmp/market"))
+    sign_in_as admin
+
+    get settings_plugins_path
+
+    expect(response.body).to include("is installed but didn’t load", "Runwell plugin")
+    expect(response.body).to include(%(action="#{settings_plugin_path("market")}"))
+  ensure
+    InstalledPlugins.failed.delete("market")
+  end
+
   it "shows what a plugin adds" do
     sign_in_as admin
 

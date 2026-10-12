@@ -8,6 +8,15 @@ out.
 
 ## Unreleased
 
+### Fixed
+- **An install with a plugin that can't run here starts anyway.** A plugin
+  installed from Settings › Plugins that never registers with the CMS (a
+  Runwell plugin, say) stopped the install booting: every restart and
+  deploy failed until someone deleted it on the server. It's now left
+  unloaded, Settings › Plugins says why, and an admin removes it there with
+  its Remove button. Deploying 1.32.2 is all an install in that state needs.
+
+
 ## 1.32.1
 
 ### Fixed

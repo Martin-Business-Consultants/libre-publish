@@ -39,7 +39,12 @@
     <% end %>
     <% InstalledPlugins.failed.each do |name, error| %>
       <%# herb:key name %>
-      <p class="field-error"><strong><%= name %></strong> is installed but didn’t load: <%= error %></p>
+      <div class="cluster cluster--sm">
+        <p class="field-error"><strong><%= name %></strong> is installed but didn’t load: <%= error %></p>
+        <% if Current.user.admin? && InstalledPlugins.present.key?(name) %>
+          <%= render "settings/plugins/remove_dialog", plugin: InstalledPlugins::Unloaded.new(key: name, name: name), tables: [] %>
+        <% end %>
+      </div>
     <% end %>
   </section>
 
