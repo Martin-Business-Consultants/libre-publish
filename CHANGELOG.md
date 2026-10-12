@@ -8,6 +8,16 @@ out.
 
 ## Unreleased
 
+### Fixed
+- **An updated plugin's screens get its new stylesheet.** At boot the
+  install compiles a plugin's stylesheets when they're missing, but it
+  checked only their names: a plugin updated from Settings › Plugins
+  brings new styles under the old names, so production kept serving the
+  old ones. Forms 1.7 and Approvals 1.3, redrawn in the admin's own CSS,
+  came up with their two-column screens unstyled. It now compiles again
+  when a plugin's stylesheet isn't the one compiled. Restart once after
+  updating to pick it up.
+
 ## 1.31.0
 
 ### Added
