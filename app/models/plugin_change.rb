@@ -180,7 +180,17 @@ class PluginChange < ApplicationRecord
     status.file? && status.read.strip.then { it.present? && it != "0" }
   end
 
-  def restart_output = report.join("restart.log").then { it.file? ? it.readlines.last(20).join : "(no output)" }
+  # The log's last lines, led by the error that stopped it ("…: uninitialized
+  # constant X (NameError)"), which a long backtrace pushes out of them.
+  def restart_output
+    log = report.join("restart.log")
+    return "(no output)" unless log.file?
+
+    lines = log.readlines
+    error = lines.find { it.match?(/\((?:[A-Z]\w*::)*[A-Z]\w*(?:Error|Exception)\)\s*\z/) }
+    tail = lines.last(20)
+    [(error.strip + "\n…\n" if error && !tail.include?(error)), tail.join].compact.join
+  end
 
   def done?
     if action == "remove"
@@ -208,6 +218,7 @@ class PluginChange < ApplicationRecord
     raise Failed, "#{repo} names its plugin #{name}, which isn't a plain lowercase name." unless name.match?(NAME_FORMAT)
     raise Failed, "#{repo} holds the #{name} plugin, not #{key}." if key && key != name
     raise Failed, "#{name} is already installed. Update it instead." if action == "install" && (InstalledPlugins.present.key?(name) || InstalledPlugins.loaded.key?(name))
+    registers!(unpacked, name, tag)
 
     update!(key: name)
     unpacked.join(InstalledPlugins::METADATA).write({repo: repo, version: to_version, tag: (tag unless pinned_commit),
@@ -215,6 +226,17 @@ class PluginChange < ApplicationRecord
     FileUtils.rm_rf(previous)
     File.rename(target, previous) if target.exist?
     File.rename(unpacked, target)
+  end
+
+  # A CMS plugin registers itself (Cms::Plugins.register in its engine). One
+  # that doesn't would stop the install booting on the restart: a Runwell
+  # plugin, a Rails engine of another app. Refused before it's put in place.
+  def registers!(unpacked, name, tag)
+    code = unpacked.glob("{lib,config}/**/*.rb").map { it.read rescue "" }
+    return if code.any? { it.include?("Cms::Plugins.register") }
+
+    host = " It's a Runwell plugin: install it in Runwell's Settings › Plugins instead." if code.any? { it.include?("Runwell::Plugins") }
+    raise Failed, "#{repo} #{tag} isn't a CMS plugin: #{name} never registers with the CMS (Cms::Plugins.register).#{host}"
   end
 
   def take_out
@@ -245,12 +267,18 @@ class PluginChange < ApplicationRecord
   end
 
   # The release before goes back; for an image's plugin updated here the
-  # first time, there's none, and the image's copy runs again.
+  # first time, there's none, and the image's copy runs again. A plugin newly
+  # installed comes out: the install never ran it (a restart that failed
+  # stops at its migrate, before the restart), and left in place it would
+  # stop the next restart or update from booting.
   def roll_back
-    return unless action == "update"
-
-    FileUtils.rm_rf(target)
-    File.rename(previous, target) if previous.exist?
-    Cms::Restart.later
+    case action
+    when "update"
+      FileUtils.rm_rf(target)
+      File.rename(previous, target) if previous.exist?
+      Cms::Restart.later
+    when "install"
+      FileUtils.rm_rf(target) if key.present?
+    end
   end
 end

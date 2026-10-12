@@ -8,6 +8,17 @@ out.
 
 ## Unreleased
 
+### Fixed
+- **A plugin install that fails its restart comes back out.** An install's
+  restart migrates first, and a plugin that stops the CMS booting fails it
+  there, leaving the install running as before. But the plugin stayed in
+  place, so the next restart or update would fail the same way and take the
+  site down. Now it's taken out again. A release that never registers with
+  the CMS (`Cms::Plugins.register`) is refused before anything restarts;
+  Settings › Plugins says so, and says when it's a Runwell plugin. A failed
+  restart's message now leads with the error, which a long backtrace used to
+  push out of view.
+
 ## 1.32.0
 
 ### Changed

@@ -46,7 +46,7 @@ RSpec.describe PluginChange do
     end
   end
 
-  def plugin_release(name = "thing") = release("#{name}.gemspec" => "", "lib/#{name}.rb" => "module Thing; end")
+  def plugin_release(name = "thing") = release("#{name}.gemspec" => "", "lib/#{name}.rb" => "module Thing; end", "lib/#{name}/engine.rb" => "Cms::Plugins.register :#{name}")
 
   def installed = InstalledPlugins.directory.join("thing")
 
@@ -78,6 +78,18 @@ RSpec.describe PluginChange do
       perform_enqueued_jobs
 
       expect(change.reload).to have_attributes(status: "failed", message: a_string_matching(/isn't a CMS plugin/))
+      expect(InstalledPlugins.directory.children).to be_empty
+      expect(Cms::Restart).not_to have_received(:later)
+    end
+
+    it "refuses a release that never registers with the CMS, naming a Runwell plugin as one" do
+      release("market.gemspec" => "", "lib/market/engine.rb" => "Runwell::Plugins.register :market")
+
+      change = described_class.install("acme/cms-thing", by: admin)
+      perform_enqueued_jobs
+
+      expect(change.reload).to have_attributes(status: "failed",
+        message: a_string_matching(/never registers with the CMS.*It's a Runwell plugin/))
       expect(InstalledPlugins.directory.children).to be_empty
       expect(Cms::Restart).not_to have_received(:later)
     end
@@ -119,7 +131,7 @@ RSpec.describe PluginChange do
 
     it "installs the commit the directory pinned, not the latest release, and says so" do
       allow(PluginDirectory).to receive(:find_by_repo).with("acme/cms-thing").and_return(listed)
-      release("thing.gemspec" => "", "lib/thing.rb" => "module Thing; end")
+      release("thing.gemspec" => "", "lib/thing.rb" => "module Thing; end", "lib/thing/engine.rb" => "Cms::Plugins.register :thing")
       allow(github).to receive(:download) do |url, path|
         expect(url).to eq("https://api.github.com/repos/acme/cms-thing/tarball/#{"c" * 40}")
         FileUtils.cp(@archive, path)
@@ -180,6 +192,21 @@ RSpec.describe PluginChange do
       expect(update.reload).to have_attributes(status: "failed",
         message: a_string_matching(/restart after updating thing to 1\.2\.0 failed \(exit 1\).*table things already exists/m))
       expect(installed.join("old.txt").read).to eq("1.1.0")
+    end
+
+    it "takes out a new plugin whose restart failed, so the next restart boots, and leads with the error" do
+      installed.join("lib").mkpath
+      change.report.mkpath
+      change.report.join("restart.log").write("/app/lib/market/engine.rb:51:in 'block in <class:Engine>': uninitialized constant Runwell (NameError)\n" +
+        30.times.map { "/gems/rake/application.rb:#{it}:in 'Rake::Application#top_level'\n" }.join + "Tasks: TOP => db:migrate\n")
+      change.report.join("exit_status").write("1\n")
+
+      described_class.reconcile
+
+      expect(change.reload.message).to start_with("The restart after installing thing failed (exit 1):\n/app/lib/market/engine.rb:51")
+      expect(change.message).to include("uninitialized constant Runwell (NameError)\n…\n", "Tasks: TOP => db:migrate")
+      expect(installed).not_to exist
+      expect(Cms::Restart).not_to have_received(:later)
     end
 
     it "waits on a restart that hasn't finished, or finished well" do
