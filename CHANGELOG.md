@@ -8,6 +8,8 @@ out.
 
 ## Unreleased
 
+## 1.32.1
+
 ### Fixed
 - **A plugin install that fails its restart comes back out.** An install's
   restart migrates first, and a plugin that stops the CMS booting fails it
