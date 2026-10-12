@@ -8,6 +8,8 @@ out.
 
 ## Unreleased
 
+## 1.31.1
+
 ### Fixed
 - **An updated plugin's screens get its new stylesheet.** At boot the
   install compiles a plugin's stylesheets when they're missing, but it
