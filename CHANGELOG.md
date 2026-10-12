@@ -8,6 +8,18 @@ out.
 
 ## Unreleased
 
+### Changed
+- **An editor opens with the record's title, level with its sidebar.** The
+  page, entry, global, pattern, form and form email editors no longer start
+  with an "Edit Page"-style heading: their tabs, the CLI command and their
+  actions (Add New, Fields, Revisions…) share one bar across the top
+  (`layouts/shared/editor_bar`, which a plugin's editor can render too), and
+  the title field opens the main column beside the Publish box.
+
+### Added
+- **The Leads plugin's webhook events** in the contract and docs/webhooks.md:
+  `lead.created` and `lead.stage_changed` ([cms-leads](https://github.com/Martin-Business-Consultants/cms-leads)).
+
 ## 1.31.1
 
 ### Fixed

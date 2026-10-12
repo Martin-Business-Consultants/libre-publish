@@ -13,27 +13,30 @@
 <% if record.persisted? %>
   <%= tag.div data: { controller: ["tabs", ("website-preview" if preview)].compact.join(" "), action: ("tabs:shown->website-preview#shown" if preview),
         website_preview_form_value: ("#{kind}_form" if preview) } do %>
-    <nav class="editor-tabs" role="tablist" aria-label="View">
-      <a href="#edit" role="tab" class="editor-tabs__tab" data-tab="edit" data-tabs-target="tab" data-action="tabs#select">Edit</a>
-      <% if seo %>
-        <a href="#seo" role="tab" class="editor-tabs__tab" data-tab="seo" data-tabs-target="tab" data-action="tabs#select">
-          <%= icon_tag "search" %>
-          <span>SEO</span>
-        </a>
-      <% end %>
-      <% if json then %>
-        <a href="#json" role="tab" class="editor-tabs__tab" data-tab="json" data-tabs-target="tab" data-action="tabs#select">
-          <%= icon_tag "code" %>
-          <span>JSON</span>
-        </a>
-      <% end %>
-      <% if preview %>
-        <a href="#preview" role="tab" class="editor-tabs__tab" data-tab="preview" data-tabs-target="tab" data-action="tabs#select">
-          <%= icon_tag "eye" %>
-          <span>Preview</span>
-        </a>
-      <% end %>
-    </nav>
+    <% tabs = capture do %>
+      <nav class="editor-tabs" role="tablist" aria-label="View">
+        <a href="#edit" role="tab" class="editor-tabs__tab" data-tab="edit" data-tabs-target="tab" data-action="tabs#select">Edit</a>
+        <% if seo %>
+          <a href="#seo" role="tab" class="editor-tabs__tab" data-tab="seo" data-tabs-target="tab" data-action="tabs#select">
+            <%= icon_tag "search" %>
+            <span>SEO</span>
+          </a>
+        <% end %>
+        <% if json then %>
+          <a href="#json" role="tab" class="editor-tabs__tab" data-tab="json" data-tabs-target="tab" data-action="tabs#select">
+            <%= icon_tag "code" %>
+            <span>JSON</span>
+          </a>
+        <% end %>
+        <% if preview %>
+          <a href="#preview" role="tab" class="editor-tabs__tab" data-tab="preview" data-tabs-target="tab" data-action="tabs#select">
+            <%= icon_tag "eye" %>
+            <span>Preview</span>
+          </a>
+        <% end %>
+      </nav>
+    <% end %>
+    <%= render "layouts/shared/editor_bar", tabs: tabs %>
     <div data-tab="<%= seo ? "edit seo" : "edit" %>" data-tabs-target="panel">
       <%= yield %>
     </div>
@@ -62,5 +65,6 @@
     <% end %>
   <% end %>
 <% else %>
+  <%= render "layouts/shared/editor_bar" %>
   <%= yield %>
 <% end %>

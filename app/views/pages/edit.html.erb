@@ -1,4 +1,4 @@
-<% @page_title = "Edit Page" %>
+<% @page_title = @page.title.presence || "Page" %>
 <%= parent_page "Pages", pages_path %>
 
 <% content_for :page_actions do %>
@@ -7,8 +7,6 @@
   <% end %>
   <%= link_to "Fields", page_schema_path(@page.path), class: "btn", title: "The fields this page carries" %>
 <% end %>
-<%= render "layouts/shared/page_header", title: @page_title %>
-
 <%= render "layouts/shared/errors", record: @page %>
 <%= render layout: "content_form/editor_tabs", locals: { record: @page, kind: "page" } do %>
   <%= render "pages/form", page: @page, invalid_json: @invalid_json %>

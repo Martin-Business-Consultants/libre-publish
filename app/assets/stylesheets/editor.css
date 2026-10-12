@@ -59,11 +59,41 @@
      hangs below the bar: it scrolls sideways when narrow, never up and
      down. */
   .editor-tabs {
-    box-shadow: inset 0 -1px var(--gray-200);
     display: flex;
     gap: var(--space-1);
-    margin-block-end: var(--space-6);
+    min-inline-size: 0;
     overflow: auto hidden;
+  }
+
+  /* An editor's top bar (layouts/shared/editor_bar), in place of a page
+     title: the tabs or a label on the left, the CLI command and the page's
+     actions on the right, all on the rule. The record's title field opens
+     the main column under it, level with the sidebar's first box. */
+  .editor-bar {
+    align-items: flex-end;
+    box-shadow: inset 0 -1px var(--gray-200);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-4);
+    justify-content: space-between;
+    margin-block-end: var(--space-6);
+  }
+
+  .editor-bar__label {
+    color: var(--gray-500);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    padding-block-end: var(--space-2-5);
+  }
+
+  .editor-bar__actions {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    justify-content: flex-end;
+    margin-inline-start: auto;
+    padding-block-end: var(--space-2);
   }
 
   .editor-tabs__tab {

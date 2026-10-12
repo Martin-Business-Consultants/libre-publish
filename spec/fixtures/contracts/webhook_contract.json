@@ -27,7 +27,9 @@
       "submission.created",
       "quote_request.created",
       "invoice.sent",
-      "invoice.paid"
+      "invoice.paid",
+      "lead.created",
+      "lead.stage_changed"
     ],
     "content_events": [
       "page.published",

@@ -25,6 +25,7 @@ without it.
 |---|---|---|---|
 | Forms (`cms-plugins/forms`) | `forms` | on | Forms, their emails, the public `/api/forms/:slug/submissions` endpoint, the Submissions inbox, Settings › Forms |
 | Commerce (`cms-plugins/commerce`) | `commerce` | off | Quote requests and the public `/api/quote_requests` endpoint, invoices and their hosted `/i/:token` page, Settings › Commerce |
+| Leads (`cms-leads`) | `leads` | off | Leads from form submissions and quote requests, each with an owner and a next step; playbooks, Needs you, templates, Claude-drafted replies, follow-up emails, `/api/leads`, Settings › Leads |
 
 ## Where plugins live
 

@@ -29,7 +29,8 @@ X-CMS-Signature: sha256=<hex HMAC-SHA256 of the raw body, keyed with the webhook
 
 - `event` is one of the webhook's events: `page.*` and `entry.*`
   (`published`, `updated`, `unpublished`, `deleted`), `global.updated`, and
-  the plugins' events (`submission.created`, `quote_request.created`, …).
+  the plugins' events (`submission.created`, `quote_request.created`,
+  `lead.created`, `lead.stage_changed`, …).
 - `tenant` is the install's site key: `SITE_KEY`, else the first label of
   `APP_HOST`. A receiver serving several sites tells them apart by it, so
   when an install moves to a new host, keep `SITE_KEY` as it was.

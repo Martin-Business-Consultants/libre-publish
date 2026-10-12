@@ -1,0 +1,30 @@
+<%# locals: (tabs: nil, label: nil) %>
+<%# An editor's top bar, in place of a page title: its tabs (Edit, SEO, JSON,
+    Preview — content_form/editor_tabs) or a label naming what's edited, on
+    the left; the CLI command for it and the page's actions (content_for
+    :page_actions) on the right; ruled across the editor. The record's title
+    field opens the main column under it, level with the sidebar's first box.
+    Nothing is drawn when there's nothing to put in it. %>
+<% cli = cli_command_hint %>
+<% actions = content_for?(:page_actions) %>
+<% if tabs || label || cli || actions %>
+  <div class="editor-bar">
+    <% if tabs %>
+      <%= tabs %>
+    <% elsif label %>
+      <span class="editor-bar__label"><%= label.is_a?(String) && !label.html_safe? ? tx(label) : label %></span>
+    <% end %>
+    <% if cli || actions %>
+      <div class="editor-bar__actions">
+        <% if cli %>
+          <span class="cluster cluster--xs text-small text-muted" title="<%= tx("From the CLI or MCP:") %>">
+            <code class="code"><%= cli %></code>
+            <button type="button" class="btn btn--plain btn--sm" title="<%= tx("Copy the command") %>" data-controller="copy-to-clipboard"
+                    data-copy-to-clipboard-content-value="<%= cli %>" data-copy-to-clipboard-success-class="btn--success" data-action="copy-to-clipboard#copy"><%= tx("Copy") %></button>
+          </span>
+        <% end %>
+        <%= content_for(:page_actions) %>
+      </div>
+    <% end %>
+  </div>
+<% end %>
