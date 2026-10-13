@@ -175,6 +175,11 @@ cms ads-query "SELECT campaign.name, metrics.clicks FROM campaign WHERE segments
 cms ads-negatives 123 "lawn mowing" "snow removal" --dry-run   # then again without --dry-run
 cms ads-campaign-status 123 paused --dry-run
 cms ads-conversion <gclid> <conversion_action_id> --value 2400 --dry-run
+cms ads-plans · cms ads-plan 1          # campaign plans: setup, ad groups, checklist, checks, the live campaign beside it
+cms ads-plan new - < plan.json          # a plan, with its ad groups, from the search_leads template's checklist
+cms ads-task 1 7 done                   # tick the checklist
+cms ads-plan-negatives 1 --dry-run      # the plan's negatives the campaign lacks
+cms ads-plan 1 export > plan.csv        # for Google Ads Editor's import
 ```
 
 Every change takes `--dry-run`: Google checks it and changes nothing. Enabling

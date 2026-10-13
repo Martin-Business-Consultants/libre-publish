@@ -1089,6 +1089,52 @@ command("ads-campaign-status", group: "Google Ads",
   call(:patch, "/api/google_ads/campaigns/#{id}", {status: status, validate_only: dry})
 end
 
+command("ads-plans", group: "Google Ads",
+  summary: "Campaign plans: status, budget, decision date, checklist progress",
+  usage: "cms ads-plans",
+  nexts: ["cms ads-plan <id>"]) do |_args|
+  call(:get, "/api/google_ads/plans", hint: "cms ads-plan <id> — one plan, its checks and checklist")
+end
+
+command("ads-plan", group: "Google Ads",
+  summary: "One campaign plan: setup, ad groups, negatives, checklist, its checks, and the live campaign beside it",
+  usage: "cms ads-plan <id> | cms ads-plan new - < plan.json | cms ads-plan <id> export > plan.csv",
+  notes: "new: {\"plan\": {name, goal, success, daily_budget, starts_on, decision_on, locations, negatives, " \
+         "ad_groups: [{name, landing_path, keywords: [...], headlines: [...], descriptions: [...]}]}, \"template\": \"search_leads\"}. " \
+         "Keywords: \"phrase\", [exact], bare for broad. Negatives: one a line, # for a group, [exact]. " \
+         "export is a CSV for Google Ads Editor's import. Changing plans needs google_ads:plan.",
+  nexts: ["cms ads-task <plan_id> <task_id> done", "cms ads-plan-negatives <id> --dry-run"]) do |args|
+  need!(args, 1, "cms ads-plan <id>")
+  if args[0] == "new"
+    die "usage: cms ads-plan new - < plan.json" unless args[1] == "-"
+    call(:post, "/api/google_ads/plans", JSON.parse(read_stdin("usage: cms ads-plan new - < plan.json")))
+  elsif args[1] == "export"
+    call(:get, "/api/google_ads/plans/#{args[0]}/export", binary: true)
+  else
+    call(:get, "/api/google_ads/plans/#{args[0]}")
+  end
+end
+
+command("ads-task", group: "Google Ads",
+  summary: "Tick a plan's checklist task done, or not done",
+  usage: "cms ads-task <plan_id> <task_id> done|undone") do |args|
+  need!(args, 3, "cms ads-task <plan_id> <task_id> done|undone")
+  die "done or undone" unless %w[done undone].include?(args[2])
+  call(:patch, "/api/google_ads/plans/#{args[0]}/tasks/#{args[1]}", {done: args[2] == "done"})
+end
+
+command("ads-plan-negatives", group: "Google Ads",
+  summary: "Add a plan's negatives that its linked campaign doesn't have yet",
+  usage: "cms ads-plan-negatives <plan_id> [--dry-run]",
+  flags: [{flag: "--dry-run", description: "Google checks it and changes nothing (validate_only)"}],
+  notes: "The plan needs its campaign_id. Needs google_ads:write.") do |args|
+  need!(args, 1, "cms ads-plan-negatives <plan_id>")
+  id = args.shift
+  dry = args.delete("--dry-run") ? true : false
+  die "unexpected argument: #{args.first}" unless args.empty?
+  call(:post, "/api/google_ads/plans/#{id}/negatives", {validate_only: dry})
+end
+
 command("ads-conversion", group: "Google Ads",
   summary: "Upload an offline conversion: a lead from an ad click that became worth counting",
   usage: "cms ads-conversion <gclid> <conversion_action_id> [--value N] [--at \"yyyy-mm-dd hh:mm\"] [--currency USD] [--dry-run]",
