@@ -8,6 +8,8 @@ out.
 
 ## Unreleased
 
+## 1.32.4
+
 ### Added
 - **robots.txt on the Sitemap screen** (Tools › Sitemap › robots.txt): see
   what the site publishes, add extra rules to the one made from Settings ›
