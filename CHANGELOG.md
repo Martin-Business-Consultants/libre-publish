@@ -8,6 +8,8 @@ out.
 
 ## Unreleased
 
+## 1.33.1
+
 ### Changed
 - **Users and Roles** are laid out like the other editors: no heading
   above the form, the name as the title field, so the main column and the
