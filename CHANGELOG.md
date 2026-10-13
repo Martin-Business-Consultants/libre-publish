@@ -8,6 +8,8 @@ out.
 
 ## Unreleased
 
+## 1.33.0
+
 ### Added
 - **Settings › Security policy**: a Content-Security-Policy for the
   website, off until it's turned on, report only to test it, then
