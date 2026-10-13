@@ -165,6 +165,23 @@ RSpec.describe "Website", type: :request do
     expect(response.body).not_to include("window.pixel")
   end
 
+  it "runs a script saved as formatted text (pasted through rich text) as the code it was, before plugins see it" do
+    SiteSetup.new(name: "Acme", owner_email: "owner@example.com").call if Global.find_by(slug: "scripts").nil?
+    expect(Global.find_by!(slug: "scripts").schema.dig("fields", 0, "of").to_h { [it["name"], it["type"]] }).to include("head" => "code", "body" => "code")
+    Global.find_by!(slug: "scripts").update!(data: {"items" => [{"name" => "GA4", "head" => "",
+      "body" => %(<p>&lt;script async src="https://www.googletagmanager.com/gtag/js?id=G-TEST"&gt;&lt;/script&gt;</p>)}]})
+    seen = nil
+    Cms::Plugins.register(:watcher, name: "Watcher", version: "1", description: "x", enabled_by_default: true)
+    Cms::Plugins.filter(:watcher, "website.scripts") { |items, part:, **| seen = items.first["body"] if part == "body"; items }
+
+    get "/"
+    expect(response.body).to include(%(<script async src="https://www.googletagmanager.com/gtag/js?id=G-TEST"></script>))
+    expect(response.body).not_to include("&lt;script")
+    expect(seen).to start_with("<script async")
+  ensure
+    forget_plugin(:watcher)
+  end
+
   it "lets a plugin rework the scripts global's items before they're printed" do
     SiteSetup.new(name: "Acme", owner_email: "owner@example.com").call if Global.find_by(slug: "scripts").nil?
     Global.find_by!(slug: "scripts").update!(data: {"items" => [{"name" => "GA4", "head" => "<script>ga()</script>"}]})

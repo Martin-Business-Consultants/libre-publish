@@ -57,6 +57,9 @@ module WebsiteHelper
   # took every page down once a script was added.
   def website_scripts(part)
     items = Array(Global.find_by(slug: "scripts")&.data.to_h["items"]).grep(Hash)
+    # A script saved as formatted text (Global::ScriptCode) runs as the code it was: put back before
+    # any plugin sees it, so a consent plugin holds it like the rest.
+    items = items.map { |item| item.merge(part => Global::ScriptCode.restore(item[part])) }
     # A plugin may rework them first (the website.scripts filter: a consent
     # plugin holds some back until a visitor agrees); a list of the same hashes.
     items = Array(Cms::Hooks.apply("website.scripts", items, part: part, request: request)).grep(Hash)

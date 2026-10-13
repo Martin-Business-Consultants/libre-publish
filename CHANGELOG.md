@@ -8,6 +8,14 @@ out.
 
 ## Unreleased
 
+### Fixed
+- **A script pasted into the Scripts global runs.** Its Head and Body were
+  long-text fields, edited as rich text, so a pasted Google tag was saved as
+  formatted text and printed on every page as words: Google couldn't find
+  it. They're code fields now; updating turns them into code fields on
+  every site and puts back any script already saved that way, and the site
+  runs such a script as the code it was (before a consent plugin sees it).
+
 ## 1.32.4
 
 ### Added

@@ -79,10 +79,10 @@ module SiteBootstrap
            "of" => [
              {"name" => "name", "label" => "Name", "type" => "string", "required" => true,
               "help" => "Internal label, e.g. 'GA4', 'Meta Pixel'."},
-             {"name" => "head", "label" => "Head", "type" => "text",
-              "help" => "Pasted into <head>."},
-             {"name" => "body", "label" => "Body", "type" => "text",
-              "help" => "Pasted just before the closing </body> tag."}
+             {"name" => "head", "label" => "Head", "type" => "code",
+              "help" => "Pasted into <head> as written (where Google's tag and most analytics go)."},
+             {"name" => "body", "label" => "Body", "type" => "code",
+              "help" => "Pasted just before the closing </body> tag, as written."}
            ]}
         ]
       },
