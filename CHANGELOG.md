@@ -8,6 +8,18 @@ out.
 
 ## Unreleased
 
+### Changed
+- **Users and Roles** are laid out like the other editors: no heading
+  above the form, the name as the title field, so the main column and the
+  sidebar start on one line. A user's email and password sit together under
+  Signing in; the sidebar adds when they were last seen and their role's
+  description.
+
+### Fixed
+- Editor screens with a sidebar (Users, Roles, Block patterns) squeezed
+  their main column narrower than the sidebar: a form's hidden fields took
+  the main column's place in the layout.
+
 ## 1.33.0
 
 ### Added

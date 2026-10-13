@@ -80,13 +80,15 @@
 
   /* A main column and a sidebar beside it from 64rem (an editor's boxes, a
      settings page's help), stacked before. The sidebar is 20rem; .with-sidebar
-     --sticky keeps it in view under the admin bar. */
+     --sticky keeps it in view under the admin bar. The main column is whatever
+     comes before the sidebar, so a form's hidden fields (Rails puts them
+     first) don't take its place. */
   .with-sidebar {
     display: flex;
     flex-direction: column;
     gap: var(--space-6);
 
-    > :first-child {
+    > :not(:last-child, [type="hidden"]) {
       display: flex;
       flex: 1;
       flex-direction: column;
