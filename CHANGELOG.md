@@ -8,6 +8,8 @@ out.
 
 ## Unreleased
 
+## 1.33.2
+
 ### Fixed
 - A plugin's screens came up unstyled when its stylesheet wasn't among the
   install's compiled assets (a plugin added from Settings › Plugins to an
