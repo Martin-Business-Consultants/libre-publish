@@ -29,6 +29,7 @@ without it.
 | AI (`cms-ai`) | `ai` | off | One AI provider for every plugin (OpenCode Zen, Anthropic, OpenAI, OpenRouter, Ollama), its key set once in Settings › AI, with a monthly token limit; plugins ask it through `Ai.structured` |
 | Market (`cms-market`) | `market` | off | The site's market: competitors' websites read weekly, DataForSEO search data within a monthly budget, Google Maps across a ZIP and radius, findings with exact evidence (`/api/market/findings?since=`), a health report, a plan drafted by the AI plugin, and AI suggestions whose page changes and posts go to Approvals; `/api/market`, Settings › Market |
 | Google (`cms-google`) | `google` | off | One Google sign-in for Search Console, Analytics and Business Profile, synced nightly for Market and the Calendar; `/api/google`, Settings › Google |
+| Google Ads (`cms-google-ads`) | `google_ads` | off | One Google Ads account: spend, clicks and conversions by day and campaign, search terms with one-click negatives, offline conversions by gclid, read-only GAQL; `/api/google_ads`, `cms ads …`, Settings › Google Ads |
 | Calendar (`cms-calendar`) | `calendar` | off | A content calendar: site posts and pages and social posts to Facebook, Instagram, LinkedIn, X and the Business Profile, planned from Market, drafted by the AI plugin, sent when due; `/api/calendar/items`, Settings › Calendar |
 
 ## Where plugins live

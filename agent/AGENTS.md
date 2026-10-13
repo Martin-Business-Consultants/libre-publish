@@ -126,6 +126,7 @@ cms redirects all               # every rule, with hit counts
 cms redirect add /old /new 301
 cms submissions                 # form inbox across every form (Forms plugin)
 cms quotes --status new         # quote requests (Commerce plugin)
+cms ads --days 30               # the Google Ads account at a glance (Google Ads plugin)
 cms audit --actor alice           # who changed what
 cms webhooks
 cms backup > backup.tar.gz
@@ -157,6 +158,28 @@ issued. Sending needs `invoices:send`, which the Agent role does not hold —
 draft the invoice, set the link, and leave the send to a person.
 `cms get /settings/commerce` holds who is notified, the invoice prefix and
 the business details printed on invoices.
+
+### Google Ads
+
+Needs the **Google Ads** plugin (`Martin-Business-Consultants/cms-google-ads`)
+installed, switched on and connected in Settings › Google Ads; without it these
+commands answer 404. Reads need `google_ads:read`; changes need
+`google_ads:write`, which the Agent role does not hold by default.
+
+```sh
+cms ads --days 30                       # spend, clicks, CTR, CPC, conversions, beside the 30 days before
+cms ads-campaigns --days 7              # status, daily budget, impression share, figures
+cms ads-terms --days 7 --campaign-id 123   # what people searched: where negatives come from
+cms ads-keywords · cms ads-daily · cms ads-conversion-actions
+cms ads-query "SELECT campaign.name, metrics.clicks FROM campaign WHERE segments.date DURING LAST_7_DAYS"
+cms ads-negatives 123 "lawn mowing" "snow removal" --dry-run   # then again without --dry-run
+cms ads-campaign-status 123 paused --dry-run
+cms ads-conversion <gclid> <conversion_action_id> --value 2400 --dry-run
+```
+
+Every change takes `--dry-run`: Google checks it and changes nothing. Enabling
+a campaign or raising what it spends is a person's decision; pausing one that's
+wasting money, or excluding searches that will never buy, is the routine work.
 
 ### Writes to live content need the publish capability
 

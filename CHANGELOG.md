@@ -8,6 +8,12 @@ out.
 
 ## Unreleased
 
+### Added
+- **`cms ads …`**: the Google Ads plugin's account figures, campaigns,
+  search terms, keywords and conversion actions from the CLI, any read-only
+  GAQL (`cms ads-query`), and its changes (negative keywords, pausing a
+  campaign, offline conversions by gclid), each with `--dry-run`.
+
 ## 1.33.0
 
 ### Added

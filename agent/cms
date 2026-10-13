@@ -985,6 +985,133 @@ command("invoice-void", group: "Commerce",
   call(:post, "/invoices/#{args[0]}/void")
 end
 
+# ----- Google Ads (the cms-google-ads plugin) -----
+
+# --days N, --from DATE, --to DATE (and any others named) as a query string;
+# a flag's dashes become the API's underscores.
+def ads_query(args, allowed)
+  pairs = []
+  until args.empty?
+    flag = args.shift
+    key = flag.to_s.delete_prefix("--").tr("-", "_")
+    die "unexpected argument: #{flag}" unless flag.start_with?("--") && allowed.include?(key)
+    pairs << [key, args.shift.to_s]
+  end
+  pairs.empty? ? "" : "?" + URI.encode_www_form(pairs)
+end
+
+ADS_RANGE_FLAGS = [{flag: "--days N", description: "the last N whole days, ending yesterday (default 30)"},
+                   {flag: "--from DATE --to DATE", description: "a range instead, yyyy-mm-dd"}].freeze
+ADS_NOTE = "Needs the Google Ads plugin installed, switched on and connected (Settings › Google Ads); " \
+           "without it these commands answer 404. Money is in the account's currency, as decimals."
+
+command("ads", group: "Google Ads",
+  summary: "The ad account at a glance: spend, clicks, CTR, CPC, conversions, beside the period before",
+  usage: "cms ads [--days N | --from DATE --to DATE]",
+  flags: ADS_RANGE_FLAGS, notes: ADS_NOTE,
+  nexts: ["cms ads-campaigns", "cms ads-terms --days 7"]) do |args|
+  call(:get, "/api/google_ads#{ads_query(args, %w[days from to])}", hint: "cms ads-terms --days 7 — what people searched")
+end
+
+command("ads-daily", group: "Google Ads",
+  summary: "The ad account by day: cost, clicks, impressions, conversions",
+  usage: "cms ads-daily [--days N | --from DATE --to DATE]", flags: ADS_RANGE_FLAGS) do |args|
+  call(:get, "/api/google_ads/daily#{ads_query(args, %w[days from to])}")
+end
+
+command("ads-campaigns", group: "Google Ads",
+  summary: "Each campaign's status, daily budget, impression share and figures",
+  usage: "cms ads-campaigns [--days N | --from DATE --to DATE]", flags: ADS_RANGE_FLAGS,
+  nexts: ["cms ads-terms --campaign-id <id>", "cms ads-campaign-status <id> paused --dry-run"]) do |args|
+  call(:get, "/api/google_ads/campaigns#{ads_query(args, %w[days from to])}")
+end
+
+command("ads-terms", group: "Google Ads",
+  summary: "The search terms that showed the ads: where negative keywords come from",
+  usage: "cms ads-terms [--days N] [--campaign-id ID] [--limit N]",
+  flags: ADS_RANGE_FLAGS + [{flag: "--campaign-id ID", description: "one campaign's terms"},
+                            {flag: "--limit N", description: "how many, by impressions (default 100, at most 1000)"}],
+  notes: "status is Google's: ADDED (already a keyword), EXCLUDED (already a negative), NONE.",
+  nexts: ["cms ads-negatives <campaign_id> \"<term>\" --dry-run"]) do |args|
+  call(:get, "/api/google_ads/search_terms#{ads_query(args, %w[days from to campaign_id limit])}",
+    hint: "cms ads-negatives <campaign_id> \"<term>\" --dry-run — exclude what will never buy")
+end
+
+command("ads-keywords", group: "Google Ads",
+  summary: "Keywords with match type, status, quality score and figures",
+  usage: "cms ads-keywords [--days N | --from DATE --to DATE]", flags: ADS_RANGE_FLAGS) do |args|
+  call(:get, "/api/google_ads/keywords#{ads_query(args, %w[days from to])}")
+end
+
+command("ads-conversion-actions", group: "Google Ads",
+  summary: "The account's conversion actions, with the ids offline conversions are uploaded to",
+  usage: "cms ads-conversion-actions",
+  nexts: ["cms ads-conversion <gclid> <conversion_action_id> --dry-run"]) do |_args|
+  call(:get, "/api/google_ads/conversion_actions")
+end
+
+command("ads-query", group: "Google Ads",
+  summary: "Run any read-only GAQL query against the ad account",
+  usage: "cms ads-query \"SELECT … FROM … WHERE …\"",
+  notes: "Only SELECT. Rows come back as Google writes them: camelCase, int64s as strings, cost in micros. " \
+         "GAQL reference: https://developers.google.com/google-ads/api/docs/query/overview") do |args|
+  need!(args, 1, "cms ads-query \"SELECT …\"")
+  call(:post, "/api/google_ads/queries", {query: args.join(" ")})
+end
+
+command("ads-negatives", group: "Google Ads",
+  summary: "Add negative keywords to a campaign, so those searches stop showing the ads",
+  usage: "cms ads-negatives <campaign_id> <keyword>... [--match PHRASE|EXACT|BROAD] [--dry-run]",
+  flags: [{flag: "--match TYPE", description: "PHRASE (default), EXACT or BROAD"},
+          {flag: "--dry-run", description: "Google checks it and changes nothing (validate_only)"}],
+  notes: "Spends no money but changes who sees the ads: dry-run first. Needs google_ads:write.") do |args|
+  need!(args, 2, "cms ads-negatives <campaign_id> <keyword>...")
+  body = {campaign_id: args.shift, keywords: [], match_type: "PHRASE", validate_only: false}
+  until args.empty?
+    case (word = args.shift)
+    when "--match" then body[:match_type] = args.shift.to_s.upcase
+    when "--dry-run" then body[:validate_only] = true
+    else body[:keywords] << word
+    end
+  end
+  call(:post, "/api/google_ads/negative_keywords", body)
+end
+
+command("ads-campaign-status", group: "Google Ads",
+  summary: "Pause or enable a campaign",
+  usage: "cms ads-campaign-status <campaign_id> paused|enabled [--dry-run]",
+  flags: [{flag: "--dry-run", description: "Google checks it and changes nothing (validate_only)"}],
+  notes: "Enabling a campaign starts spending money: that is a person's decision. Needs google_ads:write.") do |args|
+  need!(args, 2, "cms ads-campaign-status <campaign_id> paused|enabled")
+  id, status = args.shift, args.shift.to_s.upcase
+  dry = args.delete("--dry-run") ? true : false
+  die "unexpected argument: #{args.first}" unless args.empty?
+  call(:patch, "/api/google_ads/campaigns/#{id}", {status: status, validate_only: dry})
+end
+
+command("ads-conversion", group: "Google Ads",
+  summary: "Upload an offline conversion: a lead from an ad click that became worth counting",
+  usage: "cms ads-conversion <gclid> <conversion_action_id> [--value N] [--at \"yyyy-mm-dd hh:mm\"] [--currency USD] [--dry-run]",
+  flags: [{flag: "--value N", description: "what it was worth"},
+          {flag: "--at TIME", description: "when it happened (default now), in the CMS's time zone"},
+          {flag: "--currency CODE", description: "default: the account's"},
+          {flag: "--dry-run", description: "Google checks it and changes nothing (validate_only)"}],
+  notes: "The gclid comes from the lead (the form's tracking field). Google takes clicks up to 90 days old, " \
+         "into an Import › Clicks conversion action (cms ads-conversion-actions). Needs google_ads:write.") do |args|
+  need!(args, 2, "cms ads-conversion <gclid> <conversion_action_id>")
+  body = {gclid: args.shift, conversion_action_id: args.shift, validate_only: false}
+  until args.empty?
+    case (flag = args.shift)
+    when "--value" then body[:value] = args.shift
+    when "--at" then body[:at] = args.shift
+    when "--currency" then body[:currency] = args.shift
+    when "--dry-run" then body[:validate_only] = true
+    else die "unexpected argument: #{flag}"
+    end
+  end
+  call(:post, "/api/google_ads/conversions", body)
+end
+
 # ----- redirects -----
 
 command("redirects", group: "Redirects",

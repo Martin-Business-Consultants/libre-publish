@@ -179,6 +179,23 @@ Items on a quote are the product as the visitor saw it (title, SKU, listed
 price, URL). An invoice's amounts are integer cents; `payment_link` is the
 processor's URL — the CMS hosts the invoice page, it does not take the money.
 
+## Google Ads
+
+With the Google Ads plugin installed and connected (404 without it):
+
+```sh
+cms ads --days 30               # the account beside the 30 days before
+cms ads-campaigns · cms ads-daily · cms ads-keywords · cms ads-conversion-actions
+cms ads-terms --days 7          # search terms: the source of negative keywords
+cms ads-query "SELECT … FROM … WHERE …"     # any read-only GAQL
+cms ads-negatives <campaign_id> "<term>"... [--match EXACT] --dry-run
+cms ads-campaign-status <campaign_id> paused --dry-run
+cms ads-conversion <gclid> <conversion_action_id> --value N --dry-run
+```
+
+Dry-run every change first. Changes need `google_ads:write`; enabling a
+campaign spends money, so leave that to a person.
+
 ## Shipping
 
 ```sh
