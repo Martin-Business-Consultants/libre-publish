@@ -27,7 +27,9 @@ without it.
 | Commerce (`cms-plugins/commerce`) | `commerce` | off | Quote requests and the public `/api/quote_requests` endpoint, invoices and their hosted `/i/:token` page, Settings › Commerce |
 | Leads (`cms-leads`) | `leads` | off | Leads from form submissions and quote requests, each with an owner and a next step; playbooks, Needs you, templates, replies drafted by the AI plugin, follow-up emails, `/api/leads`, Settings › Leads |
 | AI (`cms-ai`) | `ai` | off | One AI provider for every plugin (OpenCode Zen, Anthropic, OpenAI, OpenRouter, Ollama), its key set once in Settings › AI, with a monthly token limit; plugins ask it through `Ai.structured` |
-| Market (`cms-market`) | `market` | off | The site's market: competitors' websites read weekly, DataForSEO search data within a monthly budget, findings with exact evidence (`/api/market/findings?since=`), and a plan drafted by the AI plugin whose opportunities start draft pages; `/api/market`, Settings › Market |
+| Market (`cms-market`) | `market` | off | The site's market: competitors' websites read weekly, DataForSEO search data within a monthly budget, Google Maps across a ZIP and radius, findings with exact evidence (`/api/market/findings?since=`), a health report, a plan drafted by the AI plugin, and AI suggestions whose page changes and posts go to Approvals; `/api/market`, Settings › Market |
+| Google (`cms-google`) | `google` | off | One Google sign-in for Search Console, Analytics and Business Profile, synced nightly for Market and the Calendar; `/api/google`, Settings › Google |
+| Calendar (`cms-calendar`) | `calendar` | off | A content calendar: site posts and pages and social posts to Facebook, Instagram, LinkedIn, X and the Business Profile, planned from Market, drafted by the AI plugin, sent when due; `/api/calendar/items`, Settings › Calendar |
 
 ## Where plugins live
 
@@ -137,7 +139,10 @@ JSON, with its signature at the same address plus `.sig`) and
   declare capabilities with `requires_capability` like core controllers. An
   API controller also says `enforce_authorization`: the core's API refuses
   an action that declares nothing, but keeps a plugin's open until it opts
-  in, as plugins written before that expect.
+  in, as plugins written before that expect. Saying it once on a plugin's
+  own API base controller covers every controller under it (from 1.32.3;
+  before, those were left open, so a plugin that runs on older cores also
+  sets `subclass._skip_authorization = false` in that base's `inherited`).
 - **Behaviour** lives in the plugin's `app/models`, as in the core
   (STYLE.md): verbs on its records, concerns under `app/models/<model>/`, and
   plain objects for anything without a record (a client for an outside API,

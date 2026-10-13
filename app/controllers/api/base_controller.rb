@@ -18,9 +18,14 @@ class Api::BaseController < ApplicationController
   #
   # Plugins' API controllers were written when this defaulted to skip, and
   # a plugin is its own repository, so a controller defined outside this
-  # app's app/ keeps that default until it calls `enforce_authorization`.
+  # app's app/ straight on this class keeps that default until it calls
+  # `enforce_authorization`. Only straight on it: a plugin's own base that
+  # enforces passes that on to every controller under it (Ruby calls this
+  # hook for those too, and turning it off there would leave them open).
   def self.inherited(subclass)
     super
+    return unless self == Api::BaseController
+
     subclass._skip_authorization = true unless caller_locations(1, 1).first&.path.to_s.start_with?(Rails.root.join("app/").to_s)
   end
 

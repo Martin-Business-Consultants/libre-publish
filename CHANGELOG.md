@@ -8,6 +8,18 @@ out.
 
 ## Unreleased
 
+## 1.32.3
+
+### Security
+- **A plugin's API checks permissions again.** A plugin whose API
+  controllers share a base controller of its own that says
+  `enforce_authorization` (Leads, AI, Market, Google, Calendar) had every
+  controller under that base left open: any API token could call them,
+  whatever its role. The core now leaves open only a plugin controller made
+  straight on `Api::BaseController` that hasn't opted in, as before, and
+  everything under a base that enforces, enforces. Update to 1.32.3, and
+  update those plugins (each now guards itself on older cores too).
+
 ## 1.32.2
 
 ### Fixed
