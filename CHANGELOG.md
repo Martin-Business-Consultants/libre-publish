@@ -8,6 +8,8 @@ out.
 
 ## Unreleased
 
+## 1.32.6
+
 ### Fixed
 - **The Scripts global's fields become code fields on update.** 1.32.5 left
   out the step that turns an existing site's Head and Body into code fields
