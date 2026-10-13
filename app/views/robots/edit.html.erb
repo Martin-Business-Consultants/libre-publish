@@ -1,0 +1,67 @@
+<% @page_title = "robots.txt" %>
+<% can_write = Current.user.can?("settings:write") %>
+
+<% content_for :page_actions do %>
+  <%= link_to "Sitemap", sitemap_path, class: "btn" %>
+  <%= link_to "View robots.txt", "#{@base_url}/robots.txt", class: "btn", target: "_blank", rel: "noopener" %>
+<% end %>
+<%= render "layouts/shared/page_header", title: @page_title %>
+
+<div class="grid grid--2 robots-split">
+  <%= form_with url: sitemap_robots_path, method: :patch, scope: :robots, class: "stack stack--lg" do |form| %>
+    <%= tag.fieldset class: "panel panel--padded fields", disabled: !can_write do %>
+      <div class="stack stack--xs">
+        <h2 class="heading">What crawlers are told</h2>
+        <p class="text-muted">robots.txt tells search engines and AI crawlers what they may read, and where the sitemap is. The site publishes it on its next build.</p>
+      </div>
+      <div class="fields" data-controller="show-if">
+        <div data-field-name="robots_mode">
+          <%= settings_field "robots.txt is" do %>
+            <%= form.select :robots_mode, [["Made from Settings › Search (recommended)", "generated"], ["Written here, exactly as I write it", "custom"]], selected: @robots.custom? ? "custom" : "generated" %>
+          <% end %>
+        </div>
+        <div class="stack stack--sm" data-show-if='{"field":"robots_mode","equals":"generated"}'>
+          <p class="text-small text-muted">
+            Open to every search engine, AI answer engines and training crawlers let in or kept out as <%= link_to "Settings › Search", settings_search_path, class: "link" %> says
+            (now: AI search <strong><%= @settings["ai_search"] == "block" ? "kept out" : "let in" %></strong>, AI training <strong><%= @settings["ai_training"] == "block" ? "kept out" : "let in" %></strong>), and the sitemap's address.
+          </p>
+          <%= settings_field "Extra rules", hint: "Added as written: a crawler or a path the choices don't cover." do %>
+            <%= form.text_area :robots_extra, value: @settings["robots_extra"], rows: 5, class: "text-mono text-small", placeholder: "User-agent: *\nDisallow: /thank-you\nDisallow: /search" %>
+          <% end %>
+        </div>
+        <div class="stack stack--sm" data-show-if='{"field":"robots_mode","equals":"custom"}'>
+          <%= settings_field "robots.txt", hint: "The whole file. Keep a Sitemap line, and never “Disallow: /” for every crawler unless the site should leave search." do %>
+            <%= form.text_area :robots_custom, value: @settings["robots_custom"].presence || @robots.generated, rows: 18, class: "text-mono text-small", spellcheck: false %>
+          <% end %>
+        </div>
+      </div>
+      <% if can_write %>
+        <div class="cluster cluster--sm">
+          <button type="submit" class="btn btn--primary">Save</button>
+          <% if @robots.custom? %>
+            <button type="submit" name="reset" value="1" class="btn btn--plain" data-turbo-confirm="Go back to robots.txt made from Settings › Search? What's written here is kept for later.">Use the made one again</button>
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <section class="panel panel--padded stack stack--sm robots-preview" aria-label="What the site publishes">
+    <div class="row row--between">
+      <h2 class="heading">What the site publishes</h2>
+      <span class="text-small text-muted"><%= @robots.custom? ? "Written here" : "Made from Settings › Search" %></span>
+    </div>
+    <% if @warnings.any? %>
+      <ul class="stack stack--xs">
+        <% @warnings.each_with_index do |warning, index| %>
+          <%# herb:key index %>
+          <li class="notice notice--warning text-small"><%= warning %></li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="text-small text-muted"><%= icon_tag "check-circle" %> Nothing looks wrong.</p>
+    <% end %>
+    <pre class="code-block code-block--wrap robots-preview__text"><%= @text %></pre>
+    <p class="text-small text-muted">At <span class="text-mono"><%= @base_url %>/robots.txt</span>. <% if Website.enabled? %>Served by this site.<% else %>A site built with the Astro integration (0.2.0 or later) takes it from <span class="text-mono">/api/v1/robots</span> on every build; one with a <span class="text-mono">public/robots.txt</span> of its own keeps that instead.<% end %></p>
+  </section>
+</div>

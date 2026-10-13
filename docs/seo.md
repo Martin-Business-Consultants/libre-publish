@@ -37,8 +37,12 @@ and Settings, with nothing for a theme to add beyond calling
   by what they do: *answer engines* that cite and link to the site
   (OAI-SearchBot, PerplexityBot, Claude-SearchBot…) and *training*
   crawlers (GPTBot, ClaudeBot, Google-Extended, CCBot…), separately.
-  Blocking training doesn't take the site out of search or AI answers. A
-  headless install's own host disallows everything: its site is elsewhere.
+  Blocking training doesn't take the site out of search or AI answers.
+  The Sitemap screen's **robots.txt** adds extra rules to that, or replaces
+  it with a file written by hand, and says what's likely wrong (no sitemap
+  line, the whole site disallowed, lines crawlers won't read). A headless
+  install's own host disallows everything: its site is elsewhere, and its
+  frontend publishes the site's robots.txt from `/api/v1/robots`.
 - **`/llms.txt`**: the site's name and description, then every page and
   each collection's entries, linking to their Markdown with their
   descriptions ([llmstxt.org](https://llmstxt.org)).

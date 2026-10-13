@@ -12,6 +12,9 @@
 #   same_as       the organization's profiles elsewhere (one URL a line), so
 #                 search engines and AI tie them to it
 #   robots_extra  lines added to robots.txt as written
+#   robots_mode   generated | custom: robots.txt made from the choices here
+#                 (and robots_extra), or robots_custom exactly as written
+#   robots_custom the whole of robots.txt, for robots_mode custom
 #   indexnow      true | false: tell IndexNow's search engines about changes
 #                 (IndexNow); its key, indexnow_key, is made when first needed
 module SearchSettings
@@ -29,8 +32,9 @@ module SearchSettings
   AI_TRAINING_BOTS = %w[GPTBot ClaudeBot anthropic-ai Google-Extended Applebot-Extended CCBot meta-externalagent
     Bytespider Amazonbot cohere-ai Diffbot].freeze
 
+  ROBOTS_MODES = %w[generated custom].freeze
   DEFAULTS = {"ai_search" => "allow", "ai_training" => "allow", "organization" => "Organization", "same_as" => [], "robots_extra" => "",
-              "indexnow" => true, "indexnow_key" => nil}.freeze
+              "indexnow" => true, "indexnow_key" => nil, "robots_mode" => "generated", "robots_custom" => ""}.freeze
 
   module_function
 
@@ -50,6 +54,19 @@ module SearchSettings
       "indexnow" => submitted.key?("indexnow") ? ActiveModel::Type::Boolean.new.cast(submitted["indexnow"]) : get["indexnow"]
     })
   end
+
+  # The Sitemap screen's robots.txt editor: made from the choices here plus extra
+  # lines, or written out whole. Only what was sent changes.
+  def update_robots(submitted)
+    submitted = submitted.to_h.stringify_keys
+    data = {}
+    data["robots_mode"] = submitted["robots_mode"].presence_in(ROBOTS_MODES) || "generated" if submitted.key?("robots_mode")
+    data["robots_custom"] = submitted["robots_custom"].to_s.gsub("\r\n", "\n").strip if submitted.key?("robots_custom")
+    data["robots_extra"] = submitted["robots_extra"].to_s.gsub("\r\n", "\n").strip if submitted.key?("robots_extra")
+    Setting.set(SETTING_KEY, data) if data.any?
+  end
+
+  def custom_robots? = get["robots_mode"] == "custom" && get["robots_custom"].present?
 
   def ai_search? = get["ai_search"] == "allow"
   def ai_training? = get["ai_training"] == "allow"

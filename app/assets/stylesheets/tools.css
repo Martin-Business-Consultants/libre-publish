@@ -1,4 +1,4 @@
-/* Tools' lists (seo_audits/show, search_replaces/show, backups/show). */
+/* Tools' lists (seo_audits/show, search_replaces/show, backups/show), and the Sitemap's robots.txt editor (robots/edit). */
 @layer components {
   /* library candidate: rows of results, a hairline between each. */
   .result-list {
@@ -47,5 +47,22 @@
      hidden file input) points like one. */
   label.btn {
     cursor: pointer;
+  }
+
+  /* robots.txt: the form beside what the site publishes. */
+  .robots-split {
+    align-items: start;
+  }
+
+  .robots-preview {
+    @media (width >= 64rem) {
+      inset-block-start: var(--space-4);
+      position: sticky;
+    }
+  }
+
+  .robots-preview__text {
+    max-block-size: 28rem;
+    overflow-y: auto;
   }
 }

@@ -8,6 +8,17 @@ out.
 
 ## Unreleased
 
+### Added
+- **robots.txt on the Sitemap screen** (Tools › Sitemap › robots.txt): see
+  what the site publishes, add extra rules to the one made from Settings ›
+  Search, or write the whole file by hand (and go back to the made one).
+  It says what's likely wrong: no Sitemap line, every crawler kept out of
+  the whole site, lines crawlers don't read. Saving rebuilds the site.
+- **`GET /api/v1/robots`** (and `/api/v1/robots.txt`): the site's
+  robots.txt for a frontend's build, cache tag `robots`. The Astro
+  integration 0.2.0 publishes it, so a headless site's robots.txt follows
+  the CMS.
+
 ## 1.32.3
 
 ### Security

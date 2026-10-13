@@ -4,6 +4,7 @@
 <% included = @entries.count(&:included?) %>
 
 <% content_for :page_actions do %>
+  <%= link_to "robots.txt", sitemap_robots_path, class: "btn" %>
   <%= link_to "View sitemap.xml", "/sitemap.xml", class: "btn", target: "_blank", rel: "noopener" %>
   <button type="button" class="btn" data-controller="copy-to-clipboard" data-copy-to-clipboard-content-value="<%= xml_url %>" data-copy-to-clipboard-success-class="btn--success" data-action="copy-to-clipboard#copy">Copy URL</button>
 <% end %>
@@ -15,6 +16,7 @@
 <div class="cluster cluster--between cluster--md">
   <p class="text-small text-muted">
     Published at <span class="text-mono text-body"><%= xml_url %></span>, and to a build as <a href="/api/sitemap" class="link text-mono">/api/sitemap</a>.
+    Crawlers find it through <%= link_to "robots.txt", sitemap_robots_path, class: "link" %><%= " (written by hand)" if SearchSettings.custom_robots? %>.
   </p>
   <div class="push-end">
     <%= render "layouts/shared/list_search", placeholder: "Search the sitemap…" %>

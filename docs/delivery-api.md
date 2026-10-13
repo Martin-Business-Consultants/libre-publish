@@ -84,6 +84,7 @@ use `/api/v1`.
 | `GET /api/v1/globals`, `/globals/<slug>` | Globals' data (secret-looking values masked). |
 | `GET /api/v1/schema` | JSON Schema (2020-12) for each block type's data, each collection's fields, each global, pages with fields, and SEO. Each field carries `title` and `x-cms-type` (markdown, asset, link, blocks…) — what a build generates its types from. |
 | `GET /api/v1/sitemap` | URLs on the public site, with `lastmod` and hreflang `alternates`. |
+| `GET /api/v1/robots` | The site's robots.txt (`data.text`, and `data.mode`: `generated` or `custom`); `/api/v1/robots.txt` is the file itself. Cache tag `robots`. |
 | `GET /api/v1/redirects`, `/api/v1/redirects.txt` | Active rules; the `.txt` is a Cloudflare `_redirects` file (exact rules first, wildcards longest first, `:splat`). |
 | `GET /api/v1/site_health` | Site health's checks (`state`: passes, fails, yours_to_judge) for a build to hold the site to. |
 | `GET /api/v1/forms`, `/forms/<slug>` (Forms) | Published forms: fields, `action` (where the browser posts, on the CMS), `honeypot`, `captcha: {provider, site_key}`. |
@@ -115,6 +116,6 @@ token can't make that change on its own.
 
 Cache tags, the same in `Cache-Tag` headers and purges: `page:<path>`,
 `entry:<collection>/<slug>`, `collection:<slug>`, `global:<slug>`, `pages`,
-`sitemap`, `redirects`, `site` (Settings › General's name, URL and contact
+`sitemap`, `redirects`, `robots`, `site` (Settings › General's name, URL and contact
 details: changing them rebuilds or purges like a publish), and, from Forms,
 `form:<slug>`.

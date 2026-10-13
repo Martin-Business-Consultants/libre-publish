@@ -87,6 +87,8 @@ Rails.application.routes.draw do
     get :dashboard, to: "dashboard#index"
 
     get :sitemap,       to: "sitemaps#index", as: :sitemap, constraints: {format: /html|/}
+    get "sitemap/robots",   to: "robots#edit", as: :sitemap_robots
+    patch "sitemap/robots", to: "robots#update"
     patch "sitemap/:source/:id", to: "sitemap_entries#update", as: :sitemap_entry,
                                   constraints: {source: /page|collection_entry/}
 
@@ -311,6 +313,7 @@ Rails.application.routes.draw do
       resource :content, only: :show
       resource :schema, only: :show
       resource :sitemap, only: :show
+      resource :robots, only: :show
       resource :site_health, only: :show
       resources :redirects, only: :index
       resources :globals, param: :slug, only: [:index, :show]
