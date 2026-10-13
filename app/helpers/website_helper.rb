@@ -63,9 +63,22 @@ module WebsiteHelper
     # A plugin may rework them first (the website.scripts filter: a consent
     # plugin holds some back until a visitor agrees); a list of the same hashes.
     items = Array(Cms::Hooks.apply("website.scripts", items, part: part, request: request)).grep(Hash)
-    pasted = items.filter_map { it[part].to_s.html_safe if it["enabled"] != false && it[part].present? } # rubocop:disable Rails/OutputSafety
+    pasted = items.filter_map { website_nonced(it[part].to_s).html_safe if it["enabled"] != false && it[part].present? } # rubocop:disable Rails/OutputSafety
     added = website_html Cms::Hooks.apply("website.#{part}", ActiveSupport::SafeBuffer.new, request: request)
+    added = website_nonced(added.to_s).html_safe if added.present? # rubocop:disable Rails/OutputSafety
     safe_join([*pasted, (added if added.present?)].compact, "\n")
+  end
+
+  # Under a strict Content-Security-Policy (Settings › Security policy), only
+  # inline scripts carrying the request's nonce run: the scripts the CMS
+  # prints for the Scripts global and plugins are given it.
+  def website_nonced(html)
+    settings = SecurityPolicy.get
+    return html unless settings["strict"] && settings["mode"] != "off" && html.include?("<script")
+
+    fragment = Nokogiri::HTML5::DocumentFragment.parse(html)
+    fragment.css("script").each { it["nonce"] = content_security_policy_nonce }
+    fragment.to_html
   end
 
   # A global's data, by slug.

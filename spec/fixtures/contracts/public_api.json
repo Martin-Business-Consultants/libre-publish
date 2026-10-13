@@ -831,6 +831,7 @@
     "GET /api/v1/pages",
     "GET /api/v1/pages/:path",
     "GET /api/v1/redirects",
+    "GET /api/v1/robots",
     "GET /api/v1/schema",
     "GET /api/v1/site",
     "GET /api/v1/site_health",

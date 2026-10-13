@@ -19,6 +19,17 @@ class Website::PagesController < ActionController::Base
 
   before_action { prepend_view_path Website.theme.views if Website.enabled? }
   before_action :one_host
+  after_action :security_policy
+
+  # The website's Content-Security-Policy, when Settings › Security policy has
+  # it on (report only, or enforced): with the request's nonce when it's
+  # strict, which the theme's own inline scripts and the CMS's carry.
+  private def security_policy
+    settings = SecurityPolicy.get
+    return if settings["mode"] == "off" || !response.media_type.to_s.include?("html")
+
+    response.headers[SecurityPolicy.header_name(settings)] = SecurityPolicy.website_header(nonce: content_security_policy_nonce, settings: settings)
+  end
 
   private def one_host
     site = URI(Setting.get("general")["site_base_url"].to_s)

@@ -17,6 +17,9 @@ Rails.application.routes.draw do
   get "frontend/AGENTS.md", to: "agent_bootstraps#frontend_md", as: :frontend_agents_md, format: false
   get "frontend/install.sh", to: "agent_bootstraps#frontend_install", as: :frontend_install, format: false
 
+  # Where browsers report what a Content-Security-Policy blocked (Settings › Security policy).
+  post "csp-reports", to: "csp_reports#create", as: :csp_reports
+
   # Public sitemap for search engines.
   get "sitemap.xml", to: "sitemaps#xml", as: :sitemap_xml, defaults: {format: :xml}
 
@@ -197,6 +200,10 @@ Rails.application.routes.draw do
         post :restore, on: :member
       end
       resource :search, only: [:show, :update], controller: "searches"
+      resource :security_policy, only: [:show, :update], controller: "security_policies" do
+        post "allow/:id", to: "security_policies/allowances#create", as: :allow
+        delete "reports/:id", to: "security_policies/allowances#destroy", as: :dismiss
+      end
       # How heavy an image may be (ImageLimits).
       resource :media, only: [:show, :update], controller: "media"
       # The SMTP server email goes through (MailDelivery), and a test email.

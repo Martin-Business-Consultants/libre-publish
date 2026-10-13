@@ -8,6 +8,19 @@ out.
 
 ## Unreleased
 
+### Added
+- **Settings › Security policy**: a Content-Security-Policy for the
+  website, off until it's turned on, report only to test it, then
+  enforced. Tick the services the site uses (Google Analytics and Tag
+  Manager, Google Ads, Meta pixel, Clarity, Google Fonts and Maps, YouTube,
+  Vimeo, Calendly, Stripe, Turnstile), add sources by directive, or go
+  strict, where only the inline scripts the CMS prints run, each with a
+  fresh nonce. It reads the Scripts global and offers to allow what those
+  scripts load. The admin's own policy, always on, can be given extra
+  sources a directive at a time (a sign-in a form goes on to). Browsers
+  report what either policy blocks to `/csp-reports`, listed there with
+  Allow and Dismiss.
+
 ## 1.32.6
 
 ### Fixed

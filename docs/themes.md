@@ -153,6 +153,15 @@ card photo and its page's header photo) morphs from one to the other. A
 name must be unique on a page, so a second card for the same record turns
 its name off (`morph: false` in the reference theme).
 
+### Inline scripts and the security policy
+
+Settings › Security policy can send the website a Content-Security-Policy.
+Strict, it lets only inline scripts carrying the request's nonce run: write a
+theme's own as `<script nonce="<%= content_security_policy_nonce %>">` (or
+`javascript_tag nonce: true`); the importmap's tags carry it already, and the
+CMS gives the Scripts global's and plugins' scripts theirs. A theme that loads
+from another host (a font, a map) lists it there, or tells its owners to.
+
 ## Serving it
 
 A published page is `Cache-Control: public, max-age=60,

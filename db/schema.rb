@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_13_033500) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_13_040000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -203,6 +203,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_13_033500) do
     t.index ["owner_type", "owner_id", "kind"], name: "index_content_references_on_owner_type_and_owner_id_and_kind"
     t.index ["owner_type", "owner_id"], name: "index_content_references_on_owner"
     t.index ["ref_type", "ref_id"], name: "index_content_references_on_ref_type_and_ref_id"
+  end
+
+  create_table "csp_reports", force: :cascade do |t|
+    t.string "blocked", null: false
+    t.integer "count", default: 1, null: false
+    t.datetime "created_at", null: false
+    t.string "directive", null: false
+    t.boolean "dismissed", default: false, null: false
+    t.datetime "last_seen_at", null: false
+    t.string "page"
+    t.string "surface", null: false
+    t.datetime "updated_at", null: false
+    t.index ["surface", "directive", "blocked"], name: "index_csp_reports_on_surface_and_directive_and_blocked", unique: true
   end
 
   create_table "device_authorizations", force: :cascade do |t|

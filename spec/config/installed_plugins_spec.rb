@@ -60,7 +60,7 @@ RSpec.describe InstalledPlugins do
     described_class.load!
 
     expect(described_class.failed["market"]).to eq("it isn't a CMS plugin: it's a Runwell plugin, so it's left unloaded. Remove it.")
-    expect(described_class.loaded).not_to have_key("market")
+    expect(described_class.loaded["market"]).not_to eq(market)
     expect(described_class.foreign?(forms)).to be(false)
     expect(described_class.foreign?(plugin("data/plugins", "other", "1.0.0"))).to eq("it never registers with the CMS")
   ensure

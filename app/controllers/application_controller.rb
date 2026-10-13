@@ -11,20 +11,24 @@ class ApplicationController < ActionController::Base
   # script in content — a javascript: link, HTML that got through somewhere —
   # can't run as whoever is signed in. Styles may be inline (themes and the
   # editors set them); images from anywhere https. Framed only by itself.
+  # Settings › Security policy adds sources to it, a directive at a time,
+  # and what it blocks is reported there (/csp-reports).
   content_security_policy do |policy|
+    extra = SecurityPolicy.get["admin_sources"]
     policy.default_src :self
-    policy.script_src :self, "https://challenges.cloudflare.com"
-    policy.style_src :self, :unsafe_inline, "https://fonts.googleapis.com"
-    policy.font_src :self, :data, "https://fonts.gstatic.com"
+    policy.script_src :self, "https://challenges.cloudflare.com", *extra["script-src"]
+    policy.style_src :self, :unsafe_inline, "https://fonts.googleapis.com", *extra["style-src"]
+    policy.font_src :self, :data, "https://fonts.gstatic.com", *extra["font-src"]
     policy.img_src :self, :data, :blob, :https
-    policy.media_src :self, :blob, :https
-    policy.connect_src :self
-    policy.frame_src :self, "https://challenges.cloudflare.com"
+    policy.media_src :self, :blob, :https, *extra["media-src"]
+    policy.connect_src :self, *extra["connect-src"]
+    policy.frame_src :self, "https://challenges.cloudflare.com", *extra["frame-src"]
     policy.worker_src :self, :blob
     policy.object_src :none
     policy.base_uri :self
-    policy.form_action :self
+    policy.form_action :self, *extra["form-action"]
     policy.frame_ancestors :self
+    policy.report_uri "/csp-reports?surface=admin"
   end
   # Development's tooling (Herb's dev tools) adds scripts of its own: there
   # the policy reports rather than blocks.
