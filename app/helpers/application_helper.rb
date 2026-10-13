@@ -12,10 +12,11 @@ module ApplicationHelper
   #
   # A plugin's stylesheets load only where it shows something
   # (page_plugins), each in its own tag, which Turbo adds and drops as pages
-  # change (data-turbo-track="dynamic"). One that can't be found (a plugin
-  # installed after the image was built, whose assets haven't compiled yet)
-  # is left out and reported: the page without that plugin's styles, rather
-  # than a page that fails.
+  # change (data-turbo-track="dynamic"). One the compiled assets don't have
+  # (a plugin installed or updated after the image was built, whose compile
+  # hasn't happened or failed) is reported and linked from the plugin's own
+  # files instead (PluginStylesheetsController), so its screens keep their
+  # styles.
   def app_stylesheet_tags
     safe_join([
       stylesheet_link_tag(:app, "data-turbo-track": "reload"),
@@ -37,7 +38,9 @@ module ApplicationHelper
     stylesheet_link_tag(name, "data-turbo-track": "dynamic")
   rescue Propshaft::MissingAssetError => error
     Rails.error.report(error, handled: true, context: {plugin_stylesheet: name})
-    nil
+    return unless Rails.application.assets.load_path.find("#{name}.css")
+
+    tag.link(rel: "stylesheet", href: plugin_stylesheet_path(name: name), "data-turbo-track": "dynamic")
   end
 
   # What enabled plugins registered for a slot in this view, noting them so

@@ -8,6 +8,15 @@ out.
 
 ## Unreleased
 
+### Fixed
+- A plugin's screens came up unstyled when its stylesheet wasn't among the
+  install's compiled assets (a plugin added from Settings › Plugins to an
+  image built without it, whose compile didn't run or failed): the admin left
+  the stylesheet out. It now links it from the plugin's own files
+  (`/cms/plugin-styles/<name>.css`) instead, and the boot-time check for
+  plugin assets to compile compares real paths, so a plugin directory behind
+  a symlink is compiled too.
+
 ## 1.33.1
 
 ### Changed

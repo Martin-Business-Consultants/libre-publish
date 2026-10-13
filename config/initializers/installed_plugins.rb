@@ -24,14 +24,14 @@ Rails.application.config.after_initialize do
     compiled = manifest.exist? ? Propshaft::Manifest.from_path(manifest) : Propshaft::Manifest.new
     roots = InstalledPlugins.loaded.values.map { it.realpath.to_s }
     stale = assets.load_path.assets.any? do |asset|
-      asset.path.to_s.start_with?(*roots) && compiled[asset.logical_path.to_s]&.digested_path.to_s != asset.digested_path.to_s
+      asset.path.realpath.to_s.start_with?(*roots) && compiled[asset.logical_path.to_s]&.digested_path.to_s != asset.digested_path.to_s
     end
 
     begin
       assets.processor.process if stale
     rescue => error
-      # Logged, never fatal: the admin leaves out a stylesheet it can't find
-      # (ApplicationHelper#app_stylesheet_tags).
+      # Logged, never fatal: the admin links a stylesheet it can't find from
+      # the plugin's own files (ApplicationHelper#plugin_stylesheet_tag).
       Rails.logger.warn "[plugins] couldn't compile plugin assets: #{error.class}: #{error.message}"
     end
   end

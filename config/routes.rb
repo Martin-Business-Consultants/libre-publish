@@ -186,6 +186,8 @@ Rails.application.routes.draw do
 
     # The site's branding as overrides of the admin's CSS tokens.
     get "branding.css", to: "branding_stylesheets#show", as: :branding_stylesheet, format: false
+    # A plugin's stylesheet from its own files, when the compiled assets don't have it.
+    get "plugin-styles/*name.css", to: "plugin_stylesheets#show", as: :plugin_stylesheet, format: false
 
     get "settings", to: "settings/sections#index", as: :settings
     # The admin bar's search, across everything (GlobalSearch).
