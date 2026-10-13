@@ -8,6 +8,8 @@ out.
 
 ## Unreleased
 
+## 1.32.5
+
 ### Fixed
 - **A script pasted into the Scripts global runs.** Its Head and Body were
   long-text fields, edited as rich text, so a pasted Google tag was saved as
