@@ -1089,6 +1089,72 @@ command("ads-campaign-status", group: "Google Ads",
   call(:patch, "/api/google_ads/campaigns/#{id}", {status: status, validate_only: dry})
 end
 
+# The guide's path: the strategy's, or with --plan ID a campaign plan's.
+def ads_guide_path(args)
+  index = args.index("--plan")
+  plan = index && args.slice!(index, 2)[1]
+  plan ? "/api/google_ads/plans/#{plan}/guide" : "/api/google_ads/guide"
+end
+
+command("ads-guide", group: "Google Ads",
+  summary: "The planning guide: each step from strategy to a campaign, and where it stands",
+  usage: "cms ads-guide [--plan ID]",
+  notes: "Without --plan, the strategy every campaign shares (business, customers, economics, competitors, exclusions); " \
+         "with it, that campaign's steps (goal, audience, ad groups, keywords, ads, landing pages, setup, pre-flight).",
+  nexts: ["cms ads-step <step> [--plan ID]"]) do |args|
+  call(:get, ads_guide_path(args), hint: "cms ads-step <step> — its questions and research prompt")
+end
+
+command("ads-step", group: "Google Ads",
+  summary: "One guide step: why it matters, its questions and answers, and the research prompt to run",
+  usage: "cms ads-step <step> [--plan ID] [--prompt]",
+  flags: [{flag: "--plan ID", description: "a campaign plan's step"}, {flag: "--prompt", description: "print only the research prompt, as text"}],
+  notes: "Do the research the prompt asks for (or run it in Claude), then send the JSON back with cms ads-answer.",
+  nexts: ["cms ads-answer <step> [--plan ID] - < answer.md"]) do |args|
+  only_prompt = args.delete("--prompt")
+  path = ads_guide_path(args)
+  need!(args, 1, "cms ads-step <step> [--plan ID]")
+  if only_prompt
+    response, = api(:get, "#{path}/#{args[0]}", envelope: false)
+    die "#{response.code} #{response.body}" unless response.code.to_i == 200
+    puts JSON.parse(response.body)["prompt"]
+  else
+    call(:get, "#{path}/#{args[0]}")
+  end
+end
+
+command("ads-answer", group: "Google Ads",
+  summary: "Answer a guide step with research: Claude's reply (with its ```json block) or the JSON itself",
+  usage: "cms ads-answer <step> [--plan ID] [--preview] - < answer.md",
+  flags: [{flag: "--plan ID", description: "a campaign plan's step"}, {flag: "--preview", description: "show what it would change, change nothing"}],
+  notes: "Fields are filled in; exclusion lists gain new keywords; ad groups are matched by name and new ones added. Needs google_ads:plan.") do |args|
+  preview = args.delete("--preview") ? true : false
+  path = ads_guide_path(args)
+  need!(args, 2, "cms ads-answer <step> [--plan ID] - < answer.md")
+  die "usage: cms ads-answer <step> - < answer.md" unless args[1] == "-"
+  call(:post, "#{path}/#{args[0]}/answer", {answer: read_stdin("usage: cms ads-answer <step> - < answer.md"), preview: preview})
+end
+
+command("ads-exclusions", group: "Google Ads",
+  summary: "Exclusion lists: negative keywords kept once by theme, and whether each is synced to Google Ads",
+  usage: "cms ads-exclusions",
+  nexts: ["cms ads-exclusion-sync <id> --dry-run"]) do |_args|
+  call(:get, "/api/google_ads/exclusion_lists")
+end
+
+command("ads-exclusion-sync", group: "Google Ads",
+  summary: "Make an exclusion list's shared negative keyword list in Google Ads match it",
+  usage: "cms ads-exclusion-sync <id> [--dry-run]",
+  flags: [{flag: "--dry-run", description: "Google checks it and changes nothing (validate_only)"}],
+  notes: "Creates the shared list the first time, then adds and removes keywords. Attach lists to a campaign with " \
+         "cms post /api/google_ads/plans/<id>/exclusions. Needs google_ads:write.") do |args|
+  need!(args, 1, "cms ads-exclusion-sync <id>")
+  id = args.shift
+  dry = args.delete("--dry-run") ? true : false
+  die "unexpected argument: #{args.first}" unless args.empty?
+  call(:post, "/api/google_ads/exclusion_lists/#{id}/sync", {validate_only: dry})
+end
+
 command("ads-plans", group: "Google Ads",
   summary: "Campaign plans: status, budget, decision date, checklist progress",
   usage: "cms ads-plans",

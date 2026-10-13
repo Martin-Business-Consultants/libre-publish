@@ -175,6 +175,10 @@ cms ads-query "SELECT campaign.name, metrics.clicks FROM campaign WHERE segments
 cms ads-negatives 123 "lawn mowing" "snow removal" --dry-run   # then again without --dry-run
 cms ads-campaign-status 123 paused --dry-run
 cms ads-conversion <gclid> <conversion_action_id> --value 2400 --dry-run
+cms ads-guide [--plan 1]                # the planning guide: strategy first, then each campaign, step by step
+cms ads-step customers --prompt         # a step's research prompt; do the research, then:
+cms ads-answer customers - < answer.md  # its answer (the ```json block) read into the step (--preview first)
+cms ads-exclusions · cms ads-exclusion-sync 2 --dry-run   # negative keyword lists, as shared lists in Google Ads
 cms ads-plans · cms ads-plan 1          # campaign plans: setup, ad groups, checklist, checks, the live campaign beside it
 cms ads-plan new - < plan.json          # a plan, with its ad groups, from the search_leads template's checklist
 cms ads-task 1 7 done                   # tick the checklist

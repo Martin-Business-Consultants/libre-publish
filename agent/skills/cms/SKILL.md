@@ -191,6 +191,9 @@ cms ads-query "SELECT … FROM … WHERE …"     # any read-only GAQL
 cms ads-negatives <campaign_id> "<term>"... [--match EXACT] --dry-run
 cms ads-campaign-status <campaign_id> paused --dry-run
 cms ads-conversion <gclid> <conversion_action_id> --value N --dry-run
+cms ads-guide [--plan <id>]     # the planning guide, strategy to campaign
+cms ads-step <step> --prompt · cms ads-answer <step> - < answer.md
+cms ads-exclusions · cms ads-exclusion-sync <id> --dry-run
 cms ads-plans · cms ads-plan <id>   # campaign plans, their checks and checklist
 cms ads-task <plan_id> <task_id> done · cms ads-plan-negatives <id> --dry-run
 ```
