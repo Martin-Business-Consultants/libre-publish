@@ -51,6 +51,12 @@ COPY engines ./engines
 COPY plugins ./plugins
 COPY themes ./themes
 
+# BuildKit leaves secrets out of its cache key, so on a builder shared by
+# several sites (Hoster's runner) the RUNs below would reuse another site's
+# plugins and theme. Hoster passes a digest of the builder secrets' values;
+# declared here, it reruns them whenever those change.
+ARG HOSTER_BUILDER_SECRETS_DIGEST=
+
 # The install's own plugins, from the CMS_PLUGINS builder secret (bin/fetch-plugins).
 COPY bin/fetch-plugins ./bin/
 COPY config/default_plugins.yml ./config/
