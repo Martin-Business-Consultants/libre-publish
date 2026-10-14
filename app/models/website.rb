@@ -28,12 +28,18 @@ module Website
 
   # The theme that draws the site: the one registered last, unless it's
   # switched off and another isn't (two themes side by side, while one is
-  # being built: bin/theme link).
+  # being built: bin/theme link). With several on, one switched on in
+  # Settings beats one only on by default, so a theme newly linked into a
+  # checkout (or added to an image) doesn't take over a site that chose
+  # another.
   def self.theme
     chosen = @theme
-    return chosen if chosen.nil? || themes.size <= 1 || switched_on?(chosen)
+    return chosen if chosen.nil? || themes.size <= 1
 
-    themes.values.find { switched_on?(it) } || chosen
+    on = themes.values.select { switched_on?(it) }
+    chose = on.select { Cms::Plugins.states[it.key] == true }
+    [chose, on].each { |set| return set.include?(chosen) ? chosen : set.first if set.any? }
+    chosen
   end
 
   def self.theme=(theme)

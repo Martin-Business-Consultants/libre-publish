@@ -14,9 +14,11 @@ default: &default
   max_connections: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
   timeout: 5000
 
+# CMS_DATA_DIR here too, so one checkout can hold several sites' local
+# copies side by side (lp-migrate gives each migration its own).
 development:
   <<: *default
-  database: storage/development.sqlite3
+  database: <%= ENV.fetch("CMS_DATA_DIR", "storage") %>/development.sqlite3
 
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".

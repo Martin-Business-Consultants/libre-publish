@@ -50,14 +50,22 @@ def switch_to(name)
     puts "Switch #{name} on in Plugins › Themes (and others off) once bin/dev is up."
 end
 
+# Whether the theme draws the site in this development database.
+def drawing?(name)
+  out = IO.popen([File.join(APP_ROOT, "bin/rails"), "runner", "print Website.theme&.key"], err: File::NULL, &:read)
+  out.to_s.lines.last.to_s.strip == name
+end
+
 def unlink(name)
   target = File.join(THEMES, name)
   abort "themes/#{name} isn't linked." unless File.symlink?(target)
+  drawing = drawing?(name)
   File.unlink(target)
   aside = File.join(ASIDE, name)
   File.rename(aside, target) if File.exist?(aside)
   remaining = Dir.children(THEMES).select { File.directory?(File.join(THEMES, it)) && !it.start_with?(".") }
-  switch_to(remaining.first) if remaining.any?
+  # Another theme only takes over when this one was drawing the site.
+  switch_to(remaining.first) if drawing && remaining.any?
   puts "Unlinked #{name}#{" and put the install's own back" if File.exist?(target)}. Restart bin/dev."
 end
 
