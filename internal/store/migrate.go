@@ -37,6 +37,9 @@ func Tables() []string {
 // lack, then schema.sql (new tables, indexes), then the numbered
 // migrations not yet run.
 func migrate(ctx context.Context, db *sql.DB, list []migration) error {
+	if err := setAsideRailsTables(ctx, db); err != nil {
+		return err
+	}
 	if err := ensureColumns(ctx, db); err != nil {
 		return err
 	}
@@ -116,6 +119,41 @@ var schemaTables = sync.OnceValues(func() (map[string][]column, error) {
 	}
 	return out, nil
 })
+
+// railsOnly are tables the Rails core has under a name this schema uses for
+// something else, each told apart by a column only the Rails one has. They're
+// renamed out of the way (kept, with their rows) so schema.sql can create
+// this core's own.
+var railsOnly = []struct{ table, marker, renameTo string }{
+	// The Rails core's pending API changes (revisable_type/_id, state,
+	// payload), not this core's revisions (record_type/_id, status, changes).
+	{"revisions", "revisable_type", "rails_revisions"},
+}
+
+func setAsideRailsTables(ctx context.Context, db *sql.DB) error {
+	return inTx(ctx, db, func(tx *sql.Tx) error {
+		for _, t := range railsOnly {
+			rails, err := hasColumn(ctx, tx, t.table, t.marker)
+			if err != nil || !rails {
+				if err != nil {
+					return err
+				}
+				continue
+			}
+			taken, err := Count(ctx, tx, `SELECT count(*) FROM sqlite_master WHERE type = 'table' AND name = ?`, t.renameTo)
+			if err != nil {
+				return err
+			}
+			if taken > 0 {
+				return fmt.Errorf("schema: %s is the Rails core's and %s, where it would be set aside, already exists", t.table, t.renameTo)
+			}
+			if _, err := tx.ExecContext(ctx, fmt.Sprintf(`ALTER TABLE %s RENAME TO %s`, quoteIdent(t.table), quoteIdent(t.renameTo))); err != nil {
+				return fmt.Errorf("schema: setting aside %s: %w", t.table, err)
+			}
+		}
+		return nil
+	})
+}
 
 // ensureColumns adds the columns schema.sql declares that an existing table
 // lacks (an older database, or one the Rails core wrote before the column

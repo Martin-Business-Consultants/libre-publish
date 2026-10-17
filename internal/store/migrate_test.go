@@ -114,3 +114,37 @@ func TestMigrationsRunOnce(t *testing.T) {
 		t.Fatal("an older build opened a newer database")
 	}
 }
+
+func TestOpenStoreSetsAsideRailsRevisions(t *testing.T) {
+	t.Parallel()
+	// The Rails core's revisions: pending API changes, another shape.
+	path := openRaw(t, `CREATE TABLE revisions (
+		id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+		revisable_type varchar NOT NULL,
+		revisable_id integer NOT NULL,
+		state varchar DEFAULT 'pending' NOT NULL,
+		payload json DEFAULT '{}' NOT NULL,
+		created_at datetime(6) NOT NULL,
+		updated_at datetime(6) NOT NULL
+	);
+	INSERT INTO revisions (revisable_type, revisable_id, created_at, updated_at) VALUES ('Page', 1, '2026-01-01', '2026-01-01');`)
+	db, err := Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	ctx := t.Context()
+	if n, err := Count(ctx, db.DB, `SELECT count(*) FROM rails_revisions`); err != nil || n != 1 {
+		t.Fatalf("rails_revisions has %d rows (%v), want the 1 kept", n, err)
+	}
+	if ok, err := hasColumn(ctx, db.DB, "revisions", "record_type"); err != nil || !ok {
+		t.Fatalf("revisions isn't this core's (%v)", err)
+	}
+	db.Close()
+	// Opening again leaves both alone.
+	db, err = Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	db.Close()
+}

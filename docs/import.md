@@ -140,7 +140,9 @@ form's spam settings again.
 
 Kept but unused: the tables of what this core doesn't do (Commerce's
 invoices, Leads' quote requests, the chats and AI tables…) and the Rails
-forms tables themselves. The report lists them.
+forms tables themselves. The report lists them. The Rails core's own
+`revisions` (pending API changes) has another shape than this core's, so it's
+renamed `rails_revisions`, rows and all, and this core's is created beside it.
 
 Two-factor sign-in can't be checked here yet: people with it on are listed;
 `librepublish user disable-2fa --email …` lets them in.
