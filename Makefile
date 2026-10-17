@@ -3,7 +3,7 @@ VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null | sed 's/^v/
 LDFLAGS := -s -w -X github.com/Martin-Business-Consultants/libre-publish/internal/cms.Version=$(VERSION)
 PLATFORMS := linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64
 
-.PHONY: build run test dist plugin clean
+.PHONY: build run test dist plugin ui ui-dev clean
 
 build:
 	CGO_ENABLED=0 go build -trimpath -ldflags '$(LDFLAGS)' -o dist/librepublish ./cmd/librepublish
@@ -14,6 +14,15 @@ run:
 test:
 	go vet ./...
 	go test ./...
+
+# The admin (ui/, Svelte + Tailwind) into internal/admin/dist, which the
+# binary embeds. Committed, so building the binary needs no Node.
+ui:
+	cd ui && npm ci && npm run check && npm run build
+
+# The admin with hot reload on :5173, against `make run` on :8080.
+ui-dev:
+	cd ui && npm run dev
 
 # dist/librepublish-<os>-<arch>[.exe] and dist/checksums.txt: what a release
 # attaches, and what install.sh downloads.

@@ -13,3 +13,4 @@
 # Rails-engine plugin checkouts (main's plugins/); only plugins/visits is this repo's.
 /plugins/*
 !/plugins/visits/
+/ui/node_modules/

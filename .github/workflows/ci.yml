@@ -21,3 +21,22 @@ jobs:
       - run: test -z "$(gofmt -l .)" || (gofmt -l . && exit 1)
       - run: make test
       - run: make dist
+
+  # The admin (ui/): svelte-check, and the build the binary embeds, which
+  # must match what's committed in internal/admin/dist.
+  ui:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ui
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: ui/package-lock.json
+      - run: npm ci
+      - run: npm run check
+      - run: npm run build
+      - run: git diff --exit-code -- ../internal/admin/dist || (echo "::error::internal/admin/dist is stale: run make ui and commit it" && exit 1)

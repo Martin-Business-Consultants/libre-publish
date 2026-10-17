@@ -148,14 +148,19 @@ core, which is held to the same file). The tests read it.
 
 **Scheduling.** `publish_at` and `unpublish_at` are acted on within 30 seconds.
 
-**The admin**: one HTML file in the binary (`internal/admin/index.html`),
-no build step. It covers setup and sign-in, pages with the block editor,
-collections and entries, and globals, all with forms generated from their
-field schemas (every field type, including nested repeaters, groups and
-blocks). It also has media, block types, review, redirects, webhooks, trash,
-users, roles, service tokens, plugins (with grants and their data-described
-screens), settings, the audit log and device approval. It talks to the same
-`/api` as everyone else, with a session cookie and a CSRF header.
+**The admin**: Svelte 5 and Tailwind 4 (`ui/`), built into
+`internal/admin/dist` and embedded in the binary. It recreates the Rails
+admin's look from the same design tokens: the admin bar, the WordPress-style
+menu with fly-outs, postboxes and the Publish box, status filters, quick
+filters, bulk actions and row actions. It's built from its own component
+library (`ui/src/lib/components`): buttons, fields, a searchable combobox, tag
+input, switches, dialogs and sheets, confirmations, toasts, tables,
+pagination and ⌘K search. Forms are drawn from field schemas (every field
+type, nested), blocks are edited in place with a block picker, media is
+picked or uploaded inline, and schemas are edited as rows rather than JSON.
+It follows the system's light or dark mode, and works on a phone. `make ui`
+rebuilds it, and `make ui-dev` serves it with hot reload against `make run`.
+The built `dist/` is committed, so `go install` needs no Node.
 
 ## Plugins: WebAssembly, with declared permissions
 
@@ -193,7 +198,8 @@ internal/cms/           the core (one package)
   delivery.go           /api/v1
   api_*.go              /api
   plugins.go            the WebAssembly host
-internal/admin/         the admin, one embedded HTML file
+internal/admin/         the admin, embedded (dist/, built from ui/)
+ui/                     the admin's source: Svelte 5 + Tailwind 4
 plugins/visits/         an example plugin
 ```
 

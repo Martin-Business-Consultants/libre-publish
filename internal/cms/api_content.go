@@ -95,7 +95,16 @@ func (a *App) listPages(c *Ctx) error {
 	var total int
 	cond := "deleted_at IS NULL AND " + strings.Join(where, " AND ")
 	a.Store.DB.QueryRowContext(c.R.Context(), "SELECT count(*) FROM pages WHERE "+cond, args...).Scan(&total)
-	list, err := a.Pages(c.R.Context(), cond+fmt.Sprintf(" ORDER BY updated_at DESC, id DESC LIMIT %d OFFSET %d", per, (page-1)*per), args...)
+	// ?sort=path lists the tree in order (parents before their children);
+	// the default is most recently updated first.
+	order := "updated_at DESC, id DESC"
+	switch c.Query("sort") {
+	case "path":
+		order = "path, id"
+	case "title":
+		order = "title COLLATE NOCASE, id"
+	}
+	list, err := a.Pages(c.R.Context(), cond+fmt.Sprintf(" ORDER BY %s LIMIT %d OFFSET %d", order, per, (page-1)*per), args...)
 	if err != nil {
 		return err
 	}
