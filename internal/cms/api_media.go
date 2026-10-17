@@ -105,6 +105,7 @@ func (a *App) showAsset(c *Ctx) error {
 	if err != nil {
 		return err
 	}
+	used = append(used, a.brandingUses(c.R.Context(), id)...)
 	return c.JSON(200, O("asset", append(a.assetJSON(c.R.Context(), as), kv{"used_by", used})))
 }
 

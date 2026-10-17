@@ -57,8 +57,16 @@ func (a *App) defaultLocale() string {
 }
 
 // putSetting merges data into a key (null removes a key), keeping what a
-// masked secret written back would otherwise overwrite.
+// masked secret written back would otherwise overwrite. The branding is
+// checked and replaced whole (cleanBranding).
 func (a *App) putSetting(ctx context.Context, actor *Actor, key string, data map[string]any, replace bool) (map[string]any, error) {
+	if key == brandingKey {
+		clean, err := a.cleanBranding(ctx, data)
+		if err != nil {
+			return nil, err
+		}
+		data, replace = clean, true
+	}
 	old, err := a.setting(ctx, key)
 	if err != nil {
 		return nil, err
@@ -78,7 +86,7 @@ func (a *App) putSetting(ctx context.Context, actor *Actor, key string, data map
 		return nil, err
 	}
 	a.audit(ctx, actor, "setting.updated", "Setting", 0, key, map[string]any{"keys": keysOf(data)})
-	if key == "general" {
+	if key == "general" || key == brandingKey {
 		a.publish(ctx, change{Tags: []string{"site"}})
 	}
 	return merged, nil

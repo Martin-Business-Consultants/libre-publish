@@ -16,14 +16,16 @@ func (a *App) showSession(c *Ctx) error {
 		return err
 	}
 	if c.Actor == nil || c.Actor.Session == nil {
-		return c.JSON(200, O("signed_in", false, "needs_setup", users == 0, "site", str(a.general(c.R.Context())["title"]), "version", a.cfg.Version))
+		return c.JSON(200, O("signed_in", false, "needs_setup", users == 0, "site", str(a.general(c.R.Context())["title"]), "version", a.cfg.Version,
+			"branding", a.brandingJSON(c.R.Context(), true)))
 	}
 	caps := []string{}
 	if c.Actor.Role != nil {
 		caps = a.capabilitiesOf(c.Actor.Role)
 	}
 	return c.JSON(200, O("signed_in", true, "csrf", c.Actor.Session.CSRF, "user", O("id", c.Actor.UserID, "name", c.Actor.Name, "email", c.Actor.Email, "pending_email", a.pendingEmail(c.R.Context(), c.Actor.UserID)),
-		"capabilities", caps, "system", c.Actor.Role != nil && c.Actor.Role.System, "site", str(a.general(c.R.Context())["title"]), "version", a.cfg.Version, "preferences", a.preferences(c.R.Context(), c.Actor.UserID)))
+		"capabilities", caps, "system", c.Actor.Role != nil && c.Actor.Role.System, "site", str(a.general(c.R.Context())["title"]), "version", a.cfg.Version, "preferences", a.preferences(c.R.Context(), c.Actor.UserID),
+		"branding", a.brandingJSON(c.R.Context(), true)))
 }
 
 func (a *App) createSession(c *Ctx) error {

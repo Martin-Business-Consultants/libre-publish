@@ -159,7 +159,7 @@ use `/api/v1`.
 
 | Endpoint | What |
 |---|---|
-| `GET /api/v1/site` | Name, public URL, `default_locale`, `locales` (every one but the default is a path prefix: `/fr/…`), contact details, enabled plugins, `plugin_config` (Forms: where its list, definitions and submissions are; Commerce: where quote requests post), and `image_widths`: the widths of an image's `variants` and `srcset`, ascending (`[640, 1280, 1920]`). `meta.cms_url` is the CMS's own address (`APP_URL`), which asset URLs start with; `meta.cms_version` is the build's version. |
+| `GET /api/v1/site` | Name, public URL, `default_locale`, `locales` (every one but the default is a path prefix: `/fr/…`), contact details, enabled plugins, `plugin_config` (Forms: where its list, definitions and submissions are; Commerce: where quote requests post), `image_widths`: the widths of an image's `variants` and `srcset`, ascending (`[640, 1280, 1920]`), and `branding` (below). `meta.cms_url` is the CMS's own address (`APP_URL`), which asset URLs start with; `meta.cms_version` is the build's version. |
 | `GET /api/v1/content[?since=<cursor>]` | Every live page (blocks expanded), entry and global — or, with a previous read's `meta.cursor`, only what changed, plus `data.removed` (what stopped being live). `meta.full: true` means replace what you have. A cursor older than 30 days gets a full answer. |
 | `GET /api/v1/pages[?locale=]`, `/api/v1/pages/<path>` | Live pages, blocks expanded (below), with `translations: [{locale, path}]`. |
 | `GET /api/v1/collections`, `/collections/<slug>` | Collections and their fields. |
@@ -170,6 +170,21 @@ use `/api/v1`.
 | `GET /api/v1/robots` | The site's robots.txt (`data.text`, and `data.mode`: `generated` or `custom`); `/api/v1/robots.txt` is the file itself. Cache tag `robots`. |
 | `GET /api/v1/redirects`, `/api/v1/redirects.txt` | Active rules; the `.txt` is a Cloudflare `_redirects` file (exact rules first, wildcards longest first, `:splat`). |
 | `GET /api/v1/site_health` | Site health's checks (`state`: passes, fails, yours_to_judge) for a build to hold the site to. |
+
+**Branding.** `data.branding` is the visual identity from Settings › Brand,
+with only what's set: `logo` and `favicon` (asset objects, as in
+`included.assets`: `url`, `width`, `height`, `alt`, `variants`, `srcset`…),
+`primary_color` and `secondary_color` (hex, `#rgb` or `#rrggbb`,
+lowercase), `font` (`Inter`, `DM Sans`, `Manrope`, `Playfair Display` or
+`Lora`: a Google Fonts family the site loads itself), `border_radius` and
+`box_shadow` (`none`, `small`, `medium` or `large`). Every value is checked
+when it's saved (a `422` names what's wrong; the setting is replaced whole,
+so a cleared field is gone) and again when it's delivered, so imported data
+that fails the checks is left out — but a site putting it into CSS should
+check it too, as the Astro integration's `<BrandStyles />` does. A logo or
+favicon that's been deleted, or isn't an image, is left out. It's part of
+`site`, so it's purged with the `site` cache tag. It's stored under the
+`branding` setting (the Rails core's key; `/api/settings/branding`).
 
 Forms aren't under `/api/v1`: they're the Forms plugin's public routes,
 `GET /api/x/forms/list` (every form: `slug`, `name`, `open`, `digest`),

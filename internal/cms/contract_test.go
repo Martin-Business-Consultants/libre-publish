@@ -423,6 +423,11 @@ func seedContract(t *testing.T, s *site) {
 	mw.WriteField("alt", "A blue line")
 	mw.Close()
 	asset := jsonID(dig(s.must(201, s.do(s.admin, "POST", "/api/assets", body.Bytes(), "Content-Type", mw.FormDataContentType())).Body, "asset", "id"))
+	// The visual identity, the logo and favicon the same file; top_bar is
+	// the admin's and isn't delivered.
+	s.must(200, s.do(s.admin, "PATCH", "/api/settings/branding", map[string]any{"setting": map[string]any{"data": map[string]any{
+		"logo_id": asset, "favicon_id": asset, "primary_color": "#b45309", "secondary_color": "#1c1917",
+		"font": "Playfair Display", "border_radius": "medium", "box_shadow": "small", "top_bar": "dark"}}}))
 
 	s.must(201, s.do(s.admin, "POST", "/api/collections", map[string]any{"collection": map[string]any{
 		"slug": "posts", "name": "Posts", "api_enabled": true, "enable_blocks": true,

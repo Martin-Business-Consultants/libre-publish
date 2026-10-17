@@ -431,7 +431,7 @@ func (a *App) v1Site(c *Ctx) error {
 	}
 	return c.deliver(O("name", str(g["title"]), "url", str(g["site_base_url"]), "default_locale", a.defaultLocale(),
 		"locales", a.siteLocales(c.R.Context()), "contact", contact, "plugins", plugins, "plugin_config", config, "api_version", "v1",
-		"image_widths", slices.Clone(deliveryWidths)),
+		"image_widths", slices.Clone(deliveryWidths), "branding", a.brandingJSON(c.R.Context(), false)),
 		O("cms_url", a.cfg.BaseURL, "cms_version", a.cfg.Version), nil, "site")
 }
 
