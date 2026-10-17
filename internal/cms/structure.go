@@ -272,7 +272,7 @@ func (g *Global) FieldsJSON() any {
 
 func (a *App) globalJSON(g *Global) Obj {
 	return O("id", g.ID, "slug", g.Slug, "name", g.Name, "description", g.Description, "icon", g.Icon, "version", g.Version,
-		"data", redact(g.Data.Map()), "created_at", g.CreatedAt, "updated_at", g.UpdatedAt, "fields", g.FieldsJSON(),
+		"data", redact(g.Data.Map()), "created_at", g.CreatedAt, "updated_at", g.UpdatedAt, "lock_version", g.LockVersion, "fields", g.FieldsJSON(),
 		"json_schema", fields.JSONSchema(g.Fields()))
 }
 
@@ -373,7 +373,7 @@ func (a *App) saveGlobal(ctx context.Context, actor *Actor, g *Global, p map[str
 	}
 	if !creating {
 		if lv, ok := intOf(p["lock_version"]); ok && int(lv) != prior.LockVersion {
-			return nil, apierr.Conflict("Someone else saved this since you read it. Read it again and redo the change.")
+			return nil, staleWrite(lv, int64(prior.LockVersion))
 		}
 		if globalEqual(&prior, g) {
 			return &writeResult{Unchanged: true}, nil
@@ -395,8 +395,9 @@ func (a *App) saveGlobal(ctx context.Context, actor *Actor, g *Global, p map[str
 			g.CreatedAt = now
 		} else {
 			g.LockVersion++
-			if _, err := tx.ExecContext(ctx, `UPDATE globals SET slug=?, name=?, description=?, icon=?, data=?, schema=?, version=?, lock_version=?, updated_at=? WHERE id=?`,
-				g.Slug, g.Name, g.Description, g.Icon, string(g.Data), string(g.Schema), g.Version, g.LockVersion, now.DB(), g.ID); err != nil {
+			res, err := tx.ExecContext(ctx, `UPDATE globals SET slug=?, name=?, description=?, icon=?, data=?, schema=?, version=?, lock_version=?, updated_at=? WHERE id=? AND lock_version=?`,
+				g.Slug, g.Name, g.Description, g.Icon, string(g.Data), string(g.Schema), g.Version, g.LockVersion, now.DB(), g.ID, prior.LockVersion)
+			if err := wroteOver(res, err, prior.LockVersion); err != nil {
 				return err
 			}
 		}

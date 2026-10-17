@@ -6,6 +6,8 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"image"
 	"image/color"
 	"image/png"
@@ -21,6 +23,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/Martin-Business-Consultants/libre-publish/internal/apierr"
 	"github.com/Martin-Business-Consultants/libre-publish/internal/fields"
 )
 
@@ -191,7 +194,8 @@ func TestPagesRoundTripAndErrors(t *testing.T) {
 		"slug": "about", "title": "About us",
 		"blocks": []any{map[string]any{"type": "hero", "data": map[string]any{"heading": "Hello"}}},
 	}}))
-	want := []string{"blocks", "category", "created_at", "depth", "frontmatter", "id", "locale", "parent_id", "path", "published_at", "seo", "slug", "status", "tags", "title", "updated_at"}
+	// lock_version: sent back on a save, it refuses to overwrite a change made since (docs/delivery-api.md).
+	want := []string{"blocks", "category", "created_at", "depth", "frontmatter", "id", "locale", "lock_version", "parent_id", "path", "published_at", "seo", "slug", "status", "tags", "title", "updated_at"}
 	if got := keys(r.Body["page"]); !slices.Equal(got, want) {
 		t.Fatalf("page keys %v", got)
 	}
@@ -678,4 +682,57 @@ func TestLegacyHTMLDoesntBlockSaves(t *testing.T) {
 	s.must(200, s.do(s.admin, "PATCH", "/api/collections/posts/entries/old", map[string]any{"entry": map[string]any{
 		"frontmatter": map[string]any{"summary": "Built in 1869", "author": "Ann"}, "body_markdown": "A *mill*",
 	}}))
+}
+
+// Optimistic locking through the management API: a read gives lock_version,
+// a save that sends back a stale one is a 409, the current one saves.
+func TestLockVersion(t *testing.T) {
+	t.Parallel()
+	s := newSite(t)
+	s.must(201, s.do(s.admin, "POST", "/api/pages", map[string]any{"page": map[string]any{"slug": "about", "title": "About"}}))
+	s.must(201, s.do(s.admin, "POST", "/api/collections", map[string]any{"collection": map[string]any{"slug": "posts", "name": "Posts"}}))
+	s.must(201, s.do(s.admin, "POST", "/api/collections/posts/entries", map[string]any{"entry": map[string]any{"slug": "hi", "title": "Hi"}}))
+	s.must(201, s.do(s.admin, "POST", "/api/globals", map[string]any{"global": map[string]any{"slug": "nav", "name": "Nav", "data": map[string]any{}}}))
+
+	for _, c := range []struct{ path, wrap, field string }{
+		{"/api/pages/about", "page", "title"},
+		{"/api/collections/posts/entries/hi", "entry", "title"},
+		{"/api/globals/nav", "global", "name"},
+	} {
+		read := s.must(200, s.do(s.admin, "GET", c.path, nil))
+		lv, ok := dig(read.Body, c.wrap, "lock_version").(float64)
+		if !ok {
+			t.Fatalf("%s: no lock_version: %s", c.path, read.Raw)
+		}
+		// Someone else saves in between.
+		saved := s.must(200, s.do(s.admin, "PATCH", c.path, map[string]any{c.wrap: map[string]any{c.field: "Theirs", "lock_version": lv}}))
+		if dig(saved.Body, c.wrap, "lock_version") != lv+1 {
+			t.Fatalf("%s: the save's answer has the new lock_version: %s", c.path, saved.Raw)
+		}
+		r := s.must(409, s.do(s.admin, "PATCH", c.path, map[string]any{c.wrap: map[string]any{c.field: "Mine", "lock_version": lv}}))
+		if r.Body["error"] != "conflict" || !strings.Contains(str(r.Body["message"]), fmt.Sprintf("lock_version %d, now %d", int(lv), int(lv)+1)) {
+			t.Fatalf("%s: stale: %s", c.path, r.Raw)
+		}
+		if got := s.must(200, s.do(s.admin, "GET", c.path, nil)); dig(got.Body, c.wrap, c.field) != "Theirs" {
+			t.Fatalf("%s: the stale save changed nothing: %s", c.path, got.Raw)
+		}
+		s.must(200, s.do(s.admin, "PATCH", c.path, map[string]any{c.wrap: map[string]any{c.field: "Mine", "lock_version": lv + 1}}))
+	}
+}
+
+type rowsAffected int64
+
+func (n rowsAffected) LastInsertId() (int64, error) { return 0, nil }
+func (n rowsAffected) RowsAffected() (int64, error) { return int64(n), nil }
+
+// A save racing another between its read and its write changes no row
+// (UPDATE … AND lock_version = <read>): that's a conflict, not a success.
+func TestWroteOver(t *testing.T) {
+	t.Parallel()
+	if err := wroteOver(rowsAffected(1), nil, 3); err != nil {
+		t.Fatal(err)
+	}
+	if e, ok := errors.AsType[*apierr.Error](wroteOver(rowsAffected(0), nil, 3)); !ok || e.Status != 409 {
+		t.Fatalf("no row changed: %v", e)
+	}
 }

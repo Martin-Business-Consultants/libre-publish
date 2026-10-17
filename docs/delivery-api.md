@@ -130,6 +130,31 @@ JSON), `unauthorized` (401), `forbidden` (403), `not_found` (404, also for an
 doesn't serve), `conflict` (409), `invalid` (422), `rate_limited` (429, with
 `Retry-After`) and `internal_error` (500, never with a backtrace).
 
+## Saving without overwriting someone else (`lock_version`)
+
+The management API's pages, entries and globals (`GET /api/pages/<path>`,
+`/api/collections/<slug>/entries/<slug>`, `/api/globals/<slug>`, and what
+a create or a save answers) carry `lock_version`: a number that goes up by
+one with every save. A client that read a record and wants its save to fail
+rather than overwrite a change made since sends it back in the record's
+params:
+
+    PATCH /api/pages/about
+    {"page": {"title": "About us", "lock_version": 4}}
+
+If the record is still at 4, it's saved (and the answer has `lock_version`
+5). If someone saved it since, nothing is written and the answer is a 409:
+
+    {"error": "conflict", "message": "Someone else saved this since you read it (lock_version 4, now 5). Read it again and redo the change."}
+
+Read it again, apply the change to what's there now, and save with the new
+`lock_version`. A save without `lock_version` isn't checked (the last
+write wins), and the check holds for saves racing each other too: the row
+is only written while it's still at the version read. A write that's held
+for review (202, a revision) isn't checked until it's approved, when it's
+applied to the record as it is then. The delivery API (`/api/v1`) doesn't
+carry `lock_version`: it's for writing.
+
 ## Caching and limits
 
 - **Conditional GET.** Every answer carries an `ETag`; send it back as

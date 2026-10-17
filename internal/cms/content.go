@@ -348,7 +348,8 @@ func (a *App) pageJSON(ctx context.Context, p *Content, blocks any) (Obj, error)
 	}
 	return O("id", p.ID, "slug", p.Slug, "path", p.Path, "parent_id", p.ParentID, "depth", p.Depth, "title", p.Title,
 		"status", p.Status, "locale", p.Locale, "blocks", blocks, "frontmatter", p.Frontmatter, "seo", p.Seo,
-		"published_at", p.PublishedAt, "created_at", p.CreatedAt, "updated_at", p.UpdatedAt, "category", cat, "tags", tags), nil
+		"published_at", p.PublishedAt, "created_at", p.CreatedAt, "updated_at", p.UpdatedAt, "category", cat, "tags", tags,
+		"lock_version", p.LockVersion), nil
 }
 
 func (a *App) pageSummaryJSON(ctx context.Context, p *Content) (Obj, error) {
@@ -368,7 +369,7 @@ func (a *App) entryJSON(ctx context.Context, e *Content) (Obj, error) {
 	}
 	return O("id", e.ID, "slug", e.Slug, "title", e.Title, "status", e.Status, "locale", e.Locale, "frontmatter", e.Frontmatter,
 		"seo", e.Seo, "body_markdown", e.BodyMarkdown, "blocks", e.Blocks, "published_at", e.PublishedAt, "created_at", e.CreatedAt,
-		"updated_at", e.UpdatedAt, "collection_slug", e.CollectionSlug, "category", cat, "tags", tags), nil
+		"updated_at", e.UpdatedAt, "collection_slug", e.CollectionSlug, "category", cat, "tags", tags, "lock_version", e.LockVersion), nil
 }
 
 func (a *App) entrySummaryJSON(ctx context.Context, e *Content) (Obj, error) {
@@ -763,7 +764,7 @@ func (a *App) saveContent(ctx context.Context, actor *Actor, rec *Content, param
 
 	if !creating {
 		if lv, ok := intOf(params["lock_version"]); ok && int(lv) != prior.LockVersion {
-			return nil, &apierr.Error{Status: 409, Code: "conflict", Message: fmt.Sprintf("Someone else saved this since you read it (lock_version %d, now %d). Read it again and redo the change.", lv, prior.LockVersion)}
+			return nil, staleWrite(lv, int64(prior.LockVersion))
 		}
 		if contentEqual(&prior, rec) && rec.tagIDs == nil {
 			return &writeResult{Record: rec, Unchanged: true}, nil
@@ -867,18 +868,19 @@ func updateContent(ctx context.Context, tx *sql.Tx, rec, prior *Content, now sto
 	rec.UpdatedAt = now
 	rec.LockVersion = prior.LockVersion + 1
 	if rec.Kind != "page" {
-		_, err := tx.ExecContext(ctx, `UPDATE collection_entries SET slug=?, title=?, status=?, locale=?, body_markdown=?, blocks=?, frontmatter=?, seo=?,
-			category_entry_id=?, translation_group_id=?, publish_at=?, published_at=?, unpublish_at=?, lock_version=?, updated_at=? WHERE id=?`,
+		res, err := tx.ExecContext(ctx, `UPDATE collection_entries SET slug=?, title=?, status=?, locale=?, body_markdown=?, blocks=?, frontmatter=?, seo=?,
+			category_entry_id=?, translation_group_id=?, publish_at=?, published_at=?, unpublish_at=?, lock_version=?, updated_at=? WHERE id=? AND lock_version=?`,
 			rec.Slug, rec.Title, rec.Status, rec.Locale, rec.BodyMarkdown, string(rec.Blocks), string(rec.Frontmatter), string(rec.Seo),
 			rec.CategoryEntryID.DB(), rec.TranslationGroupID.DB(), rec.PublishAt.DB(), rec.PublishedAt.DB(), rec.UnpublishAt.DB(),
-			rec.LockVersion, now.DB(), rec.ID)
-		return err
+			rec.LockVersion, now.DB(), rec.ID, prior.LockVersion)
+		return wroteOver(res, err, prior.LockVersion)
 	}
-	_, err := tx.ExecContext(ctx, `UPDATE pages SET slug=?, path=?, parent_id=?, depth=?, title=?, status=?, locale=?, blocks=?, frontmatter=?, seo=?,
-		category_entry_id=?, translation_group_id=?, publish_at=?, published_at=?, unpublish_at=?, lock_version=?, updated_at=? WHERE id=?`,
+	res, err := tx.ExecContext(ctx, `UPDATE pages SET slug=?, path=?, parent_id=?, depth=?, title=?, status=?, locale=?, blocks=?, frontmatter=?, seo=?,
+		category_entry_id=?, translation_group_id=?, publish_at=?, published_at=?, unpublish_at=?, lock_version=?, updated_at=? WHERE id=? AND lock_version=?`,
 		rec.Slug, rec.Path, rec.ParentID.DB(), rec.Depth, rec.Title, rec.Status, rec.Locale, string(rec.Blocks), string(rec.Frontmatter),
 		string(rec.Seo), rec.CategoryEntryID.DB(), rec.TranslationGroupID.DB(), rec.PublishAt.DB(), rec.PublishedAt.DB(), rec.UnpublishAt.DB(),
-		rec.LockVersion, now.DB(), rec.ID)
+		rec.LockVersion, now.DB(), rec.ID, prior.LockVersion)
+	err = wroteOver(res, err, prior.LockVersion)
 	if err == nil && rec.Path != prior.Path {
 		err = resyncDescendants(ctx, tx, rec)
 	}
@@ -1262,4 +1264,25 @@ func (a *App) assetIDs(ctx context.Context, ownerType string, ids []int64) []int
 		}
 	}
 	return out
+}
+
+// staleWrite is the 409 for a write that names a lock_version other than the
+// record's: someone saved it since the writer read it.
+func staleWrite(sent, now int64) error {
+	return apierr.Conflict(fmt.Sprintf("Someone else saved this since you read it (lock_version %d, now %d). Read it again and redo the change.", sent, now))
+}
+
+// wroteOver checks that an UPDATE … WHERE lock_version = <read> changed the
+// row: none changed means another save got there between the read and this
+// write, which is a conflict rather than a silent overwrite.
+func wroteOver(res sql.Result, err error, read int) error {
+	if err != nil {
+		return err
+	}
+	if n, err := res.RowsAffected(); err != nil {
+		return err
+	} else if n == 0 {
+		return apierr.Conflict(fmt.Sprintf("Someone else saved this while it was being saved (lock_version %d is gone). Read it again and redo the change.", read))
+	}
+	return nil
 }
