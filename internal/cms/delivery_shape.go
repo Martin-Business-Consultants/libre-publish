@@ -291,7 +291,7 @@ func (a *App) v1EntriesOptions(c *Ctx) error {
 		return err
 	}
 	item := recordSchema(map[string]any{"collection": map[string]any{"const": col.Slug}, "frontmatter": fields.JSONSchema(col.Fields()),
-		"body_markdown": map[string]any{"type": "string"}, "blocks": map[string]any{"type": "array"}})
+		"body_markdown": map[string]any{"type": "string", "contentMediaType": "text/markdown"}, "blocks": map[string]any{"type": "array"}})
 	return a.optionsAnswer(c, "collections/"+col.Slug+"/entries", c.Param("entry") == "", item)
 }
 

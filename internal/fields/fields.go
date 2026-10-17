@@ -231,9 +231,11 @@ func validateValue(f Field, v any, types BlockTypes, into apierr.Invalid, at str
 func valueProblem(f Field, v any) string {
 	switch f.Type {
 	case "string", "text", "markdown", "code", "asset", "record_ref":
-		if _, ok := v.(string); !ok {
+		s, ok := v.(string)
+		if !ok {
 			return "must be a string"
 		}
+		return markupProblem(f.Type, s)
 	case "url":
 		s, ok := v.(string)
 		if !ok || strings.TrimSpace(s) == "" {
@@ -471,6 +473,9 @@ func fieldSchema(f Field) map[string]any {
 		}}
 	case "url":
 		s["type"], s["format"] = "string", "uri-reference"
+	case "markdown":
+		// Rich text: Markdown, which the site renders (raw HTML is refused).
+		s["type"], s["contentMediaType"] = "string", "text/markdown"
 	default:
 		s["type"] = "string"
 	}

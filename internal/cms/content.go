@@ -571,6 +571,9 @@ func (a *App) validateContent(ctx context.Context, c *Content) error {
 		}
 		fields.ValidateData(defs, fm, types, inv, "frontmatter")
 	}
+	if fields.MarkdownHasHTML(c.BodyMarkdown) {
+		inv.Add("body_markdown", fields.MarkdownHTMLMessage)
+	}
 	if !json.Valid(c.Seo) || !strings.HasPrefix(strings.TrimSpace(string(c.Seo)), "{") {
 		inv.Add("seo", "must be an object")
 	}

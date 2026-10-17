@@ -766,6 +766,7 @@
             "x-cms-type": "select"
           },
           "body": {
+            "contentMediaType": "text/markdown",
             "title": "Body",
             "type": "string",
             "x-cms-type": "markdown"
@@ -1066,6 +1067,7 @@
         "additionalProperties": false,
         "properties": {
           "body": {
+            "contentMediaType": "text/markdown",
             "title": "Body (markdown)",
             "type": "string",
             "x-cms-type": "markdown"
@@ -1086,6 +1088,7 @@
             "additionalProperties": false,
             "properties": {
               "bio": {
+                "contentMediaType": "text/markdown",
                 "title": "Bio",
                 "type": "string",
                 "x-cms-type": "markdown"
@@ -1398,6 +1401,6 @@
   },
   "meta": {
     "cms_version": "dev",
-    "schema_digest": "sha256:4c718412c934ff7ee813ade15d865921072e40465c02af0ac04067fba308e02b"
+    "schema_digest": "sha256:ff424e5c1099e8d2e1d650ced3976409abc42e5a9e0e0bf807b8146730ba7035"
   }
 }

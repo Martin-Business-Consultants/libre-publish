@@ -87,6 +87,32 @@ carries (a Rails import, a field since removed):
 Objects in the schema are closed (`additionalProperties: false`, groups and
 repeater items too), so a site can validate strictly.
 
+## Text and rich text
+
+Text comes in two kinds, and the schema says which:
+
+- **Plain text**: `string` and `text` fields (`x-cms-type` `string`,
+  `text`). Show them as text, escaped, never as HTML.
+- **Rich text**: `markdown` fields (`x-cms-type: "markdown"`,
+  `contentMediaType: "text/markdown"`) and an entry's `body_markdown`.
+  They're Markdown, written in the admin's editor (bold, italic,
+  strikethrough, links, headings, lists, quotes, code, rules, line breaks as
+  two trailing spaces), and the site renders them to HTML — with raw HTML
+  escaped and links kept to http(s), mailto:, tel: and paths. The Astro
+  integration's `<RichText>` / `renderRichText` does exactly that.
+
+HTML is refused on save in both (a `422` naming the field): "Formatting
+isn't allowed here: use a Markdown (rich text) field" in a plain text field,
+"Use the editor's formatting, not HTML tags" in a Markdown one. A tag is `<`
+and the name of an HTML (or SVG/MathML) element, then `>` or attributes up
+to one, or a closing `</name>`; a comment, doctype, CDATA or processing
+instruction counts too. So `a < b`, `<3`, `List<T>`, `Dear <name>` and
+autolinks such as `<https://example.com>` or `<you@example.com>` are fine,
+and in Markdown so is anything in a code span, a fenced code block or after
+a backslash (`\<p>`). `code` fields are exempt. Content saved before this
+rule keeps being delivered as it is, but can't be saved again until its
+HTML is gone: a field that needs formatting becomes a `markdown` field.
+
 ## Errors
 
 Every `/api` error — the delivery API's and the management API's — is JSON
@@ -136,7 +162,7 @@ use `/api/v1`.
 | `GET /api/v1/collections`, `/collections/<slug>` | Collections and their fields. |
 | `GET /api/v1/collections/<slug>/entries[?locale=]`, `…/entries/<slug>` | Live entries, with translations. |
 | `GET /api/v1/globals`, `/globals/<slug>` | Globals' data (secret-looking values masked). |
-| `GET /api/v1/schema` | JSON Schema (2020-12) for each block type's data (but `pattern`, which is expanded), each collection's fields, each global, pages with fields, and SEO. Each field carries `title` and `x-cms-type` (markdown, asset, link, blocks…) — what a build generates its types from. `meta.schema_digest` (above) and `meta.cms_version`. |
+| `GET /api/v1/schema` | JSON Schema (2020-12) for each block type's data (but `pattern`, which is expanded), each collection's fields, each global, pages with fields, and SEO. Each field carries `title` and `x-cms-type` (markdown, asset, link, blocks…) — what a build generates its types from — and a `markdown` field `contentMediaType: "text/markdown"` (above). `meta.schema_digest` (above) and `meta.cms_version`. |
 | `GET /api/v1/sitemap` | URLs on the public site, with `lastmod` and hreflang `alternates`. |
 | `GET /api/v1/robots` | The site's robots.txt (`data.text`, and `data.mode`: `generated` or `custom`); `/api/v1/robots.txt` is the file itself. Cache tag `robots`. |
 | `GET /api/v1/redirects`, `/api/v1/redirects.txt` | Active rules; the `.txt` is a Cloudflare `_redirects` file (exact rules first, wildcards longest first, `:splat`). |

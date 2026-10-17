@@ -20,6 +20,8 @@ import (
 	"strings"
 	"sync"
 	"testing"
+
+	"github.com/Martin-Business-Consultants/libre-publish/internal/fields"
 )
 
 // site is a running install for a test: the app, its server, and tokens
@@ -334,6 +336,12 @@ func TestCollectionsEntriesAndDelivery(t *testing.T) {
 	r := s.must(422, s.do(s.admin, "POST", "/api/collections/posts/entries", map[string]any{"entry": map[string]any{"slug": "hello", "title": "Hello"}}))
 	if dig(r.Body, "errors", "frontmatter.summary", 0) != "is required" {
 		t.Fatalf("frontmatter validated against the schema: %s", r.Raw)
+	}
+	// HTML is refused in plain text and in Markdown, the body's included.
+	r = s.must(422, s.do(s.admin, "POST", "/api/collections/posts/entries", map[string]any{"entry": map[string]any{"slug": "hello", "title": "Hello",
+		"frontmatter": map[string]any{"summary": "<p>Hi</p>"}, "body_markdown": "Built in <strong>1869</strong>"}}))
+	if dig(r.Body, "errors", "frontmatter.summary", 0) != fields.PlainTextHTMLMessage || dig(r.Body, "errors", "body_markdown", 0) != fields.MarkdownHTMLMessage {
+		t.Fatalf("HTML in text fields: %s", r.Raw)
 	}
 	s.must(201, s.do(s.admin, "POST", "/api/collections/posts/entries", map[string]any{"entry": map[string]any{
 		"slug": "hello", "title": "Hello", "status": "published", "frontmatter": map[string]any{"summary": "Hi"}, "body_markdown": "# Hello",

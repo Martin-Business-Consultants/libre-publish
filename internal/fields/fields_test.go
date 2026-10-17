@@ -254,6 +254,7 @@ func TestJSONSchema(t *testing.T) {
 	defs := Parse(decode(t, `[
 		{"name":"title","type":"string","required":true,"label":"Title","help":"Shown big"},
 		{"name":"size","type":"select","options":["s"]},
+		{"name":"bio","type":"markdown"},
 		{"name":"rows","type":"repeater","of":[{"name":"n","type":"integer","required":true}]}
 	]`))
 	got := JSONSchema(defs)
@@ -264,6 +265,7 @@ func TestJSONSchema(t *testing.T) {
 		"properties": map[string]any{
 			"title": map[string]any{"x-cms-type": "string", "type": "string", "title": "Title", "description": "Shown big"},
 			"size":  map[string]any{"x-cms-type": "select", "type": "string", "enum": []string{"s"}},
+			"bio":   map[string]any{"x-cms-type": "markdown", "type": "string", "contentMediaType": "text/markdown"},
 			"rows": map[string]any{"x-cms-type": "repeater", "type": "array", "items": map[string]any{
 				"type": "object", "required": []string{"n"}, "additionalProperties": false,
 				"properties": map[string]any{"n": map[string]any{"x-cms-type": "integer", "type": "integer"}},
