@@ -109,9 +109,12 @@ to one, or a closing `</name>`; a comment, doctype, CDATA or processing
 instruction counts too. So `a < b`, `<3`, `List<T>`, `Dear <name>` and
 autolinks such as `<https://example.com>` or `<you@example.com>` are fine,
 and in Markdown so is anything in a code span, a fenced code block or after
-a backslash (`\<p>`). `code` fields are exempt. Content saved before this
-rule keeps being delivered as it is, but can't be saved again until its
-HTML is gone: a field that needs formatting becomes a `markdown` field.
+a backslash (`\<p>`). `code` fields are exempt. The rule is for what a save
+writes: content saved before it (or imported) keeps being delivered as it
+is, and saves that leave its HTML as it was — a new title, a status change,
+a scheduled publish, moving a block — go through. Only a field whose text
+changes is checked, so new HTML is refused and cleaning it up to Markdown
+is accepted; a field that needs formatting becomes a `markdown` field.
 
 ## Errors
 

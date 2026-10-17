@@ -614,3 +614,68 @@ func TestScheduledPublishing(t *testing.T) {
 		t.Fatalf("scheduled: %s", r.Raw)
 	}
 }
+
+// Content stored before HTML was refused (or imported) still saves: the rule
+// is for text a save changes, and status changes and scheduled publishing
+// never trip over what they don't touch.
+func TestLegacyHTMLDoesntBlockSaves(t *testing.T) {
+	t.Parallel()
+	s := newSite(t)
+	ctx := t.Context()
+	s.must(201, s.do(s.admin, "POST", "/api/collections", map[string]any{"collection": map[string]any{
+		"slug": "posts", "name": "Posts",
+		"schema": map[string]any{"fields": []any{map[string]any{"name": "summary", "type": "text"}}},
+	}}))
+	for _, slug := range []string{"old", "later"} {
+		s.must(201, s.do(s.admin, "POST", "/api/collections/posts/entries", map[string]any{"entry": map[string]any{
+			"slug": slug, "title": "Old", "frontmatter": map[string]any{"summary": "Hi"}, "body_markdown": "Hi",
+		}}))
+	}
+	s.must(201, s.do(s.admin, "POST", "/api/pages", map[string]any{"page": map[string]any{"slug": "about", "title": "About",
+		"blocks": []any{map[string]any{"type": "text", "data": map[string]any{"body": "Hi"}}}}}))
+	// As an import leaves them: HTML everywhere, one due to be published.
+	for _, q := range []string{
+		`UPDATE collection_entries SET frontmatter = '{"summary":"<p>Built in <strong>1869</strong></p>"}', body_markdown = 'A <em>mill</em>'`,
+		`UPDATE collection_entries SET publish_at = '2020-01-01 00:00:00' WHERE slug = 'later'`,
+		`UPDATE pages SET blocks = '[{"id":"b1","type":"text","data":{"body":"<div>Old</div>"}},{"id":"b2","type":"text","data":{"body":"Two"}}]' WHERE slug = 'about'`,
+	} {
+		if _, err := s.app.store.ExecContext(ctx, q); err != nil {
+			t.Fatal(err)
+		}
+	}
+	// A new title, a status change, and the scheduler: all fine.
+	s.must(200, s.do(s.admin, "PATCH", "/api/collections/posts/entries/old", map[string]any{"entry": map[string]any{"title": "Older"}}))
+	// A field required since: a status change and the scheduler don't
+	// answer for content they leave as it was.
+	s.must(200, s.do(s.admin, "PATCH", "/api/collections/posts", map[string]any{"collection": map[string]any{
+		"schema": map[string]any{"fields": []any{map[string]any{"name": "summary", "type": "text"}, map[string]any{"name": "author", "type": "string", "required": true}}},
+	}}))
+	s.must(200, s.do(s.admin, "PATCH", "/api/collections/posts/entries/old", map[string]any{"entry": map[string]any{"status": "published"}}))
+	s.app.runSchedule(ctx)
+	if r := s.must(200, s.do(s.admin, "GET", "/api/collections/posts/entries/later", nil)); dig(r.Body, "entry", "status") != "published" {
+		t.Fatalf("scheduled publish of legacy HTML: %s", r.Raw)
+	}
+	// The page's blocks, reordered with their HTML as it was, save too.
+	s.must(200, s.do(s.admin, "PATCH", "/api/pages/about", map[string]any{"page": map[string]any{"title": "About us", "blocks": []any{
+		map[string]any{"id": "b2", "type": "text", "data": map[string]any{"body": "Two"}},
+		map[string]any{"id": "b1", "type": "text", "data": map[string]any{"body": "<div>Old</div>"}},
+	}}}))
+
+	// Writing new HTML into those fields is still refused...
+	r := s.must(422, s.do(s.admin, "PATCH", "/api/collections/posts/entries/old", map[string]any{"entry": map[string]any{
+		"frontmatter": map[string]any{"summary": "<p>Built in 1870</p>"}, "body_markdown": "A <b>mill</b>",
+	}}))
+	if dig(r.Body, "errors", "frontmatter.summary", 0) != fields.PlainTextHTMLMessage || dig(r.Body, "errors", "body_markdown", 0) != fields.MarkdownHTMLMessage {
+		t.Fatalf("new HTML: %s", r.Raw)
+	}
+	r = s.must(422, s.do(s.admin, "PATCH", "/api/pages/about", map[string]any{"page": map[string]any{"blocks": []any{
+		map[string]any{"id": "b1", "type": "text", "data": map[string]any{"body": "<div>New</div>"}},
+	}}}))
+	if dig(r.Body, "errors", "blocks[0].data.body", 0) != fields.MarkdownHTMLMessage {
+		t.Fatalf("new HTML in a block: %s", r.Raw)
+	}
+	// ...and cleaning it up to Markdown is accepted.
+	s.must(200, s.do(s.admin, "PATCH", "/api/collections/posts/entries/old", map[string]any{"entry": map[string]any{
+		"frontmatter": map[string]any{"summary": "Built in 1869", "author": "Ann"}, "body_markdown": "A *mill*",
+	}}))
+}

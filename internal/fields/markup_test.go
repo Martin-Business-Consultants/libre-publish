@@ -160,6 +160,58 @@ func TestValidateDataMarkup(t *testing.T) {
 			data, _ := decode(t, tt.data).(map[string]any)
 			into := apierr.Invalid{}
 			ValidateData(defs, data, types, into, "")
+			ValidateMarkupData(defs, data, types, nil, into, "")
+			if !reflect.DeepEqual(map[string][]string(into), tt.want) {
+				t.Errorf("problems = %v\nwant %v", into, tt.want)
+			}
+		})
+	}
+}
+
+func TestValidateMarkupOnlyWhatChanged(t *testing.T) {
+	t.Parallel()
+	defs := Parse(decode(t, `[
+		{"name":"title","type":"string"},
+		{"name":"body","type":"markdown"},
+		{"name":"paragraphs","type":"repeater","of":[{"name":"html","type":"text"}]}
+	]`))
+	types := func(slug string) ([]Field, bool) {
+		if slug == "text" {
+			return []Field{{Name: "body", Type: "markdown"}}, true
+		}
+		return nil, false
+	}
+	stored, _ := decode(t, `{"title":"<em>Old</em>","body":"<p>Legacy</p>","paragraphs":[{"html":"a"},{"html":"Built in <b>1869</b>"}]}`).(map[string]any)
+	storedBlocks, _ := decode(t, `[{"type":"text","data":{"body":"<div>x</div>"}},{"type":"text","data":{"body":"y"}}]`).([]any)
+	before := Texts{}
+	before.AddData(defs, stored, types, "frontmatter")
+	before.AddBlocks(storedBlocks, types, "blocks")
+
+	tests := []struct {
+		name, data, blocks string
+		want               map[string][]string
+	}{
+		{"untouched legacy HTML", `{"title":"<em>Old</em>","body":"<p>Legacy</p>","paragraphs":[{"html":"a"},{"html":"Built in <b>1869</b>"}]}`,
+			`[{"type":"text","data":{"body":"<div>x</div>"}}]`, map[string][]string{}},
+		{"moved, not changed", `{"paragraphs":[{"html":"Built in <b>1869</b>"},{"html":"a"}]}`,
+			`[{"type":"text","data":{"body":"y"}},{"type":"text","data":{"body":"<div>x</div>"}}]`, map[string][]string{}},
+		{"cleaned up", `{"title":"Old","body":"Legacy"}`, `[]`, map[string][]string{}},
+		{"new HTML", `{"title":"<em>New</em>","body":"<p>Legacy</p>","paragraphs":[{"html":"<i>c</i>"}]}`,
+			`[{"type":"text","data":{"body":"y <b>z</b>"}}]`, map[string][]string{
+				"frontmatter.title":              {PlainTextHTMLMessage},
+				"frontmatter.paragraphs[0].html": {PlainTextHTMLMessage},
+				"blocks[0].data.body":            {MarkdownHTMLMessage},
+			}},
+		{"another field's HTML", `{"title":"<p>Legacy</p>"}`, `[]`, map[string][]string{"frontmatter.title": {PlainTextHTMLMessage}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			data, _ := decode(t, tt.data).(map[string]any)
+			blocks, _ := decode(t, tt.blocks).([]any)
+			into := apierr.Invalid{}
+			ValidateMarkupData(defs, data, types, before, into, "frontmatter")
+			ValidateMarkupBlocks(blocks, types, before, into, "blocks")
 			if !reflect.DeepEqual(map[string][]string(into), tt.want) {
 				t.Errorf("problems = %v\nwant %v", into, tt.want)
 			}

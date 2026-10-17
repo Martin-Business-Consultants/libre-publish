@@ -532,7 +532,9 @@ func (a *App) contentFields(ctx context.Context, c *Content) ([]fields.Field, er
 	return fields.Parse(schema), nil
 }
 
-func (a *App) validateContent(ctx context.Context, c *Content) error {
+// validateContent checks a record about to be saved; prior is what's stored
+// (nil for a new one).
+func (a *App) validateContent(ctx context.Context, c, prior *Content) error {
 	inv := apierr.Invalid{}
 	if c.Slug == "" {
 		inv.Add("slug", "can't be blank")
@@ -551,31 +553,13 @@ func (a *App) validateContent(ctx context.Context, c *Content) error {
 	if c.PublishAt.Valid && c.UnpublishAt.Valid && !c.UnpublishAt.After(c.PublishAt.Time) {
 		inv.Add("unpublish_at", "must be after publish_at")
 	}
-	types, err := a.blockTypeResolver(ctx)
-	if err != nil {
-		return err
-	}
-	var blocks []any
-	if err := json.Unmarshal(c.Blocks, &blocks); err != nil {
-		inv.Add("blocks", "must be a list of blocks")
-	} else {
-		fields.ValidateBlocks(blocks, nil, types, inv, "blocks")
-	}
-	var fm map[string]any
-	if err := json.Unmarshal(c.Frontmatter, &fm); err != nil {
-		inv.Add("frontmatter", "must be an object")
-	} else {
-		defs, err := a.contentFields(ctx, c)
-		if err != nil {
+	// A change of status or schedule alone (the scheduler's publish and
+	// unpublish among them) leaves what the record says as it was: it isn't
+	// held to rules its content may predate.
+	if prior == nil || !statusOnly(prior, c) {
+		if err := a.validateBody(ctx, c, prior, inv); err != nil {
 			return err
 		}
-		fields.ValidateData(defs, fm, types, inv, "frontmatter")
-	}
-	if fields.MarkdownHasHTML(c.BodyMarkdown) {
-		inv.Add("body_markdown", fields.MarkdownHTMLMessage)
-	}
-	if !json.Valid(c.Seo) || !strings.HasPrefix(strings.TrimSpace(string(c.Seo)), "{") {
-		inv.Add("seo", "must be an object")
 	}
 	if err := a.validatePlace(ctx, c, inv); err != nil {
 		return err
@@ -589,6 +573,62 @@ func (a *App) validateContent(ctx context.Context, c *Content) error {
 		inv.Add("tag_ids", "aren't all tags")
 	}
 	return inv.Err()
+}
+
+// validateBody checks what the record says: its blocks, its frontmatter
+// against its schema, its Markdown body and SEO. Markup is refused only in
+// text the save changes (fields.Texts): HTML stored before the rule, or
+// imported, doesn't stop a save that leaves it as it was.
+func (a *App) validateBody(ctx context.Context, c, prior *Content, inv apierr.Invalid) error {
+	types, err := a.blockTypeResolver(ctx)
+	if err != nil {
+		return err
+	}
+	defs, err := a.contentFields(ctx, c)
+	if err != nil {
+		return err
+	}
+	var before fields.Texts
+	if prior != nil {
+		before = fields.Texts{}
+		var oldBlocks []any
+		var oldFm map[string]any
+		if json.Unmarshal(prior.Blocks, &oldBlocks) == nil {
+			before.AddBlocks(oldBlocks, types, "blocks")
+		}
+		if json.Unmarshal(prior.Frontmatter, &oldFm) == nil {
+			before.AddData(defs, oldFm, types, "frontmatter")
+		}
+	}
+	var blocks []any
+	if err := json.Unmarshal(c.Blocks, &blocks); err != nil {
+		inv.Add("blocks", "must be a list of blocks")
+	} else {
+		fields.ValidateBlocks(blocks, nil, types, inv, "blocks")
+		fields.ValidateMarkupBlocks(blocks, types, before, inv, "blocks")
+	}
+	var fm map[string]any
+	if err := json.Unmarshal(c.Frontmatter, &fm); err != nil {
+		inv.Add("frontmatter", "must be an object")
+	} else {
+		fields.ValidateData(defs, fm, types, inv, "frontmatter")
+		fields.ValidateMarkupData(defs, fm, types, before, inv, "frontmatter")
+	}
+	if (prior == nil || c.BodyMarkdown != prior.BodyMarkdown) && fields.MarkdownHasHTML(c.BodyMarkdown) {
+		inv.Add("body_markdown", fields.MarkdownHTMLMessage)
+	}
+	if !json.Valid(c.Seo) || !strings.HasPrefix(strings.TrimSpace(string(c.Seo)), "{") {
+		inv.Add("seo", "must be an object")
+	}
+	return nil
+}
+
+// statusOnly is whether rec differs from prior in its status and schedule
+// alone.
+func statusOnly(prior, rec *Content) bool {
+	p := *prior
+	p.Status, p.PublishAt, p.UnpublishAt, p.PublishedAt = rec.Status, rec.PublishAt, rec.UnpublishAt, rec.PublishedAt
+	return contentEqual(&p, rec) && rec.tagIDs == nil
 }
 
 // validatePlace checks where the record sits: a page's parent, and that its
@@ -705,7 +745,11 @@ func (a *App) saveContent(ctx context.Context, actor *Actor, rec *Content, param
 			return nil, err
 		}
 	}
-	if err := a.validateContent(ctx, rec); err != nil {
+	var stored *Content
+	if !creating {
+		stored = &prior
+	}
+	if err := a.validateContent(ctx, rec, stored); err != nil {
 		return nil, err
 	}
 

@@ -1,13 +1,17 @@
 package fields
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
+
+	"github.com/Martin-Business-Consultants/libre-publish/internal/apierr"
+	"github.com/Martin-Business-Consultants/libre-publish/internal/jsonv"
 )
 
 // Rich text is Markdown, written in the admin's editor and turned into HTML
-// by the site; every other text field is plain text. HTML typed into either
-// is refused on save: in a plain field it's markup the site shows as text
+// by the site; every other text field is plain text. HTML written into either
+// is refused (text a save changes; see Texts): in a plain field it's markup the site shows as text
 // (or, worse, trusts), and in a Markdown field it's formatting the editor
 // can't show or edit, which a site's renderer escapes anyway.
 
@@ -183,4 +187,110 @@ func markupProblem(typ, v string) string {
 		}
 	}
 	return ""
+}
+
+// ---- only what a save changes ----------------------------------------------
+//
+// The no-markup rule is a rule for what's written now, not a judgement on
+// what's stored: content imported or saved before it may hold HTML, and a
+// save that leaves that text as it was (a new title, a status change, a
+// scheduled publish) mustn't fail over it. So it's checked per field, against
+// the text the record held before: a value the same field already held is
+// left alone, one that's new is checked. "The same field" is its path with
+// list positions dropped (and a block's type kept), so moving a block or a
+// repeater item doesn't make its text new.
+
+// Texts is the text a record held: for each field (by its path with list
+// positions dropped), the string, text and markdown values it had.
+type Texts map[string]map[string]bool
+
+// AddData notes the text data holds for fields, under prefix.
+func (t Texts) AddData(defs []Field, data map[string]any, types BlockTypes, prefix string) {
+	walkData(defs, data, types, prefix, prefix, func(_ Field, _, shape, s string) { t.add(shape, s) })
+}
+
+// AddBlocks notes the text a body of blocks holds, under prefix.
+func (t Texts) AddBlocks(list []any, types BlockTypes, prefix string) {
+	walkBlocks(list, types, prefix, prefix, func(_ Field, _, shape, s string) { t.add(shape, s) })
+}
+
+func (t Texts) add(shape, s string) {
+	if t[shape] == nil {
+		t[shape] = map[string]bool{}
+	}
+	t[shape][s] = true
+}
+
+// held is whether the field at shape already held s.
+func (t Texts) held(shape, s string) bool { return t[shape][s] }
+
+// ValidateMarkupData refuses HTML in data's string, text and markdown values,
+// at any depth, that before doesn't hold for the same field (nil before:
+// a new record, every value is checked).
+func ValidateMarkupData(defs []Field, data map[string]any, types BlockTypes, before Texts, into apierr.Invalid, prefix string) {
+	walkData(defs, data, types, prefix, prefix, markupCheck(before, into))
+}
+
+// ValidateMarkupBlocks is ValidateMarkupData for a body of blocks.
+func ValidateMarkupBlocks(list []any, types BlockTypes, before Texts, into apierr.Invalid, prefix string) {
+	walkBlocks(list, types, prefix, prefix, markupCheck(before, into))
+}
+
+func markupCheck(before Texts, into apierr.Invalid) func(Field, string, string, string) {
+	return func(f Field, at, shape, s string) {
+		if before.held(shape, s) {
+			return
+		}
+		if problem := markupProblem(f.Type, s); problem != "" {
+			into.Add(at, problem)
+		}
+	}
+}
+
+// walkData calls fn with each string, text or markdown value in data, its
+// path, and its path with list positions dropped.
+func walkData(defs []Field, data map[string]any, types BlockTypes, at, shape string, fn func(f Field, at, shape, s string)) {
+	for _, f := range defs {
+		v, ok := data[f.Name]
+		if !ok {
+			continue
+		}
+		fAt, fShape := joinPath(at, f.Name), joinPath(shape, f.Name)
+		switch f.Type {
+		case "string", "text", "markdown":
+			if s, isStr := v.(string); isStr {
+				fn(f, fAt, fShape, s)
+			}
+		case "group":
+			if m, isMap := v.(map[string]any); isMap {
+				walkData(f.Of, m, types, fAt, fShape, fn)
+			}
+		case "repeater":
+			l, _ := v.([]any)
+			for i, item := range l {
+				if m, isMap := item.(map[string]any); isMap {
+					walkData(f.Of, m, types, fmt.Sprintf("%s[%d]", fAt, i), fShape+"[]", fn)
+				}
+			}
+		case "blocks":
+			l, _ := v.([]any)
+			walkBlocks(l, types, fAt, fShape, fn)
+		}
+	}
+}
+
+func walkBlocks(list []any, types BlockTypes, at, shape string, fn func(f Field, at, shape, s string)) {
+	for i, item := range list {
+		b, ok := item.(map[string]any)
+		if !ok {
+			continue
+		}
+		typ := jsonv.String(b["type"])
+		defs, known := types(typ)
+		data, isMap := b["data"].(map[string]any)
+		if !known || !isMap {
+			continue
+		}
+		walkData(defs, data, types, fmt.Sprintf("%s[%d].data", at, i), shape+"["+typ+"].data", fn)
+	}
 }

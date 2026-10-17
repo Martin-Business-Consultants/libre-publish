@@ -360,6 +360,14 @@ func (a *App) saveGlobal(ctx context.Context, actor *Actor, g *Global, p map[str
 		return nil, err
 	}
 	fields.ValidateData(g.Fields(), g.Data.Map(), types, inv, "data")
+	// Markup only in text this save changes: HTML a global already held
+	// doesn't stop saving the rest.
+	var before fields.Texts
+	if !creating {
+		before = fields.Texts{}
+		before.AddData(g.Fields(), prior.Data.Map(), types, "data")
+	}
+	fields.ValidateMarkupData(g.Fields(), g.Data.Map(), types, before, inv, "data")
 	if err := inv.Err(); err != nil {
 		return nil, err
 	}
