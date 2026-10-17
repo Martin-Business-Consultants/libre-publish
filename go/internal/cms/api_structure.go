@@ -1,0 +1,487 @@
+package cms
+
+import (
+	"context"
+	_ "embed"
+	"encoding/json"
+	"fmt"
+)
+
+// The block types the CMS ships, exported from the Rails core's
+// BlockType::Defaults so both seed the same pack.
+//
+//go:embed starter_blocks.json
+var starterBlocks []byte
+
+// ---- collections ---------------------------------------------------------
+
+func (a *App) listCollections(c *Ctx) error {
+	if err := c.Need("collections:read"); err != nil {
+		return err
+	}
+	list, err := a.Collections(c.R.Context(), "1=1 ORDER BY slug")
+	if err != nil {
+		return err
+	}
+	out := []Obj{}
+	for _, col := range list {
+		out = append(out, a.CollectionJSON(c.R.Context(), col))
+	}
+	c.Summary = fmt.Sprintf("%d %s.", len(out), plural(len(out), "collection"))
+	if len(list) > 0 {
+		c.Crumbs = []Crumb{crumb("Its entries", "cms entries "+list[0].Slug)}
+	}
+	return c.JSON(200, O("collections", out))
+}
+
+func (a *App) showCollection(c *Ctx) error {
+	if err := c.Need("collections:read"); err != nil {
+		return err
+	}
+	ctx := c.R.Context()
+	col, err := a.CollectionBySlug(ctx, c.Param("slug"))
+	if err != nil {
+		return err
+	}
+	where := "e.collection_id = ?"
+	if !c.can("entries:write") {
+		where += " AND e.status = 'published'"
+	}
+	entries, err := a.Entries(ctx, where+" ORDER BY e.updated_at DESC LIMIT 50", col.ID)
+	if err != nil {
+		return err
+	}
+	list := []Obj{}
+	if c.can("entries:read") {
+		for _, e := range entries {
+			o, err := a.EntrySummaryJSON(ctx, e)
+			if err != nil {
+				return err
+			}
+			list = append(list, o)
+		}
+	}
+	return c.JSON(200, O("collection", append(a.CollectionJSON(ctx, col), kv{"entries", list})))
+}
+
+func (a *App) createCollection(c *Ctx) error {
+	if err := c.Need("collections:write"); err != nil {
+		return err
+	}
+	p, err := c.Wrapped("collection")
+	if err != nil {
+		return err
+	}
+	col := &Collection{}
+	if err := a.SaveCollection(c.R.Context(), c.Actor, col, p); err != nil {
+		return err
+	}
+	c.Crumbs = []Crumb{crumb("Add an entry", fmt.Sprintf(`cms post /collections/%s/entries '{"entry":{"slug":"…","title":"…"}}'`, col.Slug))}
+	return c.JSON(201, O("collection", a.CollectionJSON(c.R.Context(), col)))
+}
+
+func (a *App) updateCollection(c *Ctx) error {
+	if err := c.Need("collections:write"); err != nil {
+		return err
+	}
+	col, err := a.CollectionBySlug(c.R.Context(), c.Param("slug"))
+	if err != nil {
+		return err
+	}
+	p, err := c.Wrapped("collection")
+	if err != nil {
+		return err
+	}
+	if err := a.SaveCollection(c.R.Context(), c.Actor, col, p); err != nil {
+		return err
+	}
+	return c.JSON(200, O("collection", a.CollectionJSON(c.R.Context(), col)))
+}
+
+// schemaBody reads a schema write: {"fields": […]}, {"schema": …}, or a
+// bare list (what `cms schema collection posts < fields.json` sends).
+func schemaBody(c *Ctx, wrapper string) (any, error) {
+	var body any
+	if err := c.Body(&body); err != nil {
+		return nil, err
+	}
+	if list, ok := body.([]any); ok {
+		return list, nil
+	}
+	m, _ := body.(map[string]any)
+	if w, ok := m[wrapper].(map[string]any); ok {
+		m = w
+	}
+	if s, ok := m["schema"]; ok {
+		return s, nil
+	}
+	if f, ok := m["fields"]; ok {
+		return f, nil
+	}
+	return nil, errBadRequest("Send the fields: {\"fields\": [...]}.")
+}
+
+func (a *App) updateCollectionSchema(c *Ctx) error {
+	if err := c.Need("collections:write"); err != nil {
+		return err
+	}
+	col, err := a.CollectionBySlug(c.R.Context(), c.Param("slug"))
+	if err != nil {
+		return err
+	}
+	schema, err := schemaBody(c, "collection")
+	if err != nil {
+		return err
+	}
+	if err := a.SaveCollection(c.R.Context(), c.Actor, col, map[string]any{"schema": schema}); err != nil {
+		return err
+	}
+	return c.JSON(200, O("collection", a.CollectionJSON(c.R.Context(), col)))
+}
+
+func (a *App) destroyCollection(c *Ctx) error {
+	if err := c.Need("collections:delete"); err != nil {
+		return err
+	}
+	col, err := a.CollectionBySlug(c.R.Context(), c.Param("slug"))
+	if err != nil {
+		return err
+	}
+	if err := a.DeleteCollection(c.R.Context(), c.Actor, col); err != nil {
+		return err
+	}
+	return c.NoContent()
+}
+
+func (a *App) bulkDestroyCollections(c *Ctx) error {
+	if err := c.Need("collections:delete"); err != nil {
+		return err
+	}
+	var body map[string]any
+	if err := c.Body(&body); err != nil {
+		return err
+	}
+	n := 0
+	for _, s := range asList(body["slugs"]) {
+		col, err := a.CollectionBySlug(c.R.Context(), str(s))
+		if err != nil {
+			return err
+		}
+		if err := a.DeleteCollection(c.R.Context(), c.Actor, col); err != nil {
+			return err
+		}
+		n++
+	}
+	return c.JSON(200, O("ok", true, "deleted", n))
+}
+
+// ---- globals -------------------------------------------------------------
+
+func (a *App) listGlobals(c *Ctx) error {
+	if err := c.Need("globals:read"); err != nil {
+		return err
+	}
+	ctx := c.R.Context()
+	list, err := a.Globals(ctx, "1=1 ORDER BY name")
+	if err != nil {
+		return err
+	}
+	out := []Obj{}
+	ids := []int64{}
+	for _, g := range list {
+		out = append(out, a.GlobalJSON(g))
+		ids = append(ids, g.ID)
+	}
+	body := O("globals", out)
+	if c.Query("resolve") != "" {
+		body = body.Set("assets", a.resolveAssets(ctx, a.assetIDs(ctx, "Global", ids)))
+	}
+	c.Summary = fmt.Sprintf("%d %s.", len(out), plural(len(out), "global"))
+	return c.JSON(200, body)
+}
+
+func (a *App) showGlobal(c *Ctx) error {
+	if err := c.Need("globals:read"); err != nil {
+		return err
+	}
+	g, err := a.GlobalBySlug(c.R.Context(), c.Param("slug"))
+	if err != nil {
+		return err
+	}
+	return a.renderGlobal(c, 200, g)
+}
+
+func (a *App) renderGlobal(c *Ctx, status int, g *Global) error {
+	ctx := c.R.Context()
+	body := O("global", a.GlobalJSON(g))
+	if c.Query("resolve") != "" {
+		body = body.Set("assets", a.resolveAssets(ctx, a.assetIDs(ctx, "Global", []int64{g.ID})))
+	}
+	c.Summary = g.Name + " (" + g.Slug + ")."
+	c.Crumbs = []Crumb{crumb("Edit it", fmt.Sprintf(`cms patch /globals/%s '{"global":{"data":{…}}}'`, g.Slug))}
+	return c.JSON(status, body)
+}
+
+func (a *App) createGlobal(c *Ctx) error {
+	if err := c.Need("globals:write"); err != nil {
+		return err
+	}
+	p, err := c.Wrapped("global")
+	if err != nil {
+		return err
+	}
+	g := &Global{}
+	if _, err := a.SaveGlobal(c.R.Context(), c.Actor, g, p); err != nil {
+		return err
+	}
+	return a.renderGlobal(c, 201, g)
+}
+
+func (a *App) updateGlobal(c *Ctx) error {
+	if err := c.Need("globals:write"); err != nil {
+		return err
+	}
+	g, err := a.GlobalBySlug(c.R.Context(), c.Param("slug"))
+	if err != nil {
+		return err
+	}
+	p, err := c.Wrapped("global")
+	if err != nil {
+		return err
+	}
+	res, err := a.SaveGlobal(c.R.Context(), c.Actor, g, p)
+	if err != nil {
+		return err
+	}
+	return a.writeAnswer(c, res, func() error { return a.renderGlobal(c, 200, g) })
+}
+
+func (a *App) updateGlobalSchema(c *Ctx) error {
+	if err := c.Need("globals:write"); err != nil {
+		return err
+	}
+	g, err := a.GlobalBySlug(c.R.Context(), c.Param("slug"))
+	if err != nil {
+		return err
+	}
+	schema, err := schemaBody(c, "global")
+	if err != nil {
+		return err
+	}
+	res, err := a.SaveGlobal(c.R.Context(), c.Actor, g, map[string]any{"schema": schema})
+	if err != nil {
+		return err
+	}
+	return a.writeAnswer(c, res, func() error { return a.renderGlobal(c, 200, g) })
+}
+
+func (a *App) destroyGlobal(c *Ctx) error {
+	if err := c.Need("globals:delete"); err != nil {
+		return err
+	}
+	g, err := a.GlobalBySlug(c.R.Context(), c.Param("slug"))
+	if err != nil {
+		return err
+	}
+	if err := a.trashGlobal(c.R.Context(), c.Actor, g); err != nil {
+		return err
+	}
+	return c.NoContent()
+}
+
+func (a *App) trashGlobal(ctx context.Context, actor *Actor, g *Global) error {
+	if _, err := a.Store.DB.ExecContext(ctx, `UPDATE globals SET deleted_at = ? WHERE id = ?`, Now().DB(), g.ID); err != nil {
+		return err
+	}
+	a.audit(ctx, actor, "global.trashed", "Global", g.ID, g.Name, nil)
+	a.Deploys.Changed("global:" + g.Slug)
+	return nil
+}
+
+func (a *App) bulkDestroyGlobals(c *Ctx) error {
+	if err := c.Need("globals:delete"); err != nil {
+		return err
+	}
+	var body map[string]any
+	if err := c.Body(&body); err != nil {
+		return err
+	}
+	n := 0
+	for _, s := range asList(body["slugs"]) {
+		g, err := a.GlobalBySlug(c.R.Context(), str(s))
+		if err != nil {
+			return err
+		}
+		if err := a.trashGlobal(c.R.Context(), c.Actor, g); err != nil {
+			return err
+		}
+		n++
+	}
+	return c.JSON(200, O("ok", true, "deleted", n))
+}
+
+// ---- block types ---------------------------------------------------------
+
+func (a *App) listBlockTypes(c *Ctx) error {
+	if err := c.Need("block_types:read"); err != nil {
+		return err
+	}
+	list, err := a.BlockTypesList(c.R.Context(), "1=1 ORDER BY category, label")
+	if err != nil {
+		return err
+	}
+	out := []Obj{}
+	for _, b := range list {
+		out = append(out, b.JSON())
+	}
+	c.Summary = fmt.Sprintf("%d block %s.", len(out), plural(len(out), "type"))
+	if len(out) == 0 {
+		c.Crumbs = []Crumb{crumb("Install the starter pack", "cms seed-blocks")}
+	}
+	return c.JSON(200, O("block_types", out))
+}
+
+func (a *App) blockType(c *Ctx) (*BlockType, error) {
+	list, err := a.BlockTypesList(c.R.Context(), "slug = ?", c.Param("slug"))
+	if err != nil {
+		return nil, err
+	}
+	if len(list) == 0 {
+		return nil, errNotFound("Couldn't find block type " + c.Param("slug") + ".")
+	}
+	return list[0], nil
+}
+
+func (a *App) showBlockType(c *Ctx) error {
+	if err := c.Need("block_types:read"); err != nil {
+		return err
+	}
+	b, err := a.blockType(c)
+	if err != nil {
+		return err
+	}
+	return c.JSON(200, O("block_type", b.JSON()))
+}
+
+func (a *App) createBlockType(c *Ctx) error {
+	if err := c.Need("block_types:write"); err != nil {
+		return err
+	}
+	p, err := c.Wrapped("block_type")
+	if err != nil {
+		return err
+	}
+	b := &BlockType{}
+	if err := a.SaveBlockType(c.R.Context(), c.Actor, b, p); err != nil {
+		return err
+	}
+	return c.JSON(201, O("block_type", b.JSON()))
+}
+
+func (a *App) updateBlockType(c *Ctx) error {
+	if err := c.Need("block_types:write"); err != nil {
+		return err
+	}
+	b, err := a.blockType(c)
+	if err != nil {
+		return err
+	}
+	p, err := c.Wrapped("block_type")
+	if err != nil {
+		return err
+	}
+	if err := a.SaveBlockType(c.R.Context(), c.Actor, b, p); err != nil {
+		return err
+	}
+	return c.JSON(200, O("block_type", b.JSON()))
+}
+
+// destroyBlockType refuses while content uses it: removing it would leave
+// blocks no one can edit.
+func (a *App) destroyBlockType(c *Ctx) error {
+	if err := c.Need("block_types:delete"); err != nil {
+		return err
+	}
+	b, err := a.blockType(c)
+	if err != nil {
+		return err
+	}
+	if err := a.deleteBlockType(c.R.Context(), c.Actor, b); err != nil {
+		return err
+	}
+	return c.NoContent()
+}
+
+func (a *App) deleteBlockType(ctx context.Context, actor *Actor, b *BlockType) error {
+	var uses int
+	needle := `%"type":"` + b.Slug + `"%`
+	a.Store.DB.QueryRowContext(ctx, `SELECT (SELECT count(*) FROM pages WHERE blocks LIKE ?) + (SELECT count(*) FROM collection_entries WHERE blocks LIKE ?)`, needle, needle).Scan(&uses)
+	if uses > 0 {
+		return errConflict(fmt.Sprintf("%d pages or entries use %s blocks: mark it deprecated instead, or remove those blocks first.", uses, b.Slug))
+	}
+	if _, err := a.Store.DB.ExecContext(ctx, `DELETE FROM block_types WHERE id = ?`, b.ID); err != nil {
+		return err
+	}
+	a.audit(ctx, actor, "block_type.deleted", "BlockType", b.ID, b.Label, nil)
+	return nil
+}
+
+func (a *App) bulkDestroyBlockTypes(c *Ctx) error {
+	if err := c.Need("block_types:delete"); err != nil {
+		return err
+	}
+	var body map[string]any
+	if err := c.Body(&body); err != nil {
+		return err
+	}
+	n := 0
+	for _, s := range asList(body["slugs"]) {
+		list, err := a.BlockTypesList(c.R.Context(), "slug = ?", str(s))
+		if err != nil {
+			return err
+		}
+		if len(list) == 0 {
+			return errNotFound("Couldn't find block type " + str(s) + ".")
+		}
+		if err := a.deleteBlockType(c.R.Context(), c.Actor, list[0]); err != nil {
+			return err
+		}
+		n++
+	}
+	return c.JSON(200, O("ok", true, "deleted", n))
+}
+
+// SeedBlockTypes installs the starter pack's missing slugs.
+func (a *App) SeedBlockTypes(ctx context.Context, actor *Actor) ([]string, error) {
+	var pack []map[string]any
+	if err := json.Unmarshal(starterBlocks, &pack); err != nil {
+		return nil, err
+	}
+	added := []string{}
+	for _, def := range pack {
+		var n int
+		a.Store.DB.QueryRowContext(ctx, `SELECT count(*) FROM block_types WHERE slug = ?`, def["slug"]).Scan(&n)
+		if n > 0 {
+			continue
+		}
+		b := &BlockType{BuiltIn: true}
+		if err := a.SaveBlockType(ctx, actor, b, def); err != nil {
+			return nil, fmt.Errorf("seeding %s: %w", def["slug"], err)
+		}
+		a.Store.DB.ExecContext(ctx, `UPDATE block_types SET built_in = 1 WHERE id = ?`, b.ID)
+		added = append(added, b.Slug)
+	}
+	return added, nil
+}
+
+func (a *App) seedBlockTypes(c *Ctx) error {
+	if err := c.Need("block_types:write"); err != nil {
+		return err
+	}
+	added, err := a.SeedBlockTypes(c.R.Context(), c.Actor)
+	if err != nil {
+		return err
+	}
+	c.Summary = fmt.Sprintf("Installed %d block types.", len(added))
+	return c.JSON(200, O("ok", true, "created", added, "count", len(added)))
+}

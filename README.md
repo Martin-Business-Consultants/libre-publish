@@ -23,6 +23,8 @@ bin/ci            # rubocop, herb lint, bundler-audit, brakeman, rspec, seeds
 - `docs/vision.md`: what it is for and how it is put together.
 - `docs/agent-interface.md`: the API, CLI and MCP surface agents use.
 - `CHANGELOG.md`: every release.
+- `go/`: the Go core, the same CMS as one file (API, admin, SQLite, WebAssembly
+  plugins), checked against this core's contracts. See `go/README.md`.
 
 Releases are `vX.Y.Z` tags at
 https://github.com/Martin-Business-Consultants/libre-publish/releases; an install
