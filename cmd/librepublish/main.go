@@ -17,6 +17,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/fs"
 	"log/slog"
 	"net"
 	"net/http"
@@ -253,8 +254,13 @@ func serve(ctx context.Context, stop func(), args []string) (err error) {
 	cfg.Admin = admin.Handler()
 	// One server per data directory, and no import under it.
 	lock, err := datalock.Acquire(cfg.DataDir)
-	if err != nil {
+	switch {
+	case errors.Is(err, datalock.ErrLocked):
 		return fmt.Errorf("%w: is librepublish already serving %s?", err, cfg.DataDir)
+	case errors.Is(err, fs.ErrPermission):
+		return fmt.Errorf("%w: the user librepublish runs as (uid %d) can't write to %s; give it that directory", err, os.Getuid(), cfg.DataDir)
+	case err != nil:
+		return err
 	}
 	defer func() { err = errors.Join(err, lock.Release()) }()
 	app, err := cms.NewServer(cfg)

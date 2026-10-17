@@ -1,14 +1,15 @@
 # Libre Publish in a container: the one binary (API, admin, SQLite, the
-# default plugins, all built in) on a minimal image. Everything it keeps
-# lives in /data: mount a volume there.
+# default plugins, all built in) on a small image. Everything it keeps lives
+# in /data: mount a volume there.
 #
 #   docker build -t librepublish .
 #   docker run -p 8080:8080 -v librepublish-data:/data -e APP_URL=https://cms.example.com librepublish
 #
 # Settings are environment variables (README): APP_URL, SECRET_KEY,
 # TRUST_PROXY=1 behind the host's proxy, PORT (set by most hosts), LOG_FORMAT.
-# The first admin: `docker exec -it <container> librepublish user create --email … --name …`,
-# or the setup screen at /cms/ on a fresh install. Health check: GET /up.
+# The first admin: the setup screen at /cms/ on a fresh install, or
+# `docker exec -it <container> librepublish user create --email … --name … --password -`.
+# Health check: GET /up.
 
 FROM golang:1.26.9-alpine AS build
 WORKDIR /src
@@ -16,14 +17,18 @@ COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
 ARG VERSION=dev
-RUN CGO_ENABLED=0 go build -trimpath -ldflags "-s -w -X main.version=${VERSION}" -o /out/librepublish ./cmd/librepublish \
- && mkdir -p /out/data
+RUN CGO_ENABLED=0 go build -trimpath -ldflags "-s -w -X main.version=${VERSION}" -o /out/librepublish ./cmd/librepublish
 
-# Static, with CA certificates (SMTP, webhooks, deploy hooks) and no shell;
-# runs as an unprivileged user.
-FROM gcr.io/distroless/static-debian12:nonroot
-COPY --from=build /out/librepublish /usr/local/bin/librepublish
-COPY --from=build --chown=nonroot:nonroot /out/data /data
+# Alpine for CA certificates (SMTP, webhooks, deploy hooks) and su-exec: the
+# container starts as root only to hand /data to the app user, whatever owns
+# the volume the host mounts, then runs as app (docker/librepublish).
+FROM alpine:3.22
+RUN apk add --no-cache ca-certificates su-exec tzdata \
+ && addgroup -S -g 10001 app && adduser -S -D -H -u 10001 -G app app \
+ && mkdir -p /data && chown app:app /data
+COPY --from=build /out/librepublish /usr/local/libexec/librepublish
+COPY docker/librepublish /usr/local/bin/librepublish
+RUN chmod 0755 /usr/local/bin/librepublish
 ENV DATA_DIR=/data LOG_FORMAT=json
 VOLUME /data
 EXPOSE 8080

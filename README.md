@@ -54,8 +54,9 @@ builds every platform and publishes them with `checksums.txt`, which
 Put TLS in front of it (Caddy is one line: `cms.example.com { reverse_proxy :8080 }`).
 
 On a host that runs containers, the `Dockerfile` builds the same binary
-into a small image (no shell, an unprivileged user). Mount a volume at
-`/data`, which is everything the site keeps, and set `APP_URL` and, behind
+into a small image that runs it as an unprivileged user, whoever owns the
+volume the host mounts (`docker/librepublish` hands it over). Mount a
+volume at `/data`, which is everything the site keeps, and set `APP_URL` and, behind
 the host's proxy, `TRUST_PROXY=1`. It listens on `PORT` (8080 unless the
 host sets it), logs JSON, and `GET /up` is its health check.
 
