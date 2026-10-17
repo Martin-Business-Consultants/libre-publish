@@ -1,5 +1,12 @@
-# vet, gofmt and the integration tests (which hold the CMS to contracts/
-# and build the example WebAssembly plugin), on every push and pull request.
+# Format, lint, vet, race-tested tests with coverage, vulnerability scan,
+# the default plugins' freshness, the admin build, and the Astro integration
+# (packages/astro) with its end-to-end run, on every push and PR.
+#
+# The API contract (contracts/) is gated from both sides: TestContract (in the
+# Test job's go test) holds the CMS to the recorded files, and the astro job
+# holds the integration to the same files (test/contract.test.js, which also
+# fails when contracts/ differs from packages/astro/test/contracts.sha256). A
+# fixture change without the matching integration change fails one of them.
 name: CI
 
 on:
@@ -10,30 +17,102 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  # Newest 1.26 patch, not the go.mod floor (1.26.0 has 30 reachable stdlib vulns).
+  GO_VERSION: "1.26.x"
+  GOLANGCI_LINT_VERSION: v2.15.0
+
 jobs:
   test:
+    name: Test
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version-file: go.mod
-      - run: test -z "$(gofmt -l .)" || (gofmt -l . && exit 1)
-      # The default plugins' .wasm (internal/cms/defaults) match their source.
-      - run: make plugins-check
-      - run: make test
-      - run: make dist
+          go-version: ${{ env.GO_VERSION }}
+          check-latest: true
+          cache-dependency-path: |
+            go.sum
+            plugins/*/go.sum
+      - name: Dependencies verify and are tidy
+        run: |
+          go mod verify
+          go mod tidy -diff
+      - name: The default plugins' .wasm match their source
+        run: make plugins-check
+      - name: Build
+        run: go build ./cmd/... ./internal/...
+      - name: Test (race, shuffled, coverage)
+        run: go test -race -shuffle=on -timeout 15m -covermode=atomic -coverprofile=coverage.out ./cmd/... ./internal/...
+      - name: Coverage summary
+        run: |
+          go tool cover -func=coverage.out | tail -1
+          go tool cover -func=coverage.out | tail -1 >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: coverage
+          path: coverage.out
+          retention-days: 14
+      - name: Cross-compile every release platform
+        run: make dist
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          check-latest: true
+      - name: go vet
+        run: go vet ./cmd/... ./internal/...
+      - name: golangci-lint (core)
+        uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
+        with:
+          version: ${{ env.GOLANGCI_LINT_VERSION }}
+          args: ./cmd/... ./internal/...
+          # A PR is judged on what it adds; a push to a branch, on everything.
+          only-new-issues: ${{ github.event_name == 'pull_request' }}
+      - name: go vet (plugins, wasip1)
+        env:
+          GOOS: wasip1
+          GOARCH: wasm
+        run: |
+          for p in plugins/*/; do (cd "$p" && go vet ./...); done
+
+  vuln:
+    name: govulncheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: golang/govulncheck-action@032d45514ae346b1db93c04b0c90b841c370344f # v1.1.0
+        with:
+          go-version-input: ${{ env.GO_VERSION }}
+          check-latest: true
+          go-package: ./cmd/... ./internal/...
+          repo-checkout: false
 
   # The admin (ui/): svelte-check, and the build the binary embeds, which
   # must match what's committed in internal/admin/dist.
   ui:
+    name: Admin UI
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     defaults:
       run:
         working-directory: ui
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
           cache: npm
@@ -47,3 +126,62 @@ jobs:
             echo "::error::internal/admin/dist is stale; run make ui and commit it"
             exit 1
           }
+          test -z "$(git status --porcelain -- ../internal/admin/dist)" || {
+            echo "::error::internal/admin/dist has untracked files; run make ui and commit them"
+            exit 1
+          }
+
+  # The Astro integration (packages/astro): its build, types and unit tests,
+  # which run on contracts/ — the integration's half of the contract gate.
+  astro:
+    name: Astro integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: packages/astro
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: packages/astro/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - run: npm run typecheck
+      - name: Test (on contracts/)
+        run: npm test
+
+  # The example site built and served against a freshly built Go core, and
+  # every failure the integration promises to catch.
+  astro-e2e:
+    name: Astro end to end
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          check-latest: true
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            packages/astro/package-lock.json
+            packages/astro/example/package-lock.json
+      - name: Build the Go core
+        run: go build -o "$RUNNER_TEMP/librepublish" ./cmd/librepublish
+      - name: Install the integration and the example
+        working-directory: packages/astro
+        run: |
+          npm ci
+          npm run build
+          (cd example && npm ci)
+      - name: End to end
+        working-directory: packages/astro
+        env:
+          LIBREPUBLISH_BIN: ${{ runner.temp }}/librepublish
+        run: npm run e2e
