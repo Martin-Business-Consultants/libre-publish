@@ -191,7 +191,7 @@ func convertForms(ctx context.Context, db *store.DB, rep *Report) error {
 	slices.Sort(f.NotCarried)
 	f.NotCarried = slices.Compact(f.NotCarried)
 	if f.Forms > 0 {
-		rep.warn("%d Rails forms became Forms plugin forms (with %d submissions, marked read); check each one's fields and emails before the site posts to it", f.Forms, f.Submissions)
+		rep.warn("%s became Forms plugin forms (with %s, marked read): check each one's fields and emails before the site posts to it", plural(f.Forms, "Rails form", "Rails forms"), plural(f.Submissions, "submission", "submissions"))
 	}
 	return nil
 }

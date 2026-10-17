@@ -155,3 +155,11 @@ func columns(m map[string]int) string {
 	}
 	return " (" + counts(m) + ")"
 }
+
+// plural is "1 person" or "3 people".
+func plural(n int, one, many string) string {
+	if n == 1 {
+		return "1 " + one
+	}
+	return fmt.Sprintf("%d %s", n, many)
+}

@@ -245,7 +245,7 @@ func (imp *Import) prepare(ctx context.Context, opts Options, got unpacked) erro
 		return err
 	}
 	if rep.TargetUsers > 0 {
-		rep.warn("this install has people (%d) and content: importing replaces all of it, so it takes force", rep.TargetUsers)
+		rep.warn("this site already has %s and content of its own: importing replaces all of it (it's kept in replaced-<time>/ in the data directory)", plural(rep.TargetUsers, "person", "people"))
 	}
 	_, err = db.ExecContext(ctx, `PRAGMA wal_checkpoint(TRUNCATE)`)
 	return err
