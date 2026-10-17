@@ -54,8 +54,8 @@
   <DataTable rows={list} columns={[{ label: "Name" }, { label: "Events" }, { label: "Last delivery" }, { label: "" }]}>
     {#snippet row(w)}
       <Cell>
-        <span class="font-medium text-gray-900">{w.name}</span>{#if !w.active}<Badge class="ml-2">Off</Badge>{/if}
-        <p class="max-w-sm truncate font-mono text-xs text-gray-500">{w.url}</p>
+        <span class="font-medium text-foreground">{w.name}</span>{#if !w.active}<Badge class="ml-2">Off</Badge>{/if}
+        <p class="max-w-sm truncate font-mono text-xs text-muted-foreground">{w.url}</p>
         <RowActions>
           {#if session.can("webhooks:write")}<RowAction onclick={() => edit(w)}>Edit</RowAction><RowAction onclick={() => test(w)}>Send a test</RowAction><RowAction onclick={() => rotate(w)}>Rotate secret</RowAction>{/if}
           <RowAction onclick={() => log(w)}>Deliveries</RowAction>
@@ -63,7 +63,7 @@
         </RowActions>
       </Cell>
       <Cell muted>{w.events.length === EVENTS.length ? "Every content event" : w.events.join(", ")}</Cell>
-      <Cell nowrap>{#if w.last_delivery_at}<Badge tone={w.failure_count ? "danger" : "success"}>{w.failure_count ? `${w.failure_count} failing` : "OK"}</Badge> <Time value={w.last_delivery_at} class="text-xs text-gray-500" />{:else}<span class="text-gray-400">Never</span>{/if}</Cell>
+      <Cell nowrap>{#if w.last_delivery_at}<Badge tone={w.failure_count ? "danger" : "success"}>{w.failure_count ? `${w.failure_count} failing` : "OK"}</Badge> <Time value={w.last_delivery_at} class="text-xs text-muted-foreground" />{:else}<span class="text-muted-foreground">Never</span>{/if}</Cell>
       <Cell></Cell>
     {/snippet}
     {#snippet empty()}<EmptyState icon="bolt" title="No webhooks">Tell another system when content changes: a search index, analytics, a chat channel. Each delivery is signed.</EmptyState>{/snippet}
@@ -75,8 +75,8 @@
     <Field label="Name" error={errors.name}>{#snippet children(id, invalid)}<Input {id} {invalid} bind:value={editing.name} placeholder="Search index" />{/snippet}</Field>
     <Field label="URL" help="The CMS POSTs each event here, signed X-CMS-Signature: sha256=<HMAC of the body>." error={errors.url}>{#snippet children(id, invalid)}<Input {id} {invalid} mono icon="link" bind:value={editing.url} placeholder="https://…" />{/snippet}</Field>
     <fieldset class="flex flex-col gap-2">
-      <legend class="mb-2 text-sm font-semibold text-gray-900">Events</legend>
-      <div class="grid gap-2 sm:grid-cols-2">{#each EVENTS as ev}<Checkbox label={ev} checked={editing.events.includes(ev)} onchange={(e) => toggle(ev, e.currentTarget.checked)} />{/each}</div>
+      <legend class="mb-2 text-sm font-semibold text-foreground">Events</legend>
+      <div class="grid gap-2 sm:grid-cols-2">{#each EVENTS as ev}<Checkbox label={ev} checked={editing.events.includes(ev)} onchange={(on) => toggle(ev, on)} />{/each}</div>
     </fieldset>
     <Switch bind:checked={editing.active} label="Active" />
   {/if}
@@ -93,7 +93,7 @@
     <DataTable rows={deliveries.list} columns={[{ label: "Event" }, { label: "Result" }, { label: "Time", num: true }, { label: "When" }]} emptyText="Nothing delivered yet.">
       {#snippet row(d)}
         <Cell mono>{d.event}</Cell>
-        <Cell>{#if d.success}<Badge tone="success">{d.response_status}</Badge>{:else}<Badge tone="danger">{d.response_status || "Failed"}</Badge><p class="max-w-xs truncate text-xs text-red-600">{d.error}</p>{/if}</Cell>
+        <Cell>{#if d.success}<Badge tone="success">{d.response_status}</Badge>{:else}<Badge tone="danger">{d.response_status || "Failed"}</Badge><p class="max-w-xs truncate text-xs text-destructive">{d.error}</p>{/if}</Cell>
         <Cell num muted>{d.duration_ms ?? "—"} ms</Cell>
         <Cell muted nowrap><Time value={d.created_at} class="text-xs" /></Cell>
       {/snippet}

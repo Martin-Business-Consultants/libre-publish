@@ -39,7 +39,7 @@
     {/if}
   </div>
   <div
-    class="relative min-h-64 rounded-lg {dragging ? 'outline-2 outline-dashed outline-accent-500' : ''}"
+    class="relative min-h-64 rounded-lg {dragging ? 'outline-2 outline-dashed outline-ring' : ''}"
     role="region" aria-label="Library"
     ondragover={(e) => { e.preventDefault(); dragging = true; }}
     ondragleave={() => (dragging = false)}
@@ -48,16 +48,16 @@
     {#if loading && !assets.length}
       <div class="flex justify-center py-16"><Spinner /></div>
     {:else if !assets.length}
-      <div class="flex flex-col items-center gap-2 py-16 text-sm text-gray-500"><Icon name="picture-add" size="xl" class="text-gray-300" />{q ? "Nothing matches." : "The library is empty. Drop files here to upload them."}</div>
+      <div class="flex flex-col items-center gap-2 py-16 text-sm text-muted-foreground"><Icon name="picture-add" size="xl" class="text-muted-foreground/60" />{q ? "Nothing matches." : "The library is empty. Drop files here to upload them."}</div>
     {:else}
       <ul class="grid grid-cols-2 gap-x-3 gap-y-4 sm:grid-cols-3 lg:grid-cols-5">
         {#each assets as a (a.id)}
           <li class="min-w-0">
             <button type="button" class="group flex w-full flex-col gap-1.5 rounded-lg text-left" onclick={() => { onpick(a); open = false; }}>
-              <span class="flex aspect-square w-full items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-gray-50 text-gray-400 group-hover:border-accent-500 group-focus-visible:border-accent-500">
+              <span class="flex aspect-square w-full items-center justify-center overflow-hidden rounded-lg border border-border bg-muted/50 text-muted-foreground group-hover:border-ring group-focus-visible:border-ring">
                 {#if a.thumb_url}<img src={a.thumb_url} alt={a.alt || ""} loading="lazy" class="size-full object-cover" />{:else}<Icon name="document" size="xl" />{/if}
               </span>
-              <span class="truncate px-0.5 text-xs font-medium text-gray-700">{a.filename}</span>
+              <span class="truncate px-0.5 text-xs font-medium text-foreground/80">{a.filename}</span>
             </button>
           </li>
         {/each}

@@ -34,29 +34,29 @@
   {#if statusful && status === "draft"}
     <div class="px-5 pt-4"><Button size="sm" loading={saving} onclick={() => onsave("draft")}>Save Draft</Button></div>
   {/if}
-  <div class="flex flex-col gap-3 px-5 py-4 text-sm text-gray-700">
+  <div class="flex flex-col gap-3 px-5 py-4 text-sm text-foreground/80">
     {#if statusful}
       <div class="flex items-start gap-2">
-        <Icon name="pinned" class="mt-0.5 text-gray-400" />
+        <Icon name="pinned" class="mt-0.5 text-muted-foreground" />
         <div class="flex-1">
-          Status: <strong class="font-semibold text-gray-900">{humanize(status)}</strong>
-          <button type="button" class="ml-1 font-medium text-accent-600 underline decoration-accent-600/40 underline-offset-2 hover:text-accent-700" onclick={() => (editStatus = !editStatus)}>{editStatus ? "Done" : "Edit"}</button>
+          Status: <strong class="font-semibold text-foreground">{humanize(status)}</strong>
+          <button type="button" class="ml-1 font-medium text-primary underline decoration-primary/40 underline-offset-2 hover:text-primary" onclick={() => (editStatus = !editStatus)}>{editStatus ? "Done" : "Edit"}</button>
           {#if editStatus}<div class="mt-2"><Select options={statuses.map((s) => ({ value: s, label: humanize(s) }))} bind:value={record.status} aria-label="Status" /></div>{/if}
         </div>
       </div>
       <div class="flex items-start gap-2">
-        <Icon name="history" class="mt-0.5 text-gray-400" />
+        <Icon name="history" class="mt-0.5 text-muted-foreground" />
         <div class="flex-1">
-          {#if scheduled}Scheduled for <strong class="font-semibold text-gray-900">{dateTime(record.publish_at)}</strong>
-          {:else if status === "published" && record.published_at}Published on <strong class="font-semibold text-gray-900">{dateTime(record.published_at)}</strong>
-          {:else}Publish <strong class="font-semibold text-gray-900">immediately</strong>{/if}
+          {#if scheduled}Scheduled for <strong class="font-semibold text-foreground">{dateTime(record.publish_at)}</strong>
+          {:else if status === "published" && record.published_at}Published on <strong class="font-semibold text-foreground">{dateTime(record.published_at)}</strong>
+          {:else}Publish <strong class="font-semibold text-foreground">immediately</strong>{/if}
           {#if status !== "published"}
-            <button type="button" class="ml-1 font-medium text-accent-600 underline decoration-accent-600/40 underline-offset-2 hover:text-accent-700" onclick={() => (editSchedule = !editSchedule)}>{editSchedule ? "Done" : "Edit"}</button>
+            <button type="button" class="ml-1 font-medium text-primary underline decoration-primary/40 underline-offset-2 hover:text-primary" onclick={() => (editSchedule = !editSchedule)}>{editSchedule ? "Done" : "Edit"}</button>
           {/if}
           {#if editSchedule}
             <div class="mt-2 flex flex-col gap-1">
               <Input type="datetime-local" value={toLocal(record.publish_at)} oninput={(e) => (record.publish_at = e.currentTarget.value ? new Date(e.currentTarget.value).toISOString() : null)} aria-label="Publish at" />
-              <p class="text-xs text-gray-500">Leave it blank to publish when you press Publish.</p>
+              <p class="text-xs text-muted-foreground">Leave it blank to publish when you press Publish.</p>
             </div>
           {/if}
         </div>
@@ -70,8 +70,8 @@
       </Notice>
     {/if}
   </div>
-  <div class="flex items-center justify-between gap-2 rounded-b-xl border-t border-gray-200 bg-gray-50 px-5 py-3">
-    {#if ontrash}<button type="button" class="text-sm font-medium text-red-600 hover:text-red-700 hover:underline" onclick={ontrash}>Move to Trash</button>{:else}<span></span>{/if}
+  <div class="flex items-center justify-between gap-2 rounded-b-xl border-t border-border bg-muted/50 px-5 py-3">
+    {#if ontrash}<button type="button" class="text-sm font-medium text-destructive hover:text-destructive hover:underline" onclick={ontrash}>Move to Trash</button>{:else}<span></span>{/if}
     {#if primary}
       <Button variant="primary" loading={saving} onclick={() => onsave(primary[1])}>{primary[0]}</Button>
     {:else if !statusful || status !== "draft"}

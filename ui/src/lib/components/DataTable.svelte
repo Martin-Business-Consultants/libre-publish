@@ -1,10 +1,16 @@
 <script>
-  // A list table (tables.css .data-table) in a panel: headers, rows that
+  // A list table (shadcn's Table) in a bordered box: headers, rows that
   // light up under the pointer, a tick column with select-all when rows can
   // be acted on in bulk, and an empty row that says why it's empty.
   //   <DataTable {columns} rows={pages} key="id" selectable bind:selected>
-  //     {#snippet row(page)}<td>…</td>{/snippet}
+  //     {#snippet row(page, show)}<Cell>…</Cell>{#if show("path")}<Cell>…</Cell>{/if}{/snippet}
   //   </DataTable>
+  // Columns with a key can be hidden (hidden: [keys]; the row snippet asks
+  // show(key)); density is compact or comfortable; the row whose key is
+  // `editing` is drawn by the editor snippet across the table (Quick Edit).
+  import * as Table from "$lib/components/ui/table/index.js";
+  import { Checkbox } from "$lib/components/ui/checkbox/index.js";
+  import { setContext } from "svelte";
   let {
     columns = [],
     rows = [],
@@ -15,49 +21,61 @@
     empty = undefined,
     emptyText = "Nothing here yet.",
     onrowclick = undefined,
+    hidden = [],
+    density = "compact",
+    editing = null,
+    editor = undefined,
     class: klass = "",
   } = $props();
+  const show = (key) => !hidden.includes(key);
+  const shown = $derived(columns.filter((c) => !c.key || show(c.key)));
+  setContext("table-density", () => density);
 
   const ids = $derived(rows.map((r) => r[key]));
   const all = $derived(ids.length > 0 && ids.every((id) => selected.includes(id)));
   const some = $derived(!all && ids.some((id) => selected.includes(id)));
   function toggleAll() { selected = all ? [] : [...ids]; }
   function toggle(id) { selected = selected.includes(id) ? selected.filter((x) => x !== id) : [...selected, id]; }
-  const span = $derived(columns.length + (selectable ? 1 : 0));
+  const span = $derived(shown.length + (selectable ? 1 : 0));
 </script>
 
-<section class="min-w-0 overflow-x-auto rounded-xl border border-gray-200 bg-surface {klass}">
-  <table class="w-full text-left text-sm leading-5">
-    <thead>
-      <tr>
+<div class="min-w-0 overflow-hidden rounded-lg border {klass}">
+  <Table.Root>
+    <Table.Header>
+      <Table.Row>
         {#if selectable}
-          <th class="w-10 border-b border-gray-200 px-3 py-2">
-            {#if rows.length}<input type="checkbox" checked={all} indeterminate={some} onchange={toggleAll} aria-label="Select every row" />{/if}
-          </th>
+          <Table.Head class="w-10">{#if rows.length}<Checkbox checked={all} indeterminate={some} onCheckedChange={toggleAll} aria-label="Select every row" />{/if}</Table.Head>
         {/if}
-        {#each columns as c}
-          <th class="whitespace-nowrap border-b border-gray-200 px-3 py-2 text-xs font-medium leading-4 text-gray-500 {c.num ? 'text-right' : ''} {c.class || ''}">{c.label}</th>
+        {#each shown as c}
+          <Table.Head class="{c.num ? 'text-right' : ''} {c.class || ''}">{c.label}</Table.Head>
         {/each}
-      </tr>
-    </thead>
-    <tbody>
+      </Table.Row>
+    </Table.Header>
+    <Table.Body>
       {#each rows as r (r[key])}
-        <tr
-          class="group border-b border-gray-100 last:border-0 hover:bg-gray-50 {onrowclick ? 'cursor-pointer' : ''} {selected.includes(r[key]) ? 'bg-accent-50/40' : ''}"
-          onclick={onrowclick ? (e) => { if (!e.target.closest('a,button,input,label')) onrowclick(r); } : undefined}
+        {#if editor && editing != null && r[key] === editing}
+          <Table.Row class="bg-muted/40 hover:bg-muted/40">
+            <Table.Cell colspan={span} class="whitespace-normal p-4">{@render editor(r)}</Table.Cell>
+          </Table.Row>
+        {:else}
+        <Table.Row
+          class="group {onrowclick ? 'cursor-pointer' : ''}"
+          data-state={selected.includes(r[key]) ? "selected" : undefined}
+          onclick={onrowclick ? (e) => { if (!e.target.closest('a,button,input,label,[role=checkbox]')) onrowclick(r); } : undefined}
         >
           {#if selectable}
-            <td class="w-10 px-3 py-2.5"><input type="checkbox" checked={selected.includes(r[key])} onchange={() => toggle(r[key])} aria-label="Select" /></td>
+            <Table.Cell class="w-10"><Checkbox checked={selected.includes(r[key])} onCheckedChange={() => toggle(r[key])} aria-label="Select" /></Table.Cell>
           {/if}
-          {@render row(r)}
-        </tr>
+          {@render row(r, show)}
+        </Table.Row>
+        {/if}
       {:else}
-        <tr>
-          <td colspan={span} class="px-3 py-12 text-center text-gray-500">
+        <Table.Row class="hover:bg-transparent">
+          <Table.Cell colspan={span} class="text-muted-foreground h-32 whitespace-normal text-center">
             {#if empty}{@render empty()}{:else}{emptyText}{/if}
-          </td>
-        </tr>
+          </Table.Cell>
+        </Table.Row>
       {/each}
-    </tbody>
-  </table>
-</section>
+    </Table.Body>
+  </Table.Root>
+</div>

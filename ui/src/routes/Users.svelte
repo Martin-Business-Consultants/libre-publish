@@ -44,8 +44,8 @@
     {#snippet row(u)}
       <Cell>
         <span class="flex items-center gap-2">
-          <span class="flex size-7 items-center justify-center rounded-full bg-gray-100 text-xs font-semibold text-gray-600">{(u.name || "?").split(" ").map((x) => x[0]).slice(0, 2).join("").toUpperCase()}</span>
-          <span class="font-medium text-gray-900">{u.name}</span>
+          <span class="flex size-7 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">{(u.name || "?").split(" ").map((x) => x[0]).slice(0, 2).join("").toUpperCase()}</span>
+          <span class="font-medium text-foreground">{u.name}</span>
           {#if u.id === session.me.user.id}<Badge tone="info">You</Badge>{/if}
           {#if u.two_factor}<Badge>2FA</Badge>{/if}
         </span>
@@ -54,7 +54,7 @@
       <Cell muted>{u.email}</Cell>
       <Cell>
         {#if session.can("users:write") && u.id !== session.me.user.id}
-          <Select class="w-44" value={String(u.role?.id || "")} options={roles.map((r) => ({ value: String(r.id), label: r.name }))} onchange={(e) => setRole(u, e.currentTarget.value)} aria-label="Role" />
+          <Select class="w-44" value={String(u.role?.id || "")} options={roles.map((r) => ({ value: String(r.id), label: r.name }))} onchange={(v) => setRole(u, v)} aria-label="Role" />
         {:else}{u.role?.name || "—"}{/if}
       </Cell>
       <Cell muted nowrap><Time value={u.created_at} class="text-xs" /></Cell>

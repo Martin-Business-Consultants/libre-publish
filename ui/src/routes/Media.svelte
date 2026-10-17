@@ -21,7 +21,8 @@
   import { router } from "../lib/router.svelte.js";
   import { session } from "../lib/session.svelte.js";
   import { confirm } from "../lib/confirm.svelte.js";
-  import { toast, toastError } from "../lib/toast.svelte.js";
+  import { toast, toastError, undoable } from "../lib/toast.svelte.js";
+  import { restorer } from "../lib/trash.js";
   import { bytes } from "../lib/format.js";
 
   const filter = router.query.get("show") || "", q = router.query.get("s") || "", page = Number(router.query.get("page") || 1);
@@ -54,10 +55,13 @@
   async function saveAsset() {
     try { await patch(`/assets/${current.id}`, { asset: { alt: current.alt, name: current.name, caption: current.caption, folder: current.folder } }); toast("Saved."); load(); } catch (e) { toastError(e); }
   }
+  // A file nothing uses goes straight to the trash, with Undo; one in use
+  // asks first, saying what would show nothing.
   async function remove() {
     const used = current.used_by.length;
-    if (!(await confirm({ title: `Delete ${current.filename}?`, message: used ? `${used} ${used === 1 ? "record still uses it" : "records still use it"}: they'd show nothing where it was. It goes to the trash.` : "It goes to the trash, where it can be restored.", confirmLabel: "Delete", destructive: true }))) return;
-    try { await del(`/assets/${current.id}`); open = false; toast("Moved to the trash."); load(); } catch (e) { toastError(e); }
+    if (used && !(await confirm({ title: `Move ${current.filename} to the trash?`, message: `${used} ${used === 1 ? "record still uses it" : "records still use it"}: they'd show nothing where it was until it's restored.`, confirmLabel: "Move to trash", destructive: true }))) return;
+    const { id, filename } = current;
+    try { await del(`/assets/${id}`); open = false; undoable(`${filename} moved to the trash.`, restorer("asset", [id], load), { done: "Restored." }); load(); } catch (e) { toastError(e); }
   }
 </script>
 
@@ -78,13 +82,13 @@
 </div>
 
 {#if dragging}
-  <div class="pointer-events-none fixed inset-0 z-40 flex items-center justify-center bg-accent-50/80 text-lg font-semibold text-accent-700 backdrop-blur-sm">Drop to upload</div>
+  <div class="pointer-events-none fixed inset-0 z-40 flex items-center justify-center bg-primary/5 text-lg font-semibold text-primary backdrop-blur-sm">Drop to upload</div>
 {/if}
 
 {#if !list}
   <div class="flex justify-center py-16"><Spinner /></div>
 {:else if !list.assets.length}
-  <div class="rounded-xl border border-dashed border-gray-300 bg-surface">
+  <div class="rounded-xl border border-dashed border-input bg-card">
     <EmptyState icon="picture-add" title={q || filter ? "Nothing matches" : "The library is empty"}>{q || filter ? "Try another filter." : "Drop files anywhere on this page, or upload them."}</EmptyState>
   </div>
 {:else}
@@ -92,12 +96,12 @@
     {#each list.assets as a (a.id)}
       <li class="min-w-0">
         <button type="button" class="group flex w-full flex-col gap-1.5 text-left" onclick={() => show(a)}>
-          <span class="relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-gray-50 text-gray-400 group-hover:border-gray-400 group-focus-visible:border-accent-500">
+          <span class="relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-lg border border-border bg-muted/50 text-muted-foreground group-hover:border-ring group-focus-visible:border-ring">
             {#if a.thumb_url}<img src={a.thumb_url} alt={a.alt || ""} loading="lazy" class="size-full object-cover" />
             {:else}<span class="flex flex-col items-center gap-1"><Icon name="document" size="xl" /><span class="text-[10px] font-semibold uppercase">{a.filename.split(".").pop()}</span></span>{/if}
             {#if !a.usage_count}<span class="absolute left-1.5 top-1.5"><Badge tone="warning">Unused</Badge></span>{/if}
           </span>
-          <span class="truncate px-0.5 text-xs font-medium text-gray-700">{a.filename}</span>
+          <span class="truncate px-0.5 text-xs font-medium text-foreground/80">{a.filename}</span>
         </button>
       </li>
     {/each}
@@ -107,13 +111,13 @@
 
 <Dialog bind:open title={current?.filename || ""} sheet size="lg">
   {#if current}
-    <div class="flex items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-[repeating-conic-gradient(var(--gray-100)_0_25%,var(--surface)_0_50%)] bg-[length:16px_16px]">
-      {#if current.thumb_url}<img src={current.variants?.w1280 || current.url} alt={current.alt || ""} class="max-h-80 object-contain" />{:else}<Icon name="document" size="xl" class="my-12 text-gray-400" />{/if}
+    <div class="flex items-center justify-center overflow-hidden rounded-lg border border-border bg-[repeating-conic-gradient(var(--muted)_0_25%,var(--background)_0_50%)] bg-[length:16px_16px]">
+      {#if current.thumb_url}<img src={current.variants?.w1280 || current.url} alt={current.alt || ""} class="max-h-80 object-contain" />{:else}<Icon name="document" size="xl" class="my-12 text-muted-foreground" />{/if}
     </div>
     <dl class="grid grid-cols-[6rem_minmax(0,1fr)] gap-x-4 gap-y-2 text-sm">
-      <dt class="text-gray-500">Type</dt><dd>{current.content_type}</dd>
-      <dt class="text-gray-500">Size</dt><dd>{bytes(current.byte_size)}{current.width ? ` · ${current.width} × ${current.height}` : ""}</dd>
-      <dt class="text-gray-500">Address</dt><dd class="flex items-center gap-1"><span class="truncate font-mono text-xs">{current.url}</span><CopyButton text={current.url} /></dd>
+      <dt class="text-muted-foreground">Type</dt><dd>{current.content_type}</dd>
+      <dt class="text-muted-foreground">Size</dt><dd>{bytes(current.byte_size)}{current.width ? ` · ${current.width} × ${current.height}` : ""}</dd>
+      <dt class="text-muted-foreground">Address</dt><dd class="flex items-center gap-1"><span class="truncate font-mono text-xs">{current.url}</span><CopyButton text={current.url} /></dd>
     </dl>
     <div class="flex flex-col gap-4">
       {#if current.content_type?.startsWith("image/")}
@@ -124,17 +128,17 @@
       <Field label="Folder">{#snippet children(id)}<Input {id} mono bind:value={current.folder} />{/snippet}</Field>
     </div>
     <section class="flex flex-col gap-2">
-      <h3 class="text-sm font-semibold text-gray-900">Used by</h3>
+      <h3 class="text-sm font-semibold text-foreground">Used by</h3>
       {#if current.used_by.length}
-        <ul class="divide-y divide-gray-100 rounded-lg border border-gray-200">
+        <ul class="divide-y divide-border rounded-lg border border-border">
           {#each current.used_by as u}
             <li class="flex items-center justify-between gap-3 px-3 py-2 text-sm">
-              <a class="min-w-0 truncate font-medium text-gray-900 hover:underline" href={u.type === "Page" ? `#/pages/edit/${encodeURIComponent(u.path)}` : u.type === "Global" ? `#/globals/${u.path}` : `#/collections/${u.path.split("/")[0]}/edit/${u.path.split("/")[1]}`}>{u.label}</a>
-              <span class="shrink-0 text-xs text-gray-500">{u.type === "CollectionEntry" ? "Entry" : u.type} · {u.where}</span>
+              <a class="min-w-0 truncate font-medium text-foreground hover:underline" href={u.type === "Page" ? `#/pages/edit/${encodeURIComponent(u.path)}` : u.type === "Global" ? `#/globals/${u.path}` : `#/collections/${u.path.split("/")[0]}/edit/${u.path.split("/")[1]}`}>{u.label}</a>
+              <span class="shrink-0 text-xs text-muted-foreground">{u.type === "CollectionEntry" ? "Entry" : u.type} · {u.where}</span>
             </li>
           {/each}
         </ul>
-      {:else}<p class="text-sm text-gray-500">Nothing uses this file.</p>{/if}
+      {:else}<p class="text-sm text-muted-foreground">Nothing uses this file.</p>{/if}
     </section>
   {/if}
   {#snippet actions()}

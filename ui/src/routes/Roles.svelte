@@ -1,4 +1,5 @@
 <script>
+  import Checkbox from "../lib/components/Checkbox.svelte";
   // Roles: what each can do, edited as a capability matrix (a group per
   // resource, read/write/publish/delete across it).
   import PageHeader from "../lib/components/PageHeader.svelte";
@@ -44,8 +45,8 @@
   <DataTable rows={data.roles} columns={[{ label: "Role" }, { label: "Can" }]}>
     {#snippet row(r)}
       <Cell>
-        <span class="font-medium text-gray-900">{r.name}</span>{#if r.system}<Badge tone="info" class="ml-2">Built in</Badge>{/if}
-        {#if r.description}<p class="text-xs text-gray-500">{r.description}</p>{/if}
+        <span class="font-medium text-foreground">{r.name}</span>{#if r.system}<Badge tone="info" class="ml-2">Built in</Badge>{/if}
+        {#if r.description}<p class="text-xs text-muted-foreground">{r.description}</p>{/if}
         <RowActions>
           {#if session.can("roles:write")}<RowAction onclick={() => edit(r)}>Edit</RowAction>{/if}
           {#if session.can("roles:delete") && !r.system}<RowAction danger onclick={() => remove(r)}>Delete</RowAction>{/if}
@@ -63,12 +64,12 @@
     {#if editing.system}
       <Notice>The administrator role holds every capability, including those plugins add later.</Notice>
     {:else}
-      <div class="overflow-hidden rounded-lg border border-gray-200">
+      <div class="overflow-hidden rounded-lg border border-border">
         {#each data.catalog as g}
-          <div class="flex flex-wrap items-center gap-x-5 gap-y-2 border-b border-gray-100 px-4 py-3 last:border-0">
-            <span class="w-28 text-sm font-medium text-gray-900">{g.group}</span>
+          <div class="flex flex-wrap items-center gap-x-5 gap-y-2 border-b border-border px-4 py-3 last:border-0">
+            <span class="w-28 text-sm font-medium text-foreground">{g.group}</span>
             {#each g.capabilities as c}
-              <label class="flex items-center gap-1.5 text-sm text-gray-700" title={c}><input type="checkbox" checked={has(c)} onchange={(e) => flip(c, e.currentTarget.checked)} />{action(c)}</label>
+              <span title={c}><Checkbox label={action(c)} checked={has(c)} onchange={(on) => flip(c, on)} /></span>
             {/each}
           </div>
         {/each}

@@ -1,3 +1,4 @@
+import path from "node:path";
 import { defineConfig } from "vite";
 import { svelte } from "@sveltejs/vite-plugin-svelte";
 import tailwindcss from "@tailwindcss/vite";
@@ -8,6 +9,9 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
   base: "/cms/",
   plugins: [svelte(), tailwindcss()],
+  resolve: {
+    alias: { $lib: path.resolve("./src/lib") },
+  },
   build: {
     outDir: "../internal/admin/dist",
     emptyOutDir: true,

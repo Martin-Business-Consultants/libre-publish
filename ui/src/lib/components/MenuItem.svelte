@@ -1,8 +1,13 @@
 <script>
-  // One row of a menu (menus.css .menu__item): a link or a button.
+  // One row of a menu: a link or a button, in shadcn's menu-item look.
+  import { cn } from "$lib/utils.js";
   import Icon from "./Icon.svelte";
   let { href = null, icon = null, danger = false, selected = false, onclick = undefined, children, trailing = undefined } = $props();
-  const cls = $derived(`flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-sm leading-5 hover:bg-gray-100 ${danger ? "text-red-600 hover:bg-red-50" : selected ? "bg-gray-100 font-medium text-gray-900" : "text-gray-700 hover:text-gray-900"}`);
+  const cls = $derived(cn(
+    "hover:bg-accent hover:text-accent-foreground flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm outline-none focus-visible:bg-accent [&_svg]:text-muted-foreground",
+    danger && "text-destructive hover:bg-destructive/10 hover:text-destructive",
+    selected && "bg-accent font-medium",
+  ));
 </script>
 
 {#if href}

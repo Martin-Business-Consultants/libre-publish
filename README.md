@@ -137,7 +137,10 @@ agents depend on it.
 **The delivery API (`/api/v1`)**: `site`, `content` (with `?since=` cursors
 and `removed`), `pages`, `collections`, `entries`, `globals`, `schema`,
 `sitemap`, `robots(.txt)`, `redirects(.txt)` (a Cloudflare `_redirects`) and
-`site_health`. It uses one answer shape, `{data, meta, included.assets}`,
+`site_health`. It uses one answer shape, `{data, meta, included}`, trims
+records to `?fields=`, embeds what they point at with `?include=`, says how
+many there are in `X-Total-Count`/`Link` headers, answers `OPTIONS` with each
+resource's JSON Schema,
 returns live content only, and expands blocks (`collection_list`,
 `contact_info`, synced `pattern`). Every answer carries an `ETag`, honours
 `If-None-Match` and sends `Cache-Tag` headers, all under a per-token rate limit.
@@ -148,17 +151,29 @@ core, which is held to the same file). The tests read it.
 
 **Scheduling.** `publish_at` and `unpublish_at` are acted on within 30 seconds.
 
-**The admin**: Svelte 5 and Tailwind 4 (`ui/`), built into
-`internal/admin/dist` and embedded in the binary. It recreates the Rails
-admin's look from the same design tokens: the admin bar, the WordPress-style
-menu with fly-outs, postboxes and the Publish box, status filters, quick
-filters, bulk actions and row actions. It's built from its own component
-library (`ui/src/lib/components`): buttons, fields, a searchable combobox, tag
-input, switches, dialogs and sheets, confirmations, toasts, tables,
-pagination and ⌘K search. Forms are drawn from field schemas (every field
-type, nested), blocks are edited in place with a block picker, media is
-picked or uploaded inline, and schemas are edited as rows rather than JSON.
-It follows the system's light or dark mode, and works on a phone. `make ui`
+**The admin**: Svelte 5, Tailwind 4 and shadcn-svelte (`ui/`), built into
+`internal/admin/dist` and embedded in the binary. Its primitives come from
+shadcn-svelte's registry (`ui/src/lib/components/ui`, added with
+`npx shadcn-svelte@latest add <name>`), in its stock neutral theme: the
+sidebar, buttons, inputs, selects, the command menu, dialogs and sheets,
+alert dialogs, toasts (Sonner), tables, tabs and badges. The admin's own
+pieces (`ui/src/lib/components`) are built from them: fields, a searchable
+combobox, tag input, confirmations, postboxes and the Publish box, status
+filters, quick filters, bulk and row actions, pagination and ⌘K search. Forms
+are drawn from field schemas (every field type, nested), Markdown is written
+as rich text (Tiptap, kept as Markdown, with the source a tab away), blocks are edited in
+place with a block picker, media is picked or uploaded inline, and blocks,
+schema fields and repeater items are reordered by dragging their grip (or with
+the arrow keys on it). Schemas are edited as rows rather than JSON.
+People can edit together: an open editor holds a lock (shown in lists, with
+Take over, and refused to other writers through the API unless they pass
+`override_lock=1`), and what's typed is autosaved and offered back after a
+crash or a takeover. Trash and status changes are undone from the toast rather
+than confirmed; lists have Quick Edit and remembered view options (columns,
+rows a page, density); a first publish runs a checklist of fixable
+suggestions, then shows where it's live. Lost passwords and new email
+addresses are settled by mailed links, and the dashboard copies a Site Health
+report for support. It follows the system's light or dark mode, and works on a phone. `make ui`
 rebuilds it, and `make ui-dev` serves it with hot reload against `make run`.
 The built `dist/` is committed, so `go install` needs no Node.
 
@@ -169,16 +184,26 @@ can be written in Go, Rust, TypeScript, Python, C# or Zig. Its `manifest`
 export says what it is and what it needs. Installing it means uploading it.
 It stays off until a person grants what it asks for, and it is loaded without
 a restart. It can reach only the host's fixed capabilities: live content,
-its own storage, outbound HTTP to the hosts it named, and logging. It can't
-touch the database, the files, other plugins or the rest of the network, and
-each call has a time limit. Its admin screens are data that the admin draws,
-not code.
+its own storage, email through Settings › Email, files into the media
+library, outbound HTTP to the hosts it named, and logging. It can't touch the
+database, the files, other plugins or the rest of the network, and each call
+has a time limit. It can add capabilities to the role editor, and its admin
+screens (its menu, tables, forms with a visual form builder, detail views)
+are data that the admin draws, not code.
+
+**Forms** ships inside the binary as the first default plugin
+([plugins/forms](plugins/forms), [docs/forms.md](docs/forms.md)): forms built
+by dragging fields in, submissions kept and exported as CSV, an email to you
+and a confirmation to the visitor (each with its own from name and address,
+over the defaults in Settings › Email), and spam kept out by a honeypot, a
+time check and optional Cloudflare Turnstile.
 
 The contract is in [docs/plugins.md](docs/plugins.md), and
-[plugins/visits](plugins/visits) is a working example in Go. The tests build
+[plugins/visits](plugins/visits) is a small example in Go. The tests build
 it, install it, grant it, call its public route, watch it hear
 `page.published`, and check that it's refused storage once that grant is
-taken back.
+taken back; and they drive Forms from building a form to the emails it
+sends.
 
 ## How it's put together
 

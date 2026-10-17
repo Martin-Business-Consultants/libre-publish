@@ -1,6 +1,7 @@
 <script>
   // A list of short strings as chips: type and press Enter or comma to add,
   // Backspace on an empty input to take the last off.
+  import { Badge } from "$lib/components/ui/badge/index.js";
   import Icon from "./Icon.svelte";
   let { value = $bindable([]), placeholder = "Add and press Enter", id = undefined, invalid = false } = $props();
   let draft = $state("");
@@ -16,12 +17,12 @@
   }
 </script>
 
-<div class="flex min-h-8 w-full flex-wrap items-center gap-1 rounded-md border bg-surface px-1.5 py-0.5 focus-within:border-gray-900 {invalid ? 'border-red-500' : 'border-gray-300 hover:border-gray-400'}">
+<div class="border-input dark:bg-input/30 focus-within:border-ring focus-within:ring-ring/50 flex min-h-9 w-full flex-wrap items-center gap-1 rounded-md border bg-transparent px-1.5 py-1 shadow-xs focus-within:ring-3 {invalid ? 'border-destructive' : ''}">
   {#each list as v, i (v)}
-    <span class="inline-flex items-center gap-1 rounded-sm bg-gray-100 py-0.5 pl-1.5 pr-0.5 text-xs font-medium text-gray-800">
+    <Badge variant="secondary" class="pr-0.5">
       {v}
-      <button type="button" class="rounded-sm p-0.5 text-gray-500 hover:bg-gray-200 hover:text-gray-900" onclick={() => (value = list.filter((_, j) => j !== i))} aria-label="Remove {v}"><Icon name="close" size="xs" /></button>
-    </span>
+      <button type="button" class="hover:bg-muted-foreground/20 rounded-sm" onclick={() => (value = list.filter((_, j) => j !== i))} aria-label="Remove {v}"><Icon name="close" size="xs" /></button>
+    </Badge>
   {/each}
-  <input {id} bind:value={draft} onkeydown={key} onblur={add} class="min-w-24 flex-1 border-0 bg-transparent px-1 py-1 text-sm outline-none placeholder:text-gray-400" placeholder={list.length ? "" : placeholder} />
+  <input {id} bind:value={draft} onkeydown={key} onblur={add} class="placeholder:text-muted-foreground min-w-24 flex-1 bg-transparent px-1 text-sm outline-none" placeholder={list.length ? "" : placeholder} />
 </div>

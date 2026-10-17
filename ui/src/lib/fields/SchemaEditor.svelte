@@ -5,15 +5,17 @@
   // shows the same list as the API stores it.
   import SchemaEditor from "./SchemaEditor.svelte";
   import Button from "../components/Button.svelte";
-  import Icon from "../components/Icon.svelte";
+  import DragHandle from "../components/DragHandle.svelte";
   import Input from "../components/Input.svelte";
   import Select from "../components/Select.svelte";
   import Switch from "../components/Switch.svelte";
   import TagInput from "../components/TagInput.svelte";
   import Combobox from "../components/Combobox.svelte";
+  import Checkbox from "../components/Checkbox.svelte";
   import Textarea from "../components/Textarea.svelte";
   import { site } from "../site.svelte.js";
   import { blockTypes } from "../blocks.svelte.js";
+  import { sortable, move } from "../sortable.js";
 
   let { fields, allowBlocks = true, depth = 1, errors = {}, path = "fields" } = $props();
 
@@ -36,7 +38,6 @@
     fields.push({ name: "", label: "", type: "string", __new: true });
     open[fields.length - 1] = true;
   }
-  function move(i, d) { const [x] = fields.splice(i, 1); fields.splice(i + d, 0, x); }
   function setType(f, t) {
     f.type = t;
     if (t === "select" && !f.options) f.options = [];
@@ -62,7 +63,7 @@
 <div class="flex flex-col gap-3">
   {#if depth === 1}
     <div class="flex items-center justify-between">
-      <span class="text-xs font-medium text-gray-500">{fields.length} {fields.length === 1 ? "field" : "fields"}</span>
+      <span class="text-xs font-medium text-muted-foreground">{fields.length} {fields.length === 1 ? "field" : "fields"}</span>
       {#if mode === "rows"}<Button variant="plain" size="sm" icon="code" onclick={toJSON}>Edit as JSON</Button>
       {:else}<Button variant="plain" size="sm" onclick={fromJSON}>Back to fields</Button>{/if}
     </div>
@@ -70,56 +71,55 @@
 
   {#if mode === "json"}
     <Textarea mono rows={16} bind:value={json} invalid={!!jsonError} spellcheck="false" />
-    {#if jsonError}<p class="text-xs text-red-600">{jsonError}</p>{/if}
+    {#if jsonError}<p class="text-xs text-destructive">{jsonError}</p>{/if}
     <div><Button variant="primary" size="sm" onclick={fromJSON}>Apply JSON</Button></div>
   {:else}
+    <div class="flex flex-col gap-3" {@attach sortable(() => fields)}>
     {#each fields as f, i (f)}
-      <div class="rounded-lg border border-gray-200 bg-surface">
+      <div class="bg-card rounded-lg border" data-sortable-item>
         <div class="flex flex-wrap items-center gap-2 p-2">
-          <div class="flex shrink-0 flex-col">
-            <button type="button" class="text-gray-400 hover:text-gray-900 disabled:opacity-30" disabled={i === 0} onclick={() => move(i, -1)} aria-label="Move up"><Icon name="arrow-up" size="xs" /></button>
-            <button type="button" class="rotate-180 text-gray-400 hover:text-gray-900 disabled:opacity-30" disabled={i === fields.length - 1} onclick={() => move(i, 1)} aria-label="Move down"><Icon name="arrow-up" size="xs" /></button>
-          </div>
+          <DragHandle onmove={(d) => move(fields, i, i + d)} />
           <div class="min-w-36 flex-1">
             <Input placeholder="Label" value={f.label || ""} aria-label="Label" invalid={!!errorAt(i, "name")}
               oninput={(e) => { f.label = e.currentTarget.value; if (f.__new || !f.name) f.name = nameOf(f.label); }} />
           </div>
           <div class="w-36"><Input mono placeholder="name" bind:value={f.name} oninput={() => delete f.__new} aria-label="Name" invalid={!!errorAt(i, "name")} /></div>
-          <div class="w-48"><Select options={typeOptions} value={f.type} onchange={(e) => setType(f, e.currentTarget.value)} aria-label="Type" /></div>
-          <label class="flex items-center gap-1.5 text-xs text-gray-600"><input type="checkbox" checked={!!f.required} onchange={(e) => (e.currentTarget.checked ? (f.required = true) : delete f.required)} /> Required</label>
+          <div class="w-48"><Select options={typeOptions} value={f.type} onchange={(v) => setType(f, v)} aria-label="Type" /></div>
+          <Checkbox class="text-xs" label="Required" checked={!!f.required} onchange={(on) => (on ? (f.required = true) : delete f.required)} />
           <Button variant="plain" size="sm" iconOnly icon="sliders" title="More" onclick={() => (open[i] = !open[i])} aria-expanded={!!open[i]} />
-          <Button variant="plain" size="sm" iconOnly icon="trash" title="Remove" class="hover:!bg-red-50 hover:!text-red-700" onclick={() => fields.splice(i, 1)} />
+          <Button variant="plain" size="sm" iconOnly icon="trash" title="Remove" class="hover:bg-destructive/10 hover:text-destructive" onclick={() => fields.splice(i, 1)} />
         </div>
         {#if errorAt(i, "name") || errorAt(i, "type") || errorAt(i, "options")}
-          <p class="px-3 pb-2 text-xs text-red-600">{[errorAt(i, "name"), errorAt(i, "type"), errorAt(i, "options")].flat().filter(Boolean).join(", ")}</p>
+          <p class="px-3 pb-2 text-xs text-destructive">{[errorAt(i, "name"), errorAt(i, "type"), errorAt(i, "options")].flat().filter(Boolean).join(", ")}</p>
         {/if}
         {#if open[i] || ["select", "group", "repeater"].includes(f.type)}
-          <div class="flex flex-col gap-3 border-t border-gray-100 px-3 py-3 pl-9">
+          <div class="flex flex-col gap-3 border-t border-border px-3 py-3 pl-9">
             {#if f.type === "select"}
-              <div class="flex flex-col gap-1"><span class="text-xs font-medium text-gray-600">Choices</span><TagInput bind:value={f.options} placeholder="Add a choice and press Enter" /></div>
+              <div class="flex flex-col gap-1"><span class="text-xs font-medium text-muted-foreground">Choices</span><TagInput bind:value={f.options} placeholder="Add a choice and press Enter" /></div>
             {/if}
             {#if f.type === "record_ref" || f.type === "record_refs"}
-              <div class="flex flex-col gap-1"><span class="text-xs font-medium text-gray-600">From the collection</span>
+              <div class="flex flex-col gap-1"><span class="text-xs font-medium text-muted-foreground">From the collection</span>
                 <Select class="max-w-64" placeholder="—" options={site.collections.map((c) => ({ value: c.slug, label: c.name }))} bind:value={() => f.of_collection || "", (v) => (v ? (f.of_collection = v) : delete f.of_collection)} /></div>
             {/if}
             {#if f.type === "blocks"}
-              <div class="flex flex-col gap-1"><span class="text-xs font-medium text-gray-600">Allowed blocks (none chosen: any)</span>
+              <div class="flex flex-col gap-1"><span class="text-xs font-medium text-muted-foreground">Allowed blocks (none chosen: any)</span>
                 <Combobox multiple placeholder="Any block" options={blockTypes.list.map((t) => ({ value: t.slug, label: t.label }))} bind:value={() => f.allowed_types || [], (v) => (v.length ? (f.allowed_types = v) : delete f.allowed_types)} /></div>
             {/if}
             {#if open[i]}
-              <div class="flex flex-col gap-1"><span class="text-xs font-medium text-gray-600">Help</span>
+              <div class="flex flex-col gap-1"><span class="text-xs font-medium text-muted-foreground">Help</span>
                 <Input placeholder="A line under the field, for whoever fills it in" bind:value={() => f.help || "", (v) => (v ? (f.help = v) : delete f.help)} /></div>
             {/if}
             {#if f.type === "group" || f.type === "repeater"}
-              <div class="flex flex-col gap-1"><span class="text-xs font-medium text-gray-600">{f.type === "group" ? "Fields in the group" : "Fields in each item"}</span>
+              <div class="flex flex-col gap-1"><span class="text-xs font-medium text-muted-foreground">{f.type === "group" ? "Fields in the group" : "Fields in each item"}</span>
                 <SchemaEditor fields={f.of} {allowBlocks} depth={depth + 1} {errors} path="{path}[{i}].of" /></div>
             {/if}
           </div>
         {/if}
       </div>
     {:else}
-      <p class="rounded-lg bg-gray-50 py-6 text-center text-sm text-gray-500">No fields yet.</p>
+      <p class="rounded-lg bg-muted/50 py-6 text-center text-sm text-muted-foreground">No fields yet.</p>
     {/each}
+    </div>
     <div><Button size="sm" icon="add" onclick={add}>Add field</Button></div>
   {/if}
 </div>

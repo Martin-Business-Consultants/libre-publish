@@ -11,15 +11,21 @@
   import FieldsForm from "../lib/fields/FieldsForm.svelte";
   import BlocksEditor from "../lib/fields/BlocksEditor.svelte";
   import PublishBox from "../lib/fields/PublishBox.svelte";
+  import PublishChecklist from "../lib/fields/PublishChecklist.svelte";
+  import { prefs } from "../lib/prefs.svelte.js";
+  import { flash } from "../lib/flash.js";
   import SeoFields from "../lib/fields/SeoFields.svelte";
   import EditorTabs from "../lib/components/EditorTabs.svelte";
+  import EditingNotices from "../lib/components/EditingNotices.svelte";
+  import { Editing } from "../lib/editing.svelte.js";
   import Button from "../lib/components/Button.svelte";
   import { get, post, patch, del } from "../lib/api.js";
   import { save, saveShortcut } from "../lib/save.js";
   import { session } from "../lib/session.svelte.js";
   import { site } from "../lib/site.svelte.js";
   import { confirm } from "../lib/confirm.svelte.js";
-  import { toast, toastError } from "../lib/toast.svelte.js";
+  import { toast, toastError, undoable } from "../lib/toast.svelte.js";
+  import { restorer } from "../lib/trash.js";
   import { slugify } from "../lib/format.js";
   import { go } from "../lib/router.svelte.js";
   import { onDestroy } from "svelte";
@@ -29,6 +35,8 @@
   const colSlug = params.slug, slug = params.entry || null;
   let col = $state(null), entry = $state(null), errors = $state({}), saving = $state(false), slugTouched = $state(!!slug), baseline = $state("");
   let categories = $state([]), tags = $state([]), tab = $state("edit");
+  let editing = $state(null);
+  let checklist = $state(false), justPublished = $state(false), loadedStatus = "";
   const snapshot = () => JSON.stringify($state.snapshot(entry));
   const dirty = $derived(entry && baseline && snapshot() !== baseline);
   const base = `/collections/${colSlug}/entries`;
@@ -43,9 +51,19 @@
     const pool = (id) => { const p = cols.find((x) => x.id === id); return p ? get(`/collections/${p.slug}/entries?per=100`).then((r) => r.entries.map((x) => ({ value: x.id, label: x.title }))) : []; };
     [categories, tags] = await Promise.all([pool(col.categories_collection_id), pool(col.tags_collection_id)]);
     baseline = snapshot();
+    loadedStatus = entry.status;
+    if (slug && flash.published === colSlug + "/" + slug) { flash.published = null; justPublished = true; }
+    if (!editing) {
+      editing = new Editing({ type: "entry", id: entry.id, key: slug ? String(entry.id) : "new:" + colSlug, snapshot, dirty: () => dirty, updatedAt: entry.updated_at });
+      editing.start();
+    }
   }
   load().catch(toastError);
 
+  function requestSave(statusOverride) {
+    if (statusOverride === "published" && loadedStatus !== "published" && prefs.get("publish_checks", true)) { checklist = true; return; }
+    submit(statusOverride);
+  }
   async function submit(statusOverride) {
     saving = true;
     const body = { entry: { title: entry.title, slug: entry.slug, locale: entry.locale, body_markdown: entry.body_markdown, frontmatter: entry.frontmatter, seo: entry.seo, blocks: entry.blocks, status: statusOverride || entry.status } };
@@ -56,18 +74,23 @@
     saving = false; errors = r.errors || {};
     if (r.ok && !r.held && !r.unchanged) {
       baseline = "";
+      await editing?.saved(r.res.entry.updated_at);
+      if (loadedStatus !== "published" && r.res.entry.status === "published") flash.published = colSlug + "/" + r.res.entry.slug;
       if (r.res.entry.slug !== slug) { go(`/collections/${colSlug}/edit/${encodeURIComponent(r.res.entry.slug)}`); return; }
       await load();
-    } else if (r.ok) baseline = snapshot();
+    } else if (r.ok) { baseline = snapshot(); await editing?.saved(entry.updated_at); }
   }
   async function trash() {
-    if (!(await confirm({ title: "Move this entry to the trash?", message: "It can be restored from the trash.", confirmLabel: "Move to trash", destructive: true }))) return;
-    try { await del(`${base}/${encodeURIComponent(slug)}`); baseline = ""; toast("Moved to the trash."); go(`/collections/${colSlug}`); } catch (e) { toastError(e); }
+    try {
+      await del(`${base}/${encodeURIComponent(slug)}`); baseline = "";
+      undoable(`“${entry.title}” moved to the trash.`, restorer("entry", [entry.id], () => go(`/collections/${colSlug}/edit/${encodeURIComponent(slug)}`)), { done: "Restored." });
+      go(`/collections/${colSlug}`);
+    } catch (e) { toastError(e); }
   }
   const stop = saveShortcut(() => submit(null));
   const warn = (e) => { if (dirty) { e.preventDefault(); e.returnValue = ""; } };
   addEventListener("beforeunload", warn);
-  onDestroy(() => { stop(); removeEventListener("beforeunload", warn); });
+  onDestroy(() => { stop(); removeEventListener("beforeunload", warn); editing?.stop(); });
   const url = $derived(entry ? `${site.siteURL.replace(/\/$/, "")}/${colSlug}/${entry.slug}` : "");
 </script>
 
@@ -76,19 +99,20 @@
 {:else}
   <EditorTabs bind:tab cli={slug ? `cms entry ${colSlug} ${slug}` : ""} seoWarning={!entry.seo?.meta_description}>
     {#snippet actions()}
-      {#if dirty}<span class="text-xs font-medium text-yellow-700">Unsaved changes · ⌘S</span>{/if}
+      {#if dirty}<span class="text-xs font-medium text-amber-700 dark:text-amber-400">Unsaved changes · ⌘S{#if editing?.autosavedAt} · autosaved{/if}</span>{/if}
       <Button href="#/collections/{colSlug}">All {col.name.toLowerCase()}</Button>
       {#if slug && session.can("entries:write")}<Button href="#/collections/{colSlug}/new" icon="add">Add New</Button>{/if}
     {/snippet}
   </EditorTabs>
+  {#if editing}<EditingNotices {editing} noun="entry" back="#/collections/{colSlug}" onrestore={(data) => (entry = { ...entry, ...data })} />{/if}
   <div class="flex flex-col gap-6 lg:flex-row lg:items-start">
     <div class="flex min-w-0 flex-1 flex-col gap-6">
       <div>
         <label class="sr-only" for="entry-title">Title</label>
         <!-- svelte-ignore a11y_autofocus -->
         <input id="entry-title" bind:value={entry.title} placeholder="Add title" autofocus={!slug} oninput={() => { if (!slugTouched) entry.slug = slugify(entry.title); }}
-          class="w-full border-0 border-b border-gray-300 bg-transparent pb-3 text-3xl font-semibold leading-9 tracking-tight text-gray-900 outline-none placeholder:text-gray-300 focus:border-gray-900" />
-        {#if errors.title}<p class="mt-1 text-xs text-red-600">Title {errors.title.join(", ")}</p>{/if}
+          class="w-full border-0 border-b border-input bg-transparent pb-3 text-3xl font-semibold leading-9 tracking-tight text-foreground outline-none placeholder:text-muted-foreground/60 focus:border-ring" />
+        {#if errors.title}<p class="mt-1 text-xs text-destructive">Title {errors.title.join(", ")}</p>{/if}
       </div>
       {#if tab === "edit"}
         {#if (col.schema?.fields || []).length}
@@ -105,7 +129,7 @@
       {/if}
     </div>
     <aside class="flex min-w-0 shrink-0 flex-col gap-4 lg:sticky lg:top-16 lg:w-80">
-      <PublishBox record={entry} isNew={!slug} canPublish={session.can("entries:publish")} {saving} onsave={submit} ontrash={slug && session.can("entries:delete") ? trash : null} />
+      <PublishBox record={entry} isNew={!slug} canPublish={session.can("entries:publish")} {saving} onsave={requestSave} ontrash={slug && session.can("entries:delete") ? trash : null} />
       <Postbox key="entry-attributes" title="Attributes">
         <Field label="Slug" required error={errors.slug}>{#snippet children(id, invalid)}<Input {id} {invalid} mono bind:value={entry.slug} oninput={() => (slugTouched = true)} />{/snippet}</Field>
         <Field label="Locale" error={errors.locale}>{#snippet children(id, invalid)}<Input {id} {invalid} class="max-w-24" bind:value={entry.locale} />{/snippet}</Field>
@@ -118,4 +142,6 @@
       {/if}
     </aside>
   </div>
+  <PublishChecklist bind:open={checklist} bind:published={justPublished} record={entry} noun="entry" {url} addHref="#/collections/{colSlug}/new"
+    hasContent={!!entry.body_markdown?.trim() || entry.blocks.length > 0 || Object.keys(entry.frontmatter || {}).length > 0} onpublish={() => submit("published")} />
 {/if}

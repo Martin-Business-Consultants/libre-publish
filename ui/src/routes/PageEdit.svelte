@@ -16,14 +16,20 @@
   import BlocksEditor from "../lib/fields/BlocksEditor.svelte";
   import SchemaEditor from "../lib/fields/SchemaEditor.svelte";
   import PublishBox from "../lib/fields/PublishBox.svelte";
+  import PublishChecklist from "../lib/fields/PublishChecklist.svelte";
+  import { prefs } from "../lib/prefs.svelte.js";
+  import { flash } from "../lib/flash.js";
   import SeoFields from "../lib/fields/SeoFields.svelte";
   import EditorTabs from "../lib/components/EditorTabs.svelte";
+  import EditingNotices from "../lib/components/EditingNotices.svelte";
+  import { Editing } from "../lib/editing.svelte.js";
   import { get, post, patch, del, pagePath } from "../lib/api.js";
   import { save, saveShortcut } from "../lib/save.js";
   import { session } from "../lib/session.svelte.js";
   import { site } from "../lib/site.svelte.js";
   import { confirm } from "../lib/confirm.svelte.js";
-  import { toast, toastError } from "../lib/toast.svelte.js";
+  import { toast, toastError, undoable } from "../lib/toast.svelte.js";
+  import { restorer } from "../lib/trash.js";
   import { slugify } from "../lib/format.js";
   import { go } from "../lib/router.svelte.js";
   import { onDestroy } from "svelte";
@@ -35,6 +41,10 @@
   let page = $state(null), schema = $state([]), parents = $state([]);
   let errors = $state({}), saving = $state(false), slugTouched = $state(!!path), baseline = $state("");
   let editingFields = $state(false), draftSchema = $state([]), tab = $state("edit");
+  // Who else has it open, and what's typed but not saved.
+  let editing = $state(null);
+  // The checks before a first publish, and the panel after it.
+  let checklist = $state(false), justPublished = $state(false), loadedStatus = "";
 
   const snapshot = () => JSON.stringify($state.snapshot(page));
   const dirty = $derived(page && baseline && snapshot() !== baseline);
@@ -50,9 +60,19 @@
     }
     parents = all.filter((p) => !page.path || (p.id !== page.id && !p.path.startsWith(page.path + "/")));
     baseline = snapshot();
+    loadedStatus = page.status;
+    if (path && flash.published === path) { flash.published = null; justPublished = true; }
+    if (!editing) {
+      editing = new Editing({ type: "page", id: page.id, key: path ? String(page.id) : "new", snapshot, dirty: () => dirty, updatedAt: page.updated_at });
+      editing.start();
+    }
   }
   load().catch(toastError);
 
+  function requestSave(statusOverride) {
+    if (statusOverride === "published" && loadedStatus !== "published" && prefs.get("publish_checks", true)) { checklist = true; return; }
+    submit(statusOverride);
+  }
   async function submit(statusOverride) {
     if (!page) return;
     saving = true;
@@ -64,13 +84,19 @@
     errors = r.errors || {};
     if (r.ok && !r.held && !r.unchanged) {
       baseline = "";
+      await editing?.saved(r.res.page.updated_at);
+      if (loadedStatus !== "published" && r.res.page.status === "published") flash.published = r.res.page.path;
       if (r.res.page.path !== path) { go(`/pages/edit/${encodeURIComponent(r.res.page.path)}`); return; }
       await load();
-    } else if (r.ok) baseline = snapshot();
+    } else if (r.ok) { baseline = snapshot(); await editing?.saved(page.updated_at); }
   }
   async function trash() {
-    if (!(await confirm({ title: "Move this page to the trash?", message: "Its child pages go with it. It can be restored from the trash.", confirmLabel: "Move to trash", destructive: true }))) return;
-    try { await del(`/pages/${pagePath(path)}`); baseline = ""; toast("Moved to the trash."); go("/pages"); } catch (e) { toastError(e); }
+    try {
+      await del(`/pages/${pagePath(path)}`); baseline = "";
+      const back = restorer("page", [page.id], () => go(`/pages/edit/${encodeURIComponent(path)}`));
+      undoable(`“${page.title}” moved to the trash.`, back, { done: "Restored." });
+      go("/pages");
+    } catch (e) { toastError(e); }
   }
   async function saveSchema() {
     try {
@@ -82,7 +108,7 @@
   const stop = saveShortcut(() => submit(null));
   const warn = (e) => { if (dirty) { e.preventDefault(); e.returnValue = ""; } };
   addEventListener("beforeunload", warn);
-  onDestroy(() => { stop(); removeEventListener("beforeunload", warn); });
+  onDestroy(() => { stop(); removeEventListener("beforeunload", warn); editing?.stop(); });
   // Where it lives on the site: the parent's path plus the slug; "home" is "/".
   const permalink = $derived.by(() => {
     if (!page) return "";
@@ -96,13 +122,14 @@
 {:else}
   <EditorTabs bind:tab cli={path ? `cms page ${path}` : ""} seoWarning={!page.seo?.meta_description}>
     {#snippet actions()}
-      {#if dirty}<span class="text-xs font-medium text-yellow-700">Unsaved changes · ⌘S</span>{/if}
+      {#if dirty}<span class="text-xs font-medium text-amber-700 dark:text-amber-400">Unsaved changes · ⌘S{#if editing?.autosavedAt} · autosaved{/if}</span>{/if}
       {#if path && session.can("pages:write")}
         <Button href="#/pages/new" icon="add">Add New</Button>
         <Button onclick={() => { draftSchema = JSON.parse(JSON.stringify(schema)); editingFields = true; }}>Fields</Button>
       {/if}
     {/snippet}
   </EditorTabs>
+  {#if editing}<EditingNotices {editing} noun="page" back="#/pages" onrestore={(data) => (page = { ...page, ...data })} />{/if}
   <div class="flex flex-col gap-6 lg:flex-row lg:items-start">
     <div class="flex min-w-0 flex-1 flex-col gap-6">
       <div>
@@ -110,8 +137,8 @@
         <!-- svelte-ignore a11y_autofocus -->
         <input id="page-title" bind:value={page.title} placeholder="Add title" autofocus={!path}
           oninput={() => { if (!slugTouched) page.slug = slugify(page.title); }}
-          class="w-full border-0 border-b border-gray-300 bg-transparent pb-3 text-3xl font-semibold leading-9 tracking-tight text-gray-900 outline-none placeholder:text-gray-300 focus:border-gray-900 {errors.title ? 'border-red-500' : ''}" />
-        {#if errors.title}<p class="mt-1 text-xs text-red-600">Title {errors.title.join(", ")}</p>{/if}
+          class="w-full border-0 border-b border-input bg-transparent pb-3 text-3xl font-semibold leading-9 tracking-tight text-foreground outline-none placeholder:text-muted-foreground/60 focus:border-ring {errors.title ? 'border-destructive' : ''}" />
+        {#if errors.title}<p class="mt-1 text-xs text-destructive">Title {errors.title.join(", ")}</p>{/if}
       </div>
 
       {#if tab === "edit"}
@@ -130,16 +157,16 @@
     </div>
 
     <aside class="flex min-w-0 shrink-0 flex-col gap-4 lg:sticky lg:top-16 lg:w-80">
-      <PublishBox record={page} isNew={!path} canPublish={session.can("pages:publish")} {saving} onsave={submit} ontrash={path && session.can("pages:delete") ? trash : null} />
+      <PublishBox record={page} isNew={!path} canPublish={session.can("pages:publish")} {saving} onsave={requestSave} ontrash={path && session.can("pages:delete") ? trash : null} />
       <Postbox key="page-attributes" title="Page Attributes">
         <Field label="Slug" required help="Lowercase letters, digits and dashes." error={errors.slug}>
           {#snippet children(id, invalid)}<Input {id} {invalid} mono bind:value={page.slug} oninput={() => (slugTouched = true)} />{/snippet}
         </Field>
         {#if page.slug}
           <div class="flex flex-col gap-1.5">
-            <span class="text-sm font-semibold text-gray-900">Permalink</span>
-            {#if site.siteURL}<a href={permalink} target="_blank" rel="noopener" class="truncate text-sm font-medium text-accent-600 underline decoration-accent-600/40 underline-offset-2 hover:text-accent-700">{permalink}</a>
-            {:else}<span class="font-mono text-xs text-gray-500">{permalink}</span>{/if}
+            <span class="text-sm font-semibold text-foreground">Permalink</span>
+            {#if site.siteURL}<a href={permalink} target="_blank" rel="noopener" class="truncate text-sm font-medium text-primary underline decoration-primary/40 underline-offset-2 hover:text-primary">{permalink}</a>
+            {:else}<span class="font-mono text-xs text-muted-foreground">{permalink}</span>{/if}
           </div>
         {/if}
         <Field label="Parent" help="Nests this page under another; its URL becomes the parent's path plus its slug." error={errors.parent_id}>
@@ -149,8 +176,8 @@
         </Field>
         <Field label="Locale" error={errors.locale}>{#snippet children(id, invalid)}<Input {id} {invalid} bind:value={page.locale} />{/snippet}</Field>
         {#if path}
-          <div class="flex items-center justify-between gap-2 rounded-md border border-gray-200 bg-gray-50 px-3 py-2">
-            <span class="min-w-0"><span class="block text-xs text-gray-500">Reference</span><span class="block truncate font-mono text-xs text-gray-900">/{page.path}</span></span>
+          <div class="flex items-center justify-between gap-2 rounded-md border border-border bg-muted/50 px-3 py-2">
+            <span class="min-w-0"><span class="block text-xs text-muted-foreground">Reference</span><span class="block truncate font-mono text-xs text-foreground">/{page.path}</span></span>
             <CopyButton text={"/" + page.path} label="" />
           </div>
         {/if}
@@ -158,8 +185,10 @@
     </aside>
   </div>
 
+  <PublishChecklist bind:open={checklist} bind:published={justPublished} record={page} noun="page" url={permalink} addHref="#/pages/new"
+    hasContent={page.blocks.length > 0 || Object.keys(page.frontmatter || {}).length > 0} onpublish={() => submit("published")} />
   <Dialog bind:open={editingFields} title="This page's fields" size="lg" sheet>
-    <p class="text-sm text-gray-500">Fields beyond the blocks, filled in above them and handed to the site as the page's <code class="rounded-sm bg-gray-100 px-1 font-mono text-xs">frontmatter</code>.</p>
+    <p class="text-sm text-muted-foreground">Fields beyond the blocks, filled in above them and handed to the site as the page's <code class="rounded-sm bg-muted px-1 font-mono text-xs">frontmatter</code>.</p>
     <SchemaEditor fields={draftSchema} />
     {#snippet actions()}<Button onclick={() => (editingFields = false)}>Cancel</Button><Button variant="primary" onclick={saveSchema}>Save fields</Button>{/snippet}
   </Dialog>

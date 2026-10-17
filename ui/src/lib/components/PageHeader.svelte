@@ -9,18 +9,18 @@
 <div class="flex flex-col gap-2">
   <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
     <div class="min-w-0">
-      <h1 class="flex items-center gap-2 text-3xl font-bold leading-9 tracking-tight text-gray-900">
-        {#if icon}<Icon name={icon} size="lg" class="text-gray-400" />{/if}
+      <h1 class="flex items-center gap-2 text-2xl font-semibold tracking-tight">
+        {#if icon}<Icon name={icon} size="lg" class="text-muted-foreground" />{/if}
         <span class="truncate">{title}</span>
       </h1>
-      {#if subtitle}<p class="mt-0.5 text-sm text-gray-500">{subtitle}</p>{/if}
+      {#if subtitle}<p class="text-muted-foreground mt-0.5 text-sm">{subtitle}</p>{/if}
     </div>
     {#if actions}<div class="ml-auto flex flex-wrap items-center justify-end gap-2">{@render actions()}</div>{/if}
   </div>
   {#if cli}
-    <p class="flex flex-wrap items-center gap-2 text-xs text-gray-500">
+    <p class="text-muted-foreground flex flex-wrap items-center gap-2 text-xs">
       <span>From the CLI or MCP:</span>
-      <code class="rounded-sm bg-gray-100 px-1 py-0.5 font-mono text-gray-700">{cli}</code>
+      <code class="bg-muted text-foreground rounded-sm px-1 py-0.5 font-mono">{cli}</code>
       <CopyButton text={cli} />
     </p>
   {/if}

@@ -1,18 +1,19 @@
 <script>
-  // A status badge (badges.css): uppercase, the tone from the status the way
-  // the Rails admin chose it, or given.
+  // shadcn's Badge, the tone from the status the way the Rails admin chose
+  // it, or given.
+  import { Badge } from "$lib/components/ui/badge/index.js";
   import { tone as toneOf, humanize } from "../format.js";
   let { status = "", tone = null, children = undefined, class: klass = "" } = $props();
   const t = $derived(tone || toneOf(status));
-  const tones = {
-    neutral: "bg-gray-100 text-gray-700",
-    info: "bg-accent-50 text-accent-700",
-    success: "bg-green-50 text-green-700",
-    warning: "bg-yellow-50 text-yellow-800",
-    danger: "bg-red-50 text-red-700",
+  const looks = {
+    neutral: ["secondary", ""],
+    info: ["outline", ""],
+    success: ["outline", "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"],
+    warning: ["outline", "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400"],
+    danger: ["destructive", ""],
   };
 </script>
 
-<span class="inline-flex items-center gap-1 whitespace-nowrap rounded-sm px-1.5 py-0.5 text-xs font-semibold uppercase leading-4 tracking-wide {tones[t]} {klass}">
+<Badge variant={looks[t][0]} class="{looks[t][1]} {klass}">
   {#if children}{@render children()}{:else}{humanize(status)}{/if}
-</span>
+</Badge>

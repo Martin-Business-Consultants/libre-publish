@@ -1,20 +1,24 @@
 <script>
-  import Dialog from "./Dialog.svelte";
-  import Button from "./Button.svelte";
+  // Draws confirm() as shadcn's AlertDialog.
+  import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
+  import { buttonVariants } from "$lib/components/ui/button/index.js";
   import { confirmState } from "../confirm.svelte.js";
-  let open = $state(false);
-  let c = $derived(confirmState.current);
-  $effect(() => { open = !!c; });
+  const c = $derived(confirmState.current);
   function finish(answer) {
     c?.resolve(answer);
     confirmState.current = null;
   }
 </script>
 
-<Dialog bind:open title={c?.title || ""} size="sm" onclose={() => { if (confirmState.current) finish(false); }}>
-  {#if c?.message}<p class="text-sm text-gray-700">{c.message}</p>{/if}
-  {#snippet actions()}
-    <Button onclick={() => finish(false)}>Cancel</Button>
-    <Button variant={c?.destructive ? "destructive" : "primary"} icon={c?.destructive ? "trash" : null} onclick={() => finish(true)}>{c?.confirmLabel}</Button>
-  {/snippet}
-</Dialog>
+<AlertDialog.Root open={!!c} onOpenChange={(v) => { if (!v && confirmState.current) finish(false); }}>
+  <AlertDialog.Content>
+    <AlertDialog.Header>
+      <AlertDialog.Title>{c?.title || ""}</AlertDialog.Title>
+      {#if c?.message}<AlertDialog.Description>{c.message}</AlertDialog.Description>{/if}
+    </AlertDialog.Header>
+    <AlertDialog.Footer>
+      <AlertDialog.Cancel onclick={() => finish(false)}>Cancel</AlertDialog.Cancel>
+      <AlertDialog.Action class={c?.destructive ? buttonVariants({ variant: "destructive" }) : ""} onclick={() => finish(true)}>{c?.confirmLabel}</AlertDialog.Action>
+    </AlertDialog.Footer>
+  </AlertDialog.Content>
+</AlertDialog.Root>

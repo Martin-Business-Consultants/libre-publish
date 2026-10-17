@@ -16,6 +16,7 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -53,7 +54,35 @@ func AllCapabilities() []string {
 	for _, g := range Catalog {
 		all = append(all, g.Caps...)
 	}
+	for _, g := range PluginCaps() {
+		all = append(all, g.Caps...)
+	}
 	return all
+}
+
+// capGroup is a plugin's capabilities, as its manifest declares them; the
+// enabled plugins' join the catalog.
+type capGroup struct {
+	Group  string
+	Caps   []string
+	Labels []string
+}
+
+var pluginCaps struct {
+	sync.RWMutex
+	groups []capGroup
+}
+
+func setPluginCaps(g []capGroup) {
+	pluginCaps.Lock()
+	defer pluginCaps.Unlock()
+	pluginCaps.groups = g
+}
+
+func PluginCaps() []capGroup {
+	pluginCaps.RLock()
+	defer pluginCaps.RUnlock()
+	return pluginCaps.groups
 }
 
 var defaultRoles = []struct {

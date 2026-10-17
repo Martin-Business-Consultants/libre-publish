@@ -8,4 +8,4 @@
   }
 </script>
 
-<Button {variant} {size} icon={copied ? "check" : "clipboard"} onclick={copy} class={copied ? "!text-green-700" : ""}>{copied ? "Copied" : label}</Button>
+<Button {variant} {size} icon={copied ? "check" : "clipboard"} onclick={copy} class={copied ? "text-emerald-600 dark:text-emerald-400" : ""}>{copied ? "Copied" : label}</Button>

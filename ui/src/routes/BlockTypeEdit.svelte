@@ -53,9 +53,9 @@
       <Panel title="A new block starts with">
         <div class="p-5">
           {#if t.fields.length}
-            <p class="mb-4 text-sm text-gray-500">Fill in what a new {t.label || "block"} should already say. This is also how the form looks to an editor.</p>
+            <p class="mb-4 text-sm text-muted-foreground">Fill in what a new {t.label || "block"} should already say. This is also how the form looks to an editor.</p>
             {#key JSON.stringify(t.fields.map((f) => [f.name, f.type]))}<FieldsForm fields={t.fields} data={preview} path="defaults" {errors} />{/key}
-          {:else}<p class="text-sm text-gray-500">Add fields first.</p>{/if}
+          {:else}<p class="text-sm text-muted-foreground">Add fields first.</p>{/if}
         </div>
       </Panel>
     </div>

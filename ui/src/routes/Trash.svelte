@@ -33,7 +33,7 @@
   <DataTable {rows} key="key" columns={[{ label: "Item" }, { label: "Kind" }, { label: "Trashed" }]}>
     {#snippet row(e)}
       <Cell>
-        <span class="font-medium text-gray-900">{e.label}</span>
+        <span class="font-medium text-foreground">{e.label}</span>
         {#if session.can("trash:write")}<RowActions><RowAction onclick={() => restore(e)}>Restore</RowAction><RowAction danger onclick={() => purge(e)}>Delete forever</RowAction></RowActions>{/if}
       </Cell>
       <Cell><Badge>{e.kind}</Badge></Cell>

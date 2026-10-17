@@ -12,10 +12,27 @@
   import RepeaterField from "./RepeaterField.svelte";
   import FieldsForm from "./FieldsForm.svelte";
   import BlocksEditor from "./BlocksEditor.svelte";
+  import FormBuilder from "./FormBuilder.svelte";
+  import MessageEditor from "./MessageEditor.svelte";
 
   let { field: f, data, path, errors = {} } = $props();
   const label = $derived(f.label || f.name.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase()));
   const error = $derived(errors[path]);
+  // A select's choices can come from the record itself: the fields a
+  // form builder holds, of some types ({builder: "fields", types: ["email"]}).
+  // A message's merge tags: the builder's fields, then the plugin's own
+  // ({builder: "fields", extra: [{name, label}]}).
+  const mergeTags = $derived.by(() => {
+    const m = f.merge_tags;
+    if (!m) return [];
+    const fromFields = (data[m.builder] || []).filter((x) => x.name && x.type !== "heading").map((x) => ({ name: x.name, label: x.label || x.name }));
+    return [...fromFields, ...(m.extra || [])];
+  });
+  const options = $derived.by(() => {
+    const from = f.options_from;
+    if (!from) return f.options || [];
+    return (data[from.builder] || []).filter((x) => x.name && (!from.types || from.types.includes(x.type))).map((x) => ({ value: x.name, label: x.label ? `${x.label} (${x.name})` : x.name }));
+  });
 
   // The value, read and written through data[f.name]; blank means absent,
   // as the API reads it.
@@ -26,7 +43,7 @@
   // svelte-ignore state_referenced_locally
   if ((f.type === "group") && (typeof data[f.name] !== "object" || data[f.name] == null)) data[f.name] = {};
   // svelte-ignore state_referenced_locally
-  if ((f.type === "repeater" || f.type === "blocks") && !Array.isArray(data[f.name])) data[f.name] = [];
+  if ((f.type === "repeater" || f.type === "blocks" || f.type === "form_builder") && !Array.isArray(data[f.name])) data[f.name] = [];
 
   const toLocal = (iso) => {
     const d = new Date(iso);
@@ -38,19 +55,25 @@
 
 {#if f.type === "boolean"}
   <div class="flex flex-col gap-1">
-    <Switch checked={!!data[f.name]} onchange={(e) => (data[f.name] = e.currentTarget.checked)} {label} description={f.help} />
-    {#if error}<p class="text-xs text-red-600">{error.join(", ")}</p>{/if}
+    <Switch checked={!!data[f.name]} onchange={(on) => (data[f.name] = on)} {label} description={f.help} />
+    {#if error}<p class="text-xs text-destructive">{error.join(", ")}</p>{/if}
   </div>
 {:else if f.type === "group"}
-  <fieldset class="rounded-lg border border-gray-200 px-4 pb-4 pt-2">
-    <legend class="px-1 text-sm font-semibold text-gray-900">{label}{#if f.required}<span class="text-red-600"> *</span>{/if}</legend>
-    {#if f.help}<p class="mb-3 text-xs text-gray-500">{f.help}</p>{/if}
+  <fieldset class="rounded-lg border border-border px-4 pb-4 pt-2">
+    <legend class="px-1 text-sm font-semibold text-foreground">{label}{#if f.required}<span class="text-destructive"> *</span>{/if}</legend>
+    {#if f.help}<p class="mb-3 text-xs text-muted-foreground">{f.help}</p>{/if}
     <FieldsForm fields={f.of || []} data={data[f.name]} {path} {errors} gap="gap-4" />
   </fieldset>
 {:else if f.type === "repeater"}
   <Field {label} required={f.required} help={f.help} {error}>
     {#snippet children()}<RepeaterField field={f} items={data[f.name]} {path} {errors} />{/snippet}
   </Field>
+{:else if f.type === "form_builder"}
+  <div class="flex flex-col gap-1.5">
+    {#if f.label}<span class="text-sm font-medium">{label}</span>{/if}
+    <FormBuilder fields={data[f.name]} palette={f.palette || []} {errors} path={path} />
+    {#if error}<p class="text-xs text-destructive">{error.join(", ")}</p>{/if}
+  </div>
 {:else if f.type === "blocks"}
   <Field {label} required={f.required} help={f.help} {error}>
     {#snippet children()}<BlocksEditor blocks={data[f.name]} allowed={f.allowed_types} {path} {errors} />{/snippet}
@@ -66,8 +89,14 @@
         <Textarea {id} {invalid} mono rows={6} value={data[f.name] ?? ""} oninput={(e) => set(e.currentTarget.value)} spellcheck="false" />
       {:else if f.type === "integer"}
         <Input {id} {invalid} type="number" step="1" class="max-w-48" value={data[f.name] ?? ""} oninput={(e) => set(e.currentTarget.value === "" ? null : parseInt(e.currentTarget.value, 10))} />
+      {:else if f.type === "number"}
+        <Input {id} {invalid} type="number" step="any" class="max-w-48" value={data[f.name] ?? ""} oninput={(e) => set(e.currentTarget.value === "" ? null : Number(e.currentTarget.value))} />
       {:else if f.type === "select"}
-        <Select {id} {invalid} class="max-w-80" placeholder="—" options={f.options || []} value={data[f.name] ?? ""} onchange={(e) => set(e.currentTarget.value)} />
+        <Select {id} {invalid} class="max-w-80" placeholder="—" {options} value={data[f.name] ?? ""} onchange={set} />
+      {:else if f.type === "rich_text"}
+        <MessageEditor {id} {invalid} tags={mergeTags} bind:value={() => data[f.name] ?? "", (v) => set(v)} />
+      {:else if f.type === "password"}
+        <Input {id} {invalid} type="password" autocomplete="new-password" value={data[f.name] ?? ""} oninput={(e) => set(e.currentTarget.value)} />
       {:else if f.type === "url"}
         <Input {id} {invalid} icon="link" placeholder="https://… or /path" value={data[f.name] ?? ""} oninput={(e) => set(e.currentTarget.value)} />
       {:else if f.type === "datetime"}

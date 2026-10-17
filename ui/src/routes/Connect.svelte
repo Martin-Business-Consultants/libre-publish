@@ -25,7 +25,7 @@
 <div class="max-w-lg">
   <Panel>
     <div class="flex flex-col gap-5 p-6">
-      <p class="text-sm text-gray-600">Approve the code your terminal shows. Only approve a code you started yourself.</p>
+      <p class="text-sm text-muted-foreground">Approve the code your terminal shows. Only approve a code you started yourself.</p>
       <div class="flex gap-2"><Input bind:value={code} mono placeholder="ABCD-EFGH" class="max-w-48 text-center uppercase tracking-widest" onchange={look} /><Button onclick={look}>Look up</Button></div>
       {#if error}<Notice tone="danger">{error}</Notice>{/if}
       {#if info}

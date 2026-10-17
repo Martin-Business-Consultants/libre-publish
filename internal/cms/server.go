@@ -1,6 +1,7 @@
 package cms
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -37,6 +38,10 @@ type Config struct {
 	// (anyone could claim any address, and dodge the rate limits).
 	TrustProxy bool
 	Logger     *slog.Logger
+	// Mailer sends email; SMTP from Settings › Email when nil.
+	Mailer Mailer
+	// NoDefaultPlugins leaves out the plugins the binary ships (tests).
+	NoDefaultPlugins bool
 }
 
 // App is one install: one site, one database, one process.
@@ -86,6 +91,9 @@ func NewApp(cfg Config) (*App, error) {
 	if err := a.Plugins.LoadAll(); err != nil {
 		a.Logger.Warn("plugins", "err", err)
 	}
+	if !cfg.NoDefaultPlugins {
+		a.Plugins.EnsureDefaults(context.Background())
+	}
 	go a.scheduler()
 	return a, nil
 }
@@ -111,6 +119,8 @@ type Ctx struct {
 	// Delivery answers carry an ETag and honor If-None-Match.
 	etag     bool
 	etagFrom string
+	// What a delivery answer's records are, for ?include= (delivery_shape.go).
+	owner *deliveryOwner
 }
 
 type Crumb struct {
@@ -424,18 +434,19 @@ func securityHeaders(next http.Handler) http.Handler {
 	})
 }
 
-// CORS for what a site's browser calls: the delivery API and public posts,
+// CORS for what a site's browser calls: the delivery API, public posts and
+// plugins' routes (a form's submit),
 // from the origins in Settings › General (and the public site's own).
 func (a *App) cors(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
-		if origin != "" && (strings.HasPrefix(r.URL.Path, "/api/v1/") || strings.HasPrefix(r.URL.Path, "/api/public/") || r.URL.Path == "/api/quote_requests") && a.originAllowed(origin) {
+		if origin != "" && (strings.HasPrefix(r.URL.Path, "/api/v1/") || strings.HasPrefix(r.URL.Path, "/api/public/") || strings.HasPrefix(r.URL.Path, "/api/x/") || r.URL.Path == "/api/quote_requests") && a.originAllowed(origin) {
 			h := w.Header()
 			h.Set("Access-Control-Allow-Origin", origin)
 			h.Set("Vary", "Origin")
 			h.Set("Access-Control-Allow-Headers", "Authorization, Content-Type, If-None-Match")
 			h.Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-			h.Set("Access-Control-Expose-Headers", "ETag, Cache-Tag")
+			h.Set("Access-Control-Expose-Headers", "ETag, Cache-Tag, X-Total-Count, X-Total-Pages, Link")
 			if r.Method == http.MethodOptions {
 				w.WriteHeader(http.StatusNoContent)
 				return

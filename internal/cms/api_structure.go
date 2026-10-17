@@ -245,6 +245,9 @@ func (a *App) updateGlobal(c *Ctx) error {
 	if err != nil {
 		return err
 	}
+	if err := a.checkLock(c, "global", g.ID); err != nil {
+		return err
+	}
 	p, err := c.Wrapped("global")
 	if err != nil {
 		return err
@@ -281,6 +284,9 @@ func (a *App) destroyGlobal(c *Ctx) error {
 	}
 	g, err := a.GlobalBySlug(c.R.Context(), c.Param("slug"))
 	if err != nil {
+		return err
+	}
+	if err := a.checkLock(c, "global", g.ID); err != nil {
 		return err
 	}
 	if err := a.trashGlobal(c.R.Context(), c.Actor, g); err != nil {

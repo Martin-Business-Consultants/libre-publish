@@ -42,10 +42,10 @@
 
 <PageHeader title="Redirects" cli="cms redirects all">
   {#snippet actions()}
-    <Button href="/api/redirects/export" icon="arrow-up" class="[&_.icon]:rotate-180">Export CSV</Button>
+    <Button href="/api/redirects/export" icon="download">Export CSV</Button>
     {#if session.can("redirects:write")}
       <input type="file" accept=".csv,text/csv" class="hidden" bind:this={importInput} onchange={(e) => { if (e.currentTarget.files[0]) importCSV(e.currentTarget.files[0]); e.currentTarget.value = ""; }} />
-      <Button icon="arrow-up" onclick={() => importInput.click()}>Import</Button>
+      <Button icon="upload" onclick={() => importInput.click()}>Import</Button>
       <Button icon="add" onclick={() => edit(null)}>New redirect</Button>
     {/if}
   {/snippet}
@@ -54,7 +54,7 @@
   <DataTable rows={list} columns={[{ label: "From" }, { label: "To" }, { label: "Type" }, { label: "Hits", num: true }, { label: "Last hit" }]}>
     {#snippet row(r)}
       <Cell>
-        <span class="font-mono text-xs text-gray-900">{r.source_path}</span>
+        <span class="font-mono text-xs text-foreground">{r.source_path}</span>
         {#if !r.active}<Badge class="ml-2">Off</Badge>{/if}
         <RowActions>
           {#if session.can("redirects:write")}<RowAction onclick={() => edit(r)}>Edit</RowAction>{/if}

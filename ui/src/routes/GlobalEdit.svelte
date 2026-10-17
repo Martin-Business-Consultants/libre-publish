@@ -18,17 +18,25 @@
   import { save, saveShortcut } from "../lib/save.js";
   import { session } from "../lib/session.svelte.js";
   import { confirm } from "../lib/confirm.svelte.js";
-  import { toast, toastError } from "../lib/toast.svelte.js";
+  import { toast, toastError, undoable } from "../lib/toast.svelte.js";
+  import { restorer } from "../lib/trash.js";
   import { slugify } from "../lib/format.js";
   import { go } from "../lib/router.svelte.js";
   import { onDestroy } from "svelte";
+  import EditingNotices from "../lib/components/EditingNotices.svelte";
+  import { Editing } from "../lib/editing.svelte.js";
 
   let { params } = $props();
   // svelte-ignore state_referenced_locally
   const slug = params.slug === "new" ? null : params.slug;
+  let editing = $state(null);
   let g = $state(null), fields = $state([]), errors = $state({}), saving = $state(false), editingFields = $state(!slug), draft = $state([]);
   async function load() {
-    if (slug) { const r = (await get(`/globals/${slug}`)).global; g = r; fields = r.fields || []; }
+    if (slug) {
+      const r = (await get(`/globals/${slug}`)).global; g = r; fields = r.fields || [];
+      // Globals are saved whole, on purpose: locked, but not autosaved.
+      if (!editing) { editing = new Editing({ type: "global", id: r.id, snapshot: () => "", dirty: () => false, updatedAt: r.updated_at }); editing.start(); }
+    }
     else g = { name: "", slug: "", description: "", data: {} };
     draft = JSON.parse(JSON.stringify(fields));
   }
@@ -42,11 +50,14 @@
     if (r.ok && !r.held) { editingFields = false; if (r.res.global && r.res.global.slug !== slug) go(`/globals/${r.res.global.slug}`); else load(); }
   }
   async function remove() {
-    if (!(await confirm({ title: `Move ${g.name} to the trash?`, message: "The site's code that reads it will find nothing until it's restored.", confirmLabel: "Move to trash", destructive: true }))) return;
-    try { await del(`/globals/${slug}`); toast("Moved to the trash."); go("/globals"); } catch (e) { toastError(e); }
+    try {
+      await del(`/globals/${slug}`);
+      undoable(`${g.name} moved to the trash: the site finds nothing there until it's restored.`, restorer("global", [g.id], () => go(`/globals/${slug}`)), { done: "Restored." });
+      go("/globals");
+    } catch (e) { toastError(e); }
   }
   const stop = saveShortcut(() => submit(false));
-  onDestroy(stop);
+  onDestroy(() => { stop(); editing?.stop(); });
 </script>
 
 {#if !g}
@@ -58,6 +69,7 @@
       {#if slug}<Button variant="primary" loading={saving} onclick={() => submit(false)}>{session.can("globals:publish") ? "Update" : "Propose changes"}</Button>{/if}
     {/snippet}
   </PageHeader>
+  {#if editing}<EditingNotices {editing} noun="global" back="#/globals" onrestore={() => {}} />{/if}
   {#if slug && !session.can("globals:publish")}
     <Notice tone="warning">Globals are live as soon as they change, and your role can't publish: saving sends your changes to review.</Notice>
   {/if}

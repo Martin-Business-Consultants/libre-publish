@@ -3,7 +3,7 @@ VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null | sed 's/^v/
 LDFLAGS := -s -w -X github.com/Martin-Business-Consultants/libre-publish/internal/cms.Version=$(VERSION)
 PLATFORMS := linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64
 
-.PHONY: build run test dist plugin ui ui-dev clean
+.PHONY: build run test dist plugin plugins plugins-check ui ui-dev clean
 
 build:
 	CGO_ENABLED=0 go build -trimpath -ldflags '$(LDFLAGS)' -o dist/librepublish ./cmd/librepublish
@@ -34,6 +34,25 @@ dist:
 	  CGO_ENABLED=0 GOOS=$$os GOARCH=$$arch go build -trimpath -ldflags '$(LDFLAGS)' -o dist/librepublish-$$os-$$arch$$ext ./cmd/librepublish || exit 1; \
 	done
 	cd dist && sha256sum librepublish-* > checksums.txt
+
+# The default plugins the binary ships (internal/cms/defaults), each built
+# from plugins/<key>, with a digest of its source beside it so CI can tell
+# a stale .wasm without depending on the Go patch release that built it.
+DEFAULT_PLUGINS := forms
+plugins:
+	@for p in $(DEFAULT_PLUGINS); do \
+	  echo "plugins/$$p -> internal/cms/defaults/$$p.wasm"; \
+	  (cd plugins/$$p && GOOS=wasip1 GOARCH=wasm go build -trimpath -ldflags='-s -w' -buildmode=c-shared -o ../../internal/cms/defaults/$$p.wasm .) || exit 1; \
+	  $(MAKE) -s plugin-digest P=$$p > internal/cms/defaults/$$p.src.sha256; \
+	done
+
+plugin-digest:
+	@cd plugins/$(P) && find . -name '*.go' -o -name go.mod -o -name go.sum | LC_ALL=C sort | xargs sha256sum | sha256sum | cut -d' ' -f1
+
+plugins-check:
+	@for p in $(DEFAULT_PLUGINS); do \
+	  test "$$($(MAKE) -s plugin-digest P=$$p)" = "$$(cat internal/cms/defaults/$$p.src.sha256)" || { echo "internal/cms/defaults/$$p.wasm is stale: run make plugins"; exit 1; }; \
+	done
 
 # The example plugin, as an uploadable .wasm.
 plugin:

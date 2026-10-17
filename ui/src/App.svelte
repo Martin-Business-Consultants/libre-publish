@@ -1,6 +1,8 @@
 <script>
   // The admin: signed out, the public screens (sign in, first-run setup);
-  // signed in, the admin bar and menu around the routed screen.
+  // signed in, the admin bar and the sidebar around the routed screen.
+  import { ModeWatcher } from "mode-watcher";
+  import * as Sidebar from "$lib/components/ui/sidebar/index.js";
   import { session } from "./lib/session.svelte.js";
   import { site } from "./lib/site.svelte.js";
   import { router } from "./lib/router.svelte.js";
@@ -14,37 +16,48 @@
   import SignIn from "./routes/SignIn.svelte";
   import Setup from "./routes/Setup.svelte";
   import NotFound from "./routes/NotFound.svelte";
+  import ForgotPassword from "./routes/ForgotPassword.svelte";
+  import ResetPassword from "./routes/ResetPassword.svelte";
+  import ConfirmEmail from "./routes/ConfirmEmail.svelte";
+  // Screens a mailed link opens: there whether or not anyone is signed in.
+  const publicScreens = { "/forgot-password": ForgotPassword, "/reset-password": ResetPassword, "/confirm-email": ConfirmEmail };
 
-  let drawer = $state(false);
-  let folded = $state(document.documentElement.dataset.menu === "folded");
   let searching = $state(false);
+  // The sidebar remembers being folded in a cookie (shadcn's Sidebar).
+  const menuOpen = !document.cookie.split("; ").includes("sidebar_state=false");
 
   session.load();
   $effect(() => { if (session.me) site.refresh(); });
   const matched = $derived(router.match(routes));
-  $effect(() => { router.path; drawer = false; window.scrollTo(0, 0); });
+  $effect(() => { router.path; window.scrollTo(0, 0); });
   $effect(() => { document.title = session.site ? `${session.site} · Libre Publish` : "Libre Publish"; });
 </script>
 
+<ModeWatcher />
 {#if !session.ready}
   <div class="flex min-h-dvh items-center justify-center"><Spinner /></div>
+{:else if publicScreens[router.path] && (router.path !== "/forgot-password" || !session.me)}
+  {@const Screen = publicScreens[router.path]}
+  {#key router.path + router.query.toString()}<Screen />{/key}
 {:else if !session.me}
   {#if session.needsSetup}<Setup />{:else}<SignIn />{/if}
 {:else}
-  <a href="#main" class="fixed left-2 top-2 z-[100] -translate-y-[200%] rounded-md bg-surface px-3 py-2 text-sm font-semibold shadow-overlay focus:translate-y-0">Skip to main content</a>
-  <AdminBar onsearch={() => (searching = true)} ondrawer={() => (drawer = !drawer)} />
-  <AdminMenu bind:drawer bind:folded />
-  <div class="isolate min-w-0 px-[clamp(1rem,3vw,2rem)] pb-12 pt-[4.5rem] {folded ? 'md:pl-[calc(4rem+clamp(1rem,3vw,2rem))]' : 'md:pl-[calc(15rem+clamp(1rem,3vw,2rem))]'}">
-    <main id="main" class="mx-auto flex max-w-[80rem] flex-col gap-4">
-      {#key router.path + "?" + router.query.toString()}
-        {#if matched}
-          <matched.component params={matched.params} />
-        {:else}
-          <NotFound />
-        {/if}
-      {/key}
-    </main>
-  </div>
+  <a href="#main" class="bg-background fixed left-2 top-2 z-[100] -translate-y-[200%] rounded-md px-3 py-2 text-sm font-medium shadow-md focus:translate-y-0">Skip to main content</a>
+  <Sidebar.Provider open={menuOpen} class="pt-12">
+    <AdminBar onsearch={() => (searching = true)} />
+    <AdminMenu />
+    <Sidebar.Inset class="min-w-0 px-[clamp(1rem,3vw,2rem)] pb-12 pt-6">
+      <main id="main" class="mx-auto flex w-full max-w-[80rem] flex-col gap-4">
+        {#key router.path + "?" + router.query.toString()}
+          {#if matched}
+            <matched.component params={matched.params} />
+          {:else}
+            <NotFound />
+          {/if}
+        {/key}
+      </main>
+    </Sidebar.Inset>
+  </Sidebar.Provider>
   <GlobalSearch bind:open={searching} />
 {/if}
 <Toasts />

@@ -55,6 +55,11 @@ func (a *App) deliveryRoutes(mux *http.ServeMux) {
 	h("GET /api/v1/redirects", a.v1Redirects)
 	h("GET /api/v1/redirects.txt", a.v1RedirectsTxt)
 	h("GET /api/v1/site_health", a.v1SiteHealth)
+	h("OPTIONS /api/v1/pages", a.v1PagesOptions)
+	h("OPTIONS /api/v1/pages/{path...}", a.v1PagesOptions)
+	h("OPTIONS /api/v1/collections/{slug}/entries", a.v1EntriesOptions)
+	h("OPTIONS /api/v1/collections/{slug}/entries/{entry}", a.v1EntriesOptions)
+	h("OPTIONS /api/v1/globals/{slug}", a.v1GlobalOptions)
 }
 
 // ---- serving -------------------------------------------------------------
@@ -92,9 +97,9 @@ func (c *Ctx) deliver(data any, meta Obj, assets map[string]Obj, tags ...string)
 	if meta == nil {
 		meta = O()
 	}
-	body := O("data", data, "meta", meta)
-	if assets != nil {
-		body = body.Set("included", O("assets", assets))
+	body := O("data", c.sparse(data), "meta", meta)
+	if inc := c.included(assets); inc != nil {
+		body = body.Set("included", inc)
 	}
 	if len(tags) > 0 {
 		seen := []string{}
@@ -114,6 +119,7 @@ func (c *Ctx) deliveryPaging(total int) (page, per int, meta Obj) {
 	if page*per < total {
 		next = page + 1
 	}
+	c.pagingHeaders(page, per, total)
 	return page, per, O("page", page, "per", per, "total", total, "next_page", next)
 }
 
@@ -416,6 +422,7 @@ func (a *App) v1Pages(c *Ctx) error {
 		tags = append(tags, "page:"+p.Path)
 		tags = append(tags, blockCacheTags(p.Blocks.List())...)
 	}
+	c.owns("Page", ids...)
 	return c.deliver(data, meta, a.resolveAssets(ctx, a.assetIDs(ctx, "Page", ids)), tags...)
 }
 
@@ -435,6 +442,7 @@ func (a *App) v1Page(c *Ctx) error {
 	if err != nil {
 		return err
 	}
+	c.owns("Page", p.ID)
 	return c.deliver(o, nil, a.resolveAssets(ctx, a.assetIDs(ctx, "Page", []int64{p.ID})), append([]string{"page:" + p.Path}, blockCacheTags(p.Blocks.List())...)...)
 }
 
@@ -523,6 +531,7 @@ func (a *App) v1Entries(c *Ctx) error {
 		data = append(data, o)
 		ids = append(ids, e.ID)
 	}
+	c.owns("CollectionEntry", ids...)
 	return c.deliver(data, meta, a.resolveAssets(ctx, a.assetIDs(ctx, "CollectionEntry", ids)), "collection:"+col.Slug)
 }
 
@@ -543,6 +552,7 @@ func (a *App) v1Entry(c *Ctx) error {
 	if err != nil {
 		return err
 	}
+	c.owns("CollectionEntry", e.ID)
 	return c.deliver(o, nil, a.resolveAssets(ctx, a.assetIDs(ctx, "CollectionEntry", []int64{e.ID})), "entry:"+col.Slug+"/"+e.Slug)
 }
 
@@ -564,6 +574,7 @@ func (a *App) v1Globals(c *Ctx) error {
 		ids = append(ids, g.ID)
 		tags = append(tags, "global:"+g.Slug)
 	}
+	c.owns("Global", ids...)
 	return c.deliver(data, nil, a.resolveAssets(ctx, a.assetIDs(ctx, "Global", ids)), tags...)
 }
 
@@ -579,6 +590,7 @@ func (a *App) v1Global(c *Ctx) error {
 	if err != nil {
 		return err
 	}
+	c.owns("Global", g.ID)
 	return c.deliver(v1GlobalJSON(g), nil, a.resolveAssets(ctx, a.assetIDs(ctx, "Global", []int64{g.ID})), "global:"+g.Slug)
 }
 
@@ -750,20 +762,7 @@ func (a *App) v1Schema(c *Ctx) error {
 			}
 		}
 	}
-	seo := JSONSchema(ParseFields([]any{
-		map[string]any{"name": "meta_title", "label": "Meta title", "type": "string"},
-		map[string]any{"name": "meta_description", "label": "Meta description", "type": "text"},
-		map[string]any{"name": "canonical_url", "label": "Canonical URL", "type": "url"},
-		map[string]any{"name": "focus_keyword", "label": "Focus keyword", "type": "string"},
-		map[string]any{"name": "noindex", "label": "Hide from search engines", "type": "boolean"},
-		map[string]any{"name": "nofollow", "label": "Ask search engines not to follow links", "type": "boolean"},
-		map[string]any{"name": "og_image_id", "label": "Social share image", "type": "asset"},
-		map[string]any{"name": "og_title", "label": "Title override", "type": "string"},
-		map[string]any{"name": "og_description", "label": "Description override", "type": "text"},
-		map[string]any{"name": "og_type", "label": "Open Graph type", "type": "string"},
-		map[string]any{"name": "twitter_card", "label": "Twitter card", "type": "string"},
-		map[string]any{"name": "schema_type", "label": "schema.org type", "type": "string"},
-	}))
+	seo := seoSchema()
 	return c.deliver(O("$schema", "https://json-schema.org/draft/2020-12/schema", "blocks", blocks, "collections", collections,
 		"globals", globals, "pages", pages, "seo", seo), nil, nil, "schema")
 }

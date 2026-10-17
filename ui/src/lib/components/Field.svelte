@@ -1,22 +1,23 @@
 <script>
-  // A labelled field (forms.css .field): the label (with a required mark and
+  // A labelled field (shadcn's Field): the label (with a required mark and
   // a note), the control, help under it, and the API's errors for it. The
   // control is rendered with the id the label points at:
   //   <Field label="Title" required>{#snippet children(id)}<Input {id} … />{/snippet}</Field>
+  import * as F from "$lib/components/ui/field/index.js";
   let { label = "", required = false, note = "", help = "", error = null, id = undefined, class: klass = "", children, labelHidden = false } = $props();
   const uid = $props.id();
   const fid = $derived(id || `f-${uid}`);
   const messages = $derived(error == null ? [] : Array.isArray(error) ? error : [error]);
 </script>
 
-<div class="flex min-w-0 flex-col gap-1.5 {klass}">
+<F.Field class="min-w-0 gap-1.5 {klass}" data-invalid={messages.length > 0 || undefined}>
   {#if label}
-    <label for={fid} class="block text-sm font-semibold leading-5 text-gray-900 {labelHidden ? 'sr-only' : ''}">
-      {label}{#if required}<span class="text-red-600" aria-hidden="true"> *</span>{/if}
-      {#if note}<span class="ml-1 text-xs font-normal text-gray-500">{note}</span>{/if}
-    </label>
+    <F.Label for={fid} class={labelHidden ? "sr-only" : ""}>
+      {label}{#if required}<span class="text-destructive" aria-hidden="true">*</span>{/if}
+      {#if note}<span class="text-muted-foreground text-xs font-normal">{note}</span>{/if}
+    </F.Label>
   {/if}
   {@render children?.(fid, messages.length > 0)}
-  {#if help}<p class="text-xs leading-4 text-gray-500">{help}</p>{/if}
-  {#each messages as m}<p class="text-xs leading-4 text-red-600" role="alert">{m}</p>{/each}
-</div>
+  {#if help}<F.Description class="text-xs">{help}</F.Description>{/if}
+  {#each messages as m}<F.Error class="text-xs">{m}</F.Error>{/each}
+</F.Field>

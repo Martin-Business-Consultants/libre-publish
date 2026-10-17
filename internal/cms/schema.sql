@@ -401,3 +401,51 @@ CREATE TABLE IF NOT EXISTS plugin_kv (
   updated_at datetime(6) NOT NULL,
   PRIMARY KEY (plugin_key, key)
 );
+
+-- One-time links mailed to a person: a password reset, or a new email
+-- address to confirm. Only the digest is kept; a link works once, until it
+-- expires.
+CREATE TABLE IF NOT EXISTS account_tokens (
+  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+  user_id integer NOT NULL,
+  purpose varchar NOT NULL,
+  token_digest varchar NOT NULL UNIQUE,
+  new_email varchar,
+  expires_at datetime(6) NOT NULL,
+  used_at datetime(6),
+  created_at datetime(6) NOT NULL
+);
+CREATE INDEX IF NOT EXISTS index_account_tokens_on_user ON account_tokens (user_id, purpose);
+
+-- Who is editing what in the admin, kept fresh by the editor's heartbeat:
+-- a lock nobody has refreshed for two minutes is free.
+CREATE TABLE IF NOT EXISTS edit_locks (
+  record_type varchar NOT NULL,
+  record_id integer NOT NULL,
+  user_id integer NOT NULL,
+  user_name varchar NOT NULL,
+  session_id integer,
+  acquired_at datetime(6) NOT NULL,
+  heartbeat_at datetime(6) NOT NULL,
+  PRIMARY KEY (record_type, record_id)
+);
+
+-- What an editor had typed and not saved, per person and record ("new"
+-- for one not created yet), to offer back after a crash or a takeover.
+CREATE TABLE IF NOT EXISTS autosaves (
+  record_type varchar NOT NULL,
+  record_key varchar NOT NULL,
+  user_id integer NOT NULL,
+  data json NOT NULL,
+  created_at datetime(6) NOT NULL,
+  updated_at datetime(6) NOT NULL,
+  PRIMARY KEY (record_type, record_key, user_id)
+);
+
+-- Each person's admin preferences: list columns, rows per page, density,
+-- the publish checklist.
+CREATE TABLE IF NOT EXISTS user_preferences (
+  user_id integer PRIMARY KEY NOT NULL,
+  data json DEFAULT '{}' NOT NULL,
+  updated_at datetime(6) NOT NULL
+);

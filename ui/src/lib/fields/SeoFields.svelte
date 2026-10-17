@@ -15,11 +15,11 @@
 </script>
 
 <div class="flex flex-col gap-5">
-  <div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
-    <p class="truncate text-xs text-gray-500">{url || "/"}</p>
-    <p class="truncate text-lg leading-6 text-accent-700">{t}</p>
-    <p class="line-clamp-2 text-sm text-gray-600">{d || "No meta description: search engines will pick some text from the page."}</p>
-    <p class="mt-2 flex gap-3 text-xs {t.length > 60 ? 'text-yellow-700' : 'text-gray-400'}">Title {t.length}/60 <span class={d.length > 160 ? "text-yellow-700" : "text-gray-400"}>Description {d.length}/160</span></p>
+  <div class="rounded-lg border border-border bg-muted/50 p-4">
+    <p class="truncate text-xs text-muted-foreground">{url || "/"}</p>
+    <p class="truncate text-lg leading-6 text-primary">{t}</p>
+    <p class="line-clamp-2 text-sm text-muted-foreground">{d || "No meta description: search engines will pick some text from the page."}</p>
+    <p class="mt-2 flex gap-3 text-xs {t.length > 60 ? 'text-amber-700 dark:text-amber-400' : 'text-muted-foreground'}">Title {t.length}/60 <span class={d.length > 160 ? "text-amber-700 dark:text-amber-400" : "text-muted-foreground"}>Description {d.length}/160</span></p>
   </div>
   <FieldsForm {fields} data={seo} path="seo" {errors} />
 </div>

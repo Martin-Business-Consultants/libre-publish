@@ -18,7 +18,7 @@
 {#if list}
   <DataTable rows={list} onrowclick={(g) => go(`/globals/${g.slug}`)} columns={[{ label: "Name" }, { label: "Slug" }, { label: "Description" }, { label: "Updated" }]}>
     {#snippet row(g)}
-      <Cell><a href="#/globals/{g.slug}" class="font-medium text-gray-900 hover:underline">{g.name}</a></Cell>
+      <Cell><a href="#/globals/{g.slug}" class="font-medium text-foreground hover:underline">{g.name}</a></Cell>
       <Cell mono muted>{g.slug}</Cell>
       <Cell muted>{g.description || "—"}</Cell>
       <Cell muted nowrap><Time value={g.updated_at} class="text-xs" /></Cell>

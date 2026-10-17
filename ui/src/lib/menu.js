@@ -1,7 +1,7 @@
 // The admin menu, the Rails admin's groups (NavigationHelper::ADMIN_MENU)
 // for what this core has. A capability hides what a role can't reach.
-export function adminMenu(collections) {
-  return [
+export function adminMenu(collections, plugins = []) {
+  const groups = [
     ["Content", [
       { id: "pages", label: "Pages", icon: "document", href: "/pages", cap: "pages:read", submenu: [
         { label: "All pages", href: "/pages" }, { label: "Add new", href: "/pages/new", cap: "pages:write" } ] },
@@ -23,7 +23,7 @@ export function adminMenu(collections) {
         { label: "Redirects", href: "/redirects", cap: "redirects:read" },
         { label: "Webhooks", href: "/webhooks", cap: "webhooks:read" },
         { label: "Backup", href: "/backup", cap: "tools:use" } ] },
-      { id: "plugins", label: "Plugins", icon: "package", href: "/plugins", cap: "plugins:read" },
+      { id: "plugins", label: "Plugins", icon: "package", href: "/plugins", cap: "plugins:read", exact: true },
     ]],
     ["Access", [
       { id: "users", label: "Users", icon: "everyone", href: "/users", cap: "users:read", submenu: [
@@ -32,8 +32,16 @@ export function adminMenu(collections) {
     ]],
     ["Settings", [
       { id: "settings", label: "Settings", icon: "settings-outline", href: "/settings", cap: "settings:read", submenu: [
-        { label: "General", href: "/settings" }, { label: "Deploy", href: "/settings/deploy" }, { label: "Brand", href: "/settings/brand" },
+        { label: "General", href: "/settings" }, { label: "Deploy", href: "/settings/deploy" }, { label: "Email", href: "/settings/email" }, { label: "Brand", href: "/settings/brand" },
         { label: "Site repository", href: "/settings/github" }, { label: "Service tokens", href: "/settings/tokens" } ] },
     ]],
   ];
+  // Each plugin's menu joins the group it names (Tools when it names none).
+  for (const m of plugins) {
+    const item = { id: "plugin-" + m.key, label: m.label, icon: m.icon || "package", href: `/plugins/${m.key}/${m.items[0]?.screen}`,
+      prefix: `/plugins/${m.key}/`, badge: "plugin:" + m.key, submenu: m.items.map((it) => ({ label: it.label, href: `/plugins/${m.key}/${it.screen}` })) };
+    const g = groups.find(([name]) => name === (m.group || "Tools")) || groups.find(([name]) => name === "Tools");
+    g[1].push(item);
+  }
+  return groups;
 }

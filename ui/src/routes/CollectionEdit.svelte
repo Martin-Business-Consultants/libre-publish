@@ -60,7 +60,7 @@
     <div class="flex min-w-0 flex-1 flex-col gap-6">
       <Panel title="Fields">
         <div class="p-5">
-          <p class="mb-4 text-sm text-gray-500">What each entry carries besides its title, slug and body. The site reads them as the entry's <code class="rounded-sm bg-gray-100 px-1 font-mono text-xs">frontmatter</code>.</p>
+          <p class="mb-4 text-sm text-muted-foreground">What each entry carries besides its title, slug and body. The site reads them as the entry's <code class="rounded-sm bg-muted px-1 font-mono text-xs">frontmatter</code>.</p>
           <SchemaEditor {fields} allowBlocks={false} {errors} path="schema.fields" />
         </div>
       </Panel>

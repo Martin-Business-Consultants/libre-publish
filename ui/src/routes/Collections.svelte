@@ -22,7 +22,7 @@
   <DataTable rows={cols} onrowclick={(c) => go(`/collections/${c.slug}`)} columns={[{ label: "Name" }, { label: "Slug" }, { label: "Fields" }, { label: "Entries", num: true }, { label: "API" }]}>
     {#snippet row(c)}
       <Cell>
-        <a href="#/collections/{c.slug}" class="font-medium text-gray-900 hover:underline">{c.name}</a>
+        <a href="#/collections/{c.slug}" class="font-medium text-foreground hover:underline">{c.name}</a>
         <RowActions>
           <RowAction href="#/collections/{c.slug}">Entries</RowAction>
           {#if session.can("entries:write")}<RowAction href="#/collections/{c.slug}/new">Add entry</RowAction>{/if}
@@ -32,7 +32,7 @@
       <Cell mono muted>{c.slug}</Cell>
       <Cell muted>{(c.schema?.fields || []).map((f) => f.label || f.name).join(", ") || "—"}</Cell>
       <Cell num>{c.entry_count}</Cell>
-      <Cell>{#if c.api_enabled}<Badge tone="info">On</Badge>{:else}<span class="text-gray-400">—</span>{/if}</Cell>
+      <Cell>{#if c.api_enabled}<Badge tone="info">On</Badge>{:else}<span class="text-muted-foreground">—</span>{/if}</Cell>
     {/snippet}
     {#snippet empty()}
       <EmptyState icon="stack" title="No collections yet">

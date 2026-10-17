@@ -1,12 +1,17 @@
 <script>
-  // A checkbox with its label beside it (.choice), and an optional line under.
-  let { checked = $bindable(false), label = "", description = "", class: klass = "", ...rest } = $props();
+  // shadcn's Checkbox with its label beside it, and an optional line under;
+  // onchange(checked) follows a click.
+  import { Checkbox } from "$lib/components/ui/checkbox/index.js";
+  import { Label } from "$lib/components/ui/label/index.js";
+  let { checked = $bindable(false), label = "", description = "", onchange = undefined, class: klass = "", id = undefined, ...rest } = $props();
+  const uid = $props.id();
+  const cid = $derived(id || `c-${uid}`);
 </script>
 
-<label class="flex gap-2 text-sm leading-5 text-gray-700 {description ? 'items-start' : 'items-center'} {klass}">
-  <input type="checkbox" bind:checked class={description ? "mt-0.5" : ""} {...rest} />
-  <span class="flex flex-col">
+<div class="flex gap-2 {description ? 'items-start' : 'items-center'} {klass}">
+  <Checkbox id={cid} bind:checked onCheckedChange={(v) => onchange?.(v)} class={description ? "mt-0.5" : ""} {...rest} />
+  <Label for={cid} class="flex flex-col items-start gap-0.5 font-normal">
     <span>{label}</span>
-    {#if description}<span class="text-xs text-gray-500">{description}</span>{/if}
-  </span>
-</label>
+    {#if description}<span class="text-muted-foreground text-xs">{description}</span>{/if}
+  </Label>
+</div>

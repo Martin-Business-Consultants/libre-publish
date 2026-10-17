@@ -36,6 +36,7 @@ func (a *App) adminRoutes(h func(string, HandlerFunc, ...func(*route))) {
 	h("POST /api/settings", a.createSetting)
 	h("GET /api/settings/{key}", a.showSetting)
 	h("PATCH /api/settings/{key}", a.updateSetting)
+	h("POST /api/settings/email/test", a.sendTestMail)
 	h("PUT /api/settings/{key}", a.updateSetting)
 	h("DELETE /api/settings/{key}", a.destroySetting)
 
@@ -93,6 +94,18 @@ func (a *App) adminRoutes(h func(string, HandlerFunc, ...func(*route))) {
 	h("POST /api/session", a.createSession, open)
 	h("DELETE /api/session", a.destroySession)
 	h("POST /api/setup", a.setup, open)
+	h("POST /api/password/forgot", a.forgotPassword, open)
+	h("POST /api/password/reset", a.resetPassword, open)
+	h("POST /api/email/confirm", a.confirmEmail, open)
+	h("DELETE /api/users/{id}/pending_email", a.cancelEmailChange)
+	h("POST /api/locks", a.acquireLock)
+	h("DELETE /api/locks/{type}/{id}", a.releaseLock)
+	h("GET /api/autosaves", a.showAutosave)
+	h("PUT /api/autosaves", a.putAutosave)
+	h("DELETE /api/autosaves", a.deleteAutosave)
+	h("GET /api/me/preferences", a.showPreferences)
+	h("PATCH /api/me/preferences", a.updatePreferences)
+	h("GET /api/site_health/info", a.siteHealthInfo)
 
 	a.pluginRoutes(h)
 }
@@ -1373,6 +1386,9 @@ func (a *App) listRoles(c *Ctx) error {
 	for _, g := range Catalog {
 		catalog = append(catalog, O("group", g.Group, "capabilities", g.Caps))
 	}
+	for _, g := range PluginCaps() {
+		catalog = append(catalog, O("group", g.Group, "capabilities", g.Caps, "labels", g.Labels, "plugin", true))
+	}
 	return c.JSON(200, O("roles", roles, "catalog", catalog))
 }
 
@@ -1491,7 +1507,7 @@ func (a *App) userJSON(ctx context.Context, id int64) (Obj, error) {
 			role = O("id", r.ID, "name", r.Name)
 		}
 	}
-	return O("id", id, "name", name, "email", email, "role", role, "two_factor", totp, "created_at", created), nil
+	return O("id", id, "name", name, "email", email, "pending_email", a.pendingEmail(ctx, id), "role", role, "two_factor", totp, "created_at", created), nil
 }
 
 func (a *App) listUsers(c *Ctx) error {
@@ -1595,6 +1611,12 @@ func (a *App) updateUser(c *Ctx) error {
 	ctx := c.R.Context()
 	if has(p, "name") && strings.TrimSpace(str(p["name"])) != "" {
 		a.Store.DB.ExecContext(ctx, `UPDATE users SET name = ?, updated_at = ? WHERE id = ?`, strings.TrimSpace(str(p["name"])), Now().DB(), id)
+	}
+	// A new address waits for its confirmation link (account.go).
+	if has(p, "email") && strings.TrimSpace(str(p["email"])) != "" {
+		if err := a.requestEmailChange(ctx, c.Actor, id, str(p["email"])); err != nil {
+			return err
+		}
 	}
 	if pw := str(p["password"]); pw != "" {
 		if len(pw) < 10 {
@@ -2009,8 +2031,8 @@ func (a *App) showSession(c *Ctx) error {
 	if c.Actor.Role != nil {
 		caps = c.Actor.Role.Capabilities()
 	}
-	return c.JSON(200, O("signed_in", true, "csrf", c.Actor.Session.CSRF, "user", O("id", c.Actor.UserID, "name", c.Actor.Name, "email", c.Actor.Email),
-		"capabilities", caps, "site", str(a.general()["title"]), "version", Version))
+	return c.JSON(200, O("signed_in", true, "csrf", c.Actor.Session.CSRF, "user", O("id", c.Actor.UserID, "name", c.Actor.Name, "email", c.Actor.Email, "pending_email", a.pendingEmail(c.R.Context(), c.Actor.UserID)),
+		"capabilities", caps, "site", str(a.general()["title"]), "version", Version, "preferences", a.preferences(c.R.Context(), c.Actor.UserID)))
 }
 
 var signInLimiter = newRateLimiter(10)

@@ -1,23 +1,23 @@
 <script>
   // A list's status filter, WordPress's "All (12) | Published (8) | Draft
-  // (4)", drawn as quiet tabs, the current one filled. Each is a link that
-  // swaps one query parameter, so a filtered list is bookmarkable.
+  // (4)", drawn as shadcn's tabs list. Each is a link that swaps one query
+  // parameter, so a filtered list is bookmarkable.
   import { router, withQuery } from "../router.svelte.js";
   let { param = "status", options = [] } = $props();
   const current = $derived(router.query.get(param) || "");
 </script>
 
-<ul class="flex flex-wrap items-center gap-1 text-sm leading-5" role="list">
+<ul class="bg-muted text-muted-foreground inline-flex w-fit flex-wrap items-center rounded-lg p-[3px]" role="list">
   {#each options as o}
     {@const chosen = (o.value || "") === current}
     <li>
       <a
         href={withQuery({ [param]: o.value || null })}
-        class="inline-flex h-7 items-center gap-1.5 rounded-md px-2.5 {chosen ? 'bg-gray-100 font-medium text-gray-900' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'}"
+        class="inline-flex h-7 items-center gap-1.5 rounded-md px-2.5 text-sm font-medium transition-colors {chosen ? 'bg-background text-foreground shadow-sm dark:bg-input/30' : 'hover:text-foreground'}"
         aria-current={chosen ? "page" : undefined}
       >
         {o.label}
-        {#if o.count != null}<span class="text-xs tabular-nums {chosen ? 'text-gray-500' : 'text-gray-400'}">{o.count}</span>{/if}
+        {#if o.count != null}<span class="text-muted-foreground text-xs tabular-nums">{o.count}</span>{/if}
       </a>
     </li>
   {/each}

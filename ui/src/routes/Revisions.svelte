@@ -20,7 +20,7 @@
 {#if list}
   <DataTable rows={list} onrowclick={(r) => go(`/revisions/${r.id}`)} columns={[{ label: "Change" }, { label: "Fields" }, { label: "From" }, { label: "Status" }, { label: "Proposed" }]}>
     {#snippet row(r)}
-      <Cell><a href="#/revisions/{r.id}" class="font-medium text-gray-900 hover:underline">{r.record_label}</a><p class="text-xs text-gray-500">{r.record_type === "CollectionEntry" ? "Entry" : r.record_type} · revision {r.id}</p></Cell>
+      <Cell><a href="#/revisions/{r.id}" class="font-medium text-foreground hover:underline">{r.record_label}</a><p class="text-xs text-muted-foreground">{r.record_type === "CollectionEntry" ? "Entry" : r.record_type} · revision {r.id}</p></Cell>
       <Cell muted>{r.fields.join(", ")}</Cell>
       <Cell>{r.author}</Cell>
       <Cell><Badge status={r.status} /></Cell>

@@ -109,10 +109,14 @@ func (a *App) listPages(c *Ctx) error {
 		return err
 	}
 	out := []Obj{}
+	locks := a.lockedBy(c.R.Context(), c.Actor, "page")
 	for _, p := range list {
 		o, err := a.PageSummaryJSON(c.R.Context(), p)
 		if err != nil {
 			return err
+		}
+		if name, ok := locks[p.ID]; ok {
+			o = append(o, kv{"locked_by", name})
 		}
 		out = append(out, o)
 	}
@@ -208,6 +212,9 @@ func (a *App) updatePage(c *Ctx) error {
 	if err != nil {
 		return err
 	}
+	if err := a.checkLock(c, "page", p.ID); err != nil {
+		return err
+	}
 	params, err := c.Wrapped("page")
 	if err != nil {
 		return err
@@ -281,6 +288,9 @@ func (a *App) destroyPage(c *Ctx) error {
 func (a *App) destroyContent(c *Ctx, rec *Content) error {
 	if rec.Live() && !c.can(rec.Prefix()+":publish") {
 		return errForbidden(rec.Prefix() + ":publish")
+	}
+	if err := a.checkLock(c, rec.Kind, rec.ID); err != nil {
+		return err
 	}
 	if c.truthy("permanent") {
 		if err := c.Need("trash:write"); err != nil {
@@ -447,10 +457,14 @@ func (a *App) listEntries(c *Ctx) error {
 	}
 	out := []Obj{}
 	ids := []int64{}
+	locks := a.lockedBy(ctx, c.Actor, "entry")
 	for _, e := range list {
 		o, err := a.EntrySummaryJSON(ctx, e)
 		if err != nil {
 			return err
+		}
+		if name, ok := locks[e.ID]; ok {
+			o = append(o, kv{"locked_by", name})
 		}
 		out = append(out, o)
 		ids = append(ids, e.ID)
@@ -534,6 +548,9 @@ func (a *App) updateEntry(c *Ctx) error {
 	if err != nil {
 		return err
 	}
+	if err := a.checkLock(c, "entry", e.ID); err != nil {
+		return err
+	}
 	params, err := c.Wrapped("entry")
 	if err != nil {
 		return err
@@ -554,6 +571,9 @@ func (a *App) entryField(toggle bool) HandlerFunc {
 		}
 		_, e, err := a.findEntry(c)
 		if err != nil {
+			return err
+		}
+		if err := a.checkLock(c, "entry", e.ID); err != nil {
 			return err
 		}
 		var body map[string]any

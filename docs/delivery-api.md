@@ -29,10 +29,22 @@ in every mode, as are the Forms plugin's public submissions and webhooks. A
 
     {"data": …, "meta": {…}, "included": {"assets": {"<id>": {…}}}}
 
-- `meta` on lists: `{page, per, total, next_page}` (`?page=`, `?per=` up to 100).
+- `meta` on lists: `{page, per, total, next_page}` (`?page=`, `?per=` up to 100),
+  and the same in headers: `X-Total-Count`, `X-Total-Pages`, and a `Link` with
+  `first`, `prev`, `next` and `last` (exposed to browsers on allowed origins).
 - `included.assets`: every asset the records point at, resolved — absolute
   URLs on the CMS host, `width`, `height`, `alt`, and `variants`
   (`w640`, `w1280`, `w1920`). Present when a media library is installed.
+- `?include=` chooses what's in `included`: `assets` (the default),
+  `entries` (live entries the records point at through `record_ref` fields,
+  keyed `<collection>/<slug>`), `pages` (keyed by path), any of them comma-
+  separated, or `none`.
+- `?fields=` keeps only the keys named (and `id`) on each record, comma-
+  separated; dot paths reach into objects: `?fields=title,url,seo.meta_title`.
+- `OPTIONS` on `pages`, `pages/<path>`, `collections/<slug>/entries`,
+  `collections/<slug>/entries/<entry>` and `globals/<slug>` answers the
+  resource's JSON Schema (its collection's or global's own fields included)
+  and the parameters it takes.
 - `Cache-Tag` header: the tags a publish purges (below).
 
 ## Errors

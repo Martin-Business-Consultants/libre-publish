@@ -1,8 +1,11 @@
 package cms
 
 import (
+	"bytes"
 	"context"
+	crand "crypto/rand"
 	"database/sql"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,11 +13,13 @@ import (
 	"net/http"
 	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
 
 	extism "github.com/extism/go-sdk"
+	"github.com/tetratelabs/wazero"
 )
 
 // Plugins are WebAssembly modules (Extism's ABI, so they can be written in
@@ -25,9 +30,11 @@ import (
 // What a plugin can reach is the host's fixed set of capabilities:
 //
 //	content:read   lp_content(query) — live pages, entries and globals
-//	storage        lp_kv_get / lp_kv_set / lp_kv_delete — its own namespace
+//	storage        lp_kv_get / lp_kv_set / lp_kv_delete / lp_kv_list — its own namespace
+//	mail           lp_mail(message) — email through Settings › Email
+//	media:write    lp_media_put(file) — a file into the media library
 //	http           outbound requests, only to the hosts it declared
-//	log            lp_log(message) — always
+//	log, site      lp_log(message), lp_site() — always
 //
 // It is called through what its manifest declares: hooks (events such as
 // page.published, to its on_event export), routes (served under
@@ -48,12 +55,22 @@ type PluginManifest struct {
 	Routes      []PluginRoute   `json:"routes"`
 	Admin       json.RawMessage `json:"admin,omitempty"`
 	SiteConfig  json.RawMessage `json:"site_config,omitempty"`
+	// Capabilities it adds to the role editor, each "<key>:<name>", which
+	// its routes can require.
+	Capabilities []PluginCapability `json:"capabilities"`
+}
+
+type PluginCapability struct {
+	Key   string `json:"key"`
+	Label string `json:"label"`
 }
 
 // PluginGrants is what a plugin asks for, and the subset a person granted.
 type PluginGrants struct {
 	ContentRead bool     `json:"content:read"`
 	Storage     bool     `json:"storage"`
+	Mail        bool     `json:"mail"`
+	MediaWrite  bool     `json:"media:write"`
 	HTTP        []string `json:"http"`
 }
 
@@ -61,10 +78,19 @@ type PluginRoute struct {
 	Method string `json:"method"`
 	Path   string `json:"path"`
 	Export string `json:"export"`
-	// Public routes answer anyone (a form's submissions); the rest need a
-	// signed-in caller with plugins:read.
-	Public bool `json:"public"`
+	// Public routes answer anyone (a form's submissions). The rest need a
+	// signed-in caller with Capability: one of the plugin's own, or by
+	// default plugins:read for GET and plugins:write for anything else.
+	Public     bool   `json:"public"`
+	Capability string `json:"capability,omitempty"`
+	// MaxBody is the largest request body it takes: 1 MB unless it says
+	// more, at most 10 MB (a form with file uploads).
+	MaxBody int64 `json:"max_body,omitempty"`
 }
+
+const maxPluginBody = 10 << 20
+
+var pluginCapFormat = regexp.MustCompile(`^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$`)
 
 type Plugin struct {
 	ID          int64
@@ -92,6 +118,11 @@ type PluginHost struct {
 	app     *App
 	mu      sync.RWMutex
 	plugins map[string]*Plugin
+	mail    mailLimiter
+	// public counts calls to public routes: 30 a minute from one address
+	// to one plugin, so a form can't be flooded.
+	public     *rateLimiter
+	publicOnce sync.Once
 }
 
 var pluginKeyFormat = regexp.MustCompile(`^[a-z][a-z0-9_]{1,40}$`)
@@ -143,6 +174,18 @@ func (h *PluginHost) LoadAll() error {
 		}
 		h.plugins[l.p.Key] = l.p
 	}
+	var groups []capGroup
+	for _, l := range all {
+		if l.p.Enabled && len(l.p.parsed.Capabilities) > 0 {
+			g := capGroup{Group: l.p.Name}
+			for _, c := range l.p.parsed.Capabilities {
+				g.Caps = append(g.Caps, c.Key)
+				g.Labels = append(g.Labels, c.Label)
+			}
+			groups = append(groups, g)
+		}
+	}
+	setPluginCaps(groups)
 	return nil
 }
 
@@ -222,6 +265,51 @@ func (h *PluginHost) hostFunctions(key string, grants PluginGrants) []extism.Hos
 			h.app.Logger.Info("plugin", "plugin", key, "message", truncate(in, 2000))
 			return map[string]any{"ok": true}, nil
 		}),
+		fn("lp_site", true, func(ctx context.Context, in string) (any, error) {
+			g := h.app.general()
+			return map[string]any{"name": str(g["title"]), "url": strings.TrimRight(str(g["site_base_url"]), "/"), "locale": h.app.defaultLocale(), "cms_url": h.app.BaseURL, "contact_email": strOr(str(g["email"]), strOr(str(h.app.Setting(ctx, "email")["reply_to"]), str(h.app.Setting(ctx, "email")["from_email"])))}, nil
+		}),
+		fn("lp_mail", grants.Mail, func(ctx context.Context, in string) (any, error) {
+			var m Message
+			if err := json.Unmarshal([]byte(in), &m); err != nil {
+				return nil, fmt.Errorf(`lp_mail takes {"to": […], "subject": "…", "text": "…"}`)
+			}
+			if !h.mail.allow(key) {
+				return nil, fmt.Errorf("this plugin has sent 200 emails in the last hour; try later")
+			}
+			if err := h.app.SendMail(ctx, m); err != nil {
+				return nil, err
+			}
+			h.app.Logger.Info("plugin mail", "plugin", key, "to", len(m.To)+len(m.Cc)+len(m.Bcc), "subject", truncate(m.Subject, 120))
+			return map[string]any{"ok": true}, nil
+		}),
+		fn("lp_media_put", grants.MediaWrite, func(ctx context.Context, in string) (any, error) {
+			var f struct {
+				Filename    string `json:"filename"`
+				ContentType string `json:"content_type"`
+				Data        string `json:"data"`
+				Folder      string `json:"folder"`
+				Alt         string `json:"alt"`
+			}
+			if err := json.Unmarshal([]byte(in), &f); err != nil || f.Filename == "" || f.Data == "" {
+				return nil, fmt.Errorf(`lp_media_put takes {"filename": "…", "data": "<base64>", "content_type", "folder", "alt"}`)
+			}
+			data, err := base64.StdEncoding.DecodeString(f.Data)
+			if err != nil {
+				return nil, fmt.Errorf("data must be base64")
+			}
+			if len(data) > maxPluginBody {
+				return nil, fmt.Errorf("a file from a plugin is at most 10 MB")
+			}
+			if f.Folder == "" {
+				f.Folder = "Plugins/" + key
+			}
+			as, err := h.app.CreateAsset(ctx, nil, f.Filename, f.ContentType, bytes.NewReader(data), map[string]string{"folder": f.Folder, "alt": f.Alt})
+			if err != nil {
+				return nil, err
+			}
+			return h.app.AssetJSON(ctx, as), nil
+		}),
 		fn("lp_content", grants.ContentRead, func(ctx context.Context, in string) (any, error) { return h.content(ctx, in) }),
 		fn("lp_kv_get", grants.Storage, func(ctx context.Context, in string) (any, error) {
 			var v []byte
@@ -255,8 +343,31 @@ func (h *PluginHost) hostFunctions(key string, grants PluginGrants) []extism.Hos
 			_, err := h.app.Store.DB.ExecContext(ctx, `DELETE FROM plugin_kv WHERE plugin_key = ? AND key = ?`, key, in)
 			return map[string]any{"ok": err == nil}, err
 		}),
+		// lp_kv_list takes a prefix, or {"prefix", "after", "limit"} to page
+		// (keys in order, the next page's "after" in "next"), or {"prefix",
+		// "count": true} for how many there are.
 		fn("lp_kv_list", grants.Storage, func(ctx context.Context, in string) (any, error) {
-			rows, err := h.app.Store.DB.QueryContext(ctx, `SELECT key FROM plugin_kv WHERE plugin_key = ? AND key LIKE ? ORDER BY key LIMIT 1000`, key, in+"%")
+			q := struct {
+				Prefix string `json:"prefix"`
+				After  string `json:"after"`
+				Limit  int    `json:"limit"`
+				Count  bool   `json:"count"`
+			}{Prefix: in}
+			if strings.HasPrefix(in, "{") {
+				if err := json.Unmarshal([]byte(in), &q); err != nil {
+					return nil, fmt.Errorf(`lp_kv_list takes a prefix or {"prefix", "after", "limit", "count"}`)
+				}
+			}
+			like := strings.NewReplacer(`\`, `\\`, "%", `\%`, "_", `\_`).Replace(q.Prefix) + "%"
+			if q.Count {
+				var n int
+				err := h.app.Store.DB.QueryRowContext(ctx, `SELECT count(*) FROM plugin_kv WHERE plugin_key = ? AND key LIKE ? ESCAPE '\'`, key, like).Scan(&n)
+				return map[string]any{"count": n}, err
+			}
+			if q.Limit <= 0 || q.Limit > 1000 {
+				q.Limit = 1000
+			}
+			rows, err := h.app.Store.DB.QueryContext(ctx, `SELECT key FROM plugin_kv WHERE plugin_key = ? AND key LIKE ? ESCAPE '\' AND key > ? ORDER BY key LIMIT ?`, key, like, q.After, q.Limit+1)
 			if err != nil {
 				return nil, err
 			}
@@ -267,7 +378,11 @@ func (h *PluginHost) hostFunctions(key string, grants PluginGrants) []extism.Hos
 				rows.Scan(&k)
 				keys = append(keys, k)
 			}
-			return map[string]any{"keys": keys}, nil
+			out := map[string]any{"keys": keys}
+			if len(keys) > q.Limit {
+				out["keys"], out["next"] = keys[:q.Limit], keys[q.Limit-1]
+			}
+			return out, nil
 		}),
 	}
 }
@@ -333,6 +448,12 @@ func (h *PluginHost) content(ctx context.Context, in string) (any, error) {
 	return nil, fmt.Errorf(`lp_content: ask for {"page"}, {"pages"}, {"collection"[, "entry"]} or {"global"}`)
 }
 
+// instanceConfig gives each call the real clock and real randomness
+// (wazero's defaults are fixed, for reproducible runs).
+func instanceConfig() extism.PluginInstanceConfig {
+	return extism.PluginInstanceConfig{ModuleConfig: wazero.NewModuleConfig().WithSysWalltime().WithSysNanotime().WithRandSource(crand.Reader)}
+}
+
 func truncate(s string, n int) string {
 	if len(s) > n {
 		return s[:n] + "…"
@@ -349,7 +470,7 @@ func (h *PluginHost) Call(ctx context.Context, key, export string, input []byte)
 	}
 	ctx, cancel := context.WithTimeout(ctx, pluginCallTimeout)
 	defer cancel()
-	inst, err := p.compiled.Instance(ctx, extism.PluginInstanceConfig{})
+	inst, err := p.compiled.Instance(ctx, instanceConfig())
 	if err != nil {
 		return nil, err
 	}
@@ -392,7 +513,7 @@ func (h *PluginHost) Install(ctx context.Context, actor *Actor, wasm []byte) (*P
 		return nil, &Error{Status: 422, Code: "invalid", Message: "That isn't a WebAssembly plugin this CMS can load: " + err.Error()}
 	}
 	defer probe.Close(ctx)
-	inst, err := probe.Instance(ctx, extism.PluginInstanceConfig{})
+	inst, err := probe.Instance(ctx, instanceConfig())
 	if err != nil {
 		return nil, &Error{Status: 422, Code: "invalid", Message: "The plugin wouldn't start: " + err.Error()}
 	}
@@ -421,6 +542,19 @@ func (h *PluginHost) Install(ctx context.Context, actor *Actor, wasm []byte) (*P
 	for i, r := range m.Routes {
 		if r.Export == "" || !strings.HasPrefix(r.Path, "/") {
 			inv.Add(fmt.Sprintf("routes[%d]", i), "needs a path starting with / and an export")
+		}
+	}
+	for i, c := range m.Capabilities {
+		if !pluginCapFormat.MatchString(c.Key) || !strings.HasPrefix(c.Key, m.Key+":") || c.Label == "" {
+			inv.Add(fmt.Sprintf("capabilities[%d]", i), "needs a label and a key \""+m.Key+":<name>\"")
+		}
+	}
+	for i, r := range m.Routes {
+		if r.MaxBody > maxPluginBody {
+			inv.Add(fmt.Sprintf("routes[%d].max_body", i), "is at most 10 MB")
+		}
+		if r.Capability != "" && r.Capability != "plugins:read" && r.Capability != "plugins:write" && !slices.ContainsFunc(m.Capabilities, func(c PluginCapability) bool { return c.Key == r.Capability }) {
+			inv.Add(fmt.Sprintf("routes[%d].capability", i), "must be one the plugin declares under capabilities")
 		}
 	}
 	for _, host := range m.Permissions.HTTP {
@@ -462,7 +596,8 @@ func (h *PluginHost) Install(ctx context.Context, actor *Actor, wasm []byte) (*P
 }
 
 func intersectGrants(granted, asked PluginGrants) PluginGrants {
-	out := PluginGrants{ContentRead: granted.ContentRead && asked.ContentRead, Storage: granted.Storage && asked.Storage, HTTP: []string{}}
+	out := PluginGrants{ContentRead: granted.ContentRead && asked.ContentRead, Storage: granted.Storage && asked.Storage,
+		Mail: granted.Mail && asked.Mail, MediaWrite: granted.MediaWrite && asked.MediaWrite, HTTP: []string{}}
 	for _, host := range granted.HTTP {
 		if slices.Contains(asked.HTTP, host) {
 			out.HTTP = append(out.HTTP, host)
@@ -472,7 +607,7 @@ func intersectGrants(granted, asked PluginGrants) PluginGrants {
 }
 
 func grantsCover(granted, asked PluginGrants) bool {
-	if asked.ContentRead && !granted.ContentRead || asked.Storage && !granted.Storage {
+	if asked.ContentRead && !granted.ContentRead || asked.Storage && !granted.Storage || asked.Mail && !granted.Mail || asked.MediaWrite && !granted.MediaWrite {
 		return false
 	}
 	for _, host := range asked.HTTP {
@@ -519,6 +654,7 @@ func (h *PluginHost) Remove(ctx context.Context, actor *Actor, key string, purge
 	if purgeData {
 		h.app.Store.DB.ExecContext(ctx, `DELETE FROM plugin_kv WHERE plugin_key = ?`, key)
 	}
+	h.forgetDefault(ctx, key)
 	h.app.audit(ctx, actor, "plugin.removed", "Plugin", 0, key, map[string]any{"purge_data": purgeData})
 	return h.LoadAll()
 }
@@ -529,6 +665,8 @@ func (a *App) pluginRoutes(h func(string, HandlerFunc, ...func(*route))) {
 	h("GET /api/plugins", a.listPlugins)
 	h("POST /api/plugins", a.installPlugin)
 	h("GET /api/plugins/{key}", a.showPlugin)
+	h("GET /api/plugins/{key}/admin", a.pluginAdmin)
+	h("GET /api/plugin_menus", a.pluginMenus)
 	h("PATCH /api/plugins/{key}", a.configurePlugin)
 	h("DELETE /api/plugins/{key}", a.removePlugin)
 	// A plugin's own routes, as its manifest declares them.
@@ -555,6 +693,83 @@ func (a *App) showPlugin(c *Ctx) error {
 		return errNotFound("No plugin " + c.Param("key") + ".")
 	}
 	return c.JSON(200, O("plugin", p.JSON()))
+}
+
+// need is the capability a route asks of its caller.
+func (r *PluginRoute) need(method string) string {
+	if r.Capability != "" {
+		return r.Capability
+	}
+	if method == http.MethodGet || method == http.MethodHead {
+		return "plugins:read"
+	}
+	return "plugins:write"
+}
+
+// screensFor is a plugin's admin screens the actor may open: those whose
+// source route it may call.
+func (p *Plugin) screensFor(actor *Actor) (admin map[string]any, screens []map[string]any) {
+	json.Unmarshal(p.parsed.Admin, &admin)
+	all, _ := admin["screens"].([]any)
+	for _, raw := range all {
+		s, _ := raw.(map[string]any)
+		src := strings.SplitN(str(s["source"]), "?", 2)[0]
+		for i := range p.parsed.Routes {
+			r := &p.parsed.Routes[i]
+			if r.Path == src && (r.Method == "" || strings.EqualFold(r.Method, "GET")) && (r.Public || actor.Can(r.need("GET"))) {
+				screens = append(screens, s)
+				break
+			}
+		}
+	}
+	return admin, screens
+}
+
+// pluginAdmin is what the admin draws a plugin's screens from, for anyone
+// who may open one of them.
+func (a *App) pluginAdmin(c *Ctx) error {
+	p := a.Plugins.get(c.Param("key"))
+	if p == nil || !p.Enabled {
+		return errNotFound("No plugin " + c.Param("key") + ".")
+	}
+	admin, screens := p.screensFor(c.Actor)
+	if len(screens) == 0 {
+		return c.Need("plugins:read")
+	}
+	writes := []string{}
+	for _, r := range p.parsed.Routes {
+		if !strings.EqualFold(r.Method, "GET") && (r.Public || c.Actor.Can(r.need(r.Method))) {
+			writes = append(writes, r.Path)
+		}
+	}
+	return c.JSON(200, O("plugin", O("key", p.Key, "name", p.Name, "version", p.Version, "menu", admin["menu"], "screens", screens, "writes", writes)))
+}
+
+// pluginMenus is each enabled plugin's place in the admin menu, with the
+// screens the actor may open.
+func (a *App) pluginMenus(c *Ctx) error {
+	if c.Actor == nil {
+		return c.Need("pages:read")
+	}
+	out := []Obj{}
+	for _, p := range a.Plugins.List() {
+		if !p.Enabled {
+			continue
+		}
+		admin, screens := p.screensFor(c.Actor)
+		menu, _ := admin["menu"].(map[string]any)
+		if menu == nil || len(screens) == 0 {
+			continue
+		}
+		items := []Obj{}
+		for _, s := range screens {
+			if label := str(s["menu"]); label != "" {
+				items = append(items, O("screen", s["id"], "label", label))
+			}
+		}
+		out = append(out, O("key", p.Key, "label", menu["label"], "icon", menu["icon"], "group", menu["group"], "badge", menu["badge"], "items", items))
+	}
+	return c.JSON(200, O("menus", out))
 }
 
 func (a *App) installPlugin(c *Ctx) error {
@@ -638,14 +853,31 @@ func (a *App) pluginRoute(c *Ctx) error {
 	if rt == nil {
 		return errNotFound("Plugin " + p.Key + " has no route " + c.R.Method + " " + path + ".")
 	}
+	if rt.Public && c.Actor == nil {
+		a.Plugins.publicOnce.Do(func() { a.Plugins.public = newRateLimiter(30) })
+		if ok, wait := a.Plugins.public.allow(p.Key + " " + c.ip()); !ok {
+			c.W.Header().Set("Retry-After", strconv.Itoa(wait))
+			return &Error{Status: 429, Code: "rate_limited", Message: "Too many requests; try again in a minute."}
+		}
+	}
 	if !rt.Public {
-		if err := c.Need("plugins:read"); err != nil {
+		if err := c.Need(rt.need(c.R.Method)); err != nil {
 			return err
 		}
 	}
-	body, _ := io.ReadAll(io.LimitReader(c.R.Body, 1<<20))
+	limit := rt.MaxBody
+	if limit <= 0 {
+		limit = 1 << 20
+	}
+	body, err := io.ReadAll(io.LimitReader(c.R.Body, limit+1))
+	if err != nil {
+		return err
+	}
+	if int64(len(body)) > limit {
+		return &Error{Status: 413, Code: "too_large", Message: fmt.Sprintf("The request is larger than this route takes (%d MB).", limit>>20)}
+	}
 	headers := map[string]string{}
-	for _, k := range []string{"Content-Type", "Accept", "User-Agent", "Referer", "Origin"} {
+	for _, k := range []string{"Content-Type", "Accept", "User-Agent", "Referer", "Origin", "X-Requested-With"} {
 		if v := c.R.Header.Get(k); v != "" {
 			headers[k] = v
 		}

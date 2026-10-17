@@ -1,456 +1,192 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn-svelte/tailwind.css";
+@import "@fontsource-variable/inter";
 
-/* The admin's look is the Rails admin's (main branch, app/assets/stylesheets):
-   the same tokens, copied as written below, and Tailwind's theme mapped onto
-   them, so a utility like bg-gray-50 or text-accent-700 is the same color
-   that admin drew, in light and dark. Components (src/lib/components) are
-   built from these utilities and nothing else. */
+@custom-variant dark (&:is(.dark *));
 
-@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+:root {
+	--background: oklch(1 0 0);
+	--foreground: oklch(0.145 0 0);
+	--card: oklch(1 0 0);
+	--card-foreground: oklch(0.145 0 0);
+	--popover: oklch(1 0 0);
+	--popover-foreground: oklch(0.145 0 0);
+	--primary: oklch(0.205 0 0);
+	--primary-foreground: oklch(0.985 0 0);
+	--secondary: oklch(0.97 0 0);
+	--secondary-foreground: oklch(0.205 0 0);
+	--muted: oklch(0.97 0 0);
+	--muted-foreground: oklch(0.556 0 0);
+	--accent: oklch(0.97 0 0);
+	--accent-foreground: oklch(0.205 0 0);
+	--destructive: oklch(0.577 0.245 27.325);
+	--border: oklch(0.922 0 0);
+	--input: oklch(0.922 0 0);
+	--ring: oklch(0.708 0 0);
+	--chart-1: oklch(0.87 0 0);
+	--chart-2: oklch(0.556 0 0);
+	--chart-3: oklch(0.439 0 0);
+	--chart-4: oklch(0.371 0 0);
+	--chart-5: oklch(0.269 0 0);
+	--radius: 0.625rem;
+	--sidebar: oklch(0.985 0 0);
+	--sidebar-foreground: oklch(0.145 0 0);
+	--sidebar-primary: oklch(0.205 0 0);
+	--sidebar-primary-foreground: oklch(0.985 0 0);
+	--sidebar-accent: oklch(0.97 0 0);
+	--sidebar-accent-foreground: oklch(0.205 0 0);
+	--sidebar-border: oklch(0.922 0 0);
+	--sidebar-ring: oklch(0.708 0 0);
+}
 
-@theme {
-  --color-*: initial;
-  --font-sans: "Inter", "InterVariable", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Text", "Segoe UI", "Adwaita Sans", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  --radius-xs: 2px;
-  --radius-sm: 3px;
-  --radius-md: 3px;
-  --radius-lg: 3px;
-  --radius-xl: 3px;
-  --radius-2xl: 4px;
-  --shadow-overlay: 0 0 0 1px oklch(0% 0 0 / 4%), 0 2px 4px oklch(0% 0 0 / 4%), 0 12px 32px -8px oklch(0% 0 0 / 12%);
-  --animate-fade-in: fade-in 120ms ease-out;
-  --animate-pop-in: pop-in 150ms ease-out;
-  --animate-slide-in: slide-in 180ms ease-out;
-  @keyframes fade-in { from { opacity: 0; } }
-  @keyframes pop-in { from { opacity: 0; transform: scale(0.96); } }
-  @keyframes slide-in { from { transform: translateX(100%); } }
+.dark {
+	--background: oklch(0.145 0 0);
+	--foreground: oklch(0.985 0 0);
+	--card: oklch(0.205 0 0);
+	--card-foreground: oklch(0.985 0 0);
+	--popover: oklch(0.205 0 0);
+	--popover-foreground: oklch(0.985 0 0);
+	--primary: oklch(0.922 0 0);
+	--primary-foreground: oklch(0.205 0 0);
+	--secondary: oklch(0.269 0 0);
+	--secondary-foreground: oklch(0.985 0 0);
+	--muted: oklch(0.269 0 0);
+	--muted-foreground: oklch(0.708 0 0);
+	--accent: oklch(0.269 0 0);
+	--accent-foreground: oklch(0.985 0 0);
+	--destructive: oklch(0.704 0.191 22.216);
+	--border: oklch(1 0 0 / 10%);
+	--input: oklch(1 0 0 / 15%);
+	--ring: oklch(0.556 0 0);
+	--chart-1: oklch(0.87 0 0);
+	--chart-2: oklch(0.556 0 0);
+	--chart-3: oklch(0.439 0 0);
+	--chart-4: oklch(0.371 0 0);
+	--chart-5: oklch(0.269 0 0);
+	--sidebar: oklch(0.205 0 0);
+	--sidebar-foreground: oklch(0.985 0 0);
+	--sidebar-primary: oklch(0.488 0.243 264.376);
+	--sidebar-primary-foreground: oklch(0.985 0 0);
+	--sidebar-accent: oklch(0.269 0 0);
+	--sidebar-accent-foreground: oklch(0.985 0 0);
+	--sidebar-border: oklch(1 0 0 / 10%);
+	--sidebar-ring: oklch(0.556 0 0);
 }
 
 @theme inline {
-  --color-surface: var(--surface);
-  --color-on-accent: var(--on-accent);
-  --color-white: #fff;
-  --color-black: #000;
-  --color-transparent: transparent;
-  --color-current: currentColor;
-  --color-gray-50: var(--gray-50);
-  --color-gray-100: var(--gray-100);
-  --color-gray-200: var(--gray-200);
-  --color-gray-300: var(--gray-300);
-  --color-gray-400: var(--gray-400);
-  --color-gray-500: var(--gray-500);
-  --color-gray-600: var(--gray-600);
-  --color-gray-700: var(--gray-700);
-  --color-gray-800: var(--gray-800);
-  --color-gray-900: var(--gray-900);
-  --color-accent-50: var(--accent-50);
-  --color-accent-100: var(--accent-100);
-  --color-accent-200: var(--accent-200);
-  --color-accent-300: var(--accent-300);
-  --color-accent-400: var(--accent-400);
-  --color-accent-500: var(--accent-500);
-  --color-accent-600: var(--accent-600);
-  --color-accent-700: var(--accent-700);
-  --color-accent-800: var(--accent-800);
-  --color-accent-900: var(--accent-900);
-  --color-red-50: var(--red-50);
-  --color-red-100: var(--red-100);
-  --color-red-200: var(--red-200);
-  --color-red-300: var(--red-300);
-  --color-red-400: var(--red-400);
-  --color-red-500: var(--red-500);
-  --color-red-600: var(--red-600);
-  --color-red-700: var(--red-700);
-  --color-red-800: var(--red-800);
-  --color-red-900: var(--red-900);
-  --color-green-50: var(--green-50);
-  --color-green-100: var(--green-100);
-  --color-green-200: var(--green-200);
-  --color-green-300: var(--green-300);
-  --color-green-400: var(--green-400);
-  --color-green-500: var(--green-500);
-  --color-green-600: var(--green-600);
-  --color-green-700: var(--green-700);
-  --color-green-800: var(--green-800);
-  --color-green-900: var(--green-900);
-  --color-yellow-50: var(--yellow-50);
-  --color-yellow-100: var(--yellow-100);
-  --color-yellow-200: var(--yellow-200);
-  --color-yellow-300: var(--yellow-300);
-  --color-yellow-400: var(--yellow-400);
-  --color-yellow-500: var(--yellow-500);
-  --color-yellow-600: var(--yellow-600);
-  --color-yellow-700: var(--yellow-700);
-  --color-yellow-800: var(--yellow-800);
-  --color-yellow-900: var(--yellow-900);
+	--font-sans: 'Inter Variable', sans-serif;
+	--color-sidebar-ring: var(--sidebar-ring);
+	--color-sidebar-border: var(--sidebar-border);
+	--color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+	--color-sidebar-accent: var(--sidebar-accent);
+	--color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+	--color-sidebar-primary: var(--sidebar-primary);
+	--color-sidebar-foreground: var(--sidebar-foreground);
+	--color-sidebar: var(--sidebar);
+	--color-chart-5: var(--chart-5);
+	--color-chart-4: var(--chart-4);
+	--color-chart-3: var(--chart-3);
+	--color-chart-2: var(--chart-2);
+	--color-chart-1: var(--chart-1);
+	--color-ring: var(--ring);
+	--color-input: var(--input);
+	--color-border: var(--border);
+	--color-destructive: var(--destructive);
+	--color-accent-foreground: var(--accent-foreground);
+	--color-accent: var(--accent);
+	--color-muted-foreground: var(--muted-foreground);
+	--color-muted: var(--muted);
+	--color-secondary-foreground: var(--secondary-foreground);
+	--color-secondary: var(--secondary);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-primary: var(--primary);
+	--color-popover-foreground: var(--popover-foreground);
+	--color-popover: var(--popover);
+	--color-card-foreground: var(--card-foreground);
+	--color-card: var(--card);
+	--color-foreground: var(--foreground);
+	--color-background: var(--background);
+	--radius-sm: calc(var(--radius) * 0.6);
+	--radius-md: calc(var(--radius) * 0.8);
+	--radius-lg: var(--radius);
+	--radius-xl: calc(var(--radius) * 1.4);
+	--radius-2xl: calc(var(--radius) * 1.8);
+	--radius-3xl: calc(var(--radius) * 2.2);
+	--radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* The Rails admin's tokens, as written there (_global.css). */
-:root {
-  --font-sans: "Inter", "InterVariable", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Text", "Segoe UI", "Adwaita Sans", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-
-  --text-xs: 0.75rem;
-  --leading-xs: 1rem;
-  --text-sm: 0.875rem;
-  --leading-sm: 1.25rem;
-  --text-base: 1rem;
-  --leading-base: 1.5rem;
-  --text-lg: 1.125rem;
-  --leading-lg: 1.75rem;
-  --text-xl: 1.25rem;
-  --leading-xl: 1.75rem;
-  --text-2xl: 1.5rem;
-  --leading-2xl: 2rem;
-  --text-3xl: 1.875rem;
-  --leading-3xl: 2.25rem;
-
-  --weight-normal: 400;
-  --weight-medium: 500;
-  --weight-semibold: 600;
-  --weight-bold: 700;
-
-  /* The spacing scale, in 4px steps (and the half steps the admin uses). */
-  --space-px: 1px;
-  --space-0-5: 0.125rem;
-  --space-1: 0.25rem;
-  --space-1-5: 0.375rem;
-  --space-2: 0.5rem;
-  --space-2-5: 0.625rem;
-  --space-3: 0.75rem;
-  --space-3-5: 0.875rem;
-  --space-4: 1rem;
-  --space-5: 1.25rem;
-  --space-6: 1.5rem;
-  --space-8: 2rem;
-  --space-10: 2.5rem;
-  --space-12: 3rem;
-  --space-16: 4rem;
-
-  /* Fizzy's ink until branding sets a secondary color: cool grays, tinted a
-     little more as they darken. The branding's secondary color sets the hue
-     and how strongly (capped, so text stays text). */
-  --neutral-tint: oklch(50% 0.05 262);
-  --surface: #fff;
-  --gray-50: oklch(from var(--neutral-tint) 96.5% min(calc(c * 0.04), 0.004) h);
-  --gray-100: oklch(from var(--neutral-tint) 94% min(calc(c * 0.06), 0.006) h);
-  --gray-200: oklch(from var(--neutral-tint) 91% min(calc(c * 0.08), 0.008) h);
-  --gray-300: oklch(from var(--neutral-tint) 84% min(calc(c * 0.1), 0.01) h);
-  --gray-400: oklch(from var(--neutral-tint) 70% min(calc(c * 0.16), 0.016) h);
-  --gray-500: oklch(from var(--neutral-tint) 56% min(calc(c * 0.28), 0.028) h);
-  --gray-600: oklch(from var(--neutral-tint) 48% min(calc(c * 0.4), 0.04) h);
-  --gray-700: oklch(from var(--neutral-tint) 40% min(calc(c * 0.52), 0.05) h);
-  --gray-800: oklch(from var(--neutral-tint) 33% min(calc(c * 0.7), 0.06) h);
-  --gray-900: oklch(from var(--neutral-tint) 26% min(calc(c * 1), 0.07) h);
-
-  /* The brand's primary color in steps, Fizzy's blue until branding sets
-     one (Branding#stylesheet). Fixed: the accent below reads them per theme. */
-  --brand-50: oklch(96% 0.016 252);
-  --brand-100: oklch(92% 0.026 254);
-  --brand-200: oklch(84% 0.072 255);
-  --brand-300: oklch(75% 0.13 256);
-  --brand-400: oklch(66% 0.196 258);
-  --brand-500: oklch(62% 0.195 259);
-  --brand-600: oklch(57% 0.19 260);
-  --brand-700: oklch(48% 0.18 261);
-  --brand-800: oklch(40% 0.166 262);
-  --brand-900: oklch(26% 0.126 264);
-  /* Words on an accent fill. */
-  --on-accent: #fff;
-
-  --accent-50: var(--brand-50);
-  --accent-100: var(--brand-100);
-  --accent-200: var(--brand-200);
-  --accent-300: var(--brand-300);
-  --accent-400: var(--brand-400);
-  --accent-500: var(--brand-500);
-  --accent-600: var(--brand-600);
-  --accent-700: var(--brand-700);
-  --accent-800: var(--brand-800);
-  --accent-900: var(--brand-900);
-
-  --red-50: oklch(97.1% 0.013 17.38);
-  --red-100: oklch(93.6% 0.032 17.717);
-  --red-200: oklch(88.5% 0.062 18.334);
-  --red-300: oklch(80.8% 0.114 19.571);
-  --red-400: oklch(70.4% 0.191 22.216);
-  --red-500: oklch(63.7% 0.237 25.331);
-  --red-600: oklch(57.7% 0.245 27.325);
-  --red-700: oklch(50.5% 0.213 27.518);
-  --red-800: oklch(44.4% 0.177 26.899);
-  --red-900: oklch(39.6% 0.141 25.723);
-  --green-50: oklch(98.2% 0.018 155.826);
-  --green-100: oklch(96.2% 0.044 156.743);
-  --green-200: oklch(92.5% 0.084 155.995);
-  --green-300: oklch(87.1% 0.15 154.449);
-  --green-400: oklch(79.2% 0.209 151.711);
-  --green-500: oklch(72.3% 0.219 149.579);
-  --green-600: oklch(62.7% 0.194 149.214);
-  --green-700: oklch(52.7% 0.154 150.069);
-  --green-800: oklch(44.8% 0.119 151.328);
-  --green-900: oklch(39.3% 0.095 152.535);
-  --yellow-50: oklch(98.7% 0.026 102.212);
-  --yellow-100: oklch(97.3% 0.071 103.193);
-  --yellow-200: oklch(94.5% 0.129 101.54);
-  --yellow-300: oklch(90.5% 0.182 98.111);
-  --yellow-400: oklch(85.2% 0.199 91.936);
-  --yellow-500: oklch(79.5% 0.184 86.047);
-  --yellow-600: oklch(68.1% 0.162 75.834);
-  --yellow-700: oklch(55.4% 0.135 66.442);
-  --yellow-800: oklch(47.6% 0.114 61.907);
-  --yellow-900: oklch(42.1% 0.095 57.708);
-
-  /* Fizzy's corners, 3px, until branding sets its own. */
-  --radius-xs: 2px;
-  --radius-sm: 3px;
-  --radius-md: 3px;
-  --radius-lg: 3px;
-  --radius-xl: 3px;
-  --radius-2xl: 4px;
-  --radius-full: 9999px;
-
-  --page-dark: oklch(from var(--neutral-tint) 19.5% min(calc(c * 0.25), 0.03) h);
-  --surface-dark: oklch(from var(--neutral-tint) 16% min(calc(c * 0.25), 0.03) h);
-
-  /* Flat panels and a soft lift for what floats, until branding sets a
-     shadow. */
-  --shadow-surface: 0 0 #0000;
-  --shadow-overlay: 0 0 0 1px oklch(0% 0 0 / 4%), 0 2px 4px oklch(0% 0 0 / 4%), 0 12px 32px -8px oklch(0% 0 0 / 12%);
-
-  --focus-ring: 2px solid var(--accent-500);
-
-  /* Z-index */
-  --z-popup: 10;
-  --z-nav: 20;
-  --z-flash: 30;
-  --z-tooltip: 40;
-  --z-bar: 50;
-  --z-nav-open: 100;
-}
-
-/* Light chosen by the theme toggle: the browser's own controls (checkboxes,
-   radios, scrollbars, date pickers) draw light too, whatever the system's
-   setting, since the page says it supports both (<meta name="color-scheme">). */
-html[data-theme="light"] {
-  color-scheme: light;
-}
-
-/* Dark: surfaces go dark and the steps turn over, so gray-900 text is light,
-   gray-50 lifts the sidebar off the canvas, and an accent fill lightens with
-   dark words on it. Grays stay mixed from --neutral-tint and the accent from
-   --brand-*, so both follow branding. The admin's top bar takes them in
-   light mode too when Settings › Branding says so (.admin-bar--dark). Chosen
-   by the toggle (data-theme) or, without a choice, by the system. */
-html[data-theme="dark"] {
-  color-scheme: dark;
-  --surface: var(--surface-dark);
-  --gray-50: oklch(from var(--neutral-tint) 19.5% min(calc(c * 0.25), 0.03) h);
-  --gray-100: oklch(from var(--neutral-tint) 23.5% min(calc(c * 0.25), 0.03) h);
-  --gray-200: oklch(from var(--neutral-tint) 28.5% min(calc(c * 0.25), 0.03) h);
-  --gray-300: oklch(from var(--neutral-tint) 36% min(calc(c * 0.25), 0.03) h);
-  --gray-400: oklch(from var(--neutral-tint) 46% min(calc(c * 0.25), 0.03) h);
-  --gray-500: oklch(from var(--neutral-tint) 63% min(calc(c * 0.25), 0.03) h);
-  --gray-600: oklch(from var(--neutral-tint) 73% min(calc(c * 0.25), 0.03) h);
-  --gray-700: oklch(from var(--neutral-tint) 83% min(calc(c * 0.25), 0.03) h);
-  --gray-800: oklch(from var(--neutral-tint) 91% min(calc(c * 0.25), 0.03) h);
-  --gray-900: oklch(from var(--neutral-tint) 97% min(calc(c * 0.25), 0.03) h);
-  --red-50: color-mix(in oklch, oklch(39.6% 0.141 25.723) 45%, var(--surface-dark));
-  --red-100: color-mix(in oklch, oklch(39.6% 0.141 25.723) 70%, var(--surface-dark));
-  --red-200: oklch(44.4% 0.177 26.899);
-  --red-300: oklch(50.5% 0.213 27.518);
-  --red-400: oklch(63.7% 0.237 25.331);
-  --red-500: oklch(70.4% 0.191 22.216);
-  --red-600: oklch(70.4% 0.191 22.216);
-  --red-700: oklch(80.8% 0.114 19.571);
-  --red-800: oklch(88.5% 0.062 18.334);
-  --red-900: oklch(93.6% 0.032 17.717);
-  --green-50: color-mix(in oklch, oklch(39.3% 0.095 152.535) 45%, var(--surface-dark));
-  --green-100: color-mix(in oklch, oklch(39.3% 0.095 152.535) 70%, var(--surface-dark));
-  --green-200: oklch(44.8% 0.119 151.328);
-  --green-300: oklch(52.7% 0.154 150.069);
-  --green-400: oklch(72.3% 0.219 149.579);
-  --green-500: oklch(79.2% 0.209 151.711);
-  --green-600: oklch(79.2% 0.209 151.711);
-  --green-700: oklch(87.1% 0.15 154.449);
-  --green-800: oklch(92.5% 0.084 155.995);
-  --green-900: oklch(96.2% 0.044 156.743);
-  --yellow-50: color-mix(in oklch, oklch(42.1% 0.095 57.708) 45%, var(--surface-dark));
-  --yellow-100: color-mix(in oklch, oklch(42.1% 0.095 57.708) 70%, var(--surface-dark));
-  --yellow-200: oklch(47.6% 0.114 61.907);
-  --yellow-300: oklch(55.4% 0.135 66.442);
-  --yellow-400: oklch(79.5% 0.184 86.047);
-  --yellow-500: oklch(85.2% 0.199 91.936);
-  --yellow-600: oklch(85.2% 0.199 91.936);
-  --yellow-700: oklch(90.5% 0.182 98.111);
-  --yellow-800: oklch(94.5% 0.129 101.54);
-  --yellow-900: oklch(97.3% 0.071 103.193);
-  --accent-50: color-mix(in oklch, var(--brand-400) 14%, var(--surface-dark));
-  --accent-100: color-mix(in oklch, var(--brand-400) 22%, var(--surface-dark));
-  --accent-200: color-mix(in oklch, var(--brand-400) 36%, var(--surface-dark));
-  --accent-300: color-mix(in oklch, var(--brand-400) 55%, var(--surface-dark));
-  --accent-400: color-mix(in oklch, var(--brand-400) 78%, var(--surface-dark));
-  --accent-500: var(--brand-400);
-  --accent-600: color-mix(in oklch, var(--brand-300) 75%, white);
-  --accent-700: color-mix(in oklch, var(--brand-200) 75%, white);
-  --accent-800: var(--brand-100);
-  --accent-900: var(--brand-50);
-  --on-accent: var(--surface-dark);
-}
-
-@media (prefers-color-scheme: dark) {
-  html:not([data-theme]) {
-    color-scheme: dark;
-    --surface: var(--surface-dark);
-    --gray-50: oklch(from var(--neutral-tint) 19.5% min(calc(c * 0.25), 0.03) h);
-    --gray-100: oklch(from var(--neutral-tint) 23.5% min(calc(c * 0.25), 0.03) h);
-    --gray-200: oklch(from var(--neutral-tint) 28.5% min(calc(c * 0.25), 0.03) h);
-    --gray-300: oklch(from var(--neutral-tint) 36% min(calc(c * 0.25), 0.03) h);
-    --gray-400: oklch(from var(--neutral-tint) 46% min(calc(c * 0.25), 0.03) h);
-    --gray-500: oklch(from var(--neutral-tint) 63% min(calc(c * 0.25), 0.03) h);
-    --gray-600: oklch(from var(--neutral-tint) 73% min(calc(c * 0.25), 0.03) h);
-    --gray-700: oklch(from var(--neutral-tint) 83% min(calc(c * 0.25), 0.03) h);
-    --gray-800: oklch(from var(--neutral-tint) 91% min(calc(c * 0.25), 0.03) h);
-    --gray-900: oklch(from var(--neutral-tint) 97% min(calc(c * 0.25), 0.03) h);
-    --red-50: color-mix(in oklch, oklch(39.6% 0.141 25.723) 45%, var(--surface-dark));
-    --red-100: color-mix(in oklch, oklch(39.6% 0.141 25.723) 70%, var(--surface-dark));
-    --red-200: oklch(44.4% 0.177 26.899);
-    --red-300: oklch(50.5% 0.213 27.518);
-    --red-400: oklch(63.7% 0.237 25.331);
-    --red-500: oklch(70.4% 0.191 22.216);
-    --red-600: oklch(70.4% 0.191 22.216);
-    --red-700: oklch(80.8% 0.114 19.571);
-    --red-800: oklch(88.5% 0.062 18.334);
-    --red-900: oklch(93.6% 0.032 17.717);
-    --green-50: color-mix(in oklch, oklch(39.3% 0.095 152.535) 45%, var(--surface-dark));
-    --green-100: color-mix(in oklch, oklch(39.3% 0.095 152.535) 70%, var(--surface-dark));
-    --green-200: oklch(44.8% 0.119 151.328);
-    --green-300: oklch(52.7% 0.154 150.069);
-    --green-400: oklch(72.3% 0.219 149.579);
-    --green-500: oklch(79.2% 0.209 151.711);
-    --green-600: oklch(79.2% 0.209 151.711);
-    --green-700: oklch(87.1% 0.15 154.449);
-    --green-800: oklch(92.5% 0.084 155.995);
-    --green-900: oklch(96.2% 0.044 156.743);
-    --yellow-50: color-mix(in oklch, oklch(42.1% 0.095 57.708) 45%, var(--surface-dark));
-    --yellow-100: color-mix(in oklch, oklch(42.1% 0.095 57.708) 70%, var(--surface-dark));
-    --yellow-200: oklch(47.6% 0.114 61.907);
-    --yellow-300: oklch(55.4% 0.135 66.442);
-    --yellow-400: oklch(79.5% 0.184 86.047);
-    --yellow-500: oklch(85.2% 0.199 91.936);
-    --yellow-600: oklch(85.2% 0.199 91.936);
-    --yellow-700: oklch(90.5% 0.182 98.111);
-    --yellow-800: oklch(94.5% 0.129 101.54);
-    --yellow-900: oklch(97.3% 0.071 103.193);
-    --accent-50: color-mix(in oklch, var(--brand-400) 14%, var(--surface-dark));
-    --accent-100: color-mix(in oklch, var(--brand-400) 22%, var(--surface-dark));
-    --accent-200: color-mix(in oklch, var(--brand-400) 36%, var(--surface-dark));
-    --accent-300: color-mix(in oklch, var(--brand-400) 55%, var(--surface-dark));
-    --accent-400: color-mix(in oklch, var(--brand-400) 78%, var(--surface-dark));
-    --accent-500: var(--brand-400);
-    --accent-600: color-mix(in oklch, var(--brand-300) 75%, white);
-    --accent-700: color-mix(in oklch, var(--brand-200) 75%, white);
-    --accent-800: var(--brand-100);
-    --accent-900: var(--brand-50);
-    --on-accent: var(--surface-dark);
-  }
-}
+/* shadcn-svelte's theme, as `shadcn-svelte init` wrote it (neutral). The
+   components in src/lib/components/ui come from its registry; the admin's
+   own (src/lib/components) are built from them and these tokens. */
 
 @layer base {
-  html, body { overflow-x: clip; }
-  body {
-    background-color: var(--surface);
-    color: var(--gray-900);
-    -moz-osx-font-smoothing: grayscale;
-    -webkit-font-smoothing: antialiased;
-    font-feature-settings: "cv11", "ss01";
-    font-size: var(--text-sm);
-    line-height: var(--leading-sm);
-    min-block-size: 100dvh;
-  }
-  :is(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
-    outline: var(--focus-ring);
-    outline-offset: 2px;
-  }
-  :is(button, input, select, textarea):disabled { cursor: not-allowed; opacity: 0.5; }
-  button, summary, [role="button"], label:has(input[type="checkbox"], input[type="radio"]) { cursor: pointer; }
-  :is(a, button, input, select, textarea) {
-    transition: 120ms ease-out;
-    transition-property: background-color, border-color, box-shadow, color, outline-color;
-  }
-  summary { list-style: none; }
-  summary::-webkit-details-marker { display: none; }
-  ::selection { background-color: var(--accent-200); }
-  :where(input[type="checkbox"], input[type="radio"]) { accent-color: var(--accent-600); block-size: 1rem; inline-size: 1rem; flex-shrink: 0; margin: 0; }
-  kbd {
-    background: var(--gray-50);
-    border: 1px solid var(--gray-300);
-    border-block-end-width: 2px;
-    border-radius: var(--radius-sm);
-    color: var(--gray-600);
-    font-family: var(--font-mono);
-    font-size: 0.75em;
-    font-weight: 500;
-    padding: 0 0.35em;
-    white-space: nowrap;
-  }
-  * { scrollbar-color: var(--gray-300) transparent; scrollbar-width: thin; }
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-  }
+	* {
+		@apply border-border outline-ring/50;
+	}
+	body {
+		@apply bg-background text-foreground text-sm antialiased;
+		min-block-size: 100dvh;
+	}
+	html {
+		@apply font-sans;
+		overflow-x: clip;
+	}
+	button:not(:disabled), summary, [role="button"] {
+		cursor: pointer;
+	}
+	summary { list-style: none; }
+	summary::-webkit-details-marker { display: none; }
+	kbd {
+		@apply bg-muted text-muted-foreground pointer-events-none inline-flex h-5 items-center rounded-sm border px-1 font-mono text-[0.7rem] font-medium select-none;
+	}
 }
 
-/* An icon is a mask over currentColor, as the Rails admin drew them, so it
-   takes the color of the text around it. */
+/* Rendered Markdown, in the editor's preview. */
 @layer components {
-  .icon {
-    background-color: currentColor;
-    block-size: var(--icon-size, 1em);
-    display: inline-block;
-    flex-shrink: 0;
-    inline-size: var(--icon-size, 1em);
-    mask-image: var(--svg);
-    mask-position: center;
-    mask-repeat: no-repeat;
-    mask-size: contain;
-    pointer-events: none;
-  }
-  /* The shared field look: inputs, selects and textareas. */
-  .control {
-    background-color: var(--surface);
-    border: 1px solid var(--gray-300);
-    border-radius: var(--radius-md);
-    color: var(--gray-900);
-    font-size: var(--text-sm);
-    line-height: var(--leading-sm);
-    inline-size: 100%;
-    min-block-size: 2rem;
-    padding: 0.3125rem 0.625rem;
-    &::placeholder { color: var(--gray-400); opacity: 1; }
-    &:hover:not(:focus, :disabled) { border-color: var(--gray-400); }
-    &:focus { border-color: var(--gray-900); outline: none; }
-    &[aria-invalid="true"] { border-color: var(--red-500); }
-  }
-  select.control {
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-    background-position: right 0.5rem center;
-    background-repeat: no-repeat;
-    background-size: 1.25em 1.25em;
-    padding-inline-end: 2.25rem;
-  }
-  textarea.control { field-sizing: content; min-block-size: 5lh; resize: vertical; }
-  .prose-admin {
-    color: var(--gray-700);
-    line-height: 1.6;
-    > * + * { margin-block-start: 0.75rem; }
-    :is(h1, h2, h3, h4) { color: var(--gray-900); font-weight: 600; }
-    h1 { font-size: 1.5rem; } h2 { font-size: 1.25rem; } h3 { font-size: 1rem; }
-    a { color: var(--accent-600); text-decoration: underline; text-underline-offset: 2px; }
-    ul { list-style: disc; padding-inline-start: 1.25rem; }
-    ol { list-style: decimal; padding-inline-start: 1.25rem; }
-    code { background-color: var(--gray-100); border-radius: var(--radius-sm); font-size: 0.9em; padding: 0.125rem 0.25rem; }
-    pre { background-color: var(--gray-50); border: 1px solid var(--gray-200); border-radius: var(--radius-lg); font-size: 0.75rem; overflow-x: auto; padding: 0.75rem 1rem; }
-    blockquote { border-inline-start: 3px solid var(--gray-200); color: var(--gray-600); padding-inline-start: 0.75rem; }
-  }
+	.prose-admin {
+		@apply text-foreground/90 leading-relaxed;
+		> * + * { margin-block-start: 0.75rem; }
+		:is(h1, h2, h3, h4) { @apply text-foreground font-semibold; }
+		h1 { @apply text-2xl; } h2 { @apply text-xl; } h3 { @apply text-base; }
+		a { @apply text-primary underline underline-offset-2; }
+		ul { @apply list-disc ps-5; }
+		ol { @apply list-decimal ps-5; }
+		code { @apply bg-muted rounded-sm px-1 py-0.5 text-[0.9em]; }
+		pre { @apply bg-muted overflow-x-auto rounded-lg border px-4 py-3 text-xs; }
+		blockquote { @apply text-muted-foreground border-s-[3px] ps-3; }
+	}
+}
+
+/* The rich-text editor (Tiptap, in MarkdownEditor): its placeholder, task
+   lists and selected nodes, on top of .prose-admin. */
+@layer components {
+	.tiptap {
+		h4 { @apply text-sm; }
+		hr { @apply my-4 border-t; }
+		hr.ProseMirror-selectednode { @apply border-ring; }
+		pre code { @apply bg-transparent p-0; }
+		p.is-editor-empty:first-child::before {
+			@apply text-muted-foreground pointer-events-none float-left h-0;
+			content: attr(data-placeholder);
+		}
+		ul[data-type="taskList"] {
+			@apply list-none ps-0;
+			li { @apply flex items-start gap-2; }
+			li > label { @apply mt-1 flex-none select-none; }
+			li > div { @apply flex-1; }
+			input[type="checkbox"] { @apply accent-primary size-3.5 cursor-pointer; }
+			ul[data-type="taskList"] { @apply my-0; }
+		}
+	}
+}
+
+/* A {{ merge tag }}, in a message and in its sidebar. */
+@layer components {
+	.merge-tag {
+		@apply bg-primary/10 text-foreground rounded-sm px-1.5 py-0.5 font-mono text-[0.85em];
+	}
+	button.merge-tag {
+		@apply font-sans text-xs;
+	}
 }

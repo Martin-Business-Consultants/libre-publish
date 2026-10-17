@@ -8,7 +8,7 @@
 </script>
 
 <div class="flex flex-col {gap}">
-  {#each fields as f (f.name)}
+  {#each fields.filter((f) => !f.show_if || Object.entries(f.show_if).every(([k, v]) => (Array.isArray(v) ? v.includes(data[k] ?? "") : (data[k] ?? "") === v))) as f (f.name)}
     <FieldControl field={f} {data} path={path ? `${path}.${f.name}` : f.name} {errors} />
   {/each}
 </div>

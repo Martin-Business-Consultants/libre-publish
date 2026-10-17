@@ -44,8 +44,8 @@
   <DataTable {rows} key="slug" onrowclick={(t) => go(`/blocks/${t.slug}`)} columns={[{ label: "Label" }, { label: "Slug" }, { label: "Category" }, { label: "Fields", num: true }, { label: "" }]}>
     {#snippet row(t)}
       <Cell>
-        <a href="#/blocks/{t.slug}" class="font-medium text-gray-900 hover:underline">{t.label}</a>
-        {#if t.description}<p class="max-w-md truncate text-xs text-gray-500">{t.description}</p>{/if}
+        <a href="#/blocks/{t.slug}" class="font-medium text-foreground hover:underline">{t.label}</a>
+        {#if t.description}<p class="max-w-md truncate text-xs text-muted-foreground">{t.description}</p>{/if}
         <RowActions>
           <RowAction href="#/blocks/{t.slug}">Edit</RowAction>
           {#if session.can("block_types:delete")}<RowAction danger onclick={() => remove(t)}>Delete</RowAction>{/if}

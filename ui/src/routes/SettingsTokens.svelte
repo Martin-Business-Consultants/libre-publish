@@ -32,15 +32,15 @@
 
 <SettingsLayout title="Service tokens">
   <div class="-mt-4 flex flex-wrap items-center justify-between gap-3">
-    <p class="text-sm text-gray-500">Credentials for machines. The published site reads with one on the Production site role (PRODUCTION_TOKEN); agents write drafts with one on the Agent role.</p>
+    <p class="text-sm text-muted-foreground">Credentials for machines. The published site reads with one on the Production site role (PRODUCTION_TOKEN); agents write drafts with one on the Agent role.</p>
     {#if session.can("settings:write")}<Button icon="add" onclick={() => (open = true)}>New token</Button>{/if}
   </div>
   {#if data}
     <DataTable rows={data.service_tokens} columns={[{ label: "Token" }, { label: "Role" }, { label: "Last used" }]} emptyText="No service tokens yet.">
       {#snippet row(t)}
         <Cell>
-          <span class="font-medium text-gray-900">{t.name}</span>{#if !t.active}<Badge tone="danger" class="ml-2">Revoked</Badge>{/if}
-          <p class="font-mono text-xs text-gray-500">{t.prefix}…</p>
+          <span class="font-medium text-foreground">{t.name}</span>{#if !t.active}<Badge tone="danger" class="ml-2">Revoked</Badge>{/if}
+          <p class="font-mono text-xs text-muted-foreground">{t.prefix}…</p>
           {#if t.active && session.can("settings:write")}<RowActions><RowAction onclick={() => act(t, "reveal")}>Reveal</RowAction><RowAction onclick={() => act(t, "rotate")}>Rotate</RowAction><RowAction danger onclick={() => act(t, "revoke")}>Revoke</RowAction></RowActions>{/if}
         </Cell>
         <Cell>{t.role.name}</Cell>

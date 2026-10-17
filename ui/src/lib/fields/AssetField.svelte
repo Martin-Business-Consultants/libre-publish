@@ -15,12 +15,12 @@
 </script>
 
 {#if value}
-  <div class="flex items-center gap-4 rounded-lg border border-gray-200 p-3">
-    <div class="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-md bg-gray-100 text-gray-400">
+  <div class="flex items-center gap-4 rounded-lg border border-border p-3">
+    <div class="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-md bg-muted text-muted-foreground">
       {#if asset?.thumb_url}<img src={asset.thumb_url} alt={asset.alt || ""} class="size-full object-cover" />{:else}<Icon name="document" size="lg" />{/if}
     </div>
     <div class="flex min-w-0 flex-col gap-2">
-      <p class="truncate text-sm font-medium text-gray-900">{asset?.filename || "…"}</p>
+      <p class="truncate text-sm font-medium text-foreground">{asset?.filename || "…"}</p>
       <div class="flex gap-2">
         <Button size="sm" onclick={() => (picking = true)}>Change</Button>
         <Button size="sm" variant="danger" onclick={() => onchange(null)}>Remove</Button>
@@ -29,7 +29,7 @@
   </div>
 {:else}
   <button type="button" onclick={() => (picking = true)}
-    class="flex items-center justify-center gap-2 rounded-lg border border-dashed border-gray-300 px-4 py-5 text-sm font-medium text-gray-600 hover:border-gray-400 hover:bg-gray-50 hover:text-gray-900">
+    class="flex items-center justify-center gap-2 rounded-lg border border-dashed border-input px-4 py-5 text-sm font-medium text-muted-foreground hover:border-ring hover:bg-muted/50 hover:text-foreground">
     <Icon name="picture-add" size="md" /> Choose a file
   </button>
 {/if}

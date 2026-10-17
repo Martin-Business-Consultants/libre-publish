@@ -20,11 +20,12 @@
   <form class="flex flex-col gap-5" onsubmit={submit}>
     <div>
       <h1 class="text-xl font-semibold tracking-tight">Sign in</h1>
-      <p class="mt-1 text-sm text-gray-500">to the admin.</p>
+      <p class="mt-1 text-sm text-muted-foreground">to the admin.</p>
     </div>
     {#if error}<Notice tone="danger">{error}</Notice>{/if}
     <Field label="Email">{#snippet children(id)}<Input {id} type="email" bind:value={email} required autocomplete="username" autofocus />{/snippet}</Field>
     <Field label="Password">{#snippet children(id)}<Input {id} type="password" bind:value={password} required autocomplete="current-password" />{/snippet}</Field>
+    <a href="#/forgot-password" class="text-muted-foreground hover:text-foreground -mt-2 self-end text-xs">Forgot your password?</a>
     <Button type="submit" variant="primary" block loading={busy}>Sign in</Button>
   </form>
 </PublicLayout>

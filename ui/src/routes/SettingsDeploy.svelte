@@ -23,7 +23,7 @@
 </script>
 
 <SettingsLayout title="Deploy">
-  <p class="-mt-4 text-sm text-gray-500">Publishing rebuilds the site through a build hook (Netlify, Cloudflare Pages, Vercel, a GitHub workflow), a few seconds after the last change.</p>
+  <p class="-mt-4 text-sm text-muted-foreground">Publishing rebuilds the site through a build hook (Netlify, Cloudflare Pages, Vercel, a GitHub workflow), a few seconds after the last change.</p>
   {#if !d}<div class="flex justify-center py-16"><Spinner /></div>{:else}
     {#if d.last?.status}
       <Notice tone={d.last.status === "success" ? "success" : d.last.status === "disabled" ? "info" : "danger"}>

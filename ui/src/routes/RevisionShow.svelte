@@ -41,23 +41,23 @@
 {#if !r}
   <div class="flex justify-center py-16"><Spinner /></div>
 {:else}
-  <a href="#/revisions" class="text-sm text-gray-500 hover:text-gray-900">← Review</a>
+  <a href="#/revisions" class="text-sm text-muted-foreground hover:text-foreground">← Review</a>
   <PageHeader title={r.record_label} subtitle="Revision {r.id}">
     {#snippet actions()}<Badge status={r.status} />{/snippet}
   </PageHeader>
-  <p class="text-sm text-gray-600">Proposed by <strong class="font-semibold text-gray-900">{r.author}</strong> <Time value={r.created_at} />.{#if r.note} Note: “{r.note}”{/if}</p>
+  <p class="text-sm text-muted-foreground">Proposed by <strong class="font-semibold text-foreground">{r.author}</strong> <Time value={r.created_at} />.{#if r.note} Note: “{r.note}”{/if}</p>
   {#each r.fields as f}
     <Panel title={f}>
       <div class="grid gap-2 p-5 sm:grid-cols-2">
-        <div class="flex flex-col gap-1"><span class="text-xs font-medium uppercase tracking-wide text-gray-500">Live now</span>
-          <pre class="max-h-96 overflow-auto whitespace-pre-wrap break-words rounded-md bg-red-50 p-3 font-mono text-xs text-red-800">{live ? show(live[f]) : "…"}</pre></div>
-        <div class="flex flex-col gap-1"><span class="text-xs font-medium uppercase tracking-wide text-gray-500">Proposed</span>
-          <pre class="max-h-96 overflow-auto whitespace-pre-wrap break-words rounded-md bg-green-50 p-3 font-mono text-xs text-green-800">{show(r.changes[f])}</pre></div>
+        <div class="flex flex-col gap-1"><span class="text-xs font-medium uppercase tracking-wide text-muted-foreground">Live now</span>
+          <pre class="max-h-96 overflow-auto whitespace-pre-wrap break-words rounded-md bg-destructive/10 p-3 font-mono text-xs text-destructive">{live ? show(live[f]) : "…"}</pre></div>
+        <div class="flex flex-col gap-1"><span class="text-xs font-medium uppercase tracking-wide text-muted-foreground">Proposed</span>
+          <pre class="max-h-96 overflow-auto whitespace-pre-wrap break-words rounded-md bg-emerald-500/10 p-3 font-mono text-xs text-emerald-700 dark:text-emerald-400">{show(r.changes[f])}</pre></div>
       </div>
     </Panel>
   {/each}
   {#if r.status === "open"}
-    <div class="sticky bottom-4 flex flex-wrap items-center gap-2 rounded-xl border border-gray-200 bg-surface p-3 shadow-overlay">
+    <div class="sticky bottom-4 flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card p-3 shadow-md">
       <div class="min-w-48 flex-1"><Input bind:value={note} placeholder="A note for whoever proposed it (optional)" /></div>
       <Button variant="danger" loading={busy === "reject"} onclick={() => decide("reject")}>Reject</Button>
       <Button variant="primary" icon="check" loading={busy === "approve"} onclick={() => decide("approve")}>Approve and publish</Button>

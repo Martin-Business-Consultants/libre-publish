@@ -36,7 +36,15 @@ type site struct {
 
 func newSite(t *testing.T) *site {
 	t.Helper()
-	app, err := NewApp(Config{DataDir: t.TempDir(), BaseURL: "http://cms.test", SiteKey: "acme", DeliveryRateLimit: -1})
+	return newSiteWith(t, Config{NoDefaultPlugins: true})
+}
+
+// newSiteWith is newSite with some of the config set (the mailer, the
+// default plugins).
+func newSiteWith(t *testing.T, cfg Config) *site {
+	t.Helper()
+	cfg.DataDir, cfg.BaseURL, cfg.SiteKey, cfg.DeliveryRateLimit = t.TempDir(), "http://cms.test", "acme", -1
+	app, err := NewApp(cfg)
 	if err != nil {
 		t.Fatal(err)
 	}

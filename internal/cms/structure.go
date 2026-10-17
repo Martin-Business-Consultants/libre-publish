@@ -519,6 +519,9 @@ func (a *App) PutSetting(ctx context.Context, actor *Actor, key string, data map
 		}
 	}
 	keepMasked(merged, old, data)
+	if key == "email" {
+		a.sealMailPassword(merged)
+	}
 	now := Now().DB()
 	_, err := a.Store.DB.ExecContext(ctx, `INSERT INTO settings (key, data, created_at, updated_at) VALUES (?,?,?,?)
 		ON CONFLICT(key) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at`, key, string(mustJSON(merged)), now, now)
