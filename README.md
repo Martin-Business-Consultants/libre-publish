@@ -57,12 +57,13 @@ On a host that runs containers, the `Dockerfile` builds the same binary
 into a small image that runs it as an unprivileged user, whoever owns the
 volume the host mounts (`docker/librepublish` hands it over). Mount a
 volume at `/data`, which is everything the site keeps, and set `APP_URL` and, behind
-the host's proxy, `TRUST_PROXY=1`. It listens on `PORT` (8080 unless the
-host sets it), logs JSON, and `GET /up` is its health check.
+the host's proxy, `TRUST_PROXY=1`. It listens on port 80, where Kamal-style
+hosts (kamal-proxy) send traffic and health checks (`PORT` moves it), logs
+JSON, and `GET /up` is its health check.
 
 ```sh
 docker build -t librepublish --build-arg VERSION=$(git describe --tags --always) .
-docker run -p 8080:8080 -v librepublish-data:/data -e APP_URL=https://cms.example.com librepublish
+docker run -p 8080:80 -v librepublish-data:/data -e APP_URL=https://cms.example.com librepublish
 docker exec -it <container> librepublish user create --email you@example.com --name You --password -
 ```
 

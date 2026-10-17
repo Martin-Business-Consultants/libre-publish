@@ -3,10 +3,10 @@
 # in /data: mount a volume there.
 #
 #   docker build -t librepublish .
-#   docker run -p 8080:8080 -v librepublish-data:/data -e APP_URL=https://cms.example.com librepublish
+#   docker run -p 8080:80 -v librepublish-data:/data -e APP_URL=https://cms.example.com librepublish
 #
 # Settings are environment variables (README): APP_URL, SECRET_KEY,
-# TRUST_PROXY=1 behind the host's proxy, PORT (set by most hosts), LOG_FORMAT.
+# TRUST_PROXY=1 behind the host's proxy, PORT (80 here), LOG_FORMAT.
 # The first admin: the setup screen at /cms/ on a fresh install, or
 # `docker exec -it <container> librepublish user create --email … --name … --password -`.
 # Health check: GET /up.
@@ -29,8 +29,10 @@ RUN apk add --no-cache ca-certificates su-exec tzdata \
 COPY --from=build /out/librepublish /usr/local/libexec/librepublish
 COPY docker/librepublish /usr/local/bin/librepublish
 RUN chmod 0755 /usr/local/bin/librepublish
-ENV DATA_DIR=/data LOG_FORMAT=json
+# Port 80: what Kamal-style hosts (kamal-proxy) send traffic and health
+# checks to by default. A host that sets PORT moves it.
+ENV DATA_DIR=/data LOG_FORMAT=json PORT=80
 VOLUME /data
-EXPOSE 8080
+EXPOSE 80
 ENTRYPOINT ["librepublish"]
 CMD ["serve"]
