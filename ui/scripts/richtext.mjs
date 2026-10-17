@@ -14,6 +14,9 @@
 //                                                asset field), and other <x>_url caches beside an <x>_id
 //                                                asset field; refused if one holds the only copy of an image
 //     [--seo-aliases]                            seo_title → meta_title and kin, on pages and entries
+//     [--alt-to-assets]                          an alt field beside an image field (image_alt, alt) goes:
+//                                                its text moves to the image's own alt in the media library
+//                                                (where the image has none), which is where alt text lives
 //
 // A repeater whose only field is prose (paragraphs of text) becomes one
 // rich text field, `body` ("Text"), its items its paragraphs. An entry's
@@ -32,6 +35,7 @@ const { values: args } = parseArgs({
     code: { type: "string", multiple: true, default: [] },
     "drop-url-caches": { type: "boolean", default: false },
     "seo-aliases": { type: "boolean", default: false },
+    "alt-to-assets": { type: "boolean", default: false },
   },
 });
 const DRY = args["dry-run"];
@@ -100,7 +104,8 @@ function plainDoc(text) {
 // ---- schemas -------------------------------------------------------------------
 
 const PROSE = new Set(["text", "markdown"]);
-const counts = { fields: 0, merged: 0, dropped: 0, values: 0, records: 0, bodies: 0, seo: 0 };
+const altUpdates = new Map(); // asset id → the alt text found beside it
+const counts = { alts: 0, fields: 0, merged: 0, dropped: 0, values: 0, records: 0, bodies: 0, seo: 0 };
 const notes = [];
 
 /**
@@ -121,6 +126,17 @@ function plan(fields, at) {
         moves.push({ name: f.name, drop: true });
         counts.dropped++;
         notes.push(`drop ${path} (${id ? `the cache of ${id.name}` : "an image's URL: images are asset fields"})`);
+        continue;
+      }
+    }
+    // Alt text beside an image: the image's own (media library) alt.
+    if (args["alt-to-assets"] && /(^|_)alt$/.test(f.name) && ["string", "text"].includes(f.type)) {
+      const assets = fields.filter((g) => g.type === "asset");
+      const image = assets.find((g) => g.name === f.name.replace(/alt$/, "id")) ?? (assets.length === 1 ? assets[0] : null);
+      if (image) {
+        moves.push({ name: f.name, altFor: image.name });
+        counts.fields++;
+        notes.push(`drop ${path} (alt text lives on the image: ${at}.${image.name})`);
         continue;
       }
     }
@@ -183,6 +199,11 @@ function apply(data, moves) {
     if (!(m.name in data)) continue;
     const v = data[m.name];
     if (m.drop) {
+      delete data[m.name];
+      changed = true;
+    } else if (m.altFor) {
+      const id = data[m.altFor];
+      if (typeof v === "string" && v.trim() && id && !altUpdates.has(String(id))) altUpdates.set(String(id), v.trim());
       delete data[m.name];
       changed = true;
     } else if (m.mergeInto) {
@@ -328,9 +349,28 @@ for (const g of globals) {
   await save(`/api/globals/${g.slug}`, "global", { schema: { fields }, data, lock_version: g.lock_version }, `global ${g.slug}`);
 }
 
+// The alt texts found go on their images, where an image has none yet; one
+// that already has its own keeps it.
+for (const [id, alt] of altUpdates) {
+  let asset;
+  try {
+    asset = (await api("GET", `/api/assets/${id}`)).asset;
+  } catch {
+    notes.push(`asset ${id} isn't there: its alt text "${alt}" wasn't kept`);
+    continue;
+  }
+  if ((asset.alt ?? "").trim()) {
+    if (asset.alt.trim() !== alt) notes.push(`asset ${id} keeps its own alt ("${asset.alt}"), not "${alt}"`);
+    continue;
+  }
+  counts.alts++;
+  console.log(`${DRY ? "would set" : "set"} asset ${id}'s alt: ${alt}`);
+  if (!DRY) await api("PATCH", `/api/assets/${id}`, { asset: { alt } });
+}
+
 for (const n of notes) console.log(`  ${n}`);
-console.log(`${DRY ? "Dry run: " : ""}${counts.fields} fields → richtext, ${counts.merged} repeaters merged, ${counts.dropped} URL caches dropped; ` +
-  `${counts.values} values converted, ${counts.bodies} entry bodies' HTML → Markdown, ${counts.seo} SEO aliased; ${counts.records} records saved.`);
+console.log(`${DRY ? "Dry run: " : ""}${counts.fields} fields changed, ${counts.merged} repeaters merged, ${counts.dropped} URL caches dropped; ` +
+  `${counts.values} values converted, ${counts.bodies} entry bodies' HTML → Markdown, ${counts.seo} SEO aliased, ${counts.alts} alt texts onto images; ${counts.records} records saved.`);
 if (DRY) process.exit(0);
 
 // ---- check ---------------------------------------------------------------------

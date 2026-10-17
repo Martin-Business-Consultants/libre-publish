@@ -8,7 +8,7 @@
     "headers": {
       "Cache-Tag": "content",
       "Content-Type": "application/json; charset=utf-8",
-      "X-CMS-Schema-Digest": "sha256:ff424e5c1099e8d2e1d650ced3976409abc42e5a9e0e0bf807b8146730ba7035"
+      "X-CMS-Schema-Digest": "sha256:0d28dabba17d31cd95964b5cf84a04ec08bd2a48834f9acf5b74ded13ab2b2b8"
     }
   },
   "delivery/content-full.json": {
@@ -20,7 +20,7 @@
     "headers": {
       "Cache-Tag": "content",
       "Content-Type": "application/json; charset=utf-8",
-      "X-CMS-Schema-Digest": "sha256:ff424e5c1099e8d2e1d650ced3976409abc42e5a9e0e0bf807b8146730ba7035"
+      "X-CMS-Schema-Digest": "sha256:0d28dabba17d31cd95964b5cf84a04ec08bd2a48834f9acf5b74ded13ab2b2b8"
     }
   },
   "delivery/entries-posts.json": {
@@ -32,7 +32,7 @@
     "headers": {
       "Cache-Tag": "collection:posts",
       "Content-Type": "application/json; charset=utf-8",
-      "X-CMS-Schema-Digest": "sha256:ff424e5c1099e8d2e1d650ced3976409abc42e5a9e0e0bf807b8146730ba7035"
+      "X-CMS-Schema-Digest": "sha256:0d28dabba17d31cd95964b5cf84a04ec08bd2a48834f9acf5b74ded13ab2b2b8"
     }
   },
   "delivery/entries-projects.json": {
@@ -44,7 +44,7 @@
     "headers": {
       "Cache-Tag": "collection:projects",
       "Content-Type": "application/json; charset=utf-8",
-      "X-CMS-Schema-Digest": "sha256:ff424e5c1099e8d2e1d650ced3976409abc42e5a9e0e0bf807b8146730ba7035"
+      "X-CMS-Schema-Digest": "sha256:0d28dabba17d31cd95964b5cf84a04ec08bd2a48834f9acf5b74ded13ab2b2b8"
     }
   },
   "delivery/global-nav.json": {
@@ -56,7 +56,7 @@
     "headers": {
       "Cache-Tag": "global:nav",
       "Content-Type": "application/json; charset=utf-8",
-      "X-CMS-Schema-Digest": "sha256:ff424e5c1099e8d2e1d650ced3976409abc42e5a9e0e0bf807b8146730ba7035"
+      "X-CMS-Schema-Digest": "sha256:0d28dabba17d31cd95964b5cf84a04ec08bd2a48834f9acf5b74ded13ab2b2b8"
     }
   },
   "delivery/globals.json": {
@@ -68,7 +68,7 @@
     "headers": {
       "Cache-Tag": "global:nav",
       "Content-Type": "application/json; charset=utf-8",
-      "X-CMS-Schema-Digest": "sha256:ff424e5c1099e8d2e1d650ced3976409abc42e5a9e0e0bf807b8146730ba7035"
+      "X-CMS-Schema-Digest": "sha256:0d28dabba17d31cd95964b5cf84a04ec08bd2a48834f9acf5b74ded13ab2b2b8"
     }
   },
   "delivery/page-about.json": {
@@ -80,7 +80,7 @@
     "headers": {
       "Cache-Tag": "page:about",
       "Content-Type": "application/json; charset=utf-8",
-      "X-CMS-Schema-Digest": "sha256:ff424e5c1099e8d2e1d650ced3976409abc42e5a9e0e0bf807b8146730ba7035"
+      "X-CMS-Schema-Digest": "sha256:0d28dabba17d31cd95964b5cf84a04ec08bd2a48834f9acf5b74ded13ab2b2b8"
     }
   },
   "delivery/page-home.json": {
@@ -92,7 +92,7 @@
     "headers": {
       "Cache-Tag": "page:home,collection:posts,site,patterns",
       "Content-Type": "application/json; charset=utf-8",
-      "X-CMS-Schema-Digest": "sha256:ff424e5c1099e8d2e1d650ced3976409abc42e5a9e0e0bf807b8146730ba7035"
+      "X-CMS-Schema-Digest": "sha256:0d28dabba17d31cd95964b5cf84a04ec08bd2a48834f9acf5b74ded13ab2b2b8"
     }
   },
   "delivery/pages.json": {
@@ -104,7 +104,7 @@
     "headers": {
       "Cache-Tag": "pages,page:home,collection:posts,site,patterns,page:about",
       "Content-Type": "application/json; charset=utf-8",
-      "X-CMS-Schema-Digest": "sha256:ff424e5c1099e8d2e1d650ced3976409abc42e5a9e0e0bf807b8146730ba7035"
+      "X-CMS-Schema-Digest": "sha256:0d28dabba17d31cd95964b5cf84a04ec08bd2a48834f9acf5b74ded13ab2b2b8"
     }
   },
   "delivery/redirects.json": {
@@ -116,7 +116,7 @@
     "headers": {
       "Cache-Tag": "redirects",
       "Content-Type": "application/json; charset=utf-8",
-      "X-CMS-Schema-Digest": "sha256:ff424e5c1099e8d2e1d650ced3976409abc42e5a9e0e0bf807b8146730ba7035"
+      "X-CMS-Schema-Digest": "sha256:0d28dabba17d31cd95964b5cf84a04ec08bd2a48834f9acf5b74ded13ab2b2b8"
     }
   },
   "delivery/robots.json": {
@@ -128,7 +128,7 @@
     "headers": {
       "Cache-Tag": "robots",
       "Content-Type": "application/json; charset=utf-8",
-      "X-CMS-Schema-Digest": "sha256:ff424e5c1099e8d2e1d650ced3976409abc42e5a9e0e0bf807b8146730ba7035"
+      "X-CMS-Schema-Digest": "sha256:0d28dabba17d31cd95964b5cf84a04ec08bd2a48834f9acf5b74ded13ab2b2b8"
     }
   },
   "delivery/schema.json": {
@@ -140,7 +140,7 @@
     "headers": {
       "Cache-Tag": "schema",
       "Content-Type": "application/json; charset=utf-8",
-      "X-CMS-Schema-Digest": "sha256:ff424e5c1099e8d2e1d650ced3976409abc42e5a9e0e0bf807b8146730ba7035"
+      "X-CMS-Schema-Digest": "sha256:0d28dabba17d31cd95964b5cf84a04ec08bd2a48834f9acf5b74ded13ab2b2b8"
     }
   },
   "delivery/site-health.json": {
@@ -152,7 +152,7 @@
     "headers": {
       "Cache-Tag": "site",
       "Content-Type": "application/json; charset=utf-8",
-      "X-CMS-Schema-Digest": "sha256:ff424e5c1099e8d2e1d650ced3976409abc42e5a9e0e0bf807b8146730ba7035"
+      "X-CMS-Schema-Digest": "sha256:0d28dabba17d31cd95964b5cf84a04ec08bd2a48834f9acf5b74ded13ab2b2b8"
     }
   },
   "delivery/site.json": {
@@ -164,7 +164,7 @@
     "headers": {
       "Cache-Tag": "site",
       "Content-Type": "application/json; charset=utf-8",
-      "X-CMS-Schema-Digest": "sha256:ff424e5c1099e8d2e1d650ced3976409abc42e5a9e0e0bf807b8146730ba7035"
+      "X-CMS-Schema-Digest": "sha256:0d28dabba17d31cd95964b5cf84a04ec08bd2a48834f9acf5b74ded13ab2b2b8"
     }
   },
   "delivery/sitemap.json": {
@@ -176,7 +176,7 @@
     "headers": {
       "Cache-Tag": "sitemap",
       "Content-Type": "application/json; charset=utf-8",
-      "X-CMS-Schema-Digest": "sha256:ff424e5c1099e8d2e1d650ced3976409abc42e5a9e0e0bf807b8146730ba7035"
+      "X-CMS-Schema-Digest": "sha256:0d28dabba17d31cd95964b5cf84a04ec08bd2a48834f9acf5b74ded13ab2b2b8"
     }
   },
   "forms/form-definition.json": {

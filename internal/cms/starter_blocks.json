@@ -591,12 +591,6 @@
         "required": true
       },
       {
-        "name": "alt",
-        "label": "Alt text",
-        "type": "string",
-        "required": true
-      },
-      {
         "name": "caption",
         "label": "Caption",
         "type": "string"
