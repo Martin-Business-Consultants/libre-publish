@@ -23,15 +23,26 @@ case "$(uname -m)" in
   *) echo "librepublish: no build for $(uname -m)" >&2; exit 1 ;;
 esac
 
+file="librepublish-$os-$arch"
+
+# The repo's releases include the Rails core's (from main), which carry no
+# binary, so "latest" is the newest release that has this file.
 if [ -n "${LIBREPUBLISH_BASE_URL:-}" ]; then
   base="$LIBREPUBLISH_BASE_URL" # a mirror, or a local dist/ to test with
 elif [ "$version" = latest ]; then
-  base="https://github.com/$repo/releases/latest/download"
+  version="$(curl -fsSL "https://api.github.com/repos/$repo/releases?per_page=100" |
+    tr ',' '\n' | grep -E '"(tag_name|browser_download_url)"' |
+    awk -v f="/$file\"" '/tag_name/ { tag = $0 } index($0, f) { print tag; exit }' |
+    sed 's/.*"tag_name": *"\([^"]*\)".*/\1/')"
+  if [ -z "$version" ]; then
+    echo "librepublish: no release has a $file build yet." >&2
+    echo "From a checkout with Go installed, run it directly instead: go run ./cmd/librepublish serve" >&2
+    exit 1
+  fi
+  base="https://github.com/$repo/releases/download/$version"
 else
   base="https://github.com/$repo/releases/download/$version"
 fi
-file="librepublish-$os-$arch"
-
 if [ -n "${LIBREPUBLISH_DIR:-}" ]; then
   dir="$LIBREPUBLISH_DIR"
 elif [ -w /usr/local/bin ]; then
