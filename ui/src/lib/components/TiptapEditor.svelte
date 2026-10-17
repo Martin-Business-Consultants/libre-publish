@@ -1,7 +1,8 @@
 <script>
   // The rich-text editor: Tiptap (its default text editor example,
   // StarterKit and task lists), its toolbar in shadcn's toggles. The value
-  // is Markdown or HTML (format). tools="email" keeps to what email shows
+  // is the editor's own document (format "json": Tiptap JSON, what a
+  // richtext field stores), Markdown or HTML. tools="email" keeps to what email shows
   // well; mergeTags marks {{ tags }} as chips, and insert(text) puts text at
   // the cursor (a tag clicked in a sidebar; dragged ones drop as text).
   import { onMount, onDestroy, untrack } from "svelte";
@@ -42,8 +43,8 @@
 
   // Tiptap loads with the first editor shown, not with the admin.
   onMount(async () => {
-    const [{ Editor, Extension }, { default: StarterKit }, { TaskItem, TaskList }, { Placeholder }, { Markdown }, { Plugin }, { Decoration, DecorationSet }] = await Promise.all([
-      import("@tiptap/core"), import("@tiptap/starter-kit"), import("@tiptap/extension-list"), import("@tiptap/extensions"), import("@tiptap/markdown"),
+    const [{ Editor, Extension }, { richTextExtensions }, { Placeholder }, { Markdown }, { Plugin }, { Decoration, DecorationSet }] = await Promise.all([
+      import("@tiptap/core"), import("../richtext-extensions.js"), import("@tiptap/extensions"), import("@tiptap/markdown"),
       import("@tiptap/pm/state"), import("@tiptap/pm/view"),
     ]);
     if (destroyed) return;
@@ -62,13 +63,12 @@
     editor = new Editor({
       element,
       extensions: [
-        StarterKit.configure({ underline: false, link: { openOnClick: false, autolink: true }, ...(tools === "email" ? { codeBlock: false, code: false } : {}) }),
-        ...(tools === "email" ? [] : [TaskList, TaskItem.configure({ nested: true })]),
+        ...richTextExtensions(tools),
         Placeholder.configure({ placeholder }),
         ...(format === "markdown" ? [Markdown] : []),
         ...(mergeTags ? [Tags] : []),
       ],
-      content: value || "",
+      content: value || (format === "json" ? null : ""),
       contentType: format,
       editorProps: {
         attributes: { class: `prose-admin tiptap ${minHeight} px-3 py-2 outline-none`, ...(id ? { id } : {}), "aria-multiline": "true" },
@@ -91,13 +91,16 @@
   });
   let destroyed = false;
   const TAG_TYPE = "application/x-lp-merge-tag";
-  const out = () => (format === "markdown" ? editor.getMarkdown() : editor.isEmpty ? "" : editor.getHTML());
+  const out = () => format === "json" ? (editor.isEmpty ? null : editor.getJSON())
+    : format === "markdown" ? editor.getMarkdown() : editor.isEmpty ? "" : editor.getHTML();
+  // A document is compared by what it says, not which object holds it.
+  const same = (a, b) => (format === "json" ? JSON.stringify(a ?? null) === JSON.stringify(b ?? null) : (a || "") === (b || ""));
   export function insert(text) { editor?.chain().focus().insertContent(text).run(); }
   onDestroy(() => { destroyed = true; editor?.destroy(); });
 
   $effect(() => {
-    const v = value || "";
-    if (editor && live && v !== emitted) {
+    const v = format === "json" ? (value ?? null) : value || "";
+    if (editor && live && !same(v, emitted)) {
       // Untracked: the transaction bumps tick, which this mustn't follow.
       untrack(() => editor.commands.setContent(v, { contentType: format, emitUpdate: false }));
       emitted = out();

@@ -20,10 +20,12 @@
   // svelte-ignore state_referenced_locally
   for (const b of blocks) if (!b.data || typeof b.data !== "object") b.data = {};
 
+  // A rich text document's words, for the summary.
+  const words = (n) => (typeof n === "string" ? n : n?.type === "text" ? n.text : (n?.content || []).map(words).join(" "));
   const summary = (b) => {
     const d = b.data || {};
-    const s = d.heading || d.title || d.label || d.eyebrow || d.text || d.body || d.quote_form_title || d.collection_slug || "";
-    return typeof s === "string" ? s.replace(/[#*_`>]/g, "").slice(0, 100) : "";
+    const s = words(d.heading || d.title || d.label || d.eyebrow || d.text || d.body || d.quote_form_title || d.collection_slug || "");
+    return s.replace(/[#*_`>]/g, "").replace(/\s+/g, " ").trim().slice(0, 100);
   };
   const errorsIn = (i) => Object.keys(errors).filter((k) => k.startsWith(`${path}[${i}]`));
   $effect(() => {

@@ -23,7 +23,7 @@ import (
 )
 
 var fieldTypes = []string{
-	"string", "text", "markdown", "code", "integer", "boolean", "select", "url", "datetime",
+	"string", "text", "markdown", "richtext", "code", "integer", "boolean", "select", "url", "datetime",
 	"link", "asset", "record_ref", "record_refs", "repeater", "group", "blocks", "string_list",
 }
 
@@ -261,6 +261,8 @@ func valueProblem(f Field, v any) string {
 		}
 	case "link":
 		return linkProblem(v)
+	case "richtext":
+		return richTextProblem(v)
 	case "record_refs":
 		if !allStrings(v, false) {
 			return "must be an array of record slugs"
@@ -472,8 +474,12 @@ func fieldSchema(f Field) map[string]any {
 	case "url":
 		s["type"], s["format"] = "string", "uri-reference"
 	case "markdown":
-		// Rich text: Markdown, which the site renders (raw HTML is refused).
+		// Markdown, which the site renders (raw HTML is refused).
 		s["type"], s["contentMediaType"] = "string", "text/markdown"
+	case "richtext":
+		// The editor's document (Tiptap JSON), which the site renders.
+		s["type"], s["required"] = "object", []string{"type"}
+		s["properties"] = map[string]any{"type": map[string]any{"const": "doc"}, "content": map[string]any{"type": "array", "items": map[string]any{"type": "object"}}}
 	default:
 		s["type"] = "string"
 	}

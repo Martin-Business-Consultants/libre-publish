@@ -20,7 +20,7 @@
   let { fields, allowBlocks = true, depth = 1, errors = {}, path = "fields" } = $props();
 
   const TYPES = [
-    ["string", "Text (one line)"], ["text", "Text (paragraphs)"], ["markdown", "Markdown"], ["code", "Code"],
+    ["richtext", "Rich text"], ["string", "Text (one line)"], ["text", "Plain text (paragraphs)"], ["markdown", "Markdown"], ["code", "Code"],
     ["integer", "Number"], ["boolean", "On/off"], ["select", "Choice"], ["url", "Address (URL)"], ["datetime", "Date and time"],
     ["link", "Link"], ["asset", "File or image"], ["record_ref", "Entry"], ["record_refs", "Entries"],
     ["string_list", "List of words"], ["group", "Group of fields"], ["repeater", "Repeating group"], ["blocks", "Blocks"],

@@ -6,6 +6,7 @@
   import Switch from "../components/Switch.svelte";
   import TagInput from "../components/TagInput.svelte";
   import MarkdownEditor from "../components/MarkdownEditor.svelte";
+  import TiptapEditor from "../components/TiptapEditor.svelte";
   import LinkField from "./LinkField.svelte";
   import AssetField from "./AssetField.svelte";
   import RecordField from "./RecordField.svelte";
@@ -83,6 +84,8 @@
     {#snippet children(id, invalid)}
       {#if f.type === "text"}
         <Textarea {id} {invalid} rows={3} value={data[f.name] ?? ""} oninput={(e) => set(e.currentTarget.value)} />
+      {:else if f.type === "richtext"}
+        <TiptapEditor {id} {invalid} format="json" bind:value={() => data[f.name] ?? null, (v) => set(v)} />
       {:else if f.type === "markdown"}
         <MarkdownEditor {id} {invalid} bind:value={() => data[f.name] ?? "", (v) => set(v)} />
       {:else if f.type === "code"}

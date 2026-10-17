@@ -93,7 +93,18 @@ Text comes in two kinds, and the schema says which:
 
 - **Plain text**: `string` and `text` fields (`x-cms-type` `string`,
   `text`). Show them as text, escaped, never as HTML.
-- **Rich text**: `markdown` fields (`x-cms-type: "markdown"`,
+- **Rich text**: `richtext` fields (`x-cms-type: "richtext"`), the
+  admin's editor's own document — Tiptap JSON:
+  `{"type": "doc", "content": [{"type": "paragraph", "content": [{"type":
+  "text", "text": "Built in "}, {"type": "text", "text": "1869", "marks":
+  [{"type": "bold"}]}]}]}`. Its nodes are `paragraph`, `heading` (`level`),
+  `bulletList`, `orderedList` (`start`), `listItem`, `taskList`,
+  `taskItem` (`checked`), `blockquote`, `codeBlock` (`language`),
+  `hardBreak`, `horizontalRule` and `text`; its marks `bold`, `italic`,
+  `strike`, `code` and `link` (`href`: http(s), mailto:, tel: or a path).
+  The CMS refuses any other node, mark or attribute on save, so a site
+  that draws these draws everything. The integration's `<RichText>` does.
+- **Markdown**: `markdown` fields (`x-cms-type: "markdown"`,
   `contentMediaType: "text/markdown"`) and an entry's `body_markdown`.
   They're Markdown, written in the admin's editor (bold, italic,
   strikethrough, links, headings, lists, quotes, code, rules, line breaks as
@@ -103,6 +114,7 @@ Text comes in two kinds, and the schema says which:
 
 HTML is refused on save in both (a `422` naming the field): "Formatting
 isn't allowed here: use a Markdown (rich text) field" in a plain text field,
+(a field that needs formatting becomes a `richtext` field),
 "Use the editor's formatting, not HTML tags" in a Markdown one. A tag is `<`
 and the name of an HTML (or SVG/MathML) element, then `>` or attributes up
 to one, or a closing `</name>`; a comment, doctype, CDATA or processing
