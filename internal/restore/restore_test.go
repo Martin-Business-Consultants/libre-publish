@@ -194,7 +194,13 @@ func railsDB(t *testing.T, prefix string) []byte {
 // apply stages src into dataDir and applies it.
 func apply(t *testing.T, src string, opts restore.Options) *restore.Report {
 	t.Helper()
-	imp, err := restore.Stage(t.Context(), src, opts)
+	staged, err := restore.Stage(t.Context(), src, opts)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Read back from disk, as the admin does between staging and applying:
+	// the report must survive the round trip.
+	imp, err := restore.Load(opts.DataDir, staged.ID)
 	if err != nil {
 		t.Fatal(err)
 	}

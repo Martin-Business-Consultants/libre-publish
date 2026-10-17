@@ -473,7 +473,11 @@ func (imp *Import) finish(ctx context.Context, opts Options) error {
 	}
 	rep.Secrets.KeyGiven = opts.SourceKey != ""
 	// Signed in to the old site is signed in to nothing here; a lock or a
-	// reset link from there means nothing either.
+	// reset link from there means nothing either. (A report read back from
+	// disk has no Cleared: it's omitted while empty.)
+	if rep.Cleared == nil {
+		rep.Cleared = map[string]int{}
+	}
 	for _, t := range []string{"admin_sessions", "sessions", "edit_locks", "device_authorizations", "account_tokens"} {
 		if n, err := clearTable(ctx, db, t); err != nil {
 			return err
