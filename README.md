@@ -10,7 +10,7 @@ librepublish serve --data ./data
 # open http://localhost:8080/cms/ and make the first administrator
 ```
 
-That is the whole install. No Ruby, no Docker, no separate database, no
+That is the whole install. No Ruby, no Docker (though there is a Dockerfile), no separate database, no
 restart to add a plugin. It idles at about 28 MB of memory. The script picks
 the build for your machine from the latest release and checks it against the
 release's checksums. Without it, download `librepublish-<os>-<arch>` from
@@ -52,6 +52,18 @@ builds every platform and publishes them with `checksums.txt`, which
 | | `LOG_FORMAT` | `text` (the default) or `json`. Each request's line carries its `request_id`, which is also the `X-Request-ID` answered (a proxy's own is kept). |
 
 Put TLS in front of it (Caddy is one line: `cms.example.com { reverse_proxy :8080 }`).
+
+On a host that runs containers, the `Dockerfile` builds the same binary
+into a small image (no shell, an unprivileged user). Mount a volume at
+`/data`, which is everything the site keeps, and set `APP_URL` and, behind
+the host's proxy, `TRUST_PROXY=1`. It listens on `PORT` (8080 unless the
+host sets it), logs JSON, and `GET /up` is its health check.
+
+```sh
+docker build -t librepublish --build-arg VERSION=$(git describe --tags --always) .
+docker run -p 8080:8080 -v librepublish-data:/data -e APP_URL=https://cms.example.com librepublish
+docker exec -it <container> librepublish user create --email you@example.com --name You --password -
+```
 
 From the command line, without the admin:
 
