@@ -10,7 +10,9 @@
 //   CMS_BASE_URL=http://localhost:8080 CMS_ADMIN_TOKEN=… node scripts/richtext.mjs [--dry-run]
 //     [--keep hours_location.address --keep …]   fields that stay plain text (owner.field.path)
 //     [--code scripts.items.head --code …]       fields that hold markup on purpose: become `code`
-//     [--drop-url-caches]                        drop <x>_url fields beside an <x>_id asset field
+//     [--drop-url-caches]                        drop every image_url field and key (the image is its
+//                                                asset field), and other <x>_url caches beside an <x>_id
+//                                                asset field; refused if one holds the only copy of an image
 //     [--seo-aliases]                            seo_title → meta_title and kin, on pages and entries
 //
 // A repeater whose only field is prose (paragraphs of text) becomes one
@@ -66,6 +68,8 @@ async function listAll(path, key) {
 // ---- values ------------------------------------------------------------------
 
 const TAG = /<\/?[A-Za-z][A-Za-z0-9]*(?:\s[^<>]*)?\/?>/;
+/** An image's URL, as old content kept it beside (or instead of) the image itself. */
+const IMAGE_URL = /(^|_)image_url$/;
 const isDoc = (v) => v && typeof v === "object" && v.type === "doc";
 const emptyDoc = (d) => !d.content?.some((n) => n.type !== "paragraph" || n.content?.length);
 
@@ -113,10 +117,10 @@ function plan(fields, at) {
     const of = f.of ?? f.fields;
     if (args["drop-url-caches"] && /_url$/.test(f.name) && ["string", "url"].includes(f.type)) {
       const id = fields.find((g) => g.name === f.name.replace(/_url$/, "_id") && g.type === "asset");
-      if (id) {
+      if (id || IMAGE_URL.test(f.name)) {
         moves.push({ name: f.name, drop: true });
         counts.dropped++;
-        notes.push(`drop ${path} (the cache of ${id.name})`);
+        notes.push(`drop ${path} (${id ? `the cache of ${id.name}` : "an image's URL: images are asset fields"})`);
         continue;
       }
     }
@@ -168,7 +172,7 @@ function apply(data, moves) {
   // A URL cache no schema declares any more, beside its asset id.
   if (args["drop-url-caches"]) {
     for (const k of Object.keys(data)) {
-      if (/_url$/.test(k) && k.replace(/_url$/, "_id") in data && !moves.some((m) => m.name === k)) {
+      if (/_url$/.test(k) && (IMAGE_URL.test(k) || k.replace(/_url$/, "_id") in data) && !moves.some((m) => m.name === k)) {
         delete data[k];
         counts.dropped++;
         changed = true;
@@ -208,6 +212,32 @@ function apply(data, moves) {
 const blockTypes = (await api("GET", "/api/block_types")).block_types;
 const collections = (await api("GET", "/api/collections")).collections;
 const globals = await Promise.all((await api("GET", "/api/globals")).globals.map(async (g) => (await api("GET", `/api/globals/${g.slug}`)).global));
+
+// Before anything is written: an image URL with no image beside it would be
+// an image lost, so the run stops and says where.
+if (args["drop-url-caches"]) {
+  const orphans = [];
+  const look = (v, at) => {
+    if (Array.isArray(v)) return v.forEach((x, i) => look(x, `${at}[${i}]`));
+    if (!v || typeof v !== "object" || isDoc(v)) return;
+    for (const [k, x] of Object.entries(v)) {
+      if (IMAGE_URL.test(k) && typeof x === "string" && x.trim() && !v[k.replace(/_url$/, "_id")]) orphans.push(`${at}.${k} = ${x}`);
+      look(x, `${at}.${k}`);
+    }
+  };
+  for (const s of await listAll("/api/pages?sort=path", "pages")) look((await api("GET", `/api/pages/${s.path}`)).page.blocks, `page ${s.path}`);
+  for (const c of collections) {
+    for (const s of await listAll(`/api/collections/${c.slug}/entries`, "entries")) {
+      const e = (await api("GET", `/api/collections/${c.slug}/entries/${encodeURIComponent(s.slug)}`)).entry;
+      look({ frontmatter: e.frontmatter, blocks: e.blocks }, `entry ${c.slug}/${e.slug}`);
+    }
+  }
+  for (const g of globals) look(g.data, `global ${g.slug}`);
+  if (orphans.length) {
+    console.error(`These image URLs have no image beside them; pick each image in the media library first:\n  ${orphans.join("\n  ")}`);
+    process.exit(1);
+  }
+}
 
 const blockPlans = {};
 for (const bt of blockTypes) {
@@ -311,7 +341,7 @@ const scan = (v, at) => {
   if (isDoc(v)) return;
   if (Array.isArray(v)) v.forEach((x, i) => scan(x, `${at}[${i}]`));
   else if (v && typeof v === "object") for (const [k, x] of Object.entries(v)) {
-    if (args["drop-url-caches"] && /_url$/.test(k) && `${k.replace(/_url$/, "_id")}` in v) left.push(`URL cache at ${at}.${k}`);
+    if (args["drop-url-caches"] && /_url$/.test(k) && (IMAGE_URL.test(k) || `${k.replace(/_url$/, "_id")}` in v)) left.push(`URL cache at ${at}.${k}`);
     scan(x, `${at}.${k}`);
   }
 };
