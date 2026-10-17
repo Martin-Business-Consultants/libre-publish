@@ -8,6 +8,7 @@
   import Select from "../components/Select.svelte";
   import Input from "../components/Input.svelte";
   import Notice from "../components/Notice.svelte";
+  import Postbox from "../components/Postbox.svelte";
   import { dateTime, humanize } from "../format.js";
 
   let { record, statusful = true, canPublish, isNew = false, saving = false, onsave, ontrash = null, statuses = ["draft", "published", "archived"] } = $props();
@@ -29,8 +30,7 @@
   };
 </script>
 
-<section class="rounded-xl border border-gray-200 bg-surface">
-  <h2 class="border-b border-gray-200 px-5 py-3.5 text-base font-semibold text-gray-900">Publish</h2>
+<Postbox key="publish" title="Publish" flush>
   {#if statusful && status === "draft"}
     <div class="px-5 pt-4"><Button size="sm" loading={saving} onclick={() => onsave("draft")}>Save Draft</Button></div>
   {/if}
@@ -78,4 +78,4 @@
       <Button variant="primary" loading={saving} onclick={() => onsave(null)}>{live ? "Propose changes" : "Save"}</Button>
     {/if}
   </div>
-</section>
+</Postbox>

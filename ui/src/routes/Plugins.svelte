@@ -36,7 +36,7 @@
   {#snippet actions()}
     {#if session.can("plugins:write")}
       <input type="file" accept=".wasm,application/wasm" class="hidden" bind:this={input} onchange={(e) => { if (e.currentTarget.files[0]) upload(e.currentTarget.files[0]); e.currentTarget.value = ""; }} />
-      <Button variant="primary" icon="add" loading={uploading} onclick={() => input.click()}>Upload Plugin</Button>
+      <Button icon="add" loading={uploading} onclick={() => input.click()}>Upload plugin</Button>
     {/if}
   {/snippet}
 </PageHeader>

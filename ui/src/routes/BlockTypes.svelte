@@ -35,7 +35,7 @@
   {#snippet actions()}
     {#if session.can("block_types:write")}
       <Button loading={seeding} onclick={seed}>Install starter pack</Button>
-      <Button variant="primary" icon="add" href="#/blocks/new">Add New Block Type</Button>
+      <Button icon="add" href="#/blocks/new">New block type</Button>
     {/if}
   {/snippet}
 </PageHeader>

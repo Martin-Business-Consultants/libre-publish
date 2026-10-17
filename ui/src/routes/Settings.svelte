@@ -19,7 +19,7 @@
         { name: "default_locale", label: "Default locale", type: "string", help: "Pages in other locales are served under a prefix: /fr/…" },
       ]],
       ["How the site is served", [
-        { name: "serving", label: "Delivery API", type: "select", options: ["api_only", "website_api"], help: "api_only: everything live is on /api/v1. website_api: only collections marked \"Available over the API\", and pages and globals when switched on below." },
+        { name: "serving", label: "Delivery API", type: "select", options: [{ value: "api_only", label: "Everything live" }, { value: "website_api", label: "Only what's chosen" }], help: "Everything live is on /api/v1, or only the collections marked \"Available over the API\" (and pages and globals when switched on below)." },
         { name: "api_pages", label: "Serve pages and globals (website_api)", type: "boolean" },
         { name: "cors_origins", label: "Allowed origins", type: "text", help: "Browsers on these origins may call the delivery API and post forms. One per line." },
       ]],

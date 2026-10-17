@@ -17,6 +17,7 @@
   import SchemaEditor from "../lib/fields/SchemaEditor.svelte";
   import PublishBox from "../lib/fields/PublishBox.svelte";
   import SeoFields from "../lib/fields/SeoFields.svelte";
+  import EditorTabs from "../lib/components/EditorTabs.svelte";
   import { get, post, patch, del, pagePath } from "../lib/api.js";
   import { save, saveShortcut } from "../lib/save.js";
   import { session } from "../lib/session.svelte.js";
@@ -33,7 +34,7 @@
 
   let page = $state(null), schema = $state([]), parents = $state([]);
   let errors = $state({}), saving = $state(false), slugTouched = $state(!!path), baseline = $state("");
-  let editingFields = $state(false), draftSchema = $state([]);
+  let editingFields = $state(false), draftSchema = $state([]), tab = $state("edit");
 
   const snapshot = () => JSON.stringify($state.snapshot(page));
   const dirty = $derived(page && baseline && snapshot() !== baseline);
@@ -82,16 +83,26 @@
   const warn = (e) => { if (dirty) { e.preventDefault(); e.returnValue = ""; } };
   addEventListener("beforeunload", warn);
   onDestroy(() => { stop(); removeEventListener("beforeunload", warn); });
-  const permalink = $derived(page ? (site.siteURL ? site.siteURL.replace(/\/$/, "") : "") + "/" + [parents.find((p) => p.id === page.parent_id)?.path, page.slug].filter(Boolean).join("/") : "");
+  // Where it lives on the site: the parent's path plus the slug; "home" is "/".
+  const permalink = $derived.by(() => {
+    if (!page) return "";
+    const p = [parents.find((x) => x.id === page.parent_id)?.path, page.slug].filter(Boolean).join("/");
+    return (site.siteURL ? site.siteURL.replace(/\/$/, "") : "") + (p === "home" ? "/" : "/" + p);
+  });
 </script>
 
 {#if !page}
   <div class="flex justify-center py-16"><Spinner /></div>
 {:else}
-  <div class="flex items-center justify-between gap-3">
-    <a href="#/pages" class="text-sm text-gray-500 hover:text-gray-900">← Pages</a>
-    {#if dirty}<span class="text-xs font-medium text-yellow-700">Unsaved changes · ⌘S to save</span>{/if}
-  </div>
+  <EditorTabs bind:tab cli={path ? `cms page ${path}` : ""} seoWarning={!page.seo?.meta_description}>
+    {#snippet actions()}
+      {#if dirty}<span class="text-xs font-medium text-yellow-700">Unsaved changes · ⌘S</span>{/if}
+      {#if path && session.can("pages:write")}
+        <Button href="#/pages/new" icon="add">Add New</Button>
+        <Button onclick={() => { draftSchema = JSON.parse(JSON.stringify(schema)); editingFields = true; }}>Fields</Button>
+      {/if}
+    {/snippet}
+  </EditorTabs>
   <div class="flex flex-col gap-6 lg:flex-row lg:items-start">
     <div class="flex min-w-0 flex-1 flex-col gap-6">
       <div>
@@ -103,18 +114,19 @@
         {#if errors.title}<p class="mt-1 text-xs text-red-600">Title {errors.title.join(", ")}</p>{/if}
       </div>
 
-      {#if schema.length}
-        <Postbox key="page-fields" title="Fields"><FieldsForm fields={schema} data={page.frontmatter} path="frontmatter" {errors} /></Postbox>
+      {#if tab === "edit"}
+        {#if schema.length}
+          <Postbox key="page-fields" title="Fields"><FieldsForm fields={schema} data={page.frontmatter} path="frontmatter" {errors} /></Postbox>
+        {/if}
+        <Panel title="Blocks">
+          <div class="p-3 sm:p-5"><BlocksEditor blocks={page.blocks} {errors} /></div>
+          {#snippet footer()}
+            {#if path}Last edited <Time value={page.updated_at} />{:else}Not saved yet{/if}
+          {/snippet}
+        </Panel>
+      {:else}
+        <Panel title="SEO"><div class="p-5"><SeoFields seo={page.seo} {errors} title={page.title} url={permalink} /></div></Panel>
       {/if}
-
-      <Panel title="Blocks">
-        <div class="p-3 sm:p-5"><BlocksEditor blocks={page.blocks} {errors} /></div>
-        {#snippet footer()}
-          {#if path}Last edited <Time value={page.updated_at} />{:else}Not saved yet{/if}
-        {/snippet}
-      </Panel>
-
-      <Postbox key="page-seo" title="SEO"><SeoFields seo={page.seo} {errors} title={page.title} url={permalink} /></Postbox>
     </div>
 
     <aside class="flex min-w-0 shrink-0 flex-col gap-4 lg:sticky lg:top-16 lg:w-80">
@@ -124,16 +136,23 @@
           {#snippet children(id, invalid)}<Input {id} {invalid} mono bind:value={page.slug} oninput={() => (slugTouched = true)} />{/snippet}
         </Field>
         {#if page.slug}
-          <div class="-mt-3 flex items-center gap-1 text-xs text-gray-500"><span class="min-w-0 truncate font-mono">{permalink}</span><CopyButton text={permalink} /></div>
+          <div class="flex flex-col gap-1.5">
+            <span class="text-sm font-semibold text-gray-900">Permalink</span>
+            {#if site.siteURL}<a href={permalink} target="_blank" rel="noopener" class="truncate text-sm font-medium text-accent-600 underline decoration-accent-600/40 underline-offset-2 hover:text-accent-700">{permalink}</a>
+            {:else}<span class="font-mono text-xs text-gray-500">{permalink}</span>{/if}
+          </div>
         {/if}
-        <Field label="Parent" help="Nests this page under another; its address becomes the parent's path plus its slug." error={errors.parent_id}>
+        <Field label="Parent" help="Nests this page under another; its URL becomes the parent's path plus its slug." error={errors.parent_id}>
           {#snippet children(id)}
             <Combobox {id} placeholder="No parent (top level)" options={parents.map((p) => ({ value: p.id, label: p.title, hint: "/" + p.path }))} bind:value={page.parent_id} />
           {/snippet}
         </Field>
-        <Field label="Locale" error={errors.locale}>{#snippet children(id, invalid)}<Input {id} {invalid} class="max-w-24" bind:value={page.locale} />{/snippet}</Field>
-        {#if path && session.can("pages:write")}
-          <Button size="sm" icon="sliders" onclick={() => { draftSchema = JSON.parse(JSON.stringify(schema)); editingFields = true; }}>{schema.length ? "Edit this page's fields" : "Add fields to this page"}</Button>
+        <Field label="Locale" error={errors.locale}>{#snippet children(id, invalid)}<Input {id} {invalid} bind:value={page.locale} />{/snippet}</Field>
+        {#if path}
+          <div class="flex items-center justify-between gap-2 rounded-md border border-gray-200 bg-gray-50 px-3 py-2">
+            <span class="min-w-0"><span class="block text-xs text-gray-500">Reference</span><span class="block truncate font-mono text-xs text-gray-900">/{page.path}</span></span>
+            <CopyButton text={"/" + page.path} label="" />
+          </div>
         {/if}
       </Postbox>
     </aside>

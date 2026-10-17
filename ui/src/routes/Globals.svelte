@@ -13,7 +13,7 @@
 </script>
 
 <PageHeader title="Globals" cli="cms globals">
-  {#snippet actions()}{#if session.can("globals:write")}<Button variant="primary" icon="add" href="#/globals/new">Add New Global</Button>{/if}{/snippet}
+  {#snippet actions()}{#if session.can("globals:write")}<Button icon="add" href="#/globals/new">New global</Button>{/if}{/snippet}
 </PageHeader>
 {#if list}
   <DataTable rows={list} onrowclick={(g) => go(`/globals/${g.slug}`)} columns={[{ label: "Name" }, { label: "Slug" }, { label: "Description" }, { label: "Updated" }]}>

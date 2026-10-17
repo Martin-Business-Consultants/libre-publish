@@ -48,7 +48,7 @@
 </script>
 
 <PageHeader title="Webhooks" cli="cms webhooks">
-  {#snippet actions()}{#if session.can("webhooks:write")}<Button variant="primary" icon="add" onclick={() => edit(null)}>Add Webhook</Button>{/if}{/snippet}
+  {#snippet actions()}{#if session.can("webhooks:write")}<Button icon="add" onclick={() => edit(null)}>New webhook</Button>{/if}{/snippet}
 </PageHeader>
 {#if list}
   <DataTable rows={list} columns={[{ label: "Name" }, { label: "Events" }, { label: "Last delivery" }, { label: "" }]}>

@@ -53,8 +53,8 @@
 
 <PageHeader title={col?.name || "…"} icon="newspaper" cli="cms entries {slug}">
   {#snippet actions()}
-    {#if session.can("collections:write")}<Button href="#/collections/{slug}/settings" icon="settings-outline">Settings</Button>{/if}
-    {#if session.can("entries:write")}<Button variant="primary" icon="add" href="#/collections/{slug}/new">Add New</Button>{/if}
+    {#if session.can("collections:write")}<Button href="#/collections/{slug}/settings">Schema</Button>{/if}
+    {#if session.can("entries:write")}<Button icon="add" href="#/collections/{slug}/new">New entry</Button>{/if}
   {/snippet}
 </PageHeader>
 <StatusLinks options={statusOptions} />

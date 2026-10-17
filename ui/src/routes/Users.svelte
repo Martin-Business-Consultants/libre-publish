@@ -37,7 +37,7 @@
 </script>
 
 <PageHeader title="Users">
-  {#snippet actions()}{#if session.can("users:write")}<Button variant="primary" icon="person-add" onclick={() => (open = true)}>Add New User</Button>{/if}{/snippet}
+  {#snippet actions()}{#if session.can("users:write")}<Button icon="add" onclick={() => (open = true)}>New user</Button>{/if}{/snippet}
 </PageHeader>
 {#if users}
   <DataTable rows={users} columns={[{ label: "Name" }, { label: "Email" }, { label: "Role" }, { label: "Since" }]}>

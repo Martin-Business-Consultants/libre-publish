@@ -12,6 +12,8 @@
   import BlocksEditor from "../lib/fields/BlocksEditor.svelte";
   import PublishBox from "../lib/fields/PublishBox.svelte";
   import SeoFields from "../lib/fields/SeoFields.svelte";
+  import EditorTabs from "../lib/components/EditorTabs.svelte";
+  import Button from "../lib/components/Button.svelte";
   import { get, post, patch, del } from "../lib/api.js";
   import { save, saveShortcut } from "../lib/save.js";
   import { session } from "../lib/session.svelte.js";
@@ -26,7 +28,7 @@
   // svelte-ignore state_referenced_locally
   const colSlug = params.slug, slug = params.entry || null;
   let col = $state(null), entry = $state(null), errors = $state({}), saving = $state(false), slugTouched = $state(!!slug), baseline = $state("");
-  let categories = $state([]), tags = $state([]);
+  let categories = $state([]), tags = $state([]), tab = $state("edit");
   const snapshot = () => JSON.stringify($state.snapshot(entry));
   const dirty = $derived(entry && baseline && snapshot() !== baseline);
   const base = `/collections/${colSlug}/entries`;
@@ -72,10 +74,13 @@
 {#if !entry}
   <div class="flex justify-center py-16"><Spinner /></div>
 {:else}
-  <div class="flex items-center justify-between gap-3">
-    <a href="#/collections/{colSlug}" class="text-sm text-gray-500 hover:text-gray-900">← {col.name}</a>
-    {#if dirty}<span class="text-xs font-medium text-yellow-700">Unsaved changes · ⌘S to save</span>{/if}
-  </div>
+  <EditorTabs bind:tab cli={slug ? `cms entry ${colSlug} ${slug}` : ""} seoWarning={!entry.seo?.meta_description}>
+    {#snippet actions()}
+      {#if dirty}<span class="text-xs font-medium text-yellow-700">Unsaved changes · ⌘S</span>{/if}
+      <Button href="#/collections/{colSlug}">All {col.name.toLowerCase()}</Button>
+      {#if slug && session.can("entries:write")}<Button href="#/collections/{colSlug}/new" icon="add">Add New</Button>{/if}
+    {/snippet}
+  </EditorTabs>
   <div class="flex flex-col gap-6 lg:flex-row lg:items-start">
     <div class="flex min-w-0 flex-1 flex-col gap-6">
       <div>
@@ -85,16 +90,19 @@
           class="w-full border-0 border-b border-gray-300 bg-transparent pb-3 text-3xl font-semibold leading-9 tracking-tight text-gray-900 outline-none placeholder:text-gray-300 focus:border-gray-900" />
         {#if errors.title}<p class="mt-1 text-xs text-red-600">Title {errors.title.join(", ")}</p>{/if}
       </div>
-      {#if (col.schema?.fields || []).length}
-        <Postbox key="entry-fields-{colSlug}" title="Fields"><FieldsForm fields={col.schema.fields} data={entry.frontmatter} path="frontmatter" {errors} /></Postbox>
+      {#if tab === "edit"}
+        {#if (col.schema?.fields || []).length}
+          <Postbox key="entry-fields-{colSlug}" title="Fields"><FieldsForm fields={col.schema.fields} data={entry.frontmatter} path="frontmatter" {errors} /></Postbox>
+        {/if}
+        <Panel title="Body">
+          <div class="p-5"><MarkdownEditor bind:value={entry.body_markdown} rows={12} placeholder="Write in Markdown…" /></div>
+        </Panel>
+        {#if col.enable_blocks}
+          <Panel title="Blocks"><div class="p-3 sm:p-5"><BlocksEditor blocks={entry.blocks} {errors} /></div></Panel>
+        {/if}
+      {:else}
+        <Panel title="SEO"><div class="p-5"><SeoFields seo={entry.seo} {errors} title={entry.title} {url} /></div></Panel>
       {/if}
-      <Panel title="Body">
-        <div class="p-5"><MarkdownEditor bind:value={entry.body_markdown} rows={12} placeholder="Write in Markdown…" /></div>
-      </Panel>
-      {#if col.enable_blocks}
-        <Panel title="Blocks"><div class="p-3 sm:p-5"><BlocksEditor blocks={entry.blocks} {errors} /></div></Panel>
-      {/if}
-      <Postbox key="entry-seo" title="SEO"><SeoFields seo={entry.seo} {errors} title={entry.title} {url} /></Postbox>
     </div>
     <aside class="flex min-w-0 shrink-0 flex-col gap-4 lg:sticky lg:top-16 lg:w-80">
       <PublishBox record={entry} isNew={!slug} canPublish={session.can("entries:publish")} {saving} onsave={submit} ontrash={slug && session.can("entries:delete") ? trash : null} />

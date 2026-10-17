@@ -46,7 +46,7 @@
     {#if session.can("redirects:write")}
       <input type="file" accept=".csv,text/csv" class="hidden" bind:this={importInput} onchange={(e) => { if (e.currentTarget.files[0]) importCSV(e.currentTarget.files[0]); e.currentTarget.value = ""; }} />
       <Button icon="arrow-up" onclick={() => importInput.click()}>Import</Button>
-      <Button variant="primary" icon="add" onclick={() => edit(null)}>Add Redirect</Button>
+      <Button icon="add" onclick={() => edit(null)}>New redirect</Button>
     {/if}
   {/snippet}
 </PageHeader>

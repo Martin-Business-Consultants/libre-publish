@@ -67,7 +67,7 @@
   {#snippet actions()}
     {#if session.can("assets:write")}
       <input type="file" multiple class="hidden" bind:this={fileInput} onchange={(e) => { upload([...e.currentTarget.files]); e.currentTarget.value = ""; }} />
-      <Button variant="primary" icon="add" loading={uploading > 0} onclick={() => fileInput.click()}>Upload files</Button>
+      <Button icon="add" loading={uploading > 0} onclick={() => fileInput.click()}>Upload files</Button>
     {/if}
   {/snippet}
 </PageHeader>

@@ -58,7 +58,7 @@
 </script>
 
 <PageHeader title="Pages" cli="cms pages{status ? ' --status ' + status : ''}">
-  {#snippet actions()}{#if session.can("pages:write")}<Button variant="primary" icon="add" href="#/pages/new">Add New Page</Button>{/if}{/snippet}
+  {#snippet actions()}{#if session.can("pages:write")}<Button icon="add" href="#/pages/new">New page</Button>{/if}{/snippet}
 </PageHeader>
 
 <div class="flex flex-wrap items-center justify-between gap-3">

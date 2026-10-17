@@ -15,7 +15,7 @@
 </script>
 
 <PageHeader title="Collections" cli="cms collections">
-  {#snippet actions()}{#if session.can("collections:write")}<Button variant="primary" icon="add" href="#/collections/new">Add New Collection</Button>{/if}{/snippet}
+  {#snippet actions()}{#if session.can("collections:write")}<Button icon="add" href="#/collections/new">New collection</Button>{/if}{/snippet}
 </PageHeader>
 
 {#if cols}

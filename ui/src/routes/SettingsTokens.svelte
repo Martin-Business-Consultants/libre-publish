@@ -33,7 +33,7 @@
 <SettingsLayout title="Service tokens">
   <div class="-mt-4 flex flex-wrap items-center justify-between gap-3">
     <p class="text-sm text-gray-500">Credentials for machines. The published site reads with one on the Production site role (PRODUCTION_TOKEN); agents write drafts with one on the Agent role.</p>
-    {#if session.can("settings:write")}<Button variant="primary" icon="add" onclick={() => (open = true)}>Issue a token</Button>{/if}
+    {#if session.can("settings:write")}<Button icon="add" onclick={() => (open = true)}>New token</Button>{/if}
   </div>
   {#if data}
     <DataTable rows={data.service_tokens} columns={[{ label: "Token" }, { label: "Role" }, { label: "Last used" }]} emptyText="No service tokens yet.">

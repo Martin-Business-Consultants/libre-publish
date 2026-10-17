@@ -38,7 +38,7 @@
 </script>
 
 <PageHeader title="Roles">
-  {#snippet actions()}{#if session.can("roles:write")}<Button variant="primary" icon="add" onclick={() => edit(null)}>Add New Role</Button>{/if}{/snippet}
+  {#snippet actions()}{#if session.can("roles:write")}<Button icon="add" onclick={() => edit(null)}>New role</Button>{/if}{/snippet}
 </PageHeader>
 {#if data}
   <DataTable rows={data.roles} columns={[{ label: "Role" }, { label: "Can" }]}>
