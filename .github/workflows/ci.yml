@@ -39,4 +39,9 @@ jobs:
       - run: npm ci
       - run: npm run check
       - run: npm run build
-      - run: git diff --exit-code -- ../internal/admin/dist || (echo "::error::internal/admin/dist is stale: run make ui and commit it" && exit 1)
+      - name: The committed build is current
+        run: |
+          git diff --exit-code -- ../internal/admin/dist || {
+            echo "::error::internal/admin/dist is stale; run make ui and commit it"
+            exit 1
+          }
