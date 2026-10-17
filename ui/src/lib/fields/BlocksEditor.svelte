@@ -78,7 +78,7 @@
           {#if t}
             <FieldsForm fields={t.fields} data={b.data} path="{path}[{i}].data" {errors} gap="gap-4" />
           {:else}
-            <p class="text-sm text-muted-foreground">There's no block type “{b.type}” any more; its content is kept as it is.</p>
+            {#if blockTypes.loaded}<p class="text-sm text-muted-foreground">There's no block type “{b.type}” any more; its content is kept as it is.</p>{/if}
           {/if}
         </div>
       {/if}

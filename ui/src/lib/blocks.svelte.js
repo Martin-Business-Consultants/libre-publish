@@ -2,7 +2,7 @@
 import { get } from "./api.js";
 class BlockTypes {
   list = $state([]);
-  loaded = false;
+  loaded = $state(false);
   async load(force = false) {
     if (this.loaded && !force) return this.list;
     this.list = (await get("/block_types")).block_types;

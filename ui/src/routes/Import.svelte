@@ -82,7 +82,7 @@
       const r = await post(`/tools/import/${report.id}/apply`, { force: true, secret_key: secretKey.trim() });
       report = r.import;
       step = "done";
-      setTimeout(() => { session.signedOut(); location.hash = "#/"; }, 6000);
+      setTimeout(signIn, 6000);
     } catch (e) {
       step = "staged";
       if (e instanceof ApiError && e.status === 422 && e.errors.secret_key) errors = e.errors;
@@ -90,9 +90,11 @@
     }
   }
 
+  // A whole new site: reload the admin so nothing it loaded from the old
+  // one (block types, collections, branding, plugins) outlives it.
   function signIn() {
-    session.signedOut();
     location.hash = "#/";
+    location.reload();
   }
 </script>
 
