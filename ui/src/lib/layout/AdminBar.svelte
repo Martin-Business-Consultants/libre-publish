@@ -38,10 +38,13 @@
   <SidebarTrigger />
   <Separator orientation="vertical" class="mx-1 data-vertical:h-4 data-vertical:self-center" />
   <Button variant="ghost" size="sm" href="#/" class="font-semibold" title="Dashboard">
+    <!-- The logo stands for the site's name; without one, the name does. -->
     {#if brand.current.logo}
-      <img src={brand.current.logo.thumb} alt="" class="h-6 w-auto max-w-32 object-contain" />
-    {:else}<Icon name="home" />{/if}
-    <span class="hidden md:inline">{session.site || "Libre Publish"}</span>
+      <img src={brand.current.logo.thumb} alt={session.site || "Libre Publish"} class="h-6 w-auto max-w-32 object-contain" />
+    {:else}
+      <Icon name="home" />
+      <span class="hidden md:inline">{session.site || "Libre Publish"}</span>
+    {/if}
   </Button>
   {#if site.siteURL}
     <Button variant="ghost" size="icon-sm" href={site.siteURL} title="View site"><Icon name="external" /><span class="sr-only">View site</span></Button>
