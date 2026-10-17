@@ -22,7 +22,8 @@ export function adminMenu(collections, plugins = []) {
         { label: "Block types", href: "/blocks", cap: "block_types:read" },
         { label: "Redirects", href: "/redirects", cap: "redirects:read" },
         { label: "Webhooks", href: "/webhooks", cap: "webhooks:read" },
-        { label: "Backup", href: "/backup", cap: "tools:use" } ] },
+        { label: "Backup", href: "/backup", cap: "tools:use" },
+        { label: "Import", href: "/import", cap: "tools:use" } ] },
       { id: "plugins", label: "Plugins", icon: "package", href: "/plugins", cap: "plugins:read", exact: true },
     ]],
     ["Access", [

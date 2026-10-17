@@ -28,6 +28,7 @@ import PluginScreen from "./routes/PluginScreen.svelte";
 import Account from "./routes/Account.svelte";
 import Connect from "./routes/Connect.svelte";
 import Backup from "./routes/Backup.svelte";
+import Import from "./routes/Import.svelte";
 
 export const routes = [
   ["/", Dashboard],
@@ -63,4 +64,5 @@ export const routes = [
   ["/account", Account],
   ["/connect", Connect],
   ["/backup", Backup],
+  ["/import", Import],
 ];
