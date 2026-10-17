@@ -1,0 +1,338 @@
+{
+  "delivery/content-delta.json": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/content?since=<cursor>"
+    },
+    "status": 200,
+    "headers": {
+      "Cache-Tag": "content",
+      "Content-Type": "application/json; charset=utf-8",
+      "X-CMS-Schema-Digest": "sha256:4c718412c934ff7ee813ade15d865921072e40465c02af0ac04067fba308e02b"
+    }
+  },
+  "delivery/content-full.json": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/content"
+    },
+    "status": 200,
+    "headers": {
+      "Cache-Tag": "content",
+      "Content-Type": "application/json; charset=utf-8",
+      "X-CMS-Schema-Digest": "sha256:4c718412c934ff7ee813ade15d865921072e40465c02af0ac04067fba308e02b"
+    }
+  },
+  "delivery/entries-posts.json": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/collections/posts/entries"
+    },
+    "status": 200,
+    "headers": {
+      "Cache-Tag": "collection:posts",
+      "Content-Type": "application/json; charset=utf-8",
+      "X-CMS-Schema-Digest": "sha256:4c718412c934ff7ee813ade15d865921072e40465c02af0ac04067fba308e02b"
+    }
+  },
+  "delivery/entries-projects.json": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/collections/projects/entries"
+    },
+    "status": 200,
+    "headers": {
+      "Cache-Tag": "collection:projects",
+      "Content-Type": "application/json; charset=utf-8",
+      "X-CMS-Schema-Digest": "sha256:4c718412c934ff7ee813ade15d865921072e40465c02af0ac04067fba308e02b"
+    }
+  },
+  "delivery/global-nav.json": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/globals/nav"
+    },
+    "status": 200,
+    "headers": {
+      "Cache-Tag": "global:nav",
+      "Content-Type": "application/json; charset=utf-8",
+      "X-CMS-Schema-Digest": "sha256:4c718412c934ff7ee813ade15d865921072e40465c02af0ac04067fba308e02b"
+    }
+  },
+  "delivery/globals.json": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/globals"
+    },
+    "status": 200,
+    "headers": {
+      "Cache-Tag": "global:nav",
+      "Content-Type": "application/json; charset=utf-8",
+      "X-CMS-Schema-Digest": "sha256:4c718412c934ff7ee813ade15d865921072e40465c02af0ac04067fba308e02b"
+    }
+  },
+  "delivery/page-about.json": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/pages/about"
+    },
+    "status": 200,
+    "headers": {
+      "Cache-Tag": "page:about",
+      "Content-Type": "application/json; charset=utf-8",
+      "X-CMS-Schema-Digest": "sha256:4c718412c934ff7ee813ade15d865921072e40465c02af0ac04067fba308e02b"
+    }
+  },
+  "delivery/page-home.json": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/pages/home"
+    },
+    "status": 200,
+    "headers": {
+      "Cache-Tag": "page:home,collection:posts,site,patterns",
+      "Content-Type": "application/json; charset=utf-8",
+      "X-CMS-Schema-Digest": "sha256:4c718412c934ff7ee813ade15d865921072e40465c02af0ac04067fba308e02b"
+    }
+  },
+  "delivery/pages.json": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/pages"
+    },
+    "status": 200,
+    "headers": {
+      "Cache-Tag": "pages,page:home,collection:posts,site,patterns,page:about",
+      "Content-Type": "application/json; charset=utf-8",
+      "X-CMS-Schema-Digest": "sha256:4c718412c934ff7ee813ade15d865921072e40465c02af0ac04067fba308e02b"
+    }
+  },
+  "delivery/redirects.json": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/redirects"
+    },
+    "status": 200,
+    "headers": {
+      "Cache-Tag": "redirects",
+      "Content-Type": "application/json; charset=utf-8",
+      "X-CMS-Schema-Digest": "sha256:4c718412c934ff7ee813ade15d865921072e40465c02af0ac04067fba308e02b"
+    }
+  },
+  "delivery/robots.json": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/robots"
+    },
+    "status": 200,
+    "headers": {
+      "Cache-Tag": "robots",
+      "Content-Type": "application/json; charset=utf-8",
+      "X-CMS-Schema-Digest": "sha256:4c718412c934ff7ee813ade15d865921072e40465c02af0ac04067fba308e02b"
+    }
+  },
+  "delivery/schema.json": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/schema"
+    },
+    "status": 200,
+    "headers": {
+      "Cache-Tag": "schema",
+      "Content-Type": "application/json; charset=utf-8",
+      "X-CMS-Schema-Digest": "sha256:4c718412c934ff7ee813ade15d865921072e40465c02af0ac04067fba308e02b"
+    }
+  },
+  "delivery/site-health.json": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/site_health"
+    },
+    "status": 200,
+    "headers": {
+      "Cache-Tag": "site",
+      "Content-Type": "application/json; charset=utf-8",
+      "X-CMS-Schema-Digest": "sha256:4c718412c934ff7ee813ade15d865921072e40465c02af0ac04067fba308e02b"
+    }
+  },
+  "delivery/site.json": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/site"
+    },
+    "status": 200,
+    "headers": {
+      "Cache-Tag": "site",
+      "Content-Type": "application/json; charset=utf-8",
+      "X-CMS-Schema-Digest": "sha256:4c718412c934ff7ee813ade15d865921072e40465c02af0ac04067fba308e02b"
+    }
+  },
+  "delivery/sitemap.json": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/sitemap"
+    },
+    "status": 200,
+    "headers": {
+      "Cache-Tag": "sitemap",
+      "Content-Type": "application/json; charset=utf-8",
+      "X-CMS-Schema-Digest": "sha256:4c718412c934ff7ee813ade15d865921072e40465c02af0ac04067fba308e02b"
+    }
+  },
+  "forms/form-definition.json": {
+    "request": {
+      "method": "GET",
+      "path": "/api/x/forms/definition?form=contact"
+    },
+    "status": 200,
+    "headers": {
+      "Cache-Control": "public, max-age=60",
+      "Content-Type": "application/json; charset=utf-8"
+    }
+  },
+  "forms/form-list.json": {
+    "request": {
+      "method": "GET",
+      "path": "/api/x/forms/list"
+    },
+    "status": 200,
+    "headers": {
+      "Cache-Control": "public, max-age=60",
+      "Content-Type": "application/json; charset=utf-8"
+    }
+  },
+  "forms/form-submit-200.json": {
+    "request": {
+      "body": {
+        "_hp": "",
+        "_ts": "1767225600000",
+        "consent": true,
+        "contact_by": "Email",
+        "date": "2026-11-01",
+        "email": "ada@example.test",
+        "guests": "4",
+        "interests": [
+          "News",
+          "Events"
+        ],
+        "message": "Hello there.",
+        "name": "Ada Lovelace",
+        "phone": "+44 (20) 7946 0000",
+        "topic": "Sales",
+        "website": "https://ada.example"
+      },
+      "method": "POST",
+      "path": "/api/x/forms/submit?form=contact"
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8"
+    }
+  },
+  "forms/form-submit-410.json": {
+    "request": {
+      "body": {
+        "_hp": "",
+        "_ts": "1767225600000",
+        "email": "ada@example.test"
+      },
+      "method": "POST",
+      "path": "/api/x/forms/submit?form=newsletter"
+    },
+    "status": 410,
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8"
+    }
+  },
+  "forms/form-submit-422.json": {
+    "request": {
+      "body": {
+        "_hp": "",
+        "_ts": "1767225600000",
+        "contact_by": "Fax",
+        "date": "2026-02-30",
+        "email": "not-an-email",
+        "guests": "99",
+        "interests": [
+          "Spam"
+        ],
+        "name": "",
+        "phone": "12",
+        "topic": "Other",
+        "website": "ftp://ada.example"
+      },
+      "method": "POST",
+      "path": "/api/x/forms/submit?form=contact"
+    },
+    "status": 422,
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8"
+    }
+  },
+  "webhooks/entry.published.json": {
+    "request": {
+      "method": "POST",
+      "path": "<the webhook's URL>"
+    },
+    "headers": {
+      "Content-Type": "application/json",
+      "X-CMS-Event": "entry.published",
+      "X-CMS-Signature": "sha256=<hex HMAC-SHA256 of the body>"
+    }
+  },
+  "webhooks/entry.unpublished.json": {
+    "request": {
+      "method": "POST",
+      "path": "<the webhook's URL>"
+    },
+    "headers": {
+      "Content-Type": "application/json",
+      "X-CMS-Event": "entry.unpublished",
+      "X-CMS-Signature": "sha256=<hex HMAC-SHA256 of the body>"
+    }
+  },
+  "webhooks/global.updated.json": {
+    "request": {
+      "method": "POST",
+      "path": "<the webhook's URL>"
+    },
+    "headers": {
+      "Content-Type": "application/json",
+      "X-CMS-Event": "global.updated",
+      "X-CMS-Signature": "sha256=<hex HMAC-SHA256 of the body>"
+    }
+  },
+  "webhooks/page.published.json": {
+    "request": {
+      "method": "POST",
+      "path": "<the webhook's URL>"
+    },
+    "headers": {
+      "Content-Type": "application/json",
+      "X-CMS-Event": "page.published",
+      "X-CMS-Signature": "sha256=<hex HMAC-SHA256 of the body>"
+    }
+  },
+  "webhooks/page.updated.json": {
+    "request": {
+      "method": "POST",
+      "path": "<the webhook's URL>"
+    },
+    "headers": {
+      "Content-Type": "application/json",
+      "X-CMS-Event": "page.updated",
+      "X-CMS-Signature": "sha256=<hex HMAC-SHA256 of the body>"
+    }
+  },
+  "webhooks/schema.changed.json": {
+    "request": {
+      "method": "POST",
+      "path": "<the webhook's URL>"
+    },
+    "headers": {
+      "Content-Type": "application/json",
+      "X-CMS-Event": "schema.changed",
+      "X-CMS-Signature": "sha256=<hex HMAC-SHA256 of the body>"
+    }
+  }
+}

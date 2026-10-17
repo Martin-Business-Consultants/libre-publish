@@ -3,6 +3,7 @@ package cms
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 )
 
 // Obj is a JSON object that keeps its keys in the order written, so answers
@@ -18,11 +19,16 @@ type kv struct {
 func O(pairs ...any) Obj {
 	o := make(Obj, 0, len(pairs)/2)
 	for i := 0; i+1 < len(pairs); i += 2 {
-		o = append(o, kv{pairs[i].(string), pairs[i+1]})
+		k, ok := pairs[i].(string)
+		if !ok {
+			panic(fmt.Sprintf("O: key %d is a %T, not a string", i, pairs[i]))
+		}
+		o = append(o, kv{k, pairs[i+1]})
 	}
 	return o
 }
 
+// Set replaces k's value, or adds k at the end.
 func (o Obj) Set(k string, v any) Obj {
 	for i := range o {
 		if o[i].K == k {
@@ -33,6 +39,7 @@ func (o Obj) Set(k string, v any) Obj {
 	return append(o, kv{k, v})
 }
 
+// Get is k's value; nil when o has no k.
 func (o Obj) Get(k string) any {
 	for _, p := range o {
 		if p.K == k {
@@ -42,6 +49,7 @@ func (o Obj) Get(k string) any {
 	return nil
 }
 
+// MarshalJSON writes o's keys in order.
 func (o Obj) MarshalJSON() ([]byte, error) {
 	var buf bytes.Buffer
 	buf.WriteByte('{')

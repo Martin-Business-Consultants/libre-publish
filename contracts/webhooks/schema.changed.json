@@ -1,0 +1,8 @@
+{
+  "data": {
+    "schema_digest": "sha256:4c718412c934ff7ee813ade15d865921072e40465c02af0ac04067fba308e02b"
+  },
+  "delivered_at": "2026-01-01T00:00:00Z",
+  "event": "schema.changed",
+  "tenant": "acme"
+}

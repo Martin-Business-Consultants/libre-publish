@@ -3,10 +3,11 @@ package cms
 import (
 	"bytes"
 	"context"
-	"crypto/md5"
+	"crypto/md5" //nolint:gosec // Active Storage's checksum, below
 	"database/sql"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"image"
 	"image/gif"
@@ -19,28 +20,34 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
 
 	"golang.org/x/image/draw"
 	_ "golang.org/x/image/webp"
+
+	"github.com/Martin-Business-Consultants/libre-publish/internal/apierr"
+	"github.com/Martin-Business-Consultants/libre-publish/internal/secret"
+	"github.com/Martin-Business-Consultants/libre-publish/internal/store"
 )
 
 // Media files keep Active Storage's disk layout (storage/ab/cd/abcd…), so a
 // Rails install's storage/ directory is served as it is.
 
-var DeliveryWidths = []int{640, 1280, 1920}
+var deliveryWidths = []int{640, 1280, 1920}
 
 const maxUpload = 100 << 20
 
+// Asset is one file in the media library, with its Active Storage blob.
 type Asset struct {
 	ID                       int64
 	Name, Alt, Caption, Desc string
 	Folder                   string
 	FocalX, FocalY           float64
-	DeletedAt, CreatedAt     Time
-	UpdatedAt                Time
+	DeletedAt, CreatedAt     store.Time
+	UpdatedAt                store.Time
 	BlobKey, Filename, Type  string
 	ByteSize                 int64
 	Width, Height            *int
@@ -53,14 +60,14 @@ const assetFrom = ` FROM assets a
 	LEFT JOIN active_storage_attachments att ON att.record_type = 'Asset' AND att.record_id = a.id AND att.name = 'file'
 	LEFT JOIN active_storage_blobs b ON b.id = att.blob_id `
 
-func (a *App) Assets(ctx context.Context, where string, args ...any) ([]*Asset, error) {
+func (a *App) assets(ctx context.Context, where string, args ...any) ([]*Asset, error) {
 	if where == "" {
 		where = "1=1"
 	}
 	if !strings.Contains(where, "deleted_at") {
 		where = scoped("a.deleted_at IS NULL", where)
 	}
-	rows, err := a.Store.DB.QueryContext(ctx, "SELECT "+assetCols+assetFrom+"WHERE "+where, args...)
+	rows, err := a.store.QueryContext(ctx, "SELECT "+assetCols+assetFrom+"WHERE "+where, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -89,21 +96,22 @@ func (a *App) Assets(ctx context.Context, where string, args ...any) ([]*Asset, 
 	return out, rows.Err()
 }
 
-func (a *App) AssetByID(ctx context.Context, id int64, withTrashed bool) (*Asset, error) {
+func (a *App) assetByID(ctx context.Context, id int64, withTrashed bool) (*Asset, error) {
 	where := "a.id = ?"
 	if withTrashed {
 		where += " AND (a.deleted_at IS NULL OR a.deleted_at IS NOT NULL)"
 	}
-	list, err := a.Assets(ctx, where, id)
+	list, err := a.assets(ctx, where, id)
 	if err != nil {
 		return nil, err
 	}
 	if len(list) == 0 {
-		return nil, errNotFound("Couldn't find asset " + strconv.FormatInt(id, 10) + ".")
+		return nil, apierr.NotFound("Couldn't find asset " + strconv.FormatInt(id, 10) + ".")
 	}
 	return list[0], nil
 }
 
+// Image is whether the asset is an image of any kind.
 func (as *Asset) Image() bool { return strings.HasPrefix(as.Type, "image/") }
 
 // variantable: images this core can resize (not SVG, not animated GIF
@@ -124,14 +132,14 @@ func (a *App) fileURL(as *Asset, variant string) string {
 	if variant != "" {
 		p += "/" + variant
 	}
-	return a.BaseURL + p + "/" + urlPathEscape(as.Filename)
+	return a.cfg.BaseURL + p + "/" + urlPathEscape(as.Filename)
 }
 
 func urlPathEscape(s string) string { return url.PathEscape(s) }
 
-// Delivery is an asset as a site renders it: absolute URLs on the CMS's own
+// delivery is an asset as a site renders it: absolute URLs on the CMS's own
 // host, its size, and width-limited renditions.
-func (a *App) Delivery(as *Asset) Obj {
+func (a *App) delivery(as *Asset) Obj {
 	url := a.fileURL(as, "")
 	o := O("id", as.ID, "url", url, "original", url, "filename", as.Filename, "content_type", as.Type, "byte_size", as.ByteSize,
 		"width", as.Width, "height", as.Height, "alt", as.Alt, "folder", as.Folder)
@@ -140,7 +148,7 @@ func (a *App) Delivery(as *Asset) Obj {
 		srcset := []Obj{}
 		thumb := url
 		if as.variantable() {
-			for _, w := range DeliveryWidths {
+			for _, w := range deliveryWidths {
 				variants["w"+strconv.Itoa(w)] = a.fileURL(as, "w"+strconv.Itoa(w))
 				srcset = append(srcset, O("width", w, "descriptor", strconv.Itoa(w)+"w", "url", a.fileURL(as, "w"+strconv.Itoa(w))))
 			}
@@ -151,10 +159,10 @@ func (a *App) Delivery(as *Asset) Obj {
 	return o
 }
 
-func (a *App) AssetJSON(ctx context.Context, as *Asset) Obj {
-	var uses int
-	a.Store.DB.QueryRowContext(ctx, `SELECT count(DISTINCT owner_type || ':' || owner_id) FROM content_references WHERE ref_type = 'asset' AND ref_id = ?`, strconv.FormatInt(as.ID, 10)).Scan(&uses)
-	return append(a.Delivery(as), kv{"name", as.Name}, kv{"caption", as.Caption}, kv{"description", as.Desc}, kv{"created_at", as.CreatedAt.ISO()}, kv{"usage_count", uses})
+func (a *App) assetJSON(ctx context.Context, as *Asset) Obj {
+	// A count that can't be read shows as 0: it's for display.
+	uses, _ := store.Count(ctx, a.store, `SELECT count(DISTINCT owner_type || ':' || owner_id) FROM content_references WHERE ref_type = 'asset' AND ref_id = ?`, strconv.FormatInt(as.ID, 10))
+	return append(a.delivery(as), kv{"name", as.Name}, kv{"caption", as.Caption}, kv{"description", as.Desc}, kv{"created_at", as.CreatedAt.ISO()}, kv{"usage_count", uses})
 }
 
 // resolveAssets is {id: delivery} for the ids that exist.
@@ -167,34 +175,34 @@ func (a *App) resolveAssets(ctx context.Context, ids []int64) map[string]Obj {
 	for i, id := range ids {
 		args[i] = id
 	}
-	list, err := a.Assets(ctx, "a.id IN ("+placeholders(len(ids))+")", args...)
+	list, err := a.assets(ctx, "a.id IN ("+store.Placeholders(len(ids))+")", args...)
 	if err != nil {
 		return out
 	}
 	for _, as := range list {
-		out[strconv.FormatInt(as.ID, 10)] = a.Delivery(as)
+		out[strconv.FormatInt(as.ID, 10)] = a.delivery(as)
 	}
 	return out
 }
 
 func (a *App) blobPath(key string) string {
 	if len(key) < 4 {
-		return filepath.Join(a.DataDir, "storage", key)
+		return filepath.Join(a.cfg.DataDir, "storage", key)
 	}
-	return filepath.Join(a.DataDir, "storage", key[0:2], key[2:4], key)
+	return filepath.Join(a.cfg.DataDir, "storage", key[0:2], key[2:4], key)
 }
 
-// CreateAsset stores an upload and makes its asset.
-func (a *App) CreateAsset(ctx context.Context, actor *Actor, filename, contentType string, r io.Reader, fields map[string]string) (*Asset, error) {
+// uploadAsset stores an upload and makes its asset.
+func (a *App) uploadAsset(ctx context.Context, actor *Actor, filename, contentType string, r io.Reader, fields map[string]string) (*Asset, error) {
 	data, err := io.ReadAll(io.LimitReader(r, maxUpload+1))
 	if err != nil {
 		return nil, err
 	}
 	if len(data) > maxUpload {
-		return nil, &Error{Status: 422, Code: "invalid", Message: "Validation failed", Errors: Invalid{"file": {"is larger than 100 MB"}}}
+		return nil, &apierr.Error{Status: 422, Code: "invalid", Message: "Validation failed", Errors: apierr.Invalid{"file": {"is larger than 100 MB"}}}
 	}
 	if len(data) == 0 {
-		return nil, &Error{Status: 422, Code: "invalid", Message: "Validation failed", Errors: Invalid{"file": {"is empty"}}}
+		return nil, &apierr.Error{Status: 422, Code: "invalid", Message: "Validation failed", Errors: apierr.Invalid{"file": {"is empty"}}}
 	}
 	filename = path.Base(strings.ReplaceAll(filename, "\\", "/"))
 	if contentType == "" || contentType == "application/octet-stream" {
@@ -205,27 +213,32 @@ func (a *App) CreateAsset(ctx context.Context, actor *Actor, filename, contentTy
 		}
 	}
 	if contentType == "text/html" || strings.HasSuffix(strings.ToLower(filename), ".html") {
-		return nil, &Error{Status: 422, Code: "invalid", Message: "Validation failed", Errors: Invalid{"file": {"HTML files can't be uploaded"}}}
+		return nil, &apierr.Error{Status: 422, Code: "invalid", Message: "Validation failed", Errors: apierr.Invalid{"file": {"HTML files can't be uploaded"}}}
 	}
 	meta := map[string]any{"identified": true, "analyzed": true}
 	if cfg, _, err := image.DecodeConfig(bytes.NewReader(data)); err == nil {
+		// A few KB can claim gigapixels (a decompression bomb). Big photos
+		// are fine (they're served as they are, unresized); absurd ones aren't.
+		if pixels(cfg) > maxUploadPixels {
+			return nil, &apierr.Error{Status: 422, Code: "invalid", Message: "Validation failed", Errors: apierr.Invalid{"file": {"is an image of over 250 megapixels"}}}
+		}
 		meta["width"], meta["height"] = cfg.Width, cfg.Height
 	}
 	key := strings.ToLower(strings.TrimRight(base32Key(), "="))
-	sum := md5.Sum(data)
+	sum := md5.Sum(data) //nolint:gosec // Active Storage's checksum column is MD5; it's an integrity check, not security
 	p := a.blobPath(key)
-	if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(p), 0o750); err != nil {
 		return nil, err
 	}
-	if err := os.WriteFile(p, data, 0o644); err != nil {
+	if err := os.WriteFile(p, data, 0o640); err != nil { //nolint:gosec // 0640, as the database is: never world-readable
 		return nil, err
 	}
 	folder := normalizeFolder(fields["folder"])
-	now := Now().DB()
+	now := store.Now().DB()
 	var id int64
-	err = a.Store.Tx(ctx, func(tx *sql.Tx) error {
+	err = a.store.Tx(ctx, func(tx *sql.Tx) error {
 		res, err := tx.ExecContext(ctx, `INSERT INTO active_storage_blobs (key, filename, content_type, metadata, service_name, byte_size, checksum, created_at) VALUES (?,?,?,?,?,?,?,?)`,
-			key, filename, contentType, string(mustJSON(meta)), "local", len(data), base64.StdEncoding.EncodeToString(sum[:]), now)
+			key, filename, contentType, string(store.MustJSON(meta)), "local", len(data), base64.StdEncoding.EncodeToString(sum[:]), now)
 		if err != nil {
 			return err
 		}
@@ -247,7 +260,7 @@ func (a *App) CreateAsset(ctx context.Context, actor *Actor, filename, contentTy
 		os.Remove(p)
 		return nil, err
 	}
-	as, err := a.AssetByID(ctx, id, false)
+	as, err := a.assetByID(ctx, id, false)
 	if err == nil {
 		a.audit(ctx, actor, "asset.created", "Asset", id, filename, nil)
 	}
@@ -256,7 +269,7 @@ func (a *App) CreateAsset(ctx context.Context, actor *Actor, filename, contentTy
 
 func base32Key() string {
 	const alphabet = "abcdefghijklmnopqrstuvwxyz0123456789"
-	b := randomBytes(28)
+	b := secret.RandomBytes(28)
 	out := make([]byte, 28)
 	for i, c := range b {
 		out[i] = alphabet[int(c)%len(alphabet)]
@@ -269,7 +282,7 @@ func normalizeFolder(f string) string {
 	return path.Clean(f)
 }
 
-func (a *App) UpdateAsset(ctx context.Context, actor *Actor, as *Asset, p map[string]any) error {
+func (a *App) saveAsset(ctx context.Context, actor *Actor, as *Asset, p map[string]any) error {
 	for k, dst := range map[string]*string{"name": &as.Name, "alt": &as.Alt, "caption": &as.Caption, "description": &as.Desc} {
 		if has(p, k) {
 			*dst = str(p[k])
@@ -281,23 +294,26 @@ func (a *App) UpdateAsset(ctx context.Context, actor *Actor, as *Asset, p map[st
 	for k, dst := range map[string]*float64{"focal_x": &as.FocalX, "focal_y": &as.FocalY} {
 		if v, ok := p[k].(float64); ok {
 			if v < 0 || v > 1 {
-				return &Error{Status: 422, Code: "invalid", Message: "Validation failed", Errors: Invalid{k: {"must be between 0 and 1"}}}
+				return &apierr.Error{Status: 422, Code: "invalid", Message: "Validation failed", Errors: apierr.Invalid{k: {"must be between 0 and 1"}}}
 			}
 			*dst = v
 		}
 	}
-	_, err := a.Store.DB.ExecContext(ctx, `UPDATE assets SET name=?, alt=?, caption=?, description=?, folder=?, focal_x=?, focal_y=?, updated_at=? WHERE id=?`,
-		as.Name, as.Alt, as.Caption, as.Desc, as.Folder, as.FocalX, as.FocalY, Now().DB(), as.ID)
+	_, err := a.store.ExecContext(ctx, `UPDATE assets SET name=?, alt=?, caption=?, description=?, folder=?, focal_x=?, focal_y=?, updated_at=? WHERE id=?`,
+		as.Name, as.Alt, as.Caption, as.Desc, as.Folder, as.FocalX, as.FocalY, store.Now().DB(), as.ID)
 	if err == nil {
 		a.audit(ctx, actor, "asset.updated", "Asset", as.ID, as.Filename, nil)
 	}
 	return err
 }
 
-func (a *App) PurgeAsset(ctx context.Context, actor *Actor, as *Asset) error {
-	err := a.Store.Tx(ctx, func(tx *sql.Tx) error {
+func (a *App) purgeAsset(ctx context.Context, actor *Actor, as *Asset) error {
+	err := a.store.Tx(ctx, func(tx *sql.Tx) error {
 		var blobID int64
-		tx.QueryRowContext(ctx, `SELECT blob_id FROM active_storage_attachments WHERE record_type = 'Asset' AND record_id = ?`, as.ID).Scan(&blobID)
+		err := tx.QueryRowContext(ctx, `SELECT blob_id FROM active_storage_attachments WHERE record_type = 'Asset' AND record_id = ?`, as.ID).Scan(&blobID)
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			return err
+		}
 		for _, s := range []string{
 			`DELETE FROM active_storage_attachments WHERE record_type = 'Asset' AND record_id = ?`,
 			`DELETE FROM assets WHERE id = ?`,
@@ -306,7 +322,7 @@ func (a *App) PurgeAsset(ctx context.Context, actor *Actor, as *Asset) error {
 				return err
 			}
 		}
-		_, err := tx.ExecContext(ctx, `DELETE FROM active_storage_blobs WHERE id = ?`, blobID)
+		_, err = tx.ExecContext(ctx, `DELETE FROM active_storage_blobs WHERE id = ?`, blobID)
 		return err
 	})
 	if err != nil {
@@ -314,7 +330,7 @@ func (a *App) PurgeAsset(ctx context.Context, actor *Actor, as *Asset) error {
 	}
 	if as.BlobKey != "" {
 		os.Remove(a.blobPath(as.BlobKey))
-		matches, _ := filepath.Glob(filepath.Join(a.DataDir, "variants", as.BlobKey+"-*"))
+		matches, _ := filepath.Glob(filepath.Join(a.cfg.DataDir, "variants", as.BlobKey+"-*"))
 		for _, m := range matches {
 			os.Remove(m)
 		}
@@ -325,24 +341,53 @@ func (a *App) PurgeAsset(ctx context.Context, actor *Actor, as *Asset) error {
 
 // ---- serving -------------------------------------------------------------
 
-var variantLocks sync.Map
+// keyedLocks is a mutex per key, there only while someone holds or waits
+// for it.
+type keyedLocks struct {
+	mu    sync.Mutex
+	locks map[string]*keyedLock
+}
+
+type keyedLock struct {
+	sync.Mutex
+	refs int
+}
+
+// lock takes key's mutex; the func it returns lets it go.
+func (k *keyedLocks) lock(key string) (unlock func()) {
+	k.mu.Lock()
+	if k.locks == nil {
+		k.locks = map[string]*keyedLock{}
+	}
+	l := k.locks[key]
+	if l == nil {
+		l = &keyedLock{}
+		k.locks[key] = l
+	}
+	l.refs++
+	k.mu.Unlock()
+	l.Lock()
+	return func() {
+		l.Unlock()
+		k.mu.Lock()
+		if l.refs--; l.refs == 0 {
+			delete(k.locks, key)
+		}
+		k.mu.Unlock()
+	}
+}
 
 // serveFile answers /files/<key>/<filename> and /files/<key>/w640/<filename>.
 // Keys are unguessable; a file is public once uploaded, as Active Storage's
 // were.
 func (a *App) serveFile(w http.ResponseWriter, r *http.Request) {
-	parts := strings.Split(strings.TrimPrefix(r.URL.Path, "/files/"), "/")
-	if len(parts) < 2 {
-		http.NotFound(w, r)
-		return
-	}
-	key := parts[0]
-	variant := ""
-	if len(parts) >= 3 {
-		variant = parts[1]
+	key := r.PathValue("key")
+	variant, _, ok := strings.Cut(r.PathValue("rest"), "/")
+	if !ok {
+		variant = ""
 	}
 	var as Asset
-	err := a.Store.DB.QueryRowContext(r.Context(), `SELECT key, filename, COALESCE(content_type, '') FROM active_storage_blobs WHERE key = ?`, key).Scan(&as.BlobKey, &as.Filename, &as.Type)
+	err := a.store.QueryRowContext(r.Context(), `SELECT key, filename, COALESCE(content_type, '') FROM active_storage_blobs WHERE key = ?`, key).Scan(&as.BlobKey, &as.Filename, &as.Type)
 	if err != nil {
 		http.NotFound(w, r)
 		return
@@ -350,23 +395,27 @@ func (a *App) serveFile(w http.ResponseWriter, r *http.Request) {
 	file := a.blobPath(key)
 	if variant != "" && as.variantable() {
 		width, err := strconv.Atoi(strings.TrimPrefix(variant, "w"))
-		if err != nil || !strings.HasPrefix(variant, "w") || (width != 256 && !containsInt(DeliveryWidths, width)) {
+		if err != nil || !strings.HasPrefix(variant, "w") || (width != 256 && !slices.Contains(deliveryWidths, width)) {
 			http.NotFound(w, r)
 			return
 		}
 		file, err = a.variant(as, width)
 		if err != nil {
-			a.Logger.Warn("variant", "key", key, "err", err)
+			a.log.Warn("variant", "key", key, "err", err)
 			file = a.blobPath(key)
 		}
 	}
-	f, err := os.Open(file)
+	f, err := os.Open(file) //nolint:gosec // file is a blob or variant path built from a key the database knows
 	if err != nil {
 		http.NotFound(w, r)
 		return
 	}
 	defer f.Close()
-	st, _ := f.Stat()
+	st, err := f.Stat()
+	if err != nil {
+		http.Error(w, "unreadable", http.StatusInternalServerError)
+		return
+	}
 	ct := as.Type
 	if strings.HasSuffix(file, ".jpg") {
 		ct = "image/jpeg"
@@ -383,28 +432,28 @@ func (a *App) serveFile(w http.ResponseWriter, r *http.Request) {
 	http.ServeContent(w, r, "", st.ModTime(), f)
 }
 
-func containsInt(l []int, v int) bool {
-	for _, x := range l {
-		if x == v {
-			return true
-		}
-	}
-	return false
-}
+// Decoding an image takes 4 bytes a pixel whatever its file size: past
+// maxVariantPixels the original is served rather than resized, and an upload
+// past maxUploadPixels is refused.
+const (
+	maxVariantPixels = 40_000_000
+	maxUploadPixels  = 250_000_000
+)
 
-// variant makes (once) and returns the path of a width-limited copy.
+func pixels(cfg image.Config) int64 { return int64(cfg.Width) * int64(cfg.Height) }
+
+// variant makes (once) and returns the path of a width-limited copy; the
+// original's path when it's already narrow enough or too big to decode.
 func (a *App) variant(as Asset, width int) (string, error) {
 	ext := ".jpg"
 	if as.Type == "image/png" || as.Type == "image/gif" {
 		ext = ".png"
 	}
-	out := filepath.Join(a.DataDir, "variants", fmt.Sprintf("%s-w%d%s", as.BlobKey, width, ext))
+	out := filepath.Join(a.cfg.DataDir, "variants", fmt.Sprintf("%s-w%d%s", as.BlobKey, width, ext))
 	if _, err := os.Stat(out); err == nil {
 		return out, nil
 	}
-	lock, _ := variantLocks.LoadOrStore(out, &sync.Mutex{})
-	lock.(*sync.Mutex).Lock()
-	defer lock.(*sync.Mutex).Unlock()
+	defer a.variants.lock(out)()
 	if _, err := os.Stat(out); err == nil {
 		return out, nil
 	}
@@ -413,6 +462,16 @@ func (a *App) variant(as Asset, width int) (string, error) {
 		return "", err
 	}
 	defer src.Close()
+	cfg, _, err := image.DecodeConfig(src)
+	if err != nil {
+		return "", err
+	}
+	if cfg.Width <= width || pixels(cfg) > maxVariantPixels {
+		return a.blobPath(as.BlobKey), nil
+	}
+	if _, err := src.Seek(0, io.SeekStart); err != nil {
+		return "", err
+	}
 	img, _, err := image.Decode(src)
 	if err != nil {
 		return "", err
@@ -424,11 +483,11 @@ func (a *App) variant(as Asset, width int) (string, error) {
 	height := b.Dy() * width / b.Dx()
 	dst := image.NewRGBA(image.Rect(0, 0, width, height))
 	draw.CatmullRom.Scale(dst, dst.Bounds(), img, b, draw.Over, nil)
-	if err := os.MkdirAll(filepath.Dir(out), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(out), 0o750); err != nil {
 		return "", err
 	}
 	tmp := out + ".tmp"
-	f, err := os.Create(tmp)
+	f, err := os.OpenFile(tmp, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o640) //nolint:gosec // 0640, as the blobs are
 	if err != nil {
 		return "", err
 	}
@@ -437,7 +496,11 @@ func (a *App) variant(as Asset, width int) (string, error) {
 	} else {
 		err = jpeg.Encode(f, dst, &jpeg.Options{Quality: 82})
 	}
-	f.Close()
+	// A failed close can mean the bytes never landed: don't rename a
+	// truncated file into place.
+	if cerr := f.Close(); err == nil {
+		err = cerr
+	}
 	if err != nil {
 		os.Remove(tmp)
 		return "", err

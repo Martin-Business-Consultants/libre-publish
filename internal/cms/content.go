@@ -1,6 +1,7 @@
 package cms
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"encoding/json"
@@ -10,6 +11,11 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+
+	"github.com/Martin-Business-Consultants/libre-publish/internal/apierr"
+	"github.com/Martin-Business-Consultants/libre-publish/internal/fields"
+	"github.com/Martin-Business-Consultants/libre-publish/internal/secret"
+	"github.com/Martin-Business-Consultants/libre-publish/internal/store"
 )
 
 // Content is a page or a collection entry: the two share status, schedule,
@@ -26,28 +32,28 @@ type Content struct {
 
 	// Pages
 	Path     string
-	ParentID NullInt
+	ParentID store.NullInt
 	Depth    int
-	Schema   JSON
+	Schema   store.JSON
 
 	// Entries
 	CollectionID   int64
 	CollectionSlug string
 	BodyMarkdown   string
 
-	Blocks             JSON
-	Frontmatter        JSON
-	Seo                JSON
-	CategoryEntryID    NullInt
-	TranslationGroupID NullInt
+	Blocks             store.JSON
+	Frontmatter        store.JSON
+	Seo                store.JSON
+	CategoryEntryID    store.NullInt
+	TranslationGroupID store.NullInt
 	LockVersion        int
 
-	PublishAt, PublishedAt, UnpublishAt, DeletedAt, CreatedAt, UpdatedAt Time
+	PublishAt, PublishedAt, UnpublishAt, DeletedAt, CreatedAt, UpdatedAt store.Time
 
 	tagIDs []int64 // set by a write that names tag_ids
 }
 
-var Statuses = []string{"draft", "published", "archived"}
+var statuses = []string{"draft", "published", "archived"}
 
 var contentSlugFormat = regexp.MustCompile(`^[a-z0-9][a-z0-9\-]*$`)
 
@@ -74,8 +80,11 @@ func (c *Content) Prefix() string {
 	return "entries"
 }
 
+// Live is whether the record is published and not in the trash.
 func (c *Content) Live() bool { return c.Status == "published" && !c.DeletedAt.Valid }
 
+// Label names the record for people: a page's title and path, an entry's
+// title.
 func (c *Content) Label() string {
 	if c.Kind == "page" {
 		return c.Title + " (/" + c.Path + ")"
@@ -120,16 +129,16 @@ func (c *Content) normalize() {
 	c.Schema = c.Schema.Or(`{"fields":[]}`)
 }
 
-// Pages reads pages matching a WHERE clause (trashed ones excluded unless
+// pages reads pages matching a WHERE clause (trashed ones excluded unless
 // the clause says otherwise).
-func (a *App) Pages(ctx context.Context, where string, args ...any) ([]*Content, error) {
+func (a *App) pages(ctx context.Context, where string, args ...any) ([]*Content, error) {
 	if where == "" {
 		where = "1=1"
 	}
 	if !strings.Contains(where, "deleted_at") {
 		where = scoped("deleted_at IS NULL", where)
 	}
-	rows, err := a.Store.DB.QueryContext(ctx, "SELECT "+pageCols+" FROM pages WHERE "+where, args...)
+	rows, err := a.store.QueryContext(ctx, "SELECT "+pageCols+" FROM pages WHERE "+where, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -145,14 +154,14 @@ func (a *App) Pages(ctx context.Context, where string, args ...any) ([]*Content,
 	return out, rows.Err()
 }
 
-func (a *App) Entries(ctx context.Context, where string, args ...any) ([]*Content, error) {
+func (a *App) entries(ctx context.Context, where string, args ...any) ([]*Content, error) {
 	if where == "" {
 		where = "1=1"
 	}
 	if !strings.Contains(where, "deleted_at") {
 		where = scoped("e.deleted_at IS NULL", where)
 	}
-	rows, err := a.Store.DB.QueryContext(ctx, "SELECT "+entryCols+" FROM collection_entries e JOIN collections c ON c.id = e.collection_id WHERE "+where, args...)
+	rows, err := a.store.QueryContext(ctx, "SELECT "+entryCols+" FROM collection_entries e JOIN collections c ON c.id = e.collection_id WHERE "+where, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -185,31 +194,31 @@ func one(list []*Content, err error) (*Content, error) {
 		return nil, err
 	}
 	if len(list) == 0 {
-		return nil, ErrNotFound
+		return nil, store.ErrNotFound
 	}
 	return list[0], nil
 }
 
-func (a *App) PageByPath(ctx context.Context, path string, liveOnly bool) (*Content, error) {
+func (a *App) pageByPath(ctx context.Context, path string, liveOnly bool) (*Content, error) {
 	where := "path = ?"
 	if liveOnly {
 		where += " AND status = 'published'"
 	}
-	p, err := one(a.Pages(ctx, where+" ORDER BY id LIMIT 1", strings.Trim(path, "/")))
-	if errors.Is(err, ErrNotFound) {
-		return nil, errNotFound("Couldn't find page " + path + ".")
+	p, err := one(a.pages(ctx, where+" ORDER BY id LIMIT 1", strings.Trim(path, "/")))
+	if errors.Is(err, store.ErrNotFound) {
+		return nil, apierr.NotFound("Couldn't find page " + path + ".")
 	}
 	return p, err
 }
 
-func (a *App) EntryBySlug(ctx context.Context, collectionID int64, slug string, liveOnly bool) (*Content, error) {
+func (a *App) entryBySlug(ctx context.Context, collectionID int64, slug string, liveOnly bool) (*Content, error) {
 	where := "e.collection_id = ? AND e.slug = ?"
 	if liveOnly {
 		where += " AND e.status = 'published'"
 	}
-	e, err := one(a.Entries(ctx, where+" ORDER BY e.id LIMIT 1", collectionID, slug))
-	if errors.Is(err, ErrNotFound) {
-		return nil, errNotFound("Couldn't find entry " + slug + ".")
+	e, err := one(a.entries(ctx, where+" ORDER BY e.id LIMIT 1", collectionID, slug))
+	if errors.Is(err, store.ErrNotFound) {
+		return nil, apierr.NotFound("Couldn't find entry " + slug + ".")
 	}
 	return e, err
 }
@@ -220,12 +229,12 @@ func (a *App) contentByID(ctx context.Context, kind string, id int64, withTrashe
 		trash = " AND (deleted_at IS NULL OR deleted_at IS NOT NULL)"
 	}
 	if kind == "page" {
-		return one(a.Pages(ctx, "id = ?"+trash, id))
+		return one(a.pages(ctx, "id = ?"+trash, id))
 	}
 	if withTrashed {
 		trash = " AND (e.deleted_at IS NULL OR e.deleted_at IS NOT NULL)"
 	}
-	return one(a.Entries(ctx, "e.id = ?"+trash, id))
+	return one(a.entries(ctx, "e.id = ?"+trash, id))
 }
 
 // ---- taxonomy & translations ---------------------------------------------
@@ -235,14 +244,14 @@ func (a *App) taxonomy(ctx context.Context, c *Content) (category any, tags []Ob
 	if c.CategoryEntryID.Valid {
 		var id int64
 		var slug, title string
-		err := a.Store.DB.QueryRowContext(ctx, `SELECT id, slug, title FROM collection_entries WHERE id = ? AND deleted_at IS NULL`, c.CategoryEntryID.Int64).Scan(&id, &slug, &title)
+		err := a.store.QueryRowContext(ctx, `SELECT id, slug, title FROM collection_entries WHERE id = ? AND deleted_at IS NULL`, c.CategoryEntryID.Int64).Scan(&id, &slug, &title)
 		if err == nil {
 			category = O("id", id, "slug", slug, "title", title)
 		} else if !errors.Is(err, sql.ErrNoRows) {
 			return nil, nil, err
 		}
 	}
-	rows, err := a.Store.DB.QueryContext(ctx, `SELECT e.id, e.slug, e.title FROM taggings t JOIN collection_entries e ON e.id = t.tag_entry_id
+	rows, err := a.store.QueryContext(ctx, `SELECT e.id, e.slug, e.title FROM taggings t JOIN collection_entries e ON e.id = t.tag_entry_id
 		WHERE t.taggable_type = ? AND t.taggable_id = ? AND e.deleted_at IS NULL ORDER BY t.position, t.id`, c.TaggableType(), c.ID)
 	if err != nil {
 		return nil, nil, err
@@ -268,24 +277,24 @@ func (a *App) translations(ctx context.Context, c *Content) ([]Obj, error) {
 	var siblings []*Content
 	var err error
 	if c.Kind == "page" {
-		siblings, err = a.Pages(ctx, "translation_group_id = ? AND id != ? AND status = 'published'", c.TranslationGroupID.Int64, c.ID)
+		siblings, err = a.pages(ctx, "translation_group_id = ? AND id != ? AND status = 'published'", c.TranslationGroupID.Int64, c.ID)
 	} else {
-		siblings, err = a.Entries(ctx, "e.translation_group_id = ? AND e.id != ? AND e.status = 'published'", c.TranslationGroupID.Int64, c.ID)
+		siblings, err = a.entries(ctx, "e.translation_group_id = ? AND e.id != ? AND e.status = 'published'", c.TranslationGroupID.Int64, c.ID)
 	}
 	if err != nil {
 		return nil, err
 	}
 	for _, s := range siblings {
-		out = append(out, O("locale", s.Locale, "path", a.PublicPath(s)))
+		out = append(out, O("locale", s.Locale, "path", a.publicPath(s)))
 	}
 	return out, nil
 }
 
 // ---- addresses -----------------------------------------------------------
 
-// PublicPath is where the record lives on the site: an SEO canonical when it
+// publicPath is where the record lives on the site: an SEO canonical when it
 // has one, else its path under its locale's prefix ("home" is "/").
-func (a *App) PublicPath(c *Content) string {
+func (a *App) publicPath(c *Content) string {
 	seo := c.Seo.Map()
 	if canon := strings.TrimSpace(str(seo["canonical_url"])); canon != "" {
 		return canon
@@ -314,12 +323,12 @@ func (a *App) PublicPath(c *Content) string {
 	return prefix + path
 }
 
-func (a *App) PublicURL(c *Content) string {
-	path := a.PublicPath(c)
+func (a *App) publicURL(c *Content) string {
+	path := a.publicPath(c)
 	if strings.HasPrefix(path, "http://") || strings.HasPrefix(path, "https://") {
 		return path
 	}
-	base := strings.TrimRight(strings.TrimSpace(str(a.general()["site_base_url"])), "/")
+	base := strings.TrimRight(strings.TrimSpace(str(a.general(context.Background())["site_base_url"])), "/")
 	if base == "" {
 		return path
 	}
@@ -328,8 +337,8 @@ func (a *App) PublicURL(c *Content) string {
 
 // ---- answers -------------------------------------------------------------
 
-// PageJSON is a whole page as /api has always answered it.
-func (a *App) PageJSON(ctx context.Context, p *Content, blocks any) (Obj, error) {
+// pageJSON is a whole page as /api has always answered it.
+func (a *App) pageJSON(ctx context.Context, p *Content, blocks any) (Obj, error) {
 	cat, tags, err := a.taxonomy(ctx, p)
 	if err != nil {
 		return nil, err
@@ -342,7 +351,7 @@ func (a *App) PageJSON(ctx context.Context, p *Content, blocks any) (Obj, error)
 		"published_at", p.PublishedAt, "created_at", p.CreatedAt, "updated_at", p.UpdatedAt, "category", cat, "tags", tags), nil
 }
 
-func (a *App) PageSummaryJSON(ctx context.Context, p *Content) (Obj, error) {
+func (a *App) pageSummaryJSON(ctx context.Context, p *Content) (Obj, error) {
 	cat, tags, err := a.taxonomy(ctx, p)
 	if err != nil {
 		return nil, err
@@ -352,7 +361,7 @@ func (a *App) PageSummaryJSON(ctx context.Context, p *Content) (Obj, error) {
 		"category", cat, "tags", tags), nil
 }
 
-func (a *App) EntryJSON(ctx context.Context, e *Content) (Obj, error) {
+func (a *App) entryJSON(ctx context.Context, e *Content) (Obj, error) {
 	cat, tags, err := a.taxonomy(ctx, e)
 	if err != nil {
 		return nil, err
@@ -362,7 +371,7 @@ func (a *App) EntryJSON(ctx context.Context, e *Content) (Obj, error) {
 		"updated_at", e.UpdatedAt, "collection_slug", e.CollectionSlug, "category", cat, "tags", tags), nil
 }
 
-func (a *App) EntrySummaryJSON(ctx context.Context, e *Content) (Obj, error) {
+func (a *App) entrySummaryJSON(ctx context.Context, e *Content) (Obj, error) {
 	cat, tags, err := a.taxonomy(ctx, e)
 	if err != nil {
 		return nil, err
@@ -403,10 +412,11 @@ func (c *Content) assign(params map[string]any) error {
 		case "body_markdown":
 			c.BodyMarkdown = str(v)
 		case "published_at", "publish_at", "unpublish_at":
-			var t Time
+			var t store.Time
 			if s := str(v); s != "" {
-				if err := t.parse(s); err != nil {
-					return &Error{Status: 422, Code: "invalid", Message: "Validation failed", Errors: Invalid{key: {"isn't a date and time"}}}
+				var err error
+				if t, err = store.ParseTime(s); err != nil {
+					return &apierr.Error{Status: 422, Code: "invalid", Message: "Validation failed", Errors: apierr.Invalid{key: {"isn't a date and time"}}}
 				}
 			}
 			switch key {
@@ -418,9 +428,9 @@ func (c *Content) assign(params map[string]any) error {
 				c.UnpublishAt = t
 			}
 		case "category_entry_id", "parent_id":
-			var n NullInt
+			var n store.NullInt
 			if id, ok := intOf(v); ok {
-				n = IntOf(id)
+				n = store.IntOf(id)
 			}
 			if key == "parent_id" {
 				c.ParentID = n
@@ -438,15 +448,15 @@ func (c *Content) assign(params map[string]any) error {
 			if v == nil {
 				v = []any{}
 			}
-			c.Blocks = mustJSON(normalizeBlocks(v))
+			c.Blocks = store.MustJSON(normalizeBlocks(v))
 		case "frontmatter", "seo":
 			if v == nil {
 				v = map[string]any{}
 			}
 			if key == "frontmatter" {
-				c.Frontmatter = mustJSON(v)
+				c.Frontmatter = store.MustJSON(v)
 			} else {
-				c.Seo = mustJSON(v)
+				c.Seo = store.MustJSON(v)
 			}
 		}
 	}
@@ -469,7 +479,7 @@ func normalizeBlocks(v any) any {
 		}
 		block := map[string]any{"id": b["id"], "type": b["type"], "data": b["data"]}
 		if str(b["id"]) == "" {
-			block["id"] = randomToken(8)
+			block["id"] = secret.Token(8)
 		}
 		if b["version"] != nil {
 			block["version"] = b["version"]
@@ -482,38 +492,48 @@ func normalizeBlocks(v any) any {
 	return out
 }
 
-func (a *App) blockTypeResolver(ctx context.Context) BlockTypes {
-	cache := map[string][]Field{}
-	rows, err := a.Store.DB.QueryContext(ctx, `SELECT slug, fields FROM block_types`)
-	if err == nil {
-		defer rows.Close()
-		for rows.Next() {
-			var slug string
-			var fields JSON
-			if rows.Scan(&slug, &fields) == nil {
-				cache[slug] = ParseFields(fields)
-			}
-		}
+// blockTypeResolver reads every block type's fields once. Failing to is an
+// error, not "no block types": that would pass blocks unvalidated and drop
+// their references.
+func (a *App) blockTypeResolver(ctx context.Context) (fields.BlockTypes, error) {
+	cache := map[string][]fields.Field{}
+	rows, err := a.store.QueryContext(ctx, `SELECT slug, fields FROM block_types`)
+	if err != nil {
+		return nil, err
 	}
-	return func(slug string) ([]Field, bool) {
+	defer rows.Close()
+	for rows.Next() {
+		var slug string
+		var defs store.JSON
+		if err := rows.Scan(&slug, &defs); err != nil {
+			return nil, err
+		}
+		cache[slug] = fields.Parse(defs)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return func(slug string) ([]fields.Field, bool) {
 		f, ok := cache[slug]
 		return f, ok
-	}
+	}, nil
 }
 
 // contentFields is what a record's frontmatter is written against: its
 // page's own schema, or its collection's.
-func (a *App) contentFields(ctx context.Context, c *Content) []Field {
+func (a *App) contentFields(ctx context.Context, c *Content) ([]fields.Field, error) {
 	if c.Kind == "page" {
-		return ParseFields(c.Schema)
+		return fields.Parse(c.Schema), nil
 	}
-	var schema JSON
-	a.Store.DB.QueryRowContext(ctx, `SELECT schema FROM collections WHERE id = ?`, c.CollectionID).Scan(&schema)
-	return ParseFields(schema)
+	var schema store.JSON
+	if err := a.store.QueryRowContext(ctx, `SELECT schema FROM collections WHERE id = ?`, c.CollectionID).Scan(&schema); err != nil {
+		return nil, store.NotFound(err)
+	}
+	return fields.Parse(schema), nil
 }
 
 func (a *App) validateContent(ctx context.Context, c *Content) error {
-	inv := Invalid{}
+	inv := apierr.Invalid{}
 	if c.Slug == "" {
 		inv.Add("slug", "can't be blank")
 	} else if !contentSlugFormat.MatchString(c.Slug) {
@@ -522,7 +542,7 @@ func (a *App) validateContent(ctx context.Context, c *Content) error {
 	if c.Title == "" {
 		inv.Add("title", "can't be blank")
 	}
-	if !slices.Contains(Statuses, c.Status) {
+	if !slices.Contains(statuses, c.Status) {
 		inv.Add("status", "is not included in the list")
 	}
 	if c.Locale == "" {
@@ -531,69 +551,103 @@ func (a *App) validateContent(ctx context.Context, c *Content) error {
 	if c.PublishAt.Valid && c.UnpublishAt.Valid && !c.UnpublishAt.After(c.PublishAt.Time) {
 		inv.Add("unpublish_at", "must be after publish_at")
 	}
-	types := a.blockTypeResolver(ctx)
+	types, err := a.blockTypeResolver(ctx)
+	if err != nil {
+		return err
+	}
 	var blocks []any
 	if err := json.Unmarshal(c.Blocks, &blocks); err != nil {
 		inv.Add("blocks", "must be a list of blocks")
 	} else {
-		ValidateBlocks(blocks, nil, types, inv, "blocks")
+		fields.ValidateBlocks(blocks, nil, types, inv, "blocks")
 	}
 	var fm map[string]any
 	if err := json.Unmarshal(c.Frontmatter, &fm); err != nil {
 		inv.Add("frontmatter", "must be an object")
 	} else {
-		ValidateData(a.contentFields(ctx, c), fm, types, inv, "frontmatter")
+		defs, err := a.contentFields(ctx, c)
+		if err != nil {
+			return err
+		}
+		fields.ValidateData(defs, fm, types, inv, "frontmatter")
 	}
 	if !json.Valid(c.Seo) || !strings.HasPrefix(strings.TrimSpace(string(c.Seo)), "{") {
 		inv.Add("seo", "must be an object")
 	}
-
-	db := a.Store.DB
-	var clash int64
-	if c.Kind == "page" {
-		if c.ParentID.Valid {
-			if c.ParentID.Int64 == c.ID {
-				inv.Add("parent_id", "can't be the page itself")
-			} else if c.ID != 0 {
-				// Walk up from the new parent: meeting this page is a cycle.
-				node := c.ParentID.Int64
-				for i := 0; i < 64 && node != 0; i++ {
-					if node == c.ID {
-						inv.Add("parent_id", "can't be one of the page's own descendants")
-						break
-					}
-					var parent NullInt
-					if db.QueryRowContext(ctx, `SELECT parent_id FROM pages WHERE id = ?`, node).Scan(&parent) != nil {
-						break
-					}
-					node = parent.Int64
-				}
-			}
-			var exists int
-			db.QueryRowContext(ctx, `SELECT count(*) FROM pages WHERE id = ? AND deleted_at IS NULL`, c.ParentID.Int64).Scan(&exists)
-			if exists == 0 {
-				inv.Add("parent_id", "isn't a page")
-			}
-		}
-		err := db.QueryRowContext(ctx, `SELECT id FROM pages WHERE slug = ? AND parent_id IS ? AND id != ? AND deleted_at IS NULL LIMIT 1`, c.Slug, c.ParentID.DB(), c.ID).Scan(&clash)
-		if err == nil {
-			inv.Add("slug", "has already been taken")
-		}
-	} else {
-		err := db.QueryRowContext(ctx, `SELECT id FROM collection_entries WHERE collection_id = ? AND slug = ? AND locale = ? AND id != ? AND deleted_at IS NULL LIMIT 1`, c.CollectionID, c.Slug, c.Locale, c.ID).Scan(&clash)
-		if err == nil {
-			inv.Add("slug", "has already been taken")
-		}
+	if err := a.validatePlace(ctx, c, inv); err != nil {
+		return err
 	}
 	if c.CategoryEntryID.Valid {
 		if !a.inPool(ctx, c, "categories_collection_id", []int64{c.CategoryEntryID.Int64}) {
 			inv.Add("category_entry_id", "isn't one of the categories")
 		}
 	}
-	if c.tagIDs != nil && len(c.tagIDs) > 0 && !a.inPool(ctx, c, "tags_collection_id", c.tagIDs) {
+	if len(c.tagIDs) > 0 && !a.inPool(ctx, c, "tags_collection_id", c.tagIDs) {
 		inv.Add("tag_ids", "aren't all tags")
 	}
 	return inv.Err()
+}
+
+// validatePlace checks where the record sits: a page's parent, and that its
+// slug is free under that parent (an entry's, in its collection and locale).
+func (a *App) validatePlace(ctx context.Context, c *Content, inv apierr.Invalid) error {
+	taken, args := `SELECT id FROM collection_entries WHERE collection_id = ? AND slug = ? AND locale = ? AND id != ? AND deleted_at IS NULL LIMIT 1`,
+		[]any{c.CollectionID, c.Slug, c.Locale, c.ID}
+	if c.Kind == "page" {
+		if c.ParentID.Valid {
+			if err := a.validateParent(ctx, c, inv); err != nil {
+				return err
+			}
+		}
+		taken, args = `SELECT id FROM pages WHERE slug = ? AND parent_id IS ? AND id != ? AND deleted_at IS NULL LIMIT 1`,
+			[]any{c.Slug, c.ParentID.DB(), c.ID}
+	}
+	var clash int64
+	err := a.store.QueryRowContext(ctx, taken, args...).Scan(&clash)
+	if err == nil {
+		inv.Add("slug", "has already been taken")
+	} else if !errors.Is(err, sql.ErrNoRows) {
+		return err
+	}
+	return nil
+}
+
+// validateParent checks a page's parent: a live page, and neither the page
+// itself nor one of its descendants.
+func (a *App) validateParent(ctx context.Context, c *Content, inv apierr.Invalid) error {
+	switch {
+	case c.ParentID.Int64 == c.ID:
+		inv.Add("parent_id", "can't be the page itself")
+	case c.ID != 0 && a.isUnder(ctx, c.ParentID.Int64, c.ID):
+		inv.Add("parent_id", "can't be one of the page's own descendants")
+	}
+	exists, err := store.Count(ctx, a.store, `SELECT count(*) FROM pages WHERE id = ? AND deleted_at IS NULL`, c.ParentID.Int64)
+	if err != nil {
+		return err
+	}
+	if exists == 0 {
+		inv.Add("parent_id", "isn't a page")
+	}
+	return nil
+}
+
+// isUnder is whether page node is page id or one of its descendants:
+// walking up from node meets id (within 64 levels).
+func (a *App) isUnder(ctx context.Context, node, id int64) bool {
+	for range 64 {
+		if node == 0 {
+			return false
+		}
+		if node == id {
+			return true
+		}
+		var parent store.NullInt
+		if a.store.QueryRowContext(ctx, `SELECT parent_id FROM pages WHERE id = ?`, node).Scan(&parent) != nil {
+			return false
+		}
+		node = parent.Int64
+	}
+	return false
 }
 
 // inPool: the ids are entries of the record's taxonomy pool (an entry's
@@ -603,24 +657,23 @@ func (a *App) inPool(ctx context.Context, c *Content, poolColumn string, ids []i
 	for _, id := range ids {
 		args = append(args, id)
 	}
-	query := `SELECT count(*) FROM collection_entries WHERE deleted_at IS NULL AND id IN (` + placeholders(len(ids)) + `)`
+	query := `SELECT count(*) FROM collection_entries WHERE deleted_at IS NULL AND id IN (` + store.Placeholders(len(ids)) + `)`
 	if c.Kind == "entry" {
-		var pool NullInt
-		a.Store.DB.QueryRowContext(ctx, `SELECT `+poolColumn+` FROM collections WHERE id = ?`, c.CollectionID).Scan(&pool)
-		if !pool.Valid {
+		var pool store.NullInt
+		// A pool that can't be read is no pool: the ids aren't in it.
+		if err := a.store.QueryRowContext(ctx, `SELECT `+poolColumn+` FROM collections WHERE id = ?`, c.CollectionID).Scan(&pool); err != nil || !pool.Valid {
 			return false
 		}
 		query += ` AND collection_id = ?`
 		args = append(args, pool.Int64)
 	}
-	var n int
-	a.Store.DB.QueryRowContext(ctx, query, args...).Scan(&n)
-	return n == len(ids)
+	n, err := store.Count(ctx, a.store, query, args...)
+	return err == nil && n == len(ids)
 }
 
-// WriteResult is what a write did: saved (with the record), or held for a
+// writeResult is what a write did: saved (with the record), or held for a
 // person (a revision).
-type WriteResult struct {
+type writeResult struct {
 	Record    *Content
 	Held      *Revision
 	Ignored   []string
@@ -628,12 +681,12 @@ type WriteResult struct {
 	Created   bool
 }
 
-// SaveContent creates or updates a page or entry from a write's params, as
+// saveContent creates or updates a page or entry from a write's params, as
 // the actor. It enforces the publish gate: a write to something live, or one
 // that publishes or schedules, needs <prefix>:publish. Without it a write to
 // a live record is held as a revision for review, and one that would
 // publish a draft is refused.
-func (a *App) SaveContent(ctx context.Context, actor *Actor, rec *Content, params map[string]any) (*WriteResult, error) {
+func (a *App) saveContent(ctx context.Context, actor *Actor, rec *Content, params map[string]any) (*writeResult, error) {
 	creating := rec.ID == 0
 	prior := *rec
 	if creating {
@@ -653,91 +706,44 @@ func (a *App) SaveContent(ctx context.Context, actor *Actor, rec *Content, param
 		return nil, err
 	}
 
-	publishing := (rec.Status == "published" && prior.Status != "published") ||
-		(rec.PublishAt.Valid && (!prior.PublishAt.Valid || !rec.PublishAt.Equal(prior.PublishAt.Time)))
 	wasLive := !creating && prior.Status == "published"
-	if (wasLive || publishing) && !actor.Can(rec.Prefix()+":publish") {
+	if (wasLive || publishes(&prior, rec)) && !actor.Can(rec.Prefix()+":publish") {
 		if !wasLive {
-			return nil, errForbidden(rec.Prefix() + ":publish")
+			return nil, apierr.Forbidden(rec.Prefix() + ":publish")
 		}
 		return a.holdWrite(ctx, actor, &prior, params)
 	}
 
 	if !creating {
 		if lv, ok := intOf(params["lock_version"]); ok && int(lv) != prior.LockVersion {
-			return nil, &Error{Status: 409, Code: "conflict", Message: fmt.Sprintf("Someone else saved this since you read it (lock_version %d, now %d). Read it again and redo the change.", lv, prior.LockVersion)}
+			return nil, &apierr.Error{Status: 409, Code: "conflict", Message: fmt.Sprintf("Someone else saved this since you read it (lock_version %d, now %d). Read it again and redo the change.", lv, prior.LockVersion)}
 		}
 		if contentEqual(&prior, rec) && rec.tagIDs == nil {
-			return &WriteResult{Record: rec, Unchanged: true}, nil
+			return &writeResult{Record: rec, Unchanged: true}, nil
 		}
 	}
-	now := Now()
-	if rec.Status == "published" && !rec.PublishedAt.Valid {
-		rec.PublishedAt = now
-	}
-	if rec.Status == "published" && prior.Status != "published" {
-		rec.PublishAt = Time{}
-	}
+	now := store.Now()
+	rec.stampPublished(&prior, now)
 	if tr, ok := intOf(params["translation_of"]); ok && creating {
 		if err := a.joinTranslation(ctx, rec, tr); err != nil {
 			return nil, err
 		}
 	}
 
-	err := a.Store.Tx(ctx, func(tx *sql.Tx) error {
+	err := a.store.Tx(ctx, func(tx *sql.Tx) error {
+		write := updateContent
 		if creating {
-			rec.CreatedAt, rec.UpdatedAt = now, now
-			var res sql.Result
-			var err error
-			if rec.Kind == "page" {
-				res, err = tx.ExecContext(ctx, `INSERT INTO pages (slug, path, parent_id, depth, title, status, locale, blocks, frontmatter, seo, schema,
-					category_entry_id, translation_group_id, publish_at, published_at, unpublish_at, created_at, updated_at)
-					VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
-					rec.Slug, rec.Path, rec.ParentID.DB(), rec.Depth, rec.Title, rec.Status, rec.Locale, string(rec.Blocks), string(rec.Frontmatter),
-					string(rec.Seo), string(rec.Schema), rec.CategoryEntryID.DB(), rec.TranslationGroupID.DB(), rec.PublishAt.DB(), rec.PublishedAt.DB(),
-					rec.UnpublishAt.DB(), now.DB(), now.DB())
-			} else {
-				res, err = tx.ExecContext(ctx, `INSERT INTO collection_entries (collection_id, slug, title, status, locale, body_markdown, blocks, frontmatter, seo,
-					category_entry_id, translation_group_id, publish_at, published_at, unpublish_at, created_at, updated_at)
-					VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
-					rec.CollectionID, rec.Slug, rec.Title, rec.Status, rec.Locale, rec.BodyMarkdown, string(rec.Blocks), string(rec.Frontmatter),
-					string(rec.Seo), rec.CategoryEntryID.DB(), rec.TranslationGroupID.DB(), rec.PublishAt.DB(), rec.PublishedAt.DB(),
-					rec.UnpublishAt.DB(), now.DB(), now.DB())
-			}
-			if err != nil {
-				return err
-			}
-			rec.ID, _ = res.LastInsertId()
-		} else {
-			rec.UpdatedAt = now
-			rec.LockVersion = prior.LockVersion + 1
-			var err error
-			if rec.Kind == "page" {
-				_, err = tx.ExecContext(ctx, `UPDATE pages SET slug=?, path=?, parent_id=?, depth=?, title=?, status=?, locale=?, blocks=?, frontmatter=?, seo=?,
-					category_entry_id=?, translation_group_id=?, publish_at=?, published_at=?, unpublish_at=?, lock_version=?, updated_at=? WHERE id=?`,
-					rec.Slug, rec.Path, rec.ParentID.DB(), rec.Depth, rec.Title, rec.Status, rec.Locale, string(rec.Blocks), string(rec.Frontmatter),
-					string(rec.Seo), rec.CategoryEntryID.DB(), rec.TranslationGroupID.DB(), rec.PublishAt.DB(), rec.PublishedAt.DB(), rec.UnpublishAt.DB(),
-					rec.LockVersion, now.DB(), rec.ID)
-				if err == nil && rec.Path != prior.Path {
-					err = resyncDescendants(ctx, tx, rec)
-				}
-			} else {
-				_, err = tx.ExecContext(ctx, `UPDATE collection_entries SET slug=?, title=?, status=?, locale=?, body_markdown=?, blocks=?, frontmatter=?, seo=?,
-					category_entry_id=?, translation_group_id=?, publish_at=?, published_at=?, unpublish_at=?, lock_version=?, updated_at=? WHERE id=?`,
-					rec.Slug, rec.Title, rec.Status, rec.Locale, rec.BodyMarkdown, string(rec.Blocks), string(rec.Frontmatter), string(rec.Seo),
-					rec.CategoryEntryID.DB(), rec.TranslationGroupID.DB(), rec.PublishAt.DB(), rec.PublishedAt.DB(), rec.UnpublishAt.DB(),
-					rec.LockVersion, now.DB(), rec.ID)
-			}
-			if err != nil {
-				return err
-			}
+			write = insertContent
+		}
+		if err := write(ctx, tx, rec, &prior, now); err != nil {
+			return err
 		}
 		if rec.tagIDs != nil {
 			if err := writeTaggings(ctx, tx, rec); err != nil {
 				return err
 			}
 		}
-		if creating || string(prior.Blocks) != string(rec.Blocks) || string(prior.Frontmatter) != string(rec.Frontmatter) || prior.BodyMarkdown != rec.BodyMarkdown {
+		if creating || bodyChanged(&prior, rec) {
 			if err := writeVersion(ctx, tx, rec, actor); err != nil {
 				return err
 			}
@@ -749,7 +755,87 @@ func (a *App) SaveContent(ctx context.Context, actor *Actor, rec *Content, param
 	}
 
 	a.announce(ctx, actor, rec, &prior, creating)
-	return &WriteResult{Record: rec, Created: creating}, nil
+	return &writeResult{Record: rec, Created: creating}, nil
+}
+
+// publishes is whether going from prior to rec publishes the record, now
+// or (a new publish_at) later.
+func publishes(prior, rec *Content) bool {
+	if rec.Status == "published" && prior.Status != "published" {
+		return true
+	}
+	return rec.PublishAt.Valid && (!prior.PublishAt.Valid || !rec.PublishAt.Equal(prior.PublishAt.Time))
+}
+
+// stampPublished notes when a record that's live first went live, and
+// drops a schedule that publishing it now overtook.
+func (c *Content) stampPublished(prior *Content, now store.Time) {
+	if c.Status != "published" {
+		return
+	}
+	if !c.PublishedAt.Valid {
+		c.PublishedAt = now
+	}
+	if prior.Status != "published" {
+		c.PublishAt = store.Time{}
+	}
+}
+
+// bodyChanged is whether what a version keeps (blocks, frontmatter, the
+// markdown body) differs between prior and rec.
+func bodyChanged(prior, rec *Content) bool {
+	return string(prior.Blocks) != string(rec.Blocks) || string(prior.Frontmatter) != string(rec.Frontmatter) || prior.BodyMarkdown != rec.BodyMarkdown
+}
+
+// insertContent writes a new record and sets its id.
+func insertContent(ctx context.Context, tx *sql.Tx, rec, _ *Content, now store.Time) error {
+	rec.CreatedAt, rec.UpdatedAt = now, now
+	var res sql.Result
+	var err error
+	if rec.Kind == "page" {
+		res, err = tx.ExecContext(ctx, `INSERT INTO pages (slug, path, parent_id, depth, title, status, locale, blocks, frontmatter, seo, schema,
+			category_entry_id, translation_group_id, publish_at, published_at, unpublish_at, created_at, updated_at)
+			VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+			rec.Slug, rec.Path, rec.ParentID.DB(), rec.Depth, rec.Title, rec.Status, rec.Locale, string(rec.Blocks), string(rec.Frontmatter),
+			string(rec.Seo), string(rec.Schema), rec.CategoryEntryID.DB(), rec.TranslationGroupID.DB(), rec.PublishAt.DB(), rec.PublishedAt.DB(),
+			rec.UnpublishAt.DB(), now.DB(), now.DB())
+	} else {
+		res, err = tx.ExecContext(ctx, `INSERT INTO collection_entries (collection_id, slug, title, status, locale, body_markdown, blocks, frontmatter, seo,
+			category_entry_id, translation_group_id, publish_at, published_at, unpublish_at, created_at, updated_at)
+			VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+			rec.CollectionID, rec.Slug, rec.Title, rec.Status, rec.Locale, rec.BodyMarkdown, string(rec.Blocks), string(rec.Frontmatter),
+			string(rec.Seo), rec.CategoryEntryID.DB(), rec.TranslationGroupID.DB(), rec.PublishAt.DB(), rec.PublishedAt.DB(),
+			rec.UnpublishAt.DB(), now.DB(), now.DB())
+	}
+	if err != nil {
+		return err
+	}
+	rec.ID, err = res.LastInsertId()
+	return err
+}
+
+// updateContent writes rec over prior, and moves a page's descendants
+// when its path changed.
+func updateContent(ctx context.Context, tx *sql.Tx, rec, prior *Content, now store.Time) error {
+	rec.UpdatedAt = now
+	rec.LockVersion = prior.LockVersion + 1
+	if rec.Kind != "page" {
+		_, err := tx.ExecContext(ctx, `UPDATE collection_entries SET slug=?, title=?, status=?, locale=?, body_markdown=?, blocks=?, frontmatter=?, seo=?,
+			category_entry_id=?, translation_group_id=?, publish_at=?, published_at=?, unpublish_at=?, lock_version=?, updated_at=? WHERE id=?`,
+			rec.Slug, rec.Title, rec.Status, rec.Locale, rec.BodyMarkdown, string(rec.Blocks), string(rec.Frontmatter), string(rec.Seo),
+			rec.CategoryEntryID.DB(), rec.TranslationGroupID.DB(), rec.PublishAt.DB(), rec.PublishedAt.DB(), rec.UnpublishAt.DB(),
+			rec.LockVersion, now.DB(), rec.ID)
+		return err
+	}
+	_, err := tx.ExecContext(ctx, `UPDATE pages SET slug=?, path=?, parent_id=?, depth=?, title=?, status=?, locale=?, blocks=?, frontmatter=?, seo=?,
+		category_entry_id=?, translation_group_id=?, publish_at=?, published_at=?, unpublish_at=?, lock_version=?, updated_at=? WHERE id=?`,
+		rec.Slug, rec.Path, rec.ParentID.DB(), rec.Depth, rec.Title, rec.Status, rec.Locale, string(rec.Blocks), string(rec.Frontmatter),
+		string(rec.Seo), rec.CategoryEntryID.DB(), rec.TranslationGroupID.DB(), rec.PublishAt.DB(), rec.PublishedAt.DB(), rec.UnpublishAt.DB(),
+		rec.LockVersion, now.DB(), rec.ID)
+	if err == nil && rec.Path != prior.Path {
+		err = resyncDescendants(ctx, tx, rec)
+	}
+	return err
 }
 
 func contentEqual(a, b *Content) bool {
@@ -759,10 +845,11 @@ func contentEqual(a, b *Content) bool {
 		a.PublishAt == b.PublishAt && a.PublishedAt == b.PublishedAt && a.UnpublishAt == b.UnpublishAt
 }
 
-func jsonEqual(x, y JSON) bool {
+func jsonEqual(x, y store.JSON) bool {
 	var a, b any
-	json.Unmarshal(x, &a)
-	json.Unmarshal(y, &b)
+	if json.Unmarshal(x, &a) != nil || json.Unmarshal(y, &b) != nil {
+		return bytes.Equal(x, y)
+	}
 	ja, _ := json.Marshal(a)
 	jb, _ := json.Marshal(b)
 	return string(ja) == string(jb)
@@ -776,7 +863,7 @@ func (a *App) computePath(ctx context.Context, p *Content) error {
 	if p.ParentID.Valid {
 		var parentPath string
 		var depth int
-		err := a.Store.DB.QueryRowContext(ctx, `SELECT path, depth FROM pages WHERE id = ?`, p.ParentID.Int64).Scan(&parentPath, &depth)
+		err := a.store.QueryRowContext(ctx, `SELECT path, depth FROM pages WHERE id = ?`, p.ParentID.Int64).Scan(&parentPath, &depth)
 		if err == nil {
 			p.Path, p.Depth = parentPath+"/"+p.Slug, depth+1
 		}
@@ -800,16 +887,17 @@ func resyncDescendants(ctx context.Context, tx *sql.Tx, p *Content) error {
 		if err != nil {
 			return err
 		}
-		var children []node
-		for rows.Next() {
+		children, err := store.ScanAll(rows, func(r *sql.Rows) (node, error) {
 			var id int64
 			var slug string
-			rows.Scan(&id, &slug)
-			children = append(children, node{id, n.path + "/" + slug, n.depth + 1})
+			err := r.Scan(&id, &slug)
+			return node{id, n.path + "/" + slug, n.depth + 1}, err
+		})
+		if err != nil {
+			return err
 		}
-		rows.Close()
 		for _, ch := range children {
-			if _, err := tx.ExecContext(ctx, `UPDATE pages SET path = ?, depth = ?, updated_at = ? WHERE id = ?`, ch.path, ch.depth, Now().DB(), ch.id); err != nil {
+			if _, err := tx.ExecContext(ctx, `UPDATE pages SET path = ?, depth = ?, updated_at = ? WHERE id = ?`, ch.path, ch.depth, store.Now().DB(), ch.id); err != nil {
 				return err
 			}
 			queue = append(queue, ch)
@@ -822,7 +910,7 @@ func writeTaggings(ctx context.Context, tx *sql.Tx, c *Content) error {
 	if _, err := tx.ExecContext(ctx, `DELETE FROM taggings WHERE taggable_type = ? AND taggable_id = ?`, c.TaggableType(), c.ID); err != nil {
 		return err
 	}
-	now := Now().DB()
+	now := store.Now().DB()
 	for i, id := range c.tagIDs {
 		if _, err := tx.ExecContext(ctx, `INSERT INTO taggings (tag_entry_id, taggable_id, taggable_type, position, created_at, updated_at) VALUES (?,?,?,?,?,?)`,
 			id, c.ID, c.TaggableType(), i, now, now); err != nil {
@@ -839,10 +927,10 @@ func writeVersion(ctx context.Context, tx *sql.Tx, c *Content, actor *Actor) err
 	}
 	var err error
 	if c.Kind == "page" {
-		_, err = tx.ExecContext(ctx, `INSERT INTO page_versions (page_id, author_id, blocks, created_at) VALUES (?,?,?,?)`, c.ID, author, string(c.Blocks), Now().DB())
+		_, err = tx.ExecContext(ctx, `INSERT INTO page_versions (page_id, author_id, blocks, created_at) VALUES (?,?,?,?)`, c.ID, author, string(c.Blocks), store.Now().DB())
 	} else {
 		_, err = tx.ExecContext(ctx, `INSERT INTO collection_entry_versions (collection_entry_id, author_id, blocks, body_markdown, frontmatter, created_at) VALUES (?,?,?,?,?,?)`,
-			c.ID, author, string(c.Blocks), c.BodyMarkdown, string(c.Frontmatter), Now().DB())
+			c.ID, author, string(c.Blocks), c.BodyMarkdown, string(c.Frontmatter), store.Now().DB())
 	}
 	return err
 }
@@ -852,19 +940,19 @@ func writeVersion(ctx context.Context, tx *sql.Tx, c *Content, actor *Actor) err
 func (a *App) joinTranslation(ctx context.Context, rec *Content, ofID int64) error {
 	of, err := a.contentByID(ctx, rec.Kind, ofID, false)
 	if err != nil {
-		return &Error{Status: 422, Code: "invalid", Message: "Validation failed", Errors: Invalid{"translation_of": {"isn't a " + rec.Kind}}}
+		return &apierr.Error{Status: 422, Code: "invalid", Message: "Validation failed", Errors: apierr.Invalid{"translation_of": {"isn't a " + rec.Kind}}}
 	}
 	if of.Locale == rec.Locale {
-		return &Error{Status: 422, Code: "invalid", Message: "Validation failed", Errors: Invalid{"locale": {"must differ from the record it translates"}}}
+		return &apierr.Error{Status: 422, Code: "invalid", Message: "Validation failed", Errors: apierr.Invalid{"locale": {"must differ from the record it translates"}}}
 	}
 	if !of.TranslationGroupID.Valid {
-		res, err := a.Store.DB.ExecContext(ctx, `INSERT INTO translation_groups (kind, created_at, updated_at) VALUES (?,?,?)`, of.TaggableType(), Now().DB(), Now().DB())
+		res, err := a.store.ExecContext(ctx, `INSERT INTO translation_groups (kind, created_at, updated_at) VALUES (?,?,?)`, of.TaggableType(), store.Now().DB(), store.Now().DB())
 		if err != nil {
 			return err
 		}
 		id, _ := res.LastInsertId()
-		of.TranslationGroupID = IntOf(id)
-		if _, err := a.Store.DB.ExecContext(ctx, `UPDATE `+of.table()+` SET translation_group_id = ? WHERE id = ?`, id, of.ID); err != nil {
+		of.TranslationGroupID = store.IntOf(id)
+		if _, err := a.store.ExecContext(ctx, `UPDATE `+of.table()+` SET translation_group_id = ? WHERE id = ?`, id, of.ID); err != nil {
 			return err
 		}
 	}
@@ -874,28 +962,23 @@ func (a *App) joinTranslation(ctx context.Context, rec *Content, ofID int64) err
 
 // ---- trash ---------------------------------------------------------------
 
-// TrashContent moves a record to the trash; a page takes its children.
-func (a *App) TrashContent(ctx context.Context, actor *Actor, c *Content) error {
-	now := Now()
+// trashContent moves a record to the trash; a page takes its children.
+func (a *App) trashContent(ctx context.Context, actor *Actor, c *Content) error {
+	now := store.Now()
 	var trashed []*Content
-	err := a.Store.Tx(ctx, func(tx *sql.Tx) error {
+	err := a.store.Tx(ctx, func(tx *sql.Tx) error {
 		ids := []int64{c.ID}
 		if c.Kind == "page" {
 			for i := 0; i < len(ids) && i < 10000; i++ {
-				rows, err := tx.QueryContext(ctx, `SELECT id FROM pages WHERE parent_id = ? AND deleted_at IS NULL`, ids[i])
+				children, err := store.Int64s(ctx, tx, `SELECT id FROM pages WHERE parent_id = ? AND deleted_at IS NULL`, ids[i])
 				if err != nil {
 					return err
 				}
-				for rows.Next() {
-					var id int64
-					rows.Scan(&id)
-					ids = append(ids, id)
-				}
-				rows.Close()
+				ids = append(ids, children...)
 			}
 		}
 		for _, id := range ids {
-			if _, err := tx.ExecContext(ctx, `UPDATE `+c.table()+` SET deleted_at = ?, updated_at = ? WHERE id = ?`, now.DB(), now.DB(), id); err != nil {
+			if _, err := tx.ExecContext(ctx, `UPDATE `+c.table()+` SET deleted_at = ?, updated_at = ? WHERE id = ?`, now.DB(), now.DB(), id); err != nil { //nolint:gosec // table() is "pages" or "collection_entries"
 				return err
 			}
 		}
@@ -914,8 +997,8 @@ func (a *App) TrashContent(ctx context.Context, actor *Actor, c *Content) error 
 	return nil
 }
 
-func (a *App) PurgeContent(ctx context.Context, actor *Actor, c *Content) error {
-	err := a.Store.Tx(ctx, func(tx *sql.Tx) error {
+func (a *App) purgeContent(ctx context.Context, actor *Actor, c *Content) error {
+	err := a.store.Tx(ctx, func(tx *sql.Tx) error {
 		stmts := []string{
 			`DELETE FROM taggings WHERE taggable_type = ? AND taggable_id = ?`,
 			`DELETE FROM content_references WHERE owner_type = ? AND owner_id = ?`,
@@ -937,7 +1020,7 @@ func (a *App) PurgeContent(ctx context.Context, actor *Actor, c *Content) error 
 				return err
 			}
 		}
-		_, err := tx.ExecContext(ctx, `DELETE FROM `+c.table()+` WHERE id = ?`, c.ID)
+		_, err := tx.ExecContext(ctx, `DELETE FROM `+c.table()+` WHERE id = ?`, c.ID) //nolint:gosec // table() is "pages" or "collection_entries"
 		return err
 	})
 	if err == nil {
@@ -949,27 +1032,33 @@ func (a *App) PurgeContent(ctx context.Context, actor *Actor, c *Content) error 
 	return err
 }
 
-func (a *App) RestoreContent(ctx context.Context, actor *Actor, c *Content) error {
+func (a *App) restoreContent(ctx context.Context, actor *Actor, c *Content) error {
 	if c.Kind == "page" && c.ParentID.Valid {
-		var parentGone int
-		a.Store.DB.QueryRowContext(ctx, `SELECT count(*) FROM pages WHERE id = ? AND deleted_at IS NOT NULL`, c.ParentID.Int64).Scan(&parentGone)
+		parentGone, err := store.Count(ctx, a.store.DB, `SELECT count(*) FROM pages WHERE id = ? AND deleted_at IS NOT NULL`, c.ParentID.Int64)
+		if err != nil {
+			return err
+		}
 		if parentGone > 0 {
-			return errConflict("Its parent page is in the trash: restore that first.")
+			return apierr.Conflict("Its parent page is in the trash: restore that first.")
 		}
 	}
 	var clash int
+	var err error
 	if c.Kind == "page" {
-		a.Store.DB.QueryRowContext(ctx, `SELECT count(*) FROM pages WHERE path = ? AND deleted_at IS NULL AND id != ?`, c.Path, c.ID).Scan(&clash)
+		clash, err = store.Count(ctx, a.store.DB, `SELECT count(*) FROM pages WHERE path = ? AND deleted_at IS NULL AND id != ?`, c.Path, c.ID)
 	} else {
-		a.Store.DB.QueryRowContext(ctx, `SELECT count(*) FROM collection_entries WHERE collection_id = ? AND slug = ? AND locale = ? AND deleted_at IS NULL AND id != ?`, c.CollectionID, c.Slug, c.Locale, c.ID).Scan(&clash)
+		clash, err = store.Count(ctx, a.store.DB, `SELECT count(*) FROM collection_entries WHERE collection_id = ? AND slug = ? AND locale = ? AND deleted_at IS NULL AND id != ?`, c.CollectionID, c.Slug, c.Locale, c.ID)
+	}
+	if err != nil {
+		return err
 	}
 	if clash > 0 {
-		return errConflict("Something else has its address now (" + c.Address() + ").")
+		return apierr.Conflict("Something else has its address now (" + c.Address() + ").")
 	}
 	// A page comes back with the children that went with it.
 	deletedAt := c.DeletedAt
-	err := a.Store.Tx(ctx, func(tx *sql.Tx) error {
-		if _, err := tx.ExecContext(ctx, `UPDATE `+c.table()+` SET deleted_at = NULL, updated_at = ? WHERE id = ?`, Now().DB(), c.ID); err != nil {
+	err = a.store.Tx(ctx, func(tx *sql.Tx) error {
+		if _, err := tx.ExecContext(ctx, `UPDATE `+c.table()+` SET deleted_at = NULL, updated_at = ? WHERE id = ?`, store.Now().DB(), c.ID); err != nil { //nolint:gosec // table() is "pages" or "collection_entries"
 			return err
 		}
 		if c.Kind == "page" && deletedAt.Valid {
@@ -979,7 +1068,7 @@ func (a *App) RestoreContent(ctx context.Context, actor *Actor, c *Content) erro
 		return nil
 	})
 	if err == nil {
-		c.DeletedAt = Time{}
+		c.DeletedAt = store.Time{}
 		a.audit(ctx, actor, c.Kind+".restored", c.TaggableType(), c.ID, c.Label(), nil)
 		if c.Live() {
 			a.contentEvent(ctx, c, "published")
@@ -1019,11 +1108,7 @@ func (a *App) announce(ctx context.Context, actor *Actor, rec, prior *Content, c
 // contentEvent is a change the public site sees: webhooks get it, the site
 // is rebuilt, plugins hear of it.
 func (a *App) contentEvent(ctx context.Context, c *Content, what string) {
-	name := c.Kind + "." + what
-	payload := a.WebhookPayload(c)
-	a.Hooks.Deliver(name, payload)
-	a.Deploys.Changed(c.cacheTags()...)
-	a.Plugins.Emit(name, payload)
+	a.publish(ctx, change{Event: c.Kind + "." + what, Data: a.webhookPayload(c), Tags: c.cacheTags()})
 }
 
 func (c *Content) cacheTags() []string {
@@ -1033,14 +1118,14 @@ func (c *Content) cacheTags() []string {
 	return []string{"entry:" + c.CollectionSlug + "/" + c.Slug, "collection:" + c.CollectionSlug, "sitemap"}
 }
 
-// WebhookPayload is a record's data in a content webhook, the keys
+// webhookPayload is a record's data in a content webhook, the keys
 // contracts/webhook_contract.json holds the CMS to.
-func (a *App) WebhookPayload(c *Content) Obj {
+func (a *App) webhookPayload(c *Content) Obj {
 	if c.Kind == "page" {
-		return O("id", c.ID, "slug", c.Slug, "path", c.Path, "url", a.PublicURL(c), "title", c.Title, "status", c.Status,
+		return O("id", c.ID, "slug", c.Slug, "path", c.Path, "url", a.publicURL(c), "title", c.Title, "status", c.Status,
 			"locale", c.Locale, "published_at", c.PublishedAt.ISO(), "updated_at", c.UpdatedAt.ISO())
 	}
-	return O("id", c.ID, "slug", c.Slug, "collection_slug", c.CollectionSlug, "url", a.PublicURL(c), "title", c.Title,
+	return O("id", c.ID, "slug", c.Slug, "collection_slug", c.CollectionSlug, "url", a.publicURL(c), "title", c.Title,
 		"status", c.Status, "locale", c.Locale, "published_at", c.PublishedAt.ISO(), "updated_at", c.UpdatedAt.ISO())
 }
 
@@ -1050,28 +1135,35 @@ func (a *App) WebhookPayload(c *Content) Obj {
 // unused-media list, in the Rails core's content_references rows: a block's
 // references at its index, the frontmatter's and SEO's at -1.
 func (a *App) writeReferences(ctx context.Context, tx *sql.Tx, c *Content) error {
-	types := a.blockTypeResolver(ctx)
+	types, err := a.blockTypeResolver(ctx)
+	if err != nil {
+		return err
+	}
+	defs, err := a.contentFields(ctx, c)
+	if err != nil {
+		return err
+	}
 	var rows []refRow
 	for i, b := range c.Blocks.List() {
-		var refs []Ref
-		BlockRefs(b, types, &refs)
+		var refs []fields.Ref
+		fields.BlockRefs(b, types, &refs)
 		rows = appendRefs(rows, refs, i)
 	}
-	var refs []Ref
-	FieldRefs(a.contentFields(ctx, c), c.Frontmatter.Map(), types, &refs)
+	var refs []fields.Ref
+	fields.Refs(defs, c.Frontmatter.Map(), types, &refs)
 	if img, ok := c.Seo.Map()["og_image_id"].(string); ok && img != "" {
-		refs = append(refs, Ref{"asset", "asset", img})
+		refs = append(refs, fields.Ref{Kind: "asset", RefType: "asset", RefID: img})
 	}
 	rows = appendRefs(rows, refs, -1)
 	return replaceReferences(ctx, tx, c.TaggableType(), c.ID, rows)
 }
 
 type refRow struct {
-	Ref
+	fields.Ref
 	Position int
 }
 
-func appendRefs(rows []refRow, refs []Ref, position int) []refRow {
+func appendRefs(rows []refRow, refs []fields.Ref, position int) []refRow {
 	for _, r := range refs {
 		rows = append(rows, refRow{r, position})
 	}
@@ -1084,7 +1176,7 @@ func replaceReferences(ctx context.Context, tx *sql.Tx, ownerType string, ownerI
 	}
 	for _, r := range rows {
 		if _, err := tx.ExecContext(ctx, `INSERT INTO content_references (owner_type, owner_id, ref_type, ref_id, kind, position, created_at) VALUES (?,?,?,?,?,?,?)`,
-			ownerType, ownerID, r.RefType, r.RefID, r.Kind, r.Position, Now().DB()); err != nil {
+			ownerType, ownerID, r.RefType, r.RefID, r.Kind, r.Position, store.Now().DB()); err != nil {
 			return err
 		}
 	}
@@ -1100,15 +1192,24 @@ func (a *App) assetIDs(ctx context.Context, ownerType string, ids []int64) []int
 	for _, id := range ids {
 		args = append(args, id)
 	}
-	rows, err := a.Store.DB.QueryContext(ctx, `SELECT DISTINCT ref_id FROM content_references WHERE ref_type = 'asset' AND owner_type = ? AND owner_id IN (`+placeholders(len(ids))+`)`, args...)
+	rows, err := a.store.QueryContext(ctx, `SELECT DISTINCT ref_id FROM content_references WHERE ref_type = 'asset' AND owner_type = ? AND owner_id IN (`+store.Placeholders(len(ids))+`)`, args...)
 	if err != nil {
+		a.log.Error("asset ids", "err", err)
 		return nil
 	}
-	defer rows.Close()
-	var out []int64
-	for rows.Next() {
+	refs, err := store.ScanAll(rows, func(r *sql.Rows) (string, error) {
 		var s string
-		rows.Scan(&s)
+		err := r.Scan(&s)
+		return s, err
+	})
+	if err != nil {
+		// Resolved assets are a convenience beside the records: logged, and
+		// the records still answer.
+		a.log.Error("asset ids", "err", err)
+		return nil
+	}
+	var out []int64
+	for _, s := range refs {
 		if n, err := strconv.ParseInt(s, 10, 64); err == nil {
 			out = append(out, n)
 		}

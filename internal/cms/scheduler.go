@@ -1,0 +1,63 @@
+package cms
+
+import (
+	"context"
+	"time"
+
+	"github.com/Martin-Business-Consultants/libre-publish/internal/store"
+)
+
+// scheduler publishes and unpublishes what's due, and empties old trash.
+func (a *App) scheduler(ctx context.Context) {
+	tick := time.NewTicker(30 * time.Second)
+	defer tick.Stop()
+	for {
+		a.runSchedule(ctx)
+		select {
+		case <-ctx.Done():
+			return
+		case <-tick.C:
+		}
+	}
+}
+
+var systemActor = &Actor{Name: "Scheduler", Role: &Role{System: true}}
+
+func (a *App) runSchedule(ctx context.Context) {
+	now := store.Now().DB()
+	for _, kind := range []string{"page", "entry"} {
+		var due, gone []*Content
+		var err error
+		if kind == "page" {
+			due, err = a.pages(ctx, "publish_at IS NOT NULL AND publish_at <= ? AND status != 'published'", now)
+			if err == nil {
+				gone, err = a.pages(ctx, "unpublish_at IS NOT NULL AND unpublish_at <= ? AND status = 'published'", now)
+			}
+		} else {
+			due, err = a.entries(ctx, "e.publish_at IS NOT NULL AND e.publish_at <= ? AND e.status != 'published'", now)
+			if err == nil {
+				gone, err = a.entries(ctx, "e.unpublish_at IS NOT NULL AND e.unpublish_at <= ? AND e.status = 'published'", now)
+			}
+		}
+		if err != nil {
+			a.log.Warn("scheduler", "err", err)
+			continue
+		}
+		for _, c := range due {
+			if _, err := a.saveContent(ctx, systemActor, c, map[string]any{"status": "published"}); err != nil {
+				a.log.Warn("scheduled publish", "record", c.Label(), "err", err)
+			}
+		}
+		for _, c := range gone {
+			if _, err := a.saveContent(ctx, systemActor, c, map[string]any{"status": "draft", "unpublish_at": nil}); err != nil {
+				a.log.Warn("scheduled unpublish", "record", c.Label(), "err", err)
+			}
+		}
+	}
+	if _, err := a.store.ExecContext(ctx, `DELETE FROM device_authorizations WHERE expires_at < ?`, store.Now().DB()); err != nil {
+		a.log.Warn("expired device codes", "err", err)
+	}
+	if _, err := a.store.ExecContext(ctx, `DELETE FROM webhook_deliveries WHERE created_at < ?`, store.TimeOf(time.Now().Add(-30*24*time.Hour)).DB()); err != nil {
+		a.log.Warn("old webhook deliveries", "err", err)
+	}
+}

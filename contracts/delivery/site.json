@@ -1,0 +1,36 @@
+{
+  "data": {
+    "api_version": "v1",
+    "contact": {
+      "city": "Springfield",
+      "email": "hello@acme.example",
+      "phone": "+1 555 0100",
+      "title": "Acme"
+    },
+    "default_locale": "en",
+    "image_widths": [
+      640,
+      1280,
+      1920
+    ],
+    "locales": [
+      "en"
+    ],
+    "name": "Acme",
+    "plugin_config": {
+      "forms": {
+        "definition": "/api/x/forms/definition?form=<slug>",
+        "list": "/api/x/forms/list",
+        "submit": "/api/x/forms/submit?form=<slug>"
+      }
+    },
+    "plugins": [
+      "forms"
+    ],
+    "url": "https://acme.example"
+  },
+  "meta": {
+    "cms_url": "https://cms.acme.example",
+    "cms_version": "dev"
+  }
+}

@@ -5,13 +5,17 @@ import (
 	"net/http"
 	"slices"
 	"strings"
+
+	"github.com/Martin-Business-Consultants/libre-publish/internal/apierr"
+	"github.com/Martin-Business-Consultants/libre-publish/internal/fields"
+	"github.com/Martin-Business-Consultants/libre-publish/internal/store"
 )
 
 // The management API (/api): the admin's, the CLI's and agents'. Its shapes
 // are the Rails core's, frozen — the CLI and integrations read them.
 
 func (a *App) routes(mux *http.ServeMux) {
-	h := func(pattern string, fn HandlerFunc, opts ...func(*route)) { a.handle(mux, pattern, fn, opts...) }
+	h := func(pattern string, fn handlerFunc, opts ...func(*route)) { a.handle(mux, pattern, fn, opts...) }
 
 	h("GET /api/manifest", a.getManifest)
 	h("GET /api/api_tokens/me", a.getMe)
@@ -92,9 +96,11 @@ func (a *App) listPages(c *Ctx) error {
 		where, args = append(where, "(title LIKE ? OR path LIKE ?)"), append(args, "%"+q+"%", "%"+q+"%")
 	}
 	page, per := c.paging(25, 100)
-	var total int
 	cond := "deleted_at IS NULL AND " + strings.Join(where, " AND ")
-	a.Store.DB.QueryRowContext(c.R.Context(), "SELECT count(*) FROM pages WHERE "+cond, args...).Scan(&total)
+	total, err := store.Count(c.R.Context(), a.store, "SELECT count(*) FROM pages WHERE "+cond, args...)
+	if err != nil {
+		return err
+	}
 	// ?sort=path lists the tree in order (parents before their children);
 	// the default is most recently updated first.
 	order := "updated_at DESC, id DESC"
@@ -104,14 +110,17 @@ func (a *App) listPages(c *Ctx) error {
 	case "title":
 		order = "title COLLATE NOCASE, id"
 	}
-	list, err := a.Pages(c.R.Context(), cond+fmt.Sprintf(" ORDER BY %s LIMIT %d OFFSET %d", order, per, (page-1)*per), args...)
+	list, err := a.pages(c.R.Context(), cond+fmt.Sprintf(" ORDER BY %s LIMIT %d OFFSET %d", order, per, (page-1)*per), args...)
 	if err != nil {
 		return err
 	}
 	out := []Obj{}
-	locks := a.lockedBy(c.R.Context(), c.Actor, "page")
+	locks, err := a.lockedBy(c.R.Context(), c.Actor, "page")
+	if err != nil {
+		return err
+	}
 	for _, p := range list {
-		o, err := a.PageSummaryJSON(c.R.Context(), p)
+		o, err := a.pageSummaryJSON(c.R.Context(), p)
 		if err != nil {
 			return err
 		}
@@ -141,7 +150,7 @@ func plural(n int, word string) string {
 }
 
 func (a *App) findPage(c *Ctx, path string) (*Content, error) {
-	return a.PageByPath(c.R.Context(), path, !c.can("pages:write"))
+	return a.pageByPath(c.R.Context(), path, !c.can("pages:write"))
 }
 
 func (a *App) showPage(c *Ctx) error {
@@ -151,8 +160,8 @@ func (a *App) showPage(c *Ctx) error {
 	path := c.Param("path")
 	// A page's own field definitions; a page whose path ends in /schema is
 	// reached the same way, as the Rails core's PATCH is.
-	if strings.HasSuffix(path, "/schema") {
-		if p, err := a.findPage(c, strings.TrimSuffix(path, "/schema")); err == nil {
+	if before, ok := strings.CutSuffix(path, "/schema"); ok {
+		if p, err := a.findPage(c, before); err == nil {
 			return c.JSON(200, O("page", O("id", p.ID, "path", p.Path, "schema", p.Schema)))
 		}
 	}
@@ -165,8 +174,8 @@ func (a *App) showPage(c *Ctx) error {
 
 func (a *App) renderPage(c *Ctx, status int, p *Content) error {
 	ctx := c.R.Context()
-	blocks := a.ExpandBlocks(ctx, p.Blocks.List(), false)
-	o, err := a.PageJSON(ctx, p, blocks)
+	blocks := a.expandBlocks(ctx, p.Blocks.List(), false)
+	o, err := a.pageJSON(ctx, p, blocks)
 	if err != nil {
 		return err
 	}
@@ -179,7 +188,7 @@ func (a *App) renderPage(c *Ctx, status int, p *Content) error {
 		crumb("See it back", "cms page "+p.Path),
 		crumb("Edit it", fmt.Sprintf(`cms patch /pages/%s '{"page":{"title":"…"}}'`, p.Path)),
 		crumb("Publish it", "cms publish "+p.Path),
-		crumb("What links here, before deleting it", fmt.Sprintf("cms refs page %s", p.Path)),
+		crumb("What links here, before deleting it", "cms refs page "+p.Path),
 	}
 	return c.JSON(status, body)
 }
@@ -193,7 +202,7 @@ func (a *App) createPage(c *Ctx) error {
 		return err
 	}
 	p := &Content{Kind: "page"}
-	res, err := a.SaveContent(c.R.Context(), c.Actor, p, params)
+	res, err := a.saveContent(c.R.Context(), c.Actor, p, params)
 	if err != nil {
 		return err
 	}
@@ -202,8 +211,8 @@ func (a *App) createPage(c *Ctx) error {
 
 func (a *App) updatePage(c *Ctx) error {
 	path := c.Param("path")
-	if strings.HasSuffix(path, "/schema") {
-		return a.updatePageSchema(c, strings.TrimSuffix(path, "/schema"))
+	if before, ok := strings.CutSuffix(path, "/schema"); ok {
+		return a.updatePageSchema(c, before)
 	}
 	if err := c.Need("pages:write"); err != nil {
 		return err
@@ -219,7 +228,7 @@ func (a *App) updatePage(c *Ctx) error {
 	if err != nil {
 		return err
 	}
-	res, err := a.SaveContent(c.R.Context(), c.Actor, p, params)
+	res, err := a.saveContent(c.R.Context(), c.Actor, p, params)
 	if err != nil {
 		return err
 	}
@@ -228,7 +237,7 @@ func (a *App) updatePage(c *Ctx) error {
 
 // writeAnswer is a write's 202 (held for review) or 200 {status: unchanged}
 // or its ordinary answer.
-func (a *App) writeAnswer(c *Ctx, res *WriteResult, ok func() error) error {
+func (a *App) writeAnswer(c *Ctx, res *writeResult, ok func() error) error {
 	if res.Held != nil {
 		c.Summary = fmt.Sprintf("Held for review: revision %d. The live content is unchanged until a person approves it.", res.Held.ID)
 		c.Crumbs = []Crumb{crumb("Tell the person who asked", res.Held.RecordType+" change waiting at "+a.reviewURL(res.Held.ID))}
@@ -260,16 +269,17 @@ func (a *App) updatePageSchema(c *Ctx, path string) error {
 	if schema == nil {
 		schema = body["fields"]
 	}
-	inv := Invalid{}
+	inv := apierr.Invalid{}
 	normalized := normalizeSchema(schema)
-	ValidateDefinitions(normalized.Map()["fields"], true, inv, "schema.fields")
+	fields.ValidateDefinitions(normalized.Map()["fields"], true, inv, "schema.fields")
 	if err := inv.Err(); err != nil {
 		return err
 	}
-	if _, err := a.Store.DB.ExecContext(c.R.Context(), `UPDATE pages SET schema = ?, updated_at = ? WHERE id = ?`, string(normalized), Now().DB(), p.ID); err != nil {
+	if _, err := a.store.ExecContext(c.R.Context(), `UPDATE pages SET schema = ?, updated_at = ? WHERE id = ?`, string(normalized), store.Now().DB(), p.ID); err != nil {
 		return err
 	}
 	a.audit(c.R.Context(), c.Actor, "page.schema_updated", "Page", p.ID, p.Label(), nil)
+	a.schemaTouched()
 	p.Schema = normalized
 	return c.JSON(200, O("page", O("id", p.ID, "path", p.Path, "schema", p.Schema)))
 }
@@ -287,7 +297,7 @@ func (a *App) destroyPage(c *Ctx) error {
 
 func (a *App) destroyContent(c *Ctx, rec *Content) error {
 	if rec.Live() && !c.can(rec.Prefix()+":publish") {
-		return errForbidden(rec.Prefix() + ":publish")
+		return apierr.Forbidden(rec.Prefix() + ":publish")
 	}
 	if err := a.checkLock(c, rec.Kind, rec.ID); err != nil {
 		return err
@@ -296,17 +306,17 @@ func (a *App) destroyContent(c *Ctx, rec *Content) error {
 		if err := c.Need("trash:write"); err != nil {
 			return err
 		}
-		if err := a.PurgeContent(c.R.Context(), c.Actor, rec); err != nil {
+		if err := a.purgeContent(c.R.Context(), c.Actor, rec); err != nil {
 			return err
 		}
-	} else if err := a.TrashContent(c.R.Context(), c.Actor, rec); err != nil {
+	} else if err := a.trashContent(c.R.Context(), c.Actor, rec); err != nil {
 		return err
 	}
 	return c.NoContent()
 }
 
 // bulkDestroy: {"slugs": [...]} (paths for pages) or {"ids": [...]}.
-func (a *App) bulkDestroy(kind string) HandlerFunc {
+func (a *App) bulkDestroy(kind string) handlerFunc {
 	return func(c *Ctx) error {
 		prefix := map[string]string{"page": "pages", "entry": "entries"}[kind]
 		if err := c.Need(prefix + ":delete"); err != nil {
@@ -318,7 +328,7 @@ func (a *App) bulkDestroy(kind string) HandlerFunc {
 		}
 		for _, r := range recs {
 			if r.Live() && !c.can(prefix+":publish") {
-				return errForbidden(prefix + ":publish")
+				return apierr.Forbidden(prefix + ":publish")
 			}
 		}
 		deleted := []string{}
@@ -326,7 +336,7 @@ func (a *App) bulkDestroy(kind string) HandlerFunc {
 			if r.DeletedAt.Valid {
 				continue
 			}
-			if err := a.TrashContent(c.R.Context(), c.Actor, r); err != nil {
+			if err := a.trashContent(c.R.Context(), c.Actor, r); err != nil {
 				return err
 			}
 			deleted = append(deleted, r.Address())
@@ -336,7 +346,7 @@ func (a *App) bulkDestroy(kind string) HandlerFunc {
 	}
 }
 
-func (a *App) bulkStatus(kind string) HandlerFunc {
+func (a *App) bulkStatus(kind string) handlerFunc {
 	return func(c *Ctx) error {
 		prefix := map[string]string{"page": "pages", "entry": "entries"}[kind]
 		if err := c.Need(prefix + ":write"); err != nil {
@@ -347,8 +357,8 @@ func (a *App) bulkStatus(kind string) HandlerFunc {
 			return err
 		}
 		status := str(body["status"])
-		if !slices.Contains(Statuses, status) {
-			return &Error{Status: 422, Code: "invalid", Message: "status must be one of draft, published, archived", Errors: Invalid{"status": {"is not included in the list"}}}
+		if !slices.Contains(statuses, status) {
+			return &apierr.Error{Status: 422, Code: "invalid", Message: "status must be one of draft, published, archived", Errors: apierr.Invalid{"status": {"is not included in the list"}}}
 		}
 		recs, err := a.bulkTargets(c, kind)
 		if err != nil {
@@ -359,7 +369,7 @@ func (a *App) bulkStatus(kind string) HandlerFunc {
 			if r.Status == status {
 				continue
 			}
-			res, err := a.SaveContent(c.R.Context(), c.Actor, r, map[string]any{"status": status})
+			res, err := a.saveContent(c.R.Context(), c.Actor, r, map[string]any{"status": status})
 			if err != nil {
 				return err
 			}
@@ -370,7 +380,10 @@ func (a *App) bulkStatus(kind string) HandlerFunc {
 			changed = append(changed, r.Address())
 		}
 		c.Summary = fmt.Sprintf("%d set to %s.", len(changed), status)
-		return c.JSON(200, O("ok", true, "status", status, "updated", len(changed), "count", len(changed), "items", changed))
+		if len(held) > 0 {
+			c.Summary += fmt.Sprintf(" %d held for review.", len(held))
+		}
+		return c.JSON(200, O("ok", true, "status", status, "updated", len(changed), "count", len(changed), "items", changed, "held", held))
 	}
 }
 
@@ -385,14 +398,14 @@ func (a *App) bulkTargets(c *Ctx, kind string) ([]*Content, error) {
 	}
 	ids := asList(body["ids"])
 	if len(keys) == 0 && len(ids) == 0 {
-		return nil, errBadRequest("Name what to change: {\"slugs\": [...]} or {\"ids\": [...]}.")
+		return nil, apierr.BadRequest("Name what to change: {\"slugs\": [...]} or {\"ids\": [...]}.")
 	}
 	var out []*Content
 	ctx := c.R.Context()
 	var col *Collection
 	if kind == "entry" {
 		var err error
-		if col, err = a.CollectionBySlug(ctx, c.Param("slug")); err != nil {
+		if col, err = a.collectionBySlug(ctx, c.Param("slug")); err != nil {
 			return nil, err
 		}
 	}
@@ -400,9 +413,9 @@ func (a *App) bulkTargets(c *Ctx, kind string) ([]*Content, error) {
 		var rec *Content
 		var err error
 		if kind == "page" {
-			rec, err = a.PageByPath(ctx, str(k), false)
+			rec, err = a.pageByPath(ctx, str(k), false)
 		} else {
-			rec, err = a.EntryBySlug(ctx, col.ID, str(k), false)
+			rec, err = a.entryBySlug(ctx, col.ID, str(k), false)
 		}
 		if err != nil {
 			return nil, err
@@ -413,10 +426,10 @@ func (a *App) bulkTargets(c *Ctx, kind string) ([]*Content, error) {
 		id, _ := intOf(v)
 		rec, err := a.contentByID(ctx, kind, id, false)
 		if err != nil {
-			return nil, errNotFound(fmt.Sprintf("Couldn't find %s %d.", kind, id))
+			return nil, apierr.NotFound(fmt.Sprintf("Couldn't find %s %d.", kind, id))
 		}
 		if col != nil && rec.CollectionID != col.ID {
-			return nil, errNotFound(fmt.Sprintf("Entry %d isn't in %s.", id, col.Slug))
+			return nil, apierr.NotFound(fmt.Sprintf("Entry %d isn't in %s.", id, col.Slug))
 		}
 		out = append(out, rec)
 	}
@@ -430,7 +443,7 @@ func (a *App) listEntries(c *Ctx) error {
 		return err
 	}
 	ctx := c.R.Context()
-	col, err := a.CollectionBySlug(ctx, c.Param("slug"))
+	col, err := a.collectionBySlug(ctx, c.Param("slug"))
 	if err != nil {
 		return err
 	}
@@ -449,17 +462,22 @@ func (a *App) listEntries(c *Ctx) error {
 	}
 	page, per := c.paging(25, 100)
 	cond := "e.deleted_at IS NULL AND " + strings.Join(where, " AND ")
-	var total int
-	a.Store.DB.QueryRowContext(ctx, "SELECT count(*) FROM collection_entries e WHERE "+cond, args...).Scan(&total)
-	list, err := a.Entries(ctx, cond+fmt.Sprintf(" ORDER BY e.updated_at DESC, e.id DESC LIMIT %d OFFSET %d", per, (page-1)*per), args...)
+	total, err := store.Count(ctx, a.store, "SELECT count(*) FROM collection_entries e WHERE "+cond, args...)
+	if err != nil {
+		return err
+	}
+	list, err := a.entries(ctx, cond+fmt.Sprintf(" ORDER BY e.updated_at DESC, e.id DESC LIMIT %d OFFSET %d", per, (page-1)*per), args...)
 	if err != nil {
 		return err
 	}
 	out := []Obj{}
 	ids := []int64{}
-	locks := a.lockedBy(ctx, c.Actor, "entry")
+	locks, err := a.lockedBy(ctx, c.Actor, "entry")
+	if err != nil {
+		return err
+	}
 	for _, e := range list {
-		o, err := a.EntrySummaryJSON(ctx, e)
+		o, err := a.entrySummaryJSON(ctx, e)
 		if err != nil {
 			return err
 		}
@@ -483,11 +501,11 @@ func (a *App) listEntries(c *Ctx) error {
 }
 
 func (a *App) findEntry(c *Ctx) (*Collection, *Content, error) {
-	col, err := a.CollectionBySlug(c.R.Context(), c.Param("slug"))
+	col, err := a.collectionBySlug(c.R.Context(), c.Param("slug"))
 	if err != nil {
 		return nil, nil, err
 	}
-	e, err := a.EntryBySlug(c.R.Context(), col.ID, c.Param("entry"), !c.can("entries:write"))
+	e, err := a.entryBySlug(c.R.Context(), col.ID, c.Param("entry"), !c.can("entries:write"))
 	return col, e, err
 }
 
@@ -504,7 +522,7 @@ func (a *App) showEntry(c *Ctx) error {
 
 func (a *App) renderEntry(c *Ctx, status int, e *Content) error {
 	ctx := c.R.Context()
-	o, err := a.EntryJSON(ctx, e)
+	o, err := a.entryJSON(ctx, e)
 	if err != nil {
 		return err
 	}
@@ -524,7 +542,7 @@ func (a *App) createEntry(c *Ctx) error {
 	if err := c.Need("entries:write"); err != nil {
 		return err
 	}
-	col, err := a.CollectionBySlug(c.R.Context(), c.Param("slug"))
+	col, err := a.collectionBySlug(c.R.Context(), c.Param("slug"))
 	if err != nil {
 		return err
 	}
@@ -533,7 +551,7 @@ func (a *App) createEntry(c *Ctx) error {
 		return err
 	}
 	e := &Content{Kind: "entry", CollectionID: col.ID, CollectionSlug: col.Slug}
-	res, err := a.SaveContent(c.R.Context(), c.Actor, e, params)
+	res, err := a.saveContent(c.R.Context(), c.Actor, e, params)
 	if err != nil {
 		return err
 	}
@@ -555,7 +573,7 @@ func (a *App) updateEntry(c *Ctx) error {
 	if err != nil {
 		return err
 	}
-	res, err := a.SaveContent(c.R.Context(), c.Actor, e, params)
+	res, err := a.saveContent(c.R.Context(), c.Actor, e, params)
 	if err != nil {
 		return err
 	}
@@ -564,7 +582,7 @@ func (a *App) updateEntry(c *Ctx) error {
 
 // entryField merges one key into an entry's frontmatter: toggle_field flips
 // a boolean ({"field": "featured"}), update_field sets one ({"field", "value"}).
-func (a *App) entryField(toggle bool) HandlerFunc {
+func (a *App) entryField(toggle bool) handlerFunc {
 	return func(c *Ctx) error {
 		if err := c.Need("entries:write"); err != nil {
 			return err
@@ -582,7 +600,7 @@ func (a *App) entryField(toggle bool) HandlerFunc {
 		}
 		field := str(body["field"])
 		if field == "" {
-			return errBadRequest("param is missing or the value is empty: field")
+			return apierr.BadRequest("param is missing or the value is empty: field")
 		}
 		fm := e.Frontmatter.Map()
 		if toggle {
@@ -590,7 +608,7 @@ func (a *App) entryField(toggle bool) HandlerFunc {
 		} else {
 			fm[field] = body["value"]
 		}
-		res, err := a.SaveContent(c.R.Context(), c.Actor, e, map[string]any{"frontmatter": fm})
+		res, err := a.saveContent(c.R.Context(), c.Actor, e, map[string]any{"frontmatter": fm})
 		if err != nil {
 			return err
 		}
@@ -612,14 +630,23 @@ func (a *App) destroyEntry(c *Ctx) error {
 // ---- revisions -----------------------------------------------------------
 
 func (a *App) listRevisions(c *Ctx) error {
-	if c.Actor.Role == nil {
-		return errForbidden("pages:read")
+	// Only revisions to what the caller may read: a proposed change shows
+	// the content it would make.
+	types := []any{}
+	for _, t := range []string{"Page", "CollectionEntry", "Global"} {
+		if c.can(revisionCap(t, "read")) {
+			types = append(types, t)
+		}
+	}
+	if len(types) == 0 {
+		return apierr.Forbidden("pages:read")
 	}
 	status := c.Query("status")
 	if status == "" {
 		status = "open"
 	}
-	list, err := a.revisions(c.R.Context(), "(? = 'all' OR status = ?) ORDER BY id DESC LIMIT 200", status, status)
+	args := append([]any{status, status}, types...)
+	list, err := a.revisions(c.R.Context(), "(? = 'all' OR status = ?) AND record_type IN ("+store.Placeholders(len(types))+") ORDER BY id DESC LIMIT 200", args...)
 	if err != nil {
 		return err
 	}
@@ -641,20 +668,25 @@ func (a *App) showRevision(c *Ctx) error {
 		return err
 	}
 	if len(list) == 0 {
-		return errNotFound("Couldn't find that revision.")
+		return apierr.NotFound("Couldn't find that revision.")
+	}
+	if err := c.Need(revisionCap(list[0].RecordType, "read")); err != nil {
+		return err
 	}
 	return c.JSON(200, O("revision", list[0].JSON()))
 }
 
-func (a *App) decideRevision(approve bool) HandlerFunc {
+func (a *App) decideRevision(approve bool) handlerFunc {
 	return func(c *Ctx) error {
 		id, err := c.IntParam("id")
 		if err != nil {
 			return err
 		}
 		var body map[string]any
-		c.Body(&body)
-		rev, err := a.DecideRevision(c.R.Context(), c.Actor, id, approve, str(body["note"]))
+		if err := c.OptionalBody(&body); err != nil {
+			return err
+		}
+		rev, err := a.settleRevision(c.R.Context(), c.Actor, id, approve, str(body["note"]))
 		if err != nil {
 			return err
 		}

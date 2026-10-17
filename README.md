@@ -48,33 +48,46 @@ builds every platform and publishes them with `checksums.txt`, which
 | | `SECRET_KEY` | Instead of `DATA_DIR/secret.key`: the key that seals token plaintexts and webhook secrets. |
 | | `CMS_DELIVERY_RATE_LIMIT` | Requests a minute per token on `/api/v1` (1200; `0` for none). |
 | | `TRUST_PROXY=1` | Behind Caddy, nginx or a load balancer: read the client's address from `X-Forwarded-For`. |
+| | `LOG_LEVEL` | `debug`, `info` (what `serve` logs by default), `warn` or `error`. |
+| | `LOG_FORMAT` | `text` (the default) or `json`. Each request's line carries its `request_id`, which is also the `X-Request-ID` answered (a proxy's own is kept). |
 
 Put TLS in front of it (Caddy is one line: `cms.example.com { reverse_proxy :8080 }`).
 
 From the command line, without the admin:
 
 ```sh
-librepublish user create --email you@example.com --name You --password '…'   # --role Editor, …
-librepublish user password --email you@example.com --password '…'            # locked out
+librepublish user create --email you@example.com --name You --password -     # --role Editor, …
+librepublish user password --email you@example.com --password -              # locked out
 librepublish token create --name PRODUCTION --role "Production site"          # the site's read token
 librepublish seed-blocks                                                      # the starter block types
+librepublish import backup.tar.gz --dry-run                                   # what an import would do
 ```
 
+`--password -` reads the password from the first line of stdin; leave
+`--password` out and it comes from `LIBREPUBLISH_PASSWORD`. Either keeps it
+out of the process list and shell history (`--password '…'` still works).
+
 `GET /api/tools/backup` (the `tools:use` capability) streams a `.tar.gz` of
-a consistent copy of the database and every upload; unpacking it into a data
-directory restores it.
+a consistent copy of the database and every upload. `librepublish import
+backup.tar.gz` (with the server stopped) or Tools › Backup › Import a backup
+restores it, replacing the site that's there ([docs/import.md](docs/import.md)).
 
 ## Moving over from the Rails core
 
-Point `--data` at a directory holding a copy of the Rails install's
-production database as `cms.sqlite3`, with its `storage/` directory (Active
-Storage's files) beside it:
+Import its backup: Tools › Backup's `.tar.gz` (the Rails site backup), a data
+directory backup (`cms-data-*.tar.gz`), or either unpacked. From the command
+line, with the server stopped:
 
 ```sh
-mkdir -p data && cp /path/to/rails/storage/production.sqlite3 data/cms.sqlite3
-cp -r /path/to/rails/storage/?? data/storage/        # the two-letter blob folders
+./librepublish import cms-backup-acme.tar.gz --data data --dry-run   # what it would do
+./librepublish import cms-backup-acme.tar.gz --data data             # do it
 ./librepublish serve --data data --url https://cms.example.com
 ```
+
+or in the admin, Tools › Backup › Import a backup, which replaces the running
+site without a restart. The same import takes this core's own backups, to
+move a site between installs. [docs/import.md](docs/import.md) has the
+formats, what carries over, the secrets, and putting the previous site back.
 
 The schema keeps Rails' table and column names, so the Go core reads the
 database as it is and only adds its own tables (`admin_sessions`,
@@ -94,6 +107,9 @@ What doesn't carry over is what Rails encrypted with its own key
   than let in on its password alone. `librepublish user disable-2fa --email …`
   turns it off, knowingly. The Go core has no 2FA of its own yet.
 - **Settings' secrets** (the GitHub token, mail credentials) need entering again.
+- **The Forms plugin's forms and submissions** become the Go Forms plugin's;
+  the import reports what has nowhere to go (a form's own webhook). Commerce,
+  Leads and the other Rails plugins' tables are kept but unused.
 
 Passwords carry over: both cores use bcrypt.
 
@@ -211,18 +227,29 @@ sends.
 cmd/librepublish/       the binary: serve, user, token, seed-blocks
 contracts/              what clients rely on, pinned (from the Rails core)
 install.sh              the one-command install
-internal/cms/           the core (one package)
-  store.go schema.sql   SQLite (modernc.org/sqlite, pure Go), Rails-compatible tables
-  auth.go               capabilities, roles, tokens, sessions, sealed secrets
-  fields.go             the field DSL: validation, JSON Schema, references (Rails' rules)
-  content.go            pages and entries: writes, the publish gate, tree, trash, events
+internal/cms/           the core: the App, content, structure, the HTTP API
+  content.go            pages and entries: writes, the publish gate, tree, trash
+  events.go             what a write tells webhooks, the deploy and plugins
+  scheduler.go          scheduled publishing and cleanup
   revisions.go          held writes and review
-  structure.go          collections, globals, block types, settings, audit, seeding
+  structure.go          collections, globals, block types, seeding
+  settings.go audit.go  settings (secrets masked) and the audit log
+  auth.go               capabilities, roles, tokens, sessions
   assets.go             uploads, Active Storage layout, variants, file serving
-  services.go           webhooks, deploys, the scheduler
   delivery.go           /api/v1
   api_*.go              /api
-  plugins.go            the WebAssembly host
+  plugin_env.go         what plugins reach of the CMS
+internal/store/         SQLite (modernc.org/sqlite, pure Go), Rails-compatible tables, migrations
+internal/fields/        the field DSL: validation, JSON Schema, references (Rails' rules)
+internal/plugin/        the WebAssembly host
+internal/webhook/       signed webhook deliveries
+internal/deploy/        build hooks and purges after publishing
+internal/mail/          email: MIME and SMTP
+internal/secret/        the install's key: sealing, tokens, password hashes
+internal/apierr/        the /api error shape
+internal/outbound/      the HTTP client webhooks and deploys post with
+internal/ratelimit/     per-minute rate limits
+internal/jsonv/         reading loosely typed JSON values
 internal/admin/         the admin, embedded (dist/, built from ui/)
 ui/                     the admin's source: Svelte 5 + Tailwind 4
 plugins/visits/         an example plugin

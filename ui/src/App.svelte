@@ -13,6 +13,8 @@
   import Toasts from "./lib/components/Toasts.svelte";
   import ConfirmHost from "./lib/components/ConfirmHost.svelte";
   import Spinner from "./lib/components/Spinner.svelte";
+  import Notice from "./lib/components/Notice.svelte";
+  import { maintenance } from "./lib/maintenance.svelte.js";
   import SignIn from "./routes/SignIn.svelte";
   import Setup from "./routes/Setup.svelte";
   import NotFound from "./routes/NotFound.svelte";
@@ -34,6 +36,9 @@
 </script>
 
 <ModeWatcher />
+{#if maintenance.on}
+  <div class="fixed inset-x-0 top-0 z-[110] p-2"><Notice tone="warning" class="mx-auto max-w-2xl shadow-md">The site is being replaced by an imported backup. It's back in a moment; reload then.</Notice></div>
+{/if}
 {#if !session.ready}
   <div class="flex min-h-dvh items-center justify-center"><Spinner /></div>
 {:else if publicScreens[router.path] && (router.path !== "/forgot-password" || !session.me)}

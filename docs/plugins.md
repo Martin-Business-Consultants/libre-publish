@@ -99,7 +99,7 @@ trapping.
 | Import | Needs | Input | Output |
 | --- | --- | --- | --- |
 | `lp_log` | always | a message | `{"ok": true}` |
-| `lp_site` | always | anything | `{"name", "url", "cms_url", "locale", "contact_email"}` |
+| `lp_site` | always | anything | `{"name", "url", "cms_url", "locale", "contact_email", "origins"}` (`origins`: the site's own, as CORS allows them) |
 | `lp_content` | `content:read` | `{"page": "about"}`, `{"pages": true}`, `{"collection": "posts"}`, `{"collection": "posts", "entry": "hello"}` or `{"global": "nav"}` | live content, shaped as `/api/v1` shapes it |
 | `lp_kv_get` | `storage` | a key | `{"found": bool, "value": "…"}` |
 | `lp_kv_set` | `storage` | `{"key": "…", "value": "…"}` (value ≤ 1 MB, ≤ 100,000 keys) | `{"ok": true}` |

@@ -7,8 +7,11 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 	"time"
+
+	"github.com/Martin-Business-Consultants/libre-publish/internal/store"
 )
 
 // ---- site info -----------------------------------------------------------
@@ -47,13 +50,13 @@ type infoSection struct {
 	rows  [][2]string
 }
 
-var startedAt = time.Now()
-
 func (a *App) siteInfo(ctx context.Context) []infoSection {
 	count := func(q string) string {
-		var n int
-		a.Store.DB.QueryRowContext(ctx, q).Scan(&n)
-		return fmt.Sprint(n)
+		n, err := store.Count(ctx, a.store, q)
+		if err != nil {
+			return "?"
+		}
+		return strconv.Itoa(n)
 	}
 	yes := func(b bool) string {
 		if b {
@@ -61,9 +64,10 @@ func (a *App) siteInfo(ctx context.Context) []infoSection {
 		}
 		return "no"
 	}
-	g := a.general()
-	dbSize, storage, files := fileSize(filepath.Join(a.DataDir, "cms.sqlite3")), int64(0), 0
-	filepath.WalkDir(filepath.Join(a.DataDir, "storage"), func(_ string, d fs.DirEntry, err error) error {
+	g := a.general(ctx)
+	dbSize, storage, files := fileSize(filepath.Join(a.cfg.DataDir, "cms.sqlite3")), int64(0), 0
+	// Best effort: what can't be read isn't counted, so it never errs.
+	_ = filepath.WalkDir(filepath.Join(a.cfg.DataDir, "storage"), func(_ string, d fs.DirEntry, err error) error {
 		if err == nil && !d.IsDir() {
 			if info, err := d.Info(); err == nil {
 				storage += info.Size()
@@ -74,19 +78,19 @@ func (a *App) siteInfo(ctx context.Context) []infoSection {
 	})
 	mail := a.mailConfig(ctx)
 	mailRow := "not set up"
-	if mail.configured() {
+	if mail.Configured() {
 		mailRow = fmt.Sprintf("%s:%d (%s), from %q <%s>", mail.Host, mail.Port, mail.Security, mail.FromName, mail.FromEmail)
 	}
 	sections := []infoSection{
 		{"Libre Publish", [][2]string{
-			{"version", Version}, {"go", runtime.Version()}, {"os", runtime.GOOS + "/" + runtime.GOARCH},
-			{"up_since", startedAt.UTC().Format(time.RFC3339)}, {"cms_url", a.BaseURL}, {"site_key", strOr(a.SiteKey, "—")},
-			{"trust_proxy", yes(a.TrustProxy)}, {"delivery_rate_limit", fmt.Sprintf("%d a minute", a.DeliveryRateLimit)},
+			{"version", a.cfg.Version}, {"go", runtime.Version()}, {"os", runtime.GOOS + "/" + runtime.GOARCH},
+			{"up_since", a.startedAt.UTC().Format(time.RFC3339)}, {"cms_url", a.cfg.BaseURL}, {"site_key", strOr(a.cfg.SiteKey, "—")},
+			{"trust_proxy", yes(a.cfg.TrustProxy)}, {"delivery_rate_limit", a.limiter.Describe()},
 		}},
 		{"Site", [][2]string{
 			{"title", strOr(str(g["title"]), "—")}, {"site_url", strOr(str(g["site_base_url"]), "not set")},
 			{"serving", a.servingMode()}, {"default_locale", a.defaultLocale()}, {"locales", strings.Join(a.siteLocales(ctx), ", ")},
-			{"allowed_origins", fmt.Sprint(len(strings.Fields(strings.ReplaceAll(str(g["cors_origins"]), ",", " "))))},
+			{"allowed_origins", strconv.Itoa(len(strings.Fields(strings.ReplaceAll(str(g["cors_origins"]), ",", " "))))},
 			{"email", mailRow},
 		}},
 		{"Content", [][2]string{
@@ -106,11 +110,11 @@ func (a *App) siteInfo(ctx context.Context) []infoSection {
 			{"admin_sessions", count(`SELECT count(*) FROM admin_sessions`)},
 		}},
 		{"Storage", [][2]string{
-			{"data_dir", a.DataDir}, {"database", humanBytes(dbSize)}, {"files", fmt.Sprintf("%d (%s)", files, humanBytes(storage))},
+			{"data_dir", a.cfg.DataDir}, {"database", humanBytes(dbSize)}, {"files", fmt.Sprintf("%d (%s)", files, humanBytes(storage))},
 		}},
 	}
 	plugins := [][2]string{}
-	for _, p := range a.Plugins.List() {
+	for _, p := range a.plugins.List() {
 		state := "off"
 		if p.Enabled {
 			state = "on"

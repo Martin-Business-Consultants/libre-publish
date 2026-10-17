@@ -20,7 +20,7 @@
   import { session } from "../lib/session.svelte.js";
   import { confirm } from "../lib/confirm.svelte.js";
   import { toast, toasts, toastError } from "../lib/toast.svelte.js";
-  const EVENTS = ["page.published", "page.updated", "page.unpublished", "page.deleted", "entry.published", "entry.updated", "entry.unpublished", "entry.deleted", "global.updated"];
+  const EVENTS = ["page.published", "page.updated", "page.unpublished", "page.deleted", "entry.published", "entry.updated", "entry.unpublished", "entry.deleted", "global.updated", "schema.changed"];
   let list = $state(null), editing = $state(null), open = $state(false), errors = $state({});
   let secret = $state(null), secretOpen = $state(false), deliveries = $state(null), logOpen = $state(false);
   const load = async () => (list = (await get("/webhooks")).webhooks);

@@ -2,12 +2,17 @@ package cms
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"fmt"
+	"maps"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/Martin-Business-Consultants/libre-publish/internal/fields"
+	"github.com/Martin-Business-Consultants/libre-publish/internal/store"
 )
 
 // ---- shaping a delivery answer -------------------------------------------
@@ -37,7 +42,7 @@ func (c *Ctx) includes() map[string]bool {
 		return map[string]bool{"assets": true}
 	}
 	out := map[string]bool{}
-	for _, k := range strings.Split(raw, ",") {
+	for k := range strings.SplitSeq(raw, ",") {
 		out[strings.TrimSpace(k)] = true
 	}
 	return out
@@ -77,22 +82,26 @@ func (a *App) referenced(ctx context.Context, ownerType string, ids []int64) (ma
 	for _, id := range ids {
 		args = append(args, id)
 	}
-	rows, err := a.Store.DB.QueryContext(ctx, `SELECT DISTINCT kind, ref_type, ref_id FROM content_references WHERE owner_type = ? AND kind IN ('record', 'page') AND owner_id IN (`+placeholders(len(ids))+`) LIMIT 500`, args...)
+	rows, err := a.store.QueryContext(ctx, `SELECT DISTINCT kind, ref_type, ref_id FROM content_references WHERE owner_type = ? AND kind IN ('record', 'page') AND owner_id IN (`+store.Placeholders(len(ids))+`) LIMIT 500`, args...)
 	if err != nil {
+		a.log.Error("included", "err", err)
 		return entries, pages
 	}
-	var refs [][3]string
-	for rows.Next() {
+	refs, err := store.ScanAll(rows, func(rs *sql.Rows) ([3]string, error) {
 		var r [3]string
-		rows.Scan(&r[0], &r[1], &r[2])
-		refs = append(refs, r)
+		err := rs.Scan(&r[0], &r[1], &r[2])
+		return r, err
+	})
+	if err != nil {
+		// What's included is extra: the answer goes out without it.
+		a.log.Error("included", "err", err)
+		return entries, pages
 	}
-	rows.Close()
 	cols := map[string]*Collection{}
 	for _, r := range refs {
 		switch r[0] {
 		case "page":
-			if p, err := a.PageByPath(ctx, r[2], true); err == nil && a.servesPages() {
+			if p, err := a.pageByPath(ctx, r[2], true); err == nil && a.servesPages() {
 				if o, err := a.v1PageJSON(ctx, p); err == nil {
 					pages[p.Path] = o
 				}
@@ -100,13 +109,13 @@ func (a *App) referenced(ctx context.Context, ownerType string, ids []int64) (ma
 		case "record":
 			col, ok := cols[r[1]]
 			if !ok {
-				col, _ = a.CollectionBySlug(ctx, r[1])
+				col, _ = a.collectionBySlug(ctx, r[1])
 				cols[r[1]] = col
 			}
 			if col == nil || !a.servesCollection(col) {
 				continue
 			}
-			if e, err := a.EntryBySlug(ctx, col.ID, r[2], true); err == nil {
+			if e, err := a.entryBySlug(ctx, col.ID, r[2], true); err == nil {
 				if o, err := a.v1EntryJSON(ctx, e); err == nil {
 					entries[col.Slug+"/"+e.Slug] = o
 				}
@@ -124,7 +133,7 @@ func (c *Ctx) sparse(data any) any {
 		return data
 	}
 	var paths [][]string
-	for _, f := range strings.Split(raw, ",") {
+	for f := range strings.SplitSeq(raw, ",") {
 		if f = strings.TrimSpace(f); f != "" {
 			paths = append(paths, strings.Split(f, "."))
 		}
@@ -132,7 +141,7 @@ func (c *Ctx) sparse(data any) any {
 	pick := func(o Obj) Obj {
 		var m map[string]any
 		b, _ := json.Marshal(o)
-		json.Unmarshal(b, &m)
+		_ = json.Unmarshal(b, &m) // b is json.Marshal's own output
 		out := O("id", m["id"])
 		for _, p := range paths {
 			if p[0] == "id" && len(p) == 1 {
@@ -194,10 +203,7 @@ func digPath(m map[string]any, path []string) (any, bool) {
 
 // pagingHeaders says how many there are, and links the other pages.
 func (c *Ctx) pagingHeaders(page, per, total int) {
-	pages := (total + per - 1) / per
-	if pages < 1 {
-		pages = 1
-	}
+	pages := max((total+per-1)/per, 1)
 	h := c.W.Header()
 	h.Set("X-Total-Count", strconv.Itoa(total))
 	h.Set("X-Total-Pages", strconv.Itoa(pages))
@@ -206,7 +212,7 @@ func (c *Ctx) pagingHeaders(page, per, total int) {
 		q.Set("page", strconv.Itoa(n))
 		q.Set("per", strconv.Itoa(per))
 		u := url.URL{Path: c.R.URL.Path, RawQuery: q.Encode()}
-		return fmt.Sprintf("<%s%s>; rel=%q", strings.TrimRight(c.App.BaseURL, "/"), u.String(), rel)
+		return fmt.Sprintf("<%s%s>; rel=%q", strings.TrimRight(c.App.cfg.BaseURL, "/"), u.String(), rel)
 	}
 	links := []string{link(1, "first")}
 	if page > 1 {
@@ -253,9 +259,7 @@ func recordSchema(props map[string]any) map[string]any {
 		"category":   map[string]any{"type": []string{"object", "null"}}, "tags": map[string]any{"type": "array"},
 		"translations": map[string]any{"type": "array"},
 	}
-	for k, v := range props {
-		base[k] = v
-	}
+	maps.Copy(base, props)
 	return map[string]any{"type": "object", "properties": base}
 }
 
@@ -267,9 +271,11 @@ func (a *App) v1PagesOptions(c *Ctx) error {
 		"frontmatter": map[string]any{"type": "object", "description": "A page's own fields, when it has a schema."}})
 	list := c.Param("path") == ""
 	if !list {
-		if p, err := a.PageByPath(c.R.Context(), c.Param("path"), true); err == nil {
-			if fs := ParseFields(p.Schema); len(fs) > 0 {
-				item["properties"].(map[string]any)["frontmatter"] = JSONSchema(fs)
+		if p, err := a.pageByPath(c.R.Context(), c.Param("path"), true); err == nil {
+			if props, ok := item["properties"].(map[string]any); ok {
+				if fs := fields.Parse(p.Schema); len(fs) > 0 {
+					props["frontmatter"] = fields.JSONSchema(fs)
+				}
 			}
 		}
 	}
@@ -284,7 +290,7 @@ func (a *App) v1EntriesOptions(c *Ctx) error {
 	if err != nil {
 		return err
 	}
-	item := recordSchema(map[string]any{"collection": map[string]any{"const": col.Slug}, "frontmatter": JSONSchema(col.Fields()),
+	item := recordSchema(map[string]any{"collection": map[string]any{"const": col.Slug}, "frontmatter": fields.JSONSchema(col.Fields()),
 		"body_markdown": map[string]any{"type": "string"}, "blocks": map[string]any{"type": "array"}})
 	return a.optionsAnswer(c, "collections/"+col.Slug+"/entries", c.Param("entry") == "", item)
 }
@@ -293,23 +299,24 @@ func (a *App) v1GlobalOptions(c *Ctx) error {
 	if err := c.Need("globals:read"); err != nil {
 		return err
 	}
-	g, err := a.GlobalBySlug(c.R.Context(), c.Param("slug"))
+	g, err := a.globalBySlug(c.R.Context(), c.Param("slug"))
 	if err != nil {
 		return err
 	}
 	return a.optionsAnswer(c, "globals/"+g.Slug, false, map[string]any{"type": "object", "properties": map[string]any{
 		"id": map[string]any{"type": "integer"}, "slug": map[string]any{"const": g.Slug}, "name": map[string]any{"type": "string"},
-		"data": JSONSchema(g.Fields()), "updated_at": map[string]any{"type": "string", "format": "date-time"}}})
+		"data": fields.JSONSchema(g.Fields()), "updated_at": map[string]any{"type": "string", "format": "date-time"}}})
 }
 
 func seoSchema() map[string]any {
-	return JSONSchema(ParseFields([]any{
+	s := fields.JSONSchema(fields.Parse([]any{
 		map[string]any{"name": "meta_title", "label": "Meta title", "type": "string"},
 		map[string]any{"name": "meta_description", "label": "Meta description", "type": "text"},
 		map[string]any{"name": "canonical_url", "label": "Canonical URL", "type": "url"},
 		map[string]any{"name": "focus_keyword", "label": "Focus keyword", "type": "string"},
 		map[string]any{"name": "noindex", "label": "Hide from search engines", "type": "boolean"},
 		map[string]any{"name": "nofollow", "label": "Ask search engines not to follow links", "type": "boolean"},
+		map[string]any{"name": "exclude_from_sitemap", "label": "Leave out of the sitemap", "type": "boolean"},
 		map[string]any{"name": "og_image_id", "label": "Social share image", "type": "asset"},
 		map[string]any{"name": "og_title", "label": "Title override", "type": "string"},
 		map[string]any{"name": "og_description", "label": "Description override", "type": "text"},
@@ -317,4 +324,10 @@ func seoSchema() map[string]any {
 		map[string]any{"name": "twitter_card", "label": "Twitter card", "type": "string"},
 		map[string]any{"name": "schema_type", "label": "schema.org type", "type": "string"},
 	}))
+	// JSON-LD isn't a field type: one node or a list of them, each an object.
+	props, _ := s["properties"].(map[string]any)
+	props["json_ld"] = map[string]any{"x-cms-type": "json", "title": "JSON-LD",
+		"description": "One node or a list of nodes, each with an @type.",
+		"oneOf":       []any{map[string]any{"type": "object"}, map[string]any{"type": "array", "items": map[string]any{"type": "object"}}}}
+	return s
 }

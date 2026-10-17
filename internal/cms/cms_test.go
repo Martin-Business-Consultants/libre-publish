@@ -2,7 +2,6 @@ package cms
 
 import (
 	"bytes"
-	"context"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
@@ -11,13 +10,13 @@ import (
 	"image/color"
 	"image/png"
 	"io"
+	"log/slog"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"slices"
-	"sort"
 	"strings"
 	"sync"
 	"testing"
@@ -26,12 +25,13 @@ import (
 // site is a running install for a test: the app, its server, and tokens
 // for an administrator, an agent and the production site.
 type site struct {
-	t     *testing.T
-	app   *App
-	srv   *httptest.Server
-	admin string
-	agent string
-	prod  string
+	t      *testing.T
+	app    *App
+	server *Server
+	srv    *httptest.Server
+	admin  string
+	agent  string
+	prod   string
 }
 
 func newSite(t *testing.T) *site {
@@ -40,25 +40,43 @@ func newSite(t *testing.T) *site {
 }
 
 // newSiteWith is newSite with some of the config set (the mailer, the
-// default plugins).
+// default plugins). A BaseURL given is kept; otherwise it's the server's.
 func newSiteWith(t *testing.T, cfg Config) *site {
 	t.Helper()
-	cfg.DataDir, cfg.BaseURL, cfg.SiteKey, cfg.DeliveryRateLimit = t.TempDir(), "http://cms.test", "acme", -1
-	app, err := NewApp(cfg)
+	base := cfg.BaseURL
+	cfg.DataDir, cfg.SiteKey, cfg.DeliveryRateLimit = t.TempDir(), "acme", -1
+	if base == "" {
+		cfg.BaseURL = "http://cms.test"
+	}
+	if cfg.Logger == nil {
+		// Shown with the test's own output: on failure, or with -v.
+		cfg.Logger = slog.New(slog.NewTextHandler(t.Output(), nil))
+	}
+	server, err := NewServer(cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
-	s := &site{t: t, app: app}
-	s.srv = httptest.NewServer(app.Handler())
-	app.BaseURL = s.srv.URL
-	t.Cleanup(func() { s.srv.Close(); app.Hooks.Wait(); app.Close() })
-
-	ctx := context.Background()
+	app := server.App()
+	s := &site{t: t, app: app, server: server}
+	s.srv = httptest.NewServer(server.Handler())
+	if base == "" {
+		app.cfg.BaseURL, server.cfg.BaseURL = s.srv.URL, s.srv.URL
+	}
+	t.Cleanup(func() {
+		s.srv.Close()
+		if err := server.Close(); err != nil {
+			t.Error(err)
+		}
+	})
+	ctx := t.Context()
+	if err := app.Start(ctx); err != nil {
+		t.Fatal(err)
+	}
 	id, err := app.CreateUserWithRole(ctx, "Alice", "alice@site.test", "password1234", "Administrator")
 	if err != nil {
 		t.Fatal(err)
 	}
-	s.admin, _, _ = app.MintUserToken(ctx, id)
+	s.admin, _, _ = app.mintUserToken(ctx, id)
 	if s.agent, err = app.CreateServiceTokenForRole(ctx, "AGENT", "Agent"); err != nil {
 		t.Fatal(err)
 	}
@@ -85,11 +103,17 @@ func (s *site) do(token, method, path string, body any, headers ...string) resp 
 		if b, ok := body.([]byte); ok {
 			r = bytes.NewReader(b)
 		} else {
-			j, _ := json.Marshal(body)
+			j, err := json.Marshal(body)
+			if err != nil {
+				s.t.Fatal(err)
+			}
 			r = bytes.NewReader(j)
 		}
 	}
-	req, _ := http.NewRequest(method, s.srv.URL+path, r)
+	req, err := http.NewRequestWithContext(s.t.Context(), method, s.srv.URL+path, r)
+	if err != nil {
+		s.t.Fatal(err)
+	}
 	if token != "" {
 		req.Header.Set("Authorization", "Bearer "+token)
 	}
@@ -102,9 +126,12 @@ func (s *site) do(token, method, path string, body any, headers ...string) resp 
 		s.t.Fatal(err)
 	}
 	defer res.Body.Close()
-	raw, _ := io.ReadAll(res.Body)
+	raw, err := io.ReadAll(res.Body)
+	if err != nil {
+		s.t.Fatal(err)
+	}
 	out := resp{Status: res.StatusCode, Header: res.Header, Raw: raw}
-	json.Unmarshal(raw, &out.Body)
+	_ = json.Unmarshal(raw, &out.Body) // not every answer is JSON; Raw has it
 	return out
 }
 
@@ -114,6 +141,16 @@ func (s *site) must(want int, r resp) resp {
 		s.t.Fatalf("status %d, want %d: %s", r.Status, want, r.Raw)
 	}
 	return r
+}
+
+// get is http.Get, bound to the test's context.
+func get(t *testing.T, url string) (*http.Response, error) {
+	t.Helper()
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	return http.DefaultClient.Do(req)
 }
 
 func dig(v any, path ...any) any {
@@ -139,11 +176,12 @@ func keys(v any) []string {
 	for k := range m {
 		out = append(out, k)
 	}
-	sort.Strings(out)
+	slices.Sort(out)
 	return out
 }
 
 func TestPagesRoundTripAndErrors(t *testing.T) {
+	t.Parallel()
 	s := newSite(t)
 
 	// The page shape the CLI reads.
@@ -213,6 +251,7 @@ func jsonID(v any) string {
 }
 
 func TestAgentEnvelope(t *testing.T) {
+	t.Parallel()
 	s := newSite(t)
 	s.must(201, s.do(s.admin, "POST", "/api/pages", map[string]any{"page": map[string]any{"slug": "home", "title": "Home"}}))
 	r := s.must(200, s.do(s.admin, "GET", "/api/pages", nil, "X-Agent-Envelope", "1"))
@@ -229,6 +268,7 @@ func TestAgentEnvelope(t *testing.T) {
 }
 
 func TestPublishGateAndRevisions(t *testing.T) {
+	t.Parallel()
 	s := newSite(t)
 	page := map[string]any{"page": map[string]any{"slug": "pricing", "title": "Pricing"}}
 
@@ -282,6 +322,7 @@ func toStrings(v any) []string {
 }
 
 func TestCollectionsEntriesAndDelivery(t *testing.T) {
+	t.Parallel()
 	s := newSite(t)
 	s.must(201, s.do(s.admin, "POST", "/api/collections", map[string]any{"collection": map[string]any{
 		"slug": "posts", "name": "Posts",
@@ -354,6 +395,7 @@ func TestCollectionsEntriesAndDelivery(t *testing.T) {
 }
 
 func TestWebhooksKeepTheContract(t *testing.T) {
+	t.Parallel()
 	contract := readContract(t)
 	s := newSite(t)
 
@@ -379,13 +421,13 @@ func TestWebhooksKeepTheContract(t *testing.T) {
 	s.must(201, s.do(s.admin, "POST", "/api/pages", map[string]any{"page": map[string]any{"slug": "about", "title": "About", "status": "published"}}))
 	s.must(201, s.do(s.admin, "POST", "/api/collections", map[string]any{"collection": map[string]any{"slug": "posts", "name": "Posts"}}))
 	s.must(201, s.do(s.admin, "POST", "/api/collections/posts/entries", map[string]any{"entry": map[string]any{"slug": "hi", "title": "Hi", "status": "published"}}))
-	s.app.Hooks.Wait()
+	s.app.hooks.Wait()
 
 	if len(got) != 2 {
 		t.Fatalf("deliveries: %d", len(got))
 	}
 	envelope := toStrings(dig(contract, "webhook", "envelope_keys"))
-	sort.Strings(envelope)
+	slices.Sort(envelope)
 	for i, d := range got {
 		if k := keys(d); !slices.Equal(k, envelope) {
 			t.Fatalf("envelope keys %v, contract %v", k, envelope)
@@ -398,9 +440,9 @@ func TestWebhooksKeepTheContract(t *testing.T) {
 		if d["tenant"] != "acme" {
 			t.Fatalf("tenant: %v", d["tenant"])
 		}
-		kind := strings.Split(str(d["event"]), ".")[0]
+		kind, _, _ := strings.Cut(str(d["event"]), ".")
 		want := toStrings(dig(contract, "webhook", kind+"_data_keys"))
-		sort.Strings(want)
+		slices.Sort(want)
 		if k := keys(d["data"]); !slices.Equal(k, want) {
 			t.Fatalf("%s data keys %v, contract %v", kind, k, want)
 		}
@@ -415,6 +457,7 @@ func TestWebhooksKeepTheContract(t *testing.T) {
 }
 
 func readContract(t *testing.T) map[string]any {
+	t.Helper()
 	raw, err := os.ReadFile(filepath.Join("..", "..", "contracts", "webhook_contract.json"))
 	if err != nil {
 		t.Fatal(err)
@@ -427,9 +470,10 @@ func readContract(t *testing.T) map[string]any {
 }
 
 func TestAssetsAndReferences(t *testing.T) {
+	t.Parallel()
 	s := newSite(t)
 	img := image.NewRGBA(image.Rect(0, 0, 2000, 1000))
-	for x := 0; x < 2000; x++ {
+	for x := range 2000 {
 		img.Set(x, x%1000, color.RGBA{200, 10, 10, 255})
 	}
 	var png1 bytes.Buffer
@@ -449,8 +493,8 @@ func TestAssetsAndReferences(t *testing.T) {
 	id := jsonID(dig(asset, "id"))
 
 	// The file and a variant serve.
-	res, err := http.Get(str(dig(asset, "variants", "w640")))
-	if err != nil || res.StatusCode != 200 {
+	res, err := get(t, str(dig(asset, "variants", "w640")))
+	if err != nil || res.StatusCode != http.StatusOK {
 		t.Fatalf("variant: %v %v", err, res)
 	}
 	cfg, _, err := image.DecodeConfig(res.Body)
@@ -482,6 +526,7 @@ func TestAssetsAndReferences(t *testing.T) {
 }
 
 func TestRedirectsAndTokens(t *testing.T) {
+	t.Parallel()
 	s := newSite(t)
 	s.must(201, s.do(s.admin, "POST", "/api/redirects", map[string]any{"redirect": map[string]any{"source_path": "/old", "destination_url": "/new"}}))
 	s.must(201, s.do(s.admin, "POST", "/api/redirects", map[string]any{"redirect": map[string]any{"source_path": "/blog/*", "destination_url": "/posts/:splat", "status_code": 302}}))
@@ -515,6 +560,7 @@ func TestRedirectsAndTokens(t *testing.T) {
 }
 
 func TestDeviceLogin(t *testing.T) {
+	t.Parallel()
 	s := newSite(t)
 	r := s.must(200, s.do("", "POST", "/api/device/code", map[string]any{"hostname": "laptop"}))
 	device, code := str(r.Body["device_code"]), str(r.Body["user_code"])
@@ -531,6 +577,7 @@ func TestDeviceLogin(t *testing.T) {
 }
 
 func TestAdminSessionNeedsCSRF(t *testing.T) {
+	t.Parallel()
 	s := newSite(t)
 	r := s.must(201, s.do("", "POST", "/api/session", map[string]any{"email": "alice@site.test", "password": "password1234"}))
 	csrf := str(r.Body["csrf"])
@@ -550,9 +597,10 @@ func TestAdminSessionNeedsCSRF(t *testing.T) {
 }
 
 func TestScheduledPublishing(t *testing.T) {
+	t.Parallel()
 	s := newSite(t)
 	s.must(201, s.do(s.admin, "POST", "/api/pages", map[string]any{"page": map[string]any{"slug": "launch", "title": "Launch", "publish_at": "2020-01-01T00:00:00Z"}}))
-	s.app.RunSchedule(context.Background())
+	s.app.runSchedule(t.Context())
 	r := s.must(200, s.do(s.admin, "GET", "/api/pages/launch", nil))
 	if dig(r.Body, "page", "status") != "published" {
 		t.Fatalf("scheduled: %s", r.Raw)

@@ -3,8 +3,10 @@ package cms
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"time"
+
+	"github.com/Martin-Business-Consultants/libre-publish/internal/apierr"
+	"github.com/Martin-Business-Consultants/libre-publish/internal/store"
 )
 
 // ---- editing together ----------------------------------------------------
@@ -25,12 +27,13 @@ type editLock struct {
 	UserID     int64
 	UserName   string
 	SessionID  int64
-	AcquiredAt Time
-	Heartbeat  Time
+	AcquiredAt store.Time
+	Heartbeat  store.Time
 }
 
 func (l *editLock) fresh() bool { return l != nil && time.Since(l.Heartbeat.Time) < lockTTL }
 
+// JSON is the lock as actor sees it: mine when actor holds it.
 func (l *editLock) JSON(actor *Actor) Obj {
 	mine := actor != nil && actor.UserID == l.UserID && (actor.Session == nil || l.SessionID == 0 || actor.Session.ID == l.SessionID)
 	return O("user_id", l.UserID, "user_name", l.UserName, "since", l.AcquiredAt, "heartbeat_at", l.Heartbeat, "mine", mine)
@@ -38,8 +41,8 @@ func (l *editLock) JSON(actor *Actor) Obj {
 
 func (a *App) lockOn(ctx context.Context, typ string, id int64) *editLock {
 	l := &editLock{}
-	var sid NullInt
-	err := a.Store.DB.QueryRowContext(ctx, `SELECT user_id, user_name, session_id, acquired_at, heartbeat_at FROM edit_locks WHERE record_type = ? AND record_id = ?`, typ, id).
+	var sid store.NullInt
+	err := a.store.QueryRowContext(ctx, `SELECT user_id, user_name, session_id, acquired_at, heartbeat_at FROM edit_locks WHERE record_type = ? AND record_id = ?`, typ, id).
 		Scan(&l.UserID, &l.UserName, &sid, &l.AcquiredAt, &l.Heartbeat)
 	if err != nil {
 		return nil
@@ -74,32 +77,34 @@ func (a *App) checkLock(c *Ctx, typ string, id int64) error {
 	if l == nil {
 		return nil
 	}
-	return &Error{Status: 409, Code: "locked", Message: fmt.Sprintf("%s is editing this in the admin right now. Try again later, or send override_lock=1 to save anyway.", l.UserName),
+	return &apierr.Error{Status: 409, Code: "locked", Message: l.UserName + " is editing this in the admin right now. Try again later, or send override_lock=1 to save anyway.",
 		Extra: map[string]any{"lock": l.JSON(c.Actor)}}
 }
 
 // lockedBy is {record id: name} of a type's records locked by someone other
 // than the actor, for lists.
-func (a *App) lockedBy(ctx context.Context, actor *Actor, typ string) map[int64]string {
+func (a *App) lockedBy(ctx context.Context, actor *Actor, typ string) (map[int64]string, error) {
 	out := map[int64]string{}
-	rows, err := a.Store.DB.QueryContext(ctx, `SELECT record_id, user_id, user_name, session_id, heartbeat_at FROM edit_locks WHERE record_type = ?`, typ)
+	rows, err := a.store.QueryContext(ctx, `SELECT record_id, user_id, user_name, session_id, heartbeat_at FROM edit_locks WHERE record_type = ?`, typ)
 	if err != nil {
-		return out
+		return nil, err
 	}
 	defer rows.Close()
 	for rows.Next() {
 		var id, uid int64
 		var name string
-		var sid NullInt
-		var hb Time
-		rows.Scan(&id, &uid, &name, &sid, &hb)
+		var sid store.NullInt
+		var hb store.Time
+		if err := rows.Scan(&id, &uid, &name, &sid, &hb); err != nil {
+			return nil, err
+		}
 		l := &editLock{UserID: uid, SessionID: sid.Int64, Heartbeat: hb}
 		if !l.fresh() || (actor != nil && actor.UserID == uid && (actor.Session == nil || sid.Int64 == 0 || actor.Session.ID == sid.Int64)) {
 			continue
 		}
 		out[id] = name
 	}
-	return out
+	return out, rows.Err()
 }
 
 // acquireLock takes (or refreshes) the lock on a record:
@@ -116,15 +121,15 @@ func (a *App) acquireLock(c *Ctx) error {
 	if err := c.Body(&body); err != nil {
 		return err
 	}
-	cap, ok := lockTypes[body.Type]
+	need, ok := lockTypes[body.Type]
 	if !ok || body.ID == 0 {
-		return errBadRequest(`Send {"type": "page" | "entry" | "global", "id": …}.`)
+		return apierr.BadRequest(`Send {"type": "page" | "entry" | "global", "id": …}.`)
 	}
-	if err := c.Need(cap); err != nil {
+	if err := c.Need(need); err != nil {
 		return err
 	}
 	if c.Actor.UserID == 0 {
-		return errBadRequest("Locks are for people editing in the admin.")
+		return apierr.BadRequest("Locks are for people editing in the admin.")
 	}
 	ctx := c.R.Context()
 	if other := a.heldByOther(ctx, c.Actor, body.Type, body.ID); other != nil && !body.TakeOver {
@@ -132,12 +137,12 @@ func (a *App) acquireLock(c *Ctx) error {
 		if body.Held {
 			code = "lock_lost"
 		}
-		return &Error{Status: 409, Code: code, Message: other.UserName + " is editing this.", Extra: map[string]any{"lock": other.JSON(c.Actor)}}
+		return &apierr.Error{Status: 409, Code: code, Message: other.UserName + " is editing this.", Extra: map[string]any{"lock": other.JSON(c.Actor)}}
 	}
-	now := Now()
+	now := store.Now()
 	sid := sessionID(c)
 	prior := a.lockOn(ctx, body.Type, body.ID)
-	_, err := a.Store.DB.ExecContext(ctx, `INSERT INTO edit_locks (record_type, record_id, user_id, user_name, session_id, acquired_at, heartbeat_at) VALUES (?,?,?,?,?,?,?)
+	_, err := a.store.ExecContext(ctx, `INSERT INTO edit_locks (record_type, record_id, user_id, user_name, session_id, acquired_at, heartbeat_at) VALUES (?,?,?,?,?,?,?)
 		ON CONFLICT(record_type, record_id) DO UPDATE SET heartbeat_at = excluded.heartbeat_at,
 		  acquired_at = CASE WHEN edit_locks.user_id = excluded.user_id AND edit_locks.session_id IS excluded.session_id THEN edit_locks.acquired_at ELSE excluded.acquired_at END,
 		  user_id = excluded.user_id, user_name = excluded.user_name, session_id = excluded.session_id`,
@@ -156,8 +161,10 @@ func (a *App) releaseLock(c *Ctx) error {
 	if err != nil {
 		return err
 	}
-	a.Store.DB.ExecContext(c.R.Context(), `DELETE FROM edit_locks WHERE record_type = ? AND record_id = ? AND user_id = ? AND session_id IS ?`,
-		c.Param("type"), id, c.Actor.UserID, nullable(sessionID(c)))
+	if _, err := a.store.ExecContext(c.R.Context(), `DELETE FROM edit_locks WHERE record_type = ? AND record_id = ? AND user_id = ? AND session_id IS ?`,
+		c.Param("type"), id, c.Actor.UserID, nullable(sessionID(c))); err != nil {
+		return err
+	}
 	return c.NoContent()
 }
 
@@ -175,10 +182,10 @@ const maxAutosave = 4 << 20
 func autosaveParams(c *Ctx) (typ, key string, err error) {
 	typ, key = c.Query("type"), c.Query("key")
 	if _, ok := lockTypes[typ]; !ok || key == "" {
-		return "", "", errBadRequest("Name the record: ?type=page|entry|global&key=<its id, or new:<where>>.")
+		return "", "", apierr.BadRequest("Name the record: ?type=page|entry|global&key=<its id, or new:<where>>.")
 	}
 	if c.Actor.UserID == 0 {
-		return "", "", errBadRequest("Autosaves are for people editing in the admin.")
+		return "", "", apierr.BadRequest("Autosaves are for people editing in the admin.")
 	}
 	return typ, key, nil
 }
@@ -189,9 +196,9 @@ func (a *App) showAutosave(c *Ctx) error {
 	if err != nil {
 		return err
 	}
-	var data JSON
-	var updated Time
-	err = a.Store.DB.QueryRowContext(c.R.Context(), `SELECT data, updated_at FROM autosaves WHERE record_type = ? AND record_key = ? AND user_id = ?`, typ, key, c.Actor.UserID).Scan(&data, &updated)
+	var data store.JSON
+	var updated store.Time
+	err = a.store.QueryRowContext(c.R.Context(), `SELECT data, updated_at FROM autosaves WHERE record_type = ? AND record_key = ? AND user_id = ?`, typ, key, c.Actor.UserID).Scan(&data, &updated)
 	if err != nil {
 		return c.JSON(200, O("autosave", nil))
 	}
@@ -213,10 +220,10 @@ func (a *App) putAutosave(c *Ctx) error {
 		return err
 	}
 	if len(body.Data) == 0 || len(body.Data) > maxAutosave {
-		return errBadRequest("Send {\"data\": …} (at most 4 MB).")
+		return apierr.BadRequest("Send {\"data\": …} (at most 4 MB).")
 	}
-	now := Now()
-	_, err = a.Store.DB.ExecContext(c.R.Context(), `INSERT INTO autosaves (record_type, record_key, user_id, data, created_at, updated_at) VALUES (?,?,?,?,?,?)
+	now := store.Now()
+	_, err = a.store.ExecContext(c.R.Context(), `INSERT INTO autosaves (record_type, record_key, user_id, data, created_at, updated_at) VALUES (?,?,?,?,?,?)
 		ON CONFLICT(record_type, record_key, user_id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at`,
 		typ, key, c.Actor.UserID, string(body.Data), now.DB(), now.DB())
 	if err != nil {
@@ -230,15 +237,17 @@ func (a *App) deleteAutosave(c *Ctx) error {
 	if err != nil {
 		return err
 	}
-	a.Store.DB.ExecContext(c.R.Context(), `DELETE FROM autosaves WHERE record_type = ? AND record_key = ? AND user_id = ?`, typ, key, c.Actor.UserID)
+	if _, err := a.store.ExecContext(c.R.Context(), `DELETE FROM autosaves WHERE record_type = ? AND record_key = ? AND user_id = ?`, typ, key, c.Actor.UserID); err != nil {
+		return err
+	}
 	return c.NoContent()
 }
 
 // ---- preferences ---------------------------------------------------------
 
 func (a *App) preferences(ctx context.Context, userID int64) map[string]any {
-	var data JSON
-	if err := a.Store.DB.QueryRowContext(ctx, `SELECT data FROM user_preferences WHERE user_id = ?`, userID).Scan(&data); err != nil {
+	var data store.JSON
+	if err := a.store.QueryRowContext(ctx, `SELECT data FROM user_preferences WHERE user_id = ?`, userID).Scan(&data); err != nil {
 		return map[string]any{}
 	}
 	return data.Map()
@@ -255,7 +264,7 @@ func (a *App) showPreferences(c *Ctx) error {
 // removes one).
 func (a *App) updatePreferences(c *Ctx) error {
 	if c.Actor.UserID == 0 {
-		return errBadRequest("Preferences are a person's.")
+		return apierr.BadRequest("Preferences are a person's.")
 	}
 	var body map[string]any
 	if err := c.Body(&body); err != nil {
@@ -273,12 +282,12 @@ func (a *App) updatePreferences(c *Ctx) error {
 			prefs[k] = v
 		}
 	}
-	raw := mustJSON(prefs)
+	raw := store.MustJSON(prefs)
 	if len(raw) > 256<<10 {
-		return errBadRequest("Preferences are at most 256 KB.")
+		return apierr.BadRequest("Preferences are at most 256 KB.")
 	}
-	_, err := a.Store.DB.ExecContext(ctx, `INSERT INTO user_preferences (user_id, data, updated_at) VALUES (?,?,?)
-		ON CONFLICT(user_id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at`, c.Actor.UserID, string(raw), Now().DB())
+	_, err := a.store.ExecContext(ctx, `INSERT INTO user_preferences (user_id, data, updated_at) VALUES (?,?,?)
+		ON CONFLICT(user_id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at`, c.Actor.UserID, string(raw), store.Now().DB())
 	if err != nil {
 		return err
 	}

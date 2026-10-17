@@ -19,6 +19,8 @@ var dist embed.FS
 
 const csp = "default-src 'self'; img-src 'self' data: blob: https:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
 
+// Handler serves the admin under /cms: the built assets, and index.html
+// for /cms/ itself (anything else under /cms goes there).
 func Handler() http.Handler {
 	files, _ := fs.Sub(dist, "dist")
 	index, _ := fs.ReadFile(files, "index.html")

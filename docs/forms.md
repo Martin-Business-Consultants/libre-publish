@@ -40,13 +40,66 @@ address); **Send test email** there checks it.
 ## On the site
 
 ```
-GET  /api/x/forms/definition?form=<slug>   the fields, labels, choices and spam checks to draw
+GET  /api/x/forms/list                     every form: slug, name, whether it's open, its digest
+GET  /api/x/forms/definition?form=<slug>   the fields, labels, choices, rules and spam checks to draw
 POST /api/x/forms/submit?form=<slug>       a submission
 ```
 
-The definition's `spam.captcha` names the provider, its site key, its
-script, and the field its token is posted in (`cf-turnstile-response` or
-`g-recaptcha-response`).
+They're public (no token) and their answers are pinned in
+`contracts/forms/` (contracts/README.md). The list:
+
+```json
+{"forms": [{"slug": "contact", "name": "Contact", "open": true, "digest": "sha256:6e80…"}]}
+```
+
+The definition:
+
+```json
+{"form": {
+  "slug": "contact", "name": "Contact", "open": true,
+  "action": "https://cms.example/api/x/forms/submit?form=contact",
+  "submit_label": "Send", "success_message": "Thanks!", "redirect_url": "",
+  "spam": {"honeypot_field": "_hp", "timestamp_field": "_ts", "min_seconds": 3, "captcha": null},
+  "fields": [
+    {"type": "heading", "name": "", "label": "", "text": "Say hello"},
+    {"type": "email", "name": "email", "label": "Email", "required": true,
+     "rules": {"required": true, "max_length": 500, "pattern": "^[^\\x00-\\x20@<>,;]+@…$"}},
+    {"type": "number", "name": "guests", "label": "Guests", "min": 1, "max": 12,
+     "rules": {"required": false, "max_length": 500, "min": 1, "max": 12, "pattern": "^-?(?:…)$"}},
+    {"type": "file", "name": "brief", "label": "Brief", "accept": ".pdf, image/*", "max_mb": 2,
+     "rules": {"required": false, "accept": [".pdf", "image/*"], "max_mb": 2}}
+  ],
+  "digest": "sha256:6e80…"}}
+```
+
+- `digest` is `"sha256:"` and the hex SHA-256 of the rest of `form` (every
+  key but `digest`) in the same canonical JSON as the schema digest
+  (docs/delivery-api.md): a site built against one definition can tell when
+  it's changed. The list carries the same digest.
+- Each field but a heading has `rules`: what the server checks, resolved
+  from the field's type and settings by the same table submit validates
+  with (`plugins/forms/rules.go`), so checking them in the browser checks
+  what the server will. A key that doesn't apply to the type is left out.
+  - `required` (always): a checkbox must be ticked, a choice made.
+  - `max_length`: the most characters (each answer, for checkboxes): the
+    field's own, else 500, or 10,000 for a paragraph. Not on files.
+  - `min`, `max` (number): the bounds, when set.
+  - `pattern` (email, tel, url, date, number): a regular expression the
+    trimmed answer must match, written so JavaScript's `RegExp` (with no
+    flag, `u` or `v`, so an `<input pattern>` too) and Go read it alike.
+  - `options` (select, radio, checkboxes): the answers allowed.
+  - `accept`, `max_mb` (file): extensions (`.pdf`), MIME types or families
+    (`image/*`), lowercased; the size limit in MB (5 unless the field sets
+    one).
+- The server is stricter than a pattern in three places, on purpose: a date
+  must also be a real one (`2026-02-30` matches but isn't), a URL must also
+  parse with an http(s) scheme and a host, and a number mustn't overflow.
+  The pattern is never looser than the server: what fails it, the server
+  refuses too.
+- `spam.min_seconds`: a post sooner than this after `_ts` is taken as spam
+  (quietly: it's answered as if it worked). 0: off. `spam.captcha` names the
+  provider, its site key, its script, and the field its token is posted in
+  (`cf-turnstile-response` or `g-recaptcha-response`).
 
 Post JSON (files as `{"filename", "content_type", "data": "<base64>"}`), a
 urlencoded form, or `multipart/form-data` (for files; 10 MB in all). Send an
@@ -59,13 +112,18 @@ const res = await fetch(`${CMS}/api/x/forms/submit?form=contact`, {
   body: JSON.stringify({ name, email, message, _hp: "", _ts: loadedAt }),
 });
 // 200 {"ok": true, "message": "Thanks!", "redirect": ""}
-// 422 {"error": "invalid", "errors": {"email": ["isn't an email address"]}}
-// 410 the form is closed; 429 too many posts from one address
+// 422 {"error": "invalid", "message": "Some fields need attention.", "errors": {"email": ["isn't an email address"]}}
+// 410 {"error": "closed", "message": "This form isn't taking submissions."}
+// 429 too many posts from one address
 ```
 
 A plain HTML `<form method="post" action="…">` works without script: it's
 answered with a redirect to the thank-you page, or back to the page with
-`?form=<slug>&form_status=sent` (or `error`). The site's origin must be in
+`?form=<slug>&form_status=sent` (or `error`). The page it goes back to is
+the hidden `_return` field (the page's absolute address) when that's on
+one of the site's origins — the public site URL's, or one in Settings ›
+General › Allowed origins, the list CORS uses — and the `Referer`
+otherwise: a post can't send anyone to another site. The site's origin must be in
 Settings › General › Allowed origins (or be the public site URL) for a
 browser's `fetch` to be allowed.
 

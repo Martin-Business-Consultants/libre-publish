@@ -104,10 +104,11 @@ func kvAll(prefix string) []string {
 }
 
 type site struct {
-	Name         string `json:"name"`
-	URL          string `json:"url"`
-	CMSURL       string `json:"cms_url"`
-	ContactEmail string `json:"contact_email"`
+	Name         string   `json:"name"`
+	URL          string   `json:"url"`
+	CMSURL       string   `json:"cms_url"`
+	ContactEmail string   `json:"contact_email"`
+	Origins      []string `json:"origins"`
 }
 
 func siteInfo() site {

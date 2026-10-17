@@ -1,6 +1,9 @@
 package main
 
 import (
+	"bytes"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"html"
@@ -101,18 +104,18 @@ func (s *stats) add(status string, n int) {
 }
 
 var (
-	slugFormat  = regexp.MustCompile(`^[a-z0-9][a-z0-9-]{0,62}$`)
-	nameFormat  = regexp.MustCompile(`^[a-z][a-z0-9_]{0,62}$`)
-	emailFormat = regexp.MustCompile(`^[^\s@<>,;]+@[^\s@<>,;]+\.[^\s@<>,;]+$`)
-	reserved    = []string{"_hp", "_ts", "form", "cf_turnstile_response"}
-	fieldTypes  = map[string]bool{}
+	slugFormat = regexp.MustCompile(`^[a-z0-9][a-z0-9-]{0,62}$`)
+	nameFormat = regexp.MustCompile(`^[a-z][a-z0-9_]{0,62}$`)
+	reserved   = []string{"_hp", "_ts", "_return", "form", "cf_turnstile_response"}
+	// fieldTypes is the palette's types.
+	fieldTypes = func() map[string]bool {
+		types := map[string]bool{}
+		for _, p := range palette {
+			types[p["type"].(string)] = true
+		}
+		return types
+	}()
 )
-
-func init() {
-	for _, p := range palette {
-		fieldTypes[p["type"].(string)] = true
-	}
-}
 
 func now() string { return time.Now().UTC().Format(time.RFC3339) }
 
@@ -209,7 +212,7 @@ func forAdmin(f Form) map[string]any {
 		m["embed"] = []map[string]string{
 			{"label": "Definition (GET)", "value": base + "/definition?form=" + f.Slug, "copy": "true"},
 			{"label": "Submit (POST)", "value": base + "/submit?form=" + f.Slug, "copy": "true"},
-			{"label": "How to post", "value": "JSON, a urlencoded form or multipart (for files). Send _ts (when the page loaded, in ms) and an empty _hp field."},
+			{"label": "How to post", "value": "JSON, a urlencoded form or multipart (for files). Send _ts (when the page loaded, in ms), an empty _hp field and, from a plain HTML form, _return (the page's address)."},
 		}
 	}
 	return m
@@ -497,8 +500,35 @@ func deleteForm() int32 {
 
 // ---- for the site ---------------------------------------------------------
 
-// definition is what a site needs to draw a form: its fields, the labels,
-// where to post and the spam checks it should send.
+// publishedField is a field as a site draws it: the builder's settings and
+// the rules its answers must meet (none for a heading).
+type publishedField struct {
+	Field
+	Rules *Rules `json:"rules,omitempty"`
+}
+
+// published is what a site needs to draw a form: its fields and their
+// rules, the labels, where to post, the spam checks it should send, and a
+// digest of all of it ("sha256:<hex>" of the rest in canonical JSON), so a
+// site can tell the form it was built against from the one it's given.
+func published(f Form, s site) map[string]any {
+	fields := []publishedField{}
+	for _, fl := range f.Fields {
+		fl.ID = ""
+		fields = append(fields, publishedField{Field: fl, Rules: rulesFor(fl)})
+	}
+	out := map[string]any{
+		"slug": f.Slug, "name": f.Name, "open": f.Status == "active", "fields": fields,
+		"submit_label": f.SubmitLabel, "success_message": f.SuccessMessage, "redirect_url": f.RedirectURL,
+		"action": strings.TrimRight(s.CMSURL, "/") + "/api/x/forms/submit?form=" + f.Slug,
+		"spam": map[string]any{"honeypot_field": map[bool]string{true: "_hp"}[f.Honeypot], "timestamp_field": map[bool]string{true: "_ts"}[f.MinSeconds > 0],
+			"min_seconds": f.MinSeconds, "captcha": captchaFor(f)},
+	}
+	out["digest"] = digestOf(canonicalJSON(out))
+	return out
+}
+
+// definition answers one form's published definition.
 //
 //go:wasmexport definition
 func definition() int32 {
@@ -507,19 +537,26 @@ func definition() int32 {
 	if !ok {
 		return notFound("No form " + req.q("form") + ".")
 	}
-	fields := []Field{}
-	for _, fl := range f.Fields {
-		fl.ID = ""
-		fields = append(fields, fl)
-	}
+	return replyPublic(map[string]any{"form": published(f, siteInfo())})
+}
+
+// listPublic is every form a site can draw: its slug, name, whether it's
+// taking submissions, and its definition's digest.
+//
+//go:wasmexport list_public
+func listPublic() int32 {
 	s := siteInfo()
-	out := map[string]any{
-		"slug": f.Slug, "name": f.Name, "open": f.Status == "active", "fields": fields,
-		"submit_label": f.SubmitLabel, "success_message": f.SuccessMessage, "redirect_url": f.RedirectURL,
-		"action": strings.TrimRight(s.CMSURL, "/") + "/api/x/forms/submit?form=" + f.Slug,
-		"spam":   map[string]any{"honeypot_field": map[bool]string{true: "_hp"}[f.Honeypot], "timestamp_field": map[bool]string{true: "_ts"}[f.MinSeconds > 0], "captcha": captchaFor(f)},
+	out := []map[string]any{}
+	for _, f := range allForms() {
+		p := published(f, s)
+		out = append(out, map[string]any{"slug": f.Slug, "name": f.Name, "open": p["open"], "digest": p["digest"]})
 	}
-	return replyRaw(200, map[string]string{"Content-Type": "application/json; charset=utf-8", "Cache-Control": "public, max-age=60"}, mustJSON(map[string]any{"form": out}))
+	return replyPublic(map[string]any{"forms": out})
+}
+
+// replyPublic answers a site's read: JSON a cache may keep a minute.
+func replyPublic(v any) int32 {
+	return replyRaw(200, map[string]string{"Content-Type": "application/json; charset=utf-8", "Cache-Control": "public, max-age=60"}, mustJSON(v))
 }
 
 // captchaFor is what a site needs to show the form's captcha: the
@@ -537,4 +574,22 @@ func captchaFor(f Form) any {
 func mustJSON(v any) string {
 	b, _ := json.Marshal(v)
 	return string(b)
+}
+
+// canonicalJSON is v as digests hash it, the same form as the CMS's
+// schema digest: compact JSON with every object's keys sorted, strings
+// escaped as encoding/json does by default, numbers as first written.
+func canonicalJSON(v any) []byte {
+	raw, _ := json.Marshal(v)
+	dec := json.NewDecoder(bytes.NewReader(raw))
+	dec.UseNumber()
+	var generic any
+	dec.Decode(&generic)
+	out, _ := json.Marshal(generic)
+	return out
+}
+
+func digestOf(canonical []byte) string {
+	sum := sha256.Sum256(canonical)
+	return "sha256:" + hex.EncodeToString(sum[:])
 }

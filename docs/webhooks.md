@@ -28,14 +28,30 @@ X-CMS-Signature: sha256=<hex HMAC-SHA256 of the raw body, keyed with the webhook
 ```
 
 - `event` is one of the webhook's events: `page.*` and `entry.*`
-  (`published`, `updated`, `unpublished`, `deleted`), `global.updated`, and
-  the plugins' events (`submission.created`, `quote_request.created`,
+  (`published`, `updated`, `unpublished`, `deleted`), `global.updated`,
+  `schema.changed`, and the plugins' events (`submission.created`, `quote_request.created`,
   `lead.created`, `lead.stage_changed`, …).
 - `tenant` is the install's site key: `SITE_KEY`, else the first label of
   `APP_HOST`. A receiver serving several sites tells them apart by it, so
   when an install moves to a new host, keep `SITE_KEY` as it was.
 - A page's `data` and an entry's carry the keys the contract lists; an entry
   has `collection_slug` in place of `path`.
+
+## schema.changed
+
+```json
+{"event": "schema.changed", "tenant": "acme", "delivered_at": "2026-09-17T10:00:00Z",
+ "data": {"schema_digest": "sha256:4c71…"}}
+```
+
+Sent when the digest of `/api/v1/schema` (its `meta.schema_digest`, and
+every `/api/v1` answer's `X-CMS-Schema-Digest`) moves: a block type, a
+collection, a global or a live page's fields changed, or which collections
+are served. Writes are let settle for two seconds first, and nothing is
+sent when they leave the digest as it was. `data.schema_digest` is the new
+digest; a site whose generated types were built from another regenerates
+them. Like a publish, it also rebuilds or purges the site (cache tag
+`schema`).
 
 ## Verifying the signature
 

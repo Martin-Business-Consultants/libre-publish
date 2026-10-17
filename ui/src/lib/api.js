@@ -1,6 +1,7 @@
 // The admin talks to the same /api as the CLI and agents, signed in by the
 // session cookie, with the session's CSRF token on every write.
 import { session } from "./session.svelte.js";
+import { maintenance } from "./maintenance.svelte.js";
 
 export class ApiError extends Error {
   constructor(status, body) {
@@ -20,11 +21,12 @@ export async function api(method, path, body, { quiet = false } = {}) {
   }
   if (method !== "GET") headers["X-CSRF-Token"] = session.csrf;
   const res = await fetch("/api" + path, { method, headers, body: payload, credentials: "same-origin" });
-  if (res.status === 204) return null;
+  if (res.status === 204) { maintenance.on = false; return null; }
   const text = await res.text();
   let data = null;
   try { data = text ? JSON.parse(text) : null; } catch { data = { message: text }; }
   if (res.status === 401 && !quiet) session.signedOut();
+  maintenance.on = res.status === 503 && data?.error === "maintenance";
   if (!res.ok) throw new ApiError(res.status, data);
   data = data || {};
   Object.defineProperty(data, "__status", { value: res.status, enumerable: false });

@@ -1,26 +1,36 @@
+// Package cms is the core of an install: the App, content and structure,
+// revisions, assets, settings, and the HTTP API (/api, /api/v1, /files).
 package cms
 
 import (
 	"context"
 	"crypto/sha256"
+	"database/sql"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"log/slog"
+	"maps"
 	"net/http"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
-)
 
-// Version is this build's: set from the release tag (make dist VERSION=…),
-// "dev" otherwise. The API it serves is frozen whatever the version.
-var Version = "dev"
+	"github.com/Martin-Business-Consultants/libre-publish/internal/apierr"
+	"github.com/Martin-Business-Consultants/libre-publish/internal/deploy"
+	"github.com/Martin-Business-Consultants/libre-publish/internal/jsonv"
+	"github.com/Martin-Business-Consultants/libre-publish/internal/plugin"
+	"github.com/Martin-Business-Consultants/libre-publish/internal/ratelimit"
+	"github.com/Martin-Business-Consultants/libre-publish/internal/secret"
+	"github.com/Martin-Business-Consultants/libre-publish/internal/store"
+	"github.com/Martin-Business-Consultants/libre-publish/internal/webhook"
+)
 
 // Config is what an install is started with; everything else lives in the
 // database.
@@ -31,7 +41,14 @@ type Config struct {
 	BaseURL string
 	// SITE_KEY: the tenant name webhooks carry.
 	SiteKey string
-	// Requests a minute per token across /api/v1; 0 for none.
+	// SECRET_KEY: seals token plaintexts and settings' secrets instead of
+	// DataDir/secret.key.
+	SecretKey string
+	// Version is this build's, "dev" when empty. The API it serves is
+	// frozen whatever the version.
+	Version string
+	// Requests a minute per token across /api/v1: 0 for the default
+	// (1200), below 0 for no limit.
 	DeliveryRateLimit int
 	// TrustProxy reads the client's address from X-Forwarded-For, as it
 	// must behind a proxy and mustn't when facing the internet directly
@@ -40,68 +57,174 @@ type Config struct {
 	Logger     *slog.Logger
 	// Mailer sends email; SMTP from Settings › Email when nil.
 	Mailer Mailer
+	// Admin serves /cms/ when set.
+	Admin http.Handler
 	// NoDefaultPlugins leaves out the plugins the binary ships (tests).
 	NoDefaultPlugins bool
+	// SchemaDebounce is how long schema.changed waits for writes to settle
+	// (2s when 0).
+	SchemaDebounce time.Duration
+	// ImportMaxBytes is the largest backup the admin may upload to import
+	// (IMPORT_MAX_BYTES; 10 GiB when 0).
+	ImportMaxBytes int64
 }
+
+const defaultDeliveryRateLimit = 1200
 
 // App is one install: one site, one database, one process.
 type App struct {
-	Config
-	Store   *Store
-	Secrets *Secrets
-	Hooks   *Webhooks
-	Deploys *Deploys
-	Plugins *PluginHost
-	Admin   http.Handler
+	cfg     Config
+	log     *slog.Logger
+	store   *store.DB
+	secrets *secret.Key
+	hooks   *webhook.Dispatcher
+	deploys *deploy.Debouncer
+	plugins *plugin.Host
 
-	limiter *rateLimiter
-	stop    chan struct{}
-	once    sync.Once
+	// Who hears of changes, and what a settings key's data goes through
+	// before it's written (events.go).
+	listeners     []listener
+	beforeSetting map[string]func(data map[string]any)
+
+	limiter *ratelimit.Limiter // the delivery API's, per token
+	// Sign-in: ten tries a minute from one address, and ten at one account
+	// from anywhere (a botnet guessing one password). Forgotten passwords:
+	// five.
+	signIns *ratelimit.Limiter
+	forgots *ratelimit.Limiter
+	// pluginCalls counts calls to plugins' public routes: 30 a minute from
+	// one address to one plugin, so a form can't be flooded.
+	pluginCalls *ratelimit.Limiter
+	variants    keyedLocks
+	startedAt   time.Time
+	schemas     schemaCache // the schema's digest (schema_digest.go)
+	// server is the Server the App runs behind, which can replace it (an
+	// import); nil for an App on its own.
+	server *Server
+
+	// ctx lives as long as the app: Close cancels it, and everything
+	// started in the background (spawn) derives from it.
+	ctx    context.Context //nolint:containedctx // the app's own lifetime, not a request's
+	cancel context.CancelFunc
+	wg     sync.WaitGroup
+	mu     sync.Mutex // guards closed, so nothing joins wg once Close waits
+	closed bool
+	once   sync.Once
+	err    error
 }
 
+// NewApp opens an install: the database (migrated), the key, the defaults
+// a new one needs. Nothing runs in the background until Start.
 func NewApp(cfg Config) (*App, error) {
 	if cfg.Logger == nil {
 		cfg.Logger = slog.New(slog.NewTextHandler(os.Stderr, nil))
 	}
-	if cfg.DeliveryRateLimit == 0 {
-		cfg.DeliveryRateLimit = 1200
+	if cfg.Version == "" {
+		cfg.Version = "dev"
 	}
-	if cfg.DeliveryRateLimit < 0 {
-		cfg.DeliveryRateLimit = 0
-	}
-	if err := os.MkdirAll(filepath.Join(cfg.DataDir, "storage"), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Join(cfg.DataDir, "storage"), 0o750); err != nil {
 		return nil, err
 	}
-	store, err := OpenStore(filepath.Join(cfg.DataDir, "cms.sqlite3"))
+	db, err := store.Open(filepath.Join(cfg.DataDir, "cms.sqlite3"))
 	if err != nil {
 		return nil, err
 	}
-	secrets, err := LoadSecrets(cfg.DataDir)
+	secrets, err := secret.Load(cfg.DataDir, cfg.SecretKey)
 	if err != nil {
-		return nil, err
+		return nil, errors.Join(err, db.Close())
 	}
-	a := &App{Config: cfg, Store: store, Secrets: secrets, stop: make(chan struct{})}
-	a.limiter = newRateLimiter(cfg.DeliveryRateLimit)
-	a.Hooks = &Webhooks{app: a}
-	a.Deploys = &Deploys{app: a}
-	a.Plugins = &PluginHost{app: a}
+	limit := cfg.DeliveryRateLimit
+	if limit == 0 {
+		limit = defaultDeliveryRateLimit
+	}
+	a := &App{cfg: cfg, log: cfg.Logger, store: db, secrets: secrets, startedAt: time.Now(),
+		limiter: ratelimit.New(limit), signIns: ratelimit.New(10), forgots: ratelimit.New(5), pluginCalls: ratelimit.New(30)}
+	a.ctx, a.cancel = context.WithCancel(context.Background())
+	a.hooks = webhook.New(db, secrets, a.log, a.tenant(), a.spawn)
+	a.deploys = deploy.New(deploySettings{a}, a.log, a.spawn)
+	a.plugins = plugin.New(pluginEnv{a}, db, a.log, a.spawn, defaultPlugins())
+	a.listen()
 	if err := a.seed(); err != nil {
-		return nil, fmt.Errorf("seed: %w", err)
+		a.cancel()
+		return nil, errors.Join(fmt.Errorf("seed: %w", err), db.Close())
 	}
-	if err := a.Plugins.LoadAll(); err != nil {
-		a.Logger.Warn("plugins", "err", err)
-	}
-	if !cfg.NoDefaultPlugins {
-		a.Plugins.EnsureDefaults(context.Background())
-	}
-	go a.scheduler()
 	return a, nil
 }
 
-func (a *App) Close() {
-	a.once.Do(func() { close(a.stop) })
-	a.Plugins.Close()
-	a.Store.Close()
+// Start loads the plugins (installing the ones the binary ships) and starts
+// the scheduler. One-off commands open an App without it.
+func (a *App) Start(ctx context.Context) error {
+	if err := a.plugins.LoadAll(ctx); err != nil {
+		a.log.Warn("plugins", "err", err)
+	}
+	if !a.cfg.NoDefaultPlugins {
+		a.plugins.EnsureDefaults(ctx)
+	}
+	// What schema.changed is measured from.
+	digest := a.schemaDigest(ctx)
+	a.schemas.mu.Lock()
+	a.schemas.announced = digest
+	a.schemas.mu.Unlock()
+	if !a.spawn(a.ctx, "scheduler", a.scheduler) {
+		return errors.New("the app is closed")
+	}
+	return nil
+}
+
+// Close stops what runs in the background, waits for it, then closes the
+// plugins and the database.
+func (a *App) Close() error {
+	a.once.Do(func() {
+		a.mu.Lock()
+		a.closed = true
+		a.mu.Unlock()
+		a.cancel()
+		a.deploys.Stop()
+		a.stopSchemaTimer()
+		a.wg.Wait()
+		a.err = errors.Join(a.plugins.Close(), a.store.Close())
+	})
+	return a.err
+}
+
+// tenant is the site's name in webhooks and the device login: SITE_KEY,
+// or the first label of the CMS's host.
+func (a *App) tenant() string {
+	if a.cfg.SiteKey != "" {
+		return a.cfg.SiteKey
+	}
+	host := strings.TrimPrefix(strings.TrimPrefix(a.cfg.BaseURL, "https://"), "http://")
+	return strings.Split(host, ".")[0]
+}
+
+// BaseURL is the CMS's own address.
+func (a *App) BaseURL() string { return a.cfg.BaseURL }
+
+// spawn runs fn in the background with ctx's values but the app's lifetime:
+// it isn't cancelled when a request ends, only when the app closes, and
+// Close waits for it. A panic is logged, not fatal. False once the app is
+// closed (fn doesn't run).
+func (a *App) spawn(ctx context.Context, name string, fn func(context.Context)) bool {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	if a.closed {
+		return false
+	}
+	a.wg.Go(func() {
+		ctx, cancel := context.WithCancel(context.WithoutCancel(ctx))
+		defer cancel()
+		defer context.AfterFunc(a.ctx, cancel)()
+		defer a.recovered(name)
+		fn(ctx)
+	})
+	return true
+}
+
+// recovered logs a panic in background work, where nothing else would.
+func (a *App) recovered(name string) {
+	if rec := recover(); rec != nil {
+		a.log.Error("panic in the background", "task", name, "panic", rec, "stack", string(debug.Stack()))
+	}
 }
 
 // ---- request context -----------------------------------------------------
@@ -123,6 +246,8 @@ type Ctx struct {
 	owner *deliveryOwner
 }
 
+// Crumb is a next step an agent's answer suggests: what it does, and the
+// CLI command for it.
 type Crumb struct {
 	Description string `json:"description"`
 	Command     string `json:"command"`
@@ -130,47 +255,26 @@ type Crumb struct {
 
 func crumb(desc, cmd string) Crumb { return Crumb{desc, cmd} }
 
-type HandlerFunc func(*Ctx) error
+type handlerFunc func(*Ctx) error
 
-// Error is every /api error, one shape: {"error": code, "message": …}.
-type Error struct {
-	Status     int
-	Code       string
-	Message    string
-	Errors     map[string][]string
-	Capability string
-	Extra      map[string]any
-}
-
-func (e *Error) Error() string { return e.Code + ": " + e.Message }
-
-func errBadRequest(msg string) *Error { return &Error{Status: 400, Code: "bad_request", Message: msg} }
-func errNotFound(msg string) *Error   { return &Error{Status: 404, Code: "not_found", Message: msg} }
-func errConflict(msg string) *Error   { return &Error{Status: 409, Code: "conflict", Message: msg} }
-func errForbidden(capability string) *Error {
-	return &Error{Status: 403, Code: "forbidden", Message: "Your role doesn't grant " + capability + ".", Capability: capability}
-}
-
-// Invalid collects per-field problems into a 422.
-type Invalid map[string][]string
-
-func (v Invalid) Add(field, msg string) { v[field] = append(v[field], msg) }
-func (v Invalid) Err() error {
-	if len(v) == 0 {
-		return nil
+// isNotFound is a lookup's "there's no such thing", whichever way it said so.
+func isNotFound(err error) bool {
+	if errors.Is(err, store.ErrNotFound) || errors.Is(err, sql.ErrNoRows) {
+		return true
 	}
-	return &Error{Status: 422, Code: "invalid", Message: "Validation failed", Errors: v}
+	e, ok := errors.AsType[*apierr.Error](err)
+	return ok && e.Status == http.StatusNotFound
 }
 
 func (c *Ctx) fail(err error) {
-	var e *Error
+	var e *apierr.Error
 	switch {
 	case errors.As(err, &e):
-	case errors.Is(err, ErrNotFound):
-		e = errNotFound("Couldn't find that.")
+	case errors.Is(err, store.ErrNotFound):
+		e = apierr.NotFound("Couldn't find that.")
 	default:
-		c.App.Logger.Error("request", "path", c.R.URL.Path, "err", err)
-		e = &Error{Status: 500, Code: "internal_error", Message: "Something went wrong on our side."}
+		c.App.log.Error("request", "path", c.R.URL.Path, "request_id", requestIDFrom(c.R.Context()), "err", err)
+		e = &apierr.Error{Status: 500, Code: "internal_error", Message: "Something went wrong on our side."}
 	}
 	body := map[string]any{"error": e.Code}
 	if e.Message != "" {
@@ -182,10 +286,9 @@ func (c *Ctx) fail(err error) {
 	if e.Capability != "" {
 		body["capability"] = e.Capability
 	}
-	for k, v := range e.Extra {
-		body[k] = v
-	}
-	c.JSON(e.Status, body)
+	maps.Copy(body, e.Extra)
+	_ = c.JSON(e.Status, body) // the client went away; nothing to do
+
 }
 
 func (c *Ctx) envelope() bool {
@@ -250,22 +353,39 @@ func defaultSummary(r *http.Request, status int, v any) string {
 	return r.Method + " " + r.URL.Path + " — " + http.StatusText(status) + "."
 }
 
+// NoContent answers 204.
 func (c *Ctx) NoContent() error {
 	c.W.WriteHeader(http.StatusNoContent)
 	return nil
 }
 
-// Body decodes the request's JSON into v; a body that isn't JSON is a 400.
-func (c *Ctx) Body(v any) error {
-	data, err := io.ReadAll(io.LimitReader(c.R.Body, 32<<20))
+// maxBody is the most a JSON body may be.
+const maxBody = 32 << 20
+
+// Body decodes the request's JSON into v; a body that isn't JSON is a 400,
+// one over 32 MB a 413.
+func (c *Ctx) Body(v any) error { return c.body(v, false) }
+
+// OptionalBody is Body for a request that may come with none (v is left
+// as it is); one that does come must still be JSON.
+func (c *Ctx) OptionalBody(v any) error { return c.body(v, true) }
+
+func (c *Ctx) body(v any, optional bool) error {
+	data, err := io.ReadAll(http.MaxBytesReader(c.W, c.R.Body, maxBody))
 	if err != nil {
-		return errBadRequest("Couldn't read the request body.")
+		if _, ok := errors.AsType[*http.MaxBytesError](err); ok {
+			return apierr.TooLarge(maxBody)
+		}
+		return apierr.BadRequest("Couldn't read the request body.")
 	}
 	if len(strings.TrimSpace(string(data))) == 0 {
-		return errBadRequest("The request needs a JSON body.")
+		if optional {
+			return nil
+		}
+		return apierr.BadRequest("The request needs a JSON body.")
 	}
 	if err := json.Unmarshal(data, v); err != nil {
-		return errBadRequest("The body isn't JSON: " + err.Error())
+		return apierr.BadRequest("The body isn't JSON: " + err.Error())
 	}
 	return nil
 }
@@ -279,19 +399,22 @@ func (c *Ctx) Wrapped(key string) (map[string]any, error) {
 	}
 	inner, ok := body[key].(map[string]any)
 	if !ok {
-		return nil, errBadRequest("param is missing or the value is empty: " + key)
+		return nil, apierr.BadRequest("param is missing or the value is empty: " + key)
 	}
 	return inner, nil
 }
 
+// Query is the query string's key.
 func (c *Ctx) Query(key string) string { return c.R.URL.Query().Get(key) }
 
+// Param is the route's {key}.
 func (c *Ctx) Param(key string) string { return c.R.PathValue(key) }
 
+// IntParam is the route's {key} as an id; a 404 when it isn't one.
 func (c *Ctx) IntParam(key string) (int64, error) {
 	n, err := strconv.ParseInt(c.R.PathValue(key), 10, 64)
 	if err != nil {
-		return 0, errNotFound("Couldn't find " + key + " " + c.R.PathValue(key) + ".")
+		return 0, apierr.NotFound("Couldn't find " + key + " " + c.R.PathValue(key) + ".")
 	}
 	return n, nil
 }
@@ -305,7 +428,7 @@ func (c *Ctx) truthy(key string) bool {
 }
 
 // paging reads ?page= and ?per= with the given default and cap.
-func (c *Ctx) paging(def, max int) (page, per int) {
+func (c *Ctx) paging(def, most int) (page, per int) {
 	page, _ = strconv.Atoi(c.Query("page"))
 	per, _ = strconv.Atoi(c.Query("per"))
 	if page < 1 {
@@ -317,28 +440,34 @@ func (c *Ctx) paging(def, max int) (page, per int) {
 	if per < 1 {
 		per = def
 	}
-	if per > max {
-		per = max
-	}
+	per = min(per, most)
 	return
 }
 
 // Need refuses unless the caller's role grants capability.
 func (c *Ctx) Need(capability string) error {
 	if c.Actor == nil {
-		return &Error{Status: 401, Code: "unauthorized", Message: "Sign in, or send Authorization: Bearer <token>."}
+		return &apierr.Error{Status: 401, Code: "unauthorized", Message: "Sign in, or send Authorization: Bearer <token>."}
 	}
 	if !c.Actor.Can(capability) {
-		return errForbidden(capability)
+		return apierr.Forbidden(capability)
 	}
 	return nil
 }
 
 func (c *Ctx) can(capability string) bool { return c.Actor != nil && c.Actor.Can(capability) }
 
+// ip is the client's address. Behind a proxy it's the rightmost
+// X-Forwarded-For entry, the one our proxy appended: everything left of it
+// is whatever the client chose to send.
 func (c *Ctx) ip() string {
-	if fwd := c.R.Header.Get("X-Forwarded-For"); fwd != "" && c.App.TrustProxy {
-		return strings.TrimSpace(strings.Split(fwd, ",")[0])
+	if c.App.cfg.TrustProxy {
+		if fwd := c.R.Header.Values("X-Forwarded-For"); len(fwd) > 0 {
+			last := fwd[len(fwd)-1]
+			if ip := strings.TrimSpace(last[strings.LastIndex(last, ",")+1:]); ip != "" {
+				return ip
+			}
+		}
 	}
 	host := c.R.RemoteAddr
 	if i := strings.LastIndex(host, ":"); i > 0 {
@@ -353,7 +482,7 @@ type route struct {
 	auth bool // false: open to anyone (device login, public posts)
 }
 
-func (a *App) handle(mux *http.ServeMux, pattern string, h HandlerFunc, opts ...func(*route)) {
+func (a *App) handle(mux *http.ServeMux, pattern string, h handlerFunc, opts ...func(*route)) {
 	rt := route{auth: true}
 	for _, o := range opts {
 		o(&rt)
@@ -362,6 +491,12 @@ func (a *App) handle(mux *http.ServeMux, pattern string, h HandlerFunc, opts ...
 		c := &Ctx{App: a, W: w, R: r}
 		defer func() {
 			if rec := recover(); rec != nil {
+				// A handler cutting the connection on purpose (a broken
+				// download) is net/http's to handle.
+				if isAbort(rec) {
+					panic(rec)
+				}
+				a.log.Error("panic", "path", r.URL.Path, "request_id", requestIDFrom(r.Context()), "panic", rec, "stack", string(debug.Stack()))
 				c.fail(fmt.Errorf("panic: %v", rec))
 			}
 		}()
@@ -372,7 +507,7 @@ func (a *App) handle(mux *http.ServeMux, pattern string, h HandlerFunc, opts ...
 		}
 		c.Actor = actor
 		if rt.auth && actor == nil {
-			c.fail(&Error{Status: 401, Code: "unauthorized", Message: "Sign in, or send Authorization: Bearer <token>."})
+			c.fail(&apierr.Error{Status: 401, Code: "unauthorized", Message: "Sign in, or send Authorization: Bearer <token>."})
 			return
 		}
 		if err := h(c); err != nil {
@@ -389,10 +524,10 @@ func (a *App) Handler() http.Handler {
 	a.routes(mux)
 	a.deliveryRoutes(mux)
 
-	mux.Handle("GET /files/", http.HandlerFunc(a.serveFile))
+	mux.HandleFunc("GET /files/{key}/{rest...}", a.serveFile)
 	mux.HandleFunc("GET /up", func(w http.ResponseWriter, r *http.Request) {
-		if err := a.Store.DB.PingContext(r.Context()); err != nil {
-			http.Error(w, "down", 500)
+		if err := a.store.PingContext(r.Context()); err != nil {
+			http.Error(w, "down", http.StatusInternalServerError)
 			return
 		}
 		w.Write([]byte("ok"))
@@ -401,15 +536,15 @@ func (a *App) Handler() http.Handler {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		w.Write([]byte("User-agent: *\nDisallow: /\n"))
 	})
-	if a.Admin != nil {
-		mux.Handle("/cms/", a.Admin)
+	if a.cfg.Admin != nil {
+		mux.Handle("/cms/", a.cfg.Admin)
 	}
 	// "/" is blank: a headless install's own address shows nothing, not even
 	// where the admin is. Any other /api path is the API's 404, in its shape.
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, "/api/") || r.URL.Path == "/api" {
 			c := &Ctx{App: a, W: w, R: r}
-			c.fail(errNotFound("No route matches " + r.Method + " " + r.URL.Path + "."))
+			c.fail(apierr.NotFound("No route matches " + r.Method + " " + r.URL.Path + "."))
 			return
 		}
 		if r.URL.Path == "/" {
@@ -419,7 +554,114 @@ func (a *App) Handler() http.Handler {
 		}
 		http.NotFound(w, r)
 	})
-	return a.cors(securityHeaders(mux))
+	return a.logRequests(a.recoverPanics(a.cors(securityHeaders(mux))))
+}
+
+// ---- request logging -----------------------------------------------------
+
+type requestIDKey struct{}
+
+// requestIDFrom is the request's id (X-Request-ID), "" outside one.
+func requestIDFrom(ctx context.Context) string {
+	id, _ := ctx.Value(requestIDKey{}).(string)
+	return id
+}
+
+// requestID keeps a caller's (a proxy's) X-Request-ID when it looks like
+// one, and makes one otherwise.
+func requestID(r *http.Request) string {
+	id := r.Header.Get("X-Request-ID")
+	if len(id) == 0 || len(id) > 128 {
+		return hex.EncodeToString(secret.RandomBytes(12))
+	}
+	for _, ch := range id {
+		if (ch < 'a' || ch > 'z') && (ch < 'A' || ch > 'Z') && (ch < '0' || ch > '9') && !strings.ContainsRune("-_.:", ch) {
+			return hex.EncodeToString(secret.RandomBytes(12))
+		}
+	}
+	return id
+}
+
+// statusWriter notes what was answered, for the log.
+type statusWriter struct {
+	http.ResponseWriter
+	status int
+	bytes  int64
+}
+
+// WriteHeader notes the first status written.
+func (w *statusWriter) WriteHeader(s int) {
+	if w.status == 0 {
+		w.status = s
+	}
+	w.ResponseWriter.WriteHeader(s)
+}
+
+func (w *statusWriter) Write(b []byte) (int, error) {
+	if w.status == 0 {
+		w.status = http.StatusOK
+	}
+	n, err := w.ResponseWriter.Write(b)
+	w.bytes += int64(n)
+	return n, err
+}
+
+// Unwrap lets http.ResponseController reach the connection (flushing,
+// deadlines).
+func (w *statusWriter) Unwrap() http.ResponseWriter { return w.ResponseWriter }
+
+// logRequests gives every request an id and logs one line when it's
+// answered (/up, polled by health checks, isn't).
+func (a *App) logRequests(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		id := requestID(r)
+		w.Header().Set("X-Request-ID", id)
+		r = r.WithContext(context.WithValue(r.Context(), requestIDKey{}, id))
+		sw := &statusWriter{ResponseWriter: w}
+		defer func() {
+			if r.URL.Path == "/up" {
+				return
+			}
+			status := sw.status
+			if status == 0 {
+				status = http.StatusOK
+			}
+			c := &Ctx{App: a, W: w, R: r}
+			a.log.Info("request", "method", r.Method, "path", r.URL.Path, "status", status, "bytes", sw.bytes,
+				"duration_ms", time.Since(start).Milliseconds(), "ip", c.ip(), "request_id", id)
+		}()
+		next.ServeHTTP(sw, r)
+	})
+}
+
+// recoverPanics answers a panic anywhere (the files, the admin, /up) with
+// a 500 and logs where it came from. A handler cutting the connection on
+// purpose (http.ErrAbortHandler) is net/http's to handle.
+// isAbort is whether a recovered panic is http.ErrAbortHandler: a handler
+// cutting the connection on purpose.
+func isAbort(rec any) bool {
+	err, ok := rec.(error)
+	return ok && errors.Is(err, http.ErrAbortHandler)
+}
+
+func (a *App) recoverPanics(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			rec := recover()
+			if rec == nil {
+				return
+			}
+			if isAbort(rec) {
+				panic(rec)
+			}
+			a.log.Error("panic", "path", r.URL.Path, "request_id", requestIDFrom(r.Context()), "panic", rec, "stack", string(debug.Stack()))
+			if sw, ok := w.(*statusWriter); !ok || sw.status == 0 {
+				http.Error(w, "Something went wrong on our side.", http.StatusInternalServerError)
+			}
+		}()
+		next.ServeHTTP(w, r)
+	})
 }
 
 func securityHeaders(next http.Handler) http.Handler {
@@ -440,13 +682,13 @@ func securityHeaders(next http.Handler) http.Handler {
 func (a *App) cors(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
-		if origin != "" && (strings.HasPrefix(r.URL.Path, "/api/v1/") || strings.HasPrefix(r.URL.Path, "/api/public/") || strings.HasPrefix(r.URL.Path, "/api/x/") || r.URL.Path == "/api/quote_requests") && a.originAllowed(origin) {
+		if origin != "" && (strings.HasPrefix(r.URL.Path, "/api/v1/") || strings.HasPrefix(r.URL.Path, "/api/public/") || strings.HasPrefix(r.URL.Path, "/api/x/") || r.URL.Path == "/api/quote_requests") && a.originAllowed(r.Context(), origin) {
 			h := w.Header()
 			h.Set("Access-Control-Allow-Origin", origin)
 			h.Set("Vary", "Origin")
 			h.Set("Access-Control-Allow-Headers", "Authorization, Content-Type, If-None-Match")
 			h.Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-			h.Set("Access-Control-Expose-Headers", "ETag, Cache-Tag, X-Total-Count, X-Total-Pages, Link")
+			h.Set("Access-Control-Expose-Headers", "ETag, Cache-Tag, X-Total-Count, X-Total-Pages, Link, "+schemaDigestHeader)
 			if r.Method == http.MethodOptions {
 				w.WriteHeader(http.StatusNoContent)
 				return
@@ -456,106 +698,38 @@ func (a *App) cors(next http.Handler) http.Handler {
 	})
 }
 
-func (a *App) originAllowed(origin string) bool {
-	g := a.general()
-	allowed := []string{strings.TrimRight(str(g["site_base_url"]), "/")}
-	for _, o := range strings.FieldsFunc(str(g["cors_origins"]), func(r rune) bool { return r == ',' || r == '\n' || r == ' ' }) {
-		allowed = append(allowed, strings.TrimRight(strings.TrimSpace(o), "/"))
-	}
-	for _, o := range allowed {
-		if o != "" && strings.EqualFold(o, origin) {
+func (a *App) originAllowed(ctx context.Context, origin string) bool {
+	for _, o := range a.siteOrigins(ctx) {
+		if strings.EqualFold(o, origin) {
 			return true
 		}
 	}
 	return false
 }
 
-// ---- rate limit ----------------------------------------------------------
-
-type rateLimiter struct {
-	mu     sync.Mutex
-	limit  int
-	window map[string]*bucket
-}
-
-type bucket struct {
-	start time.Time
-	count int
-}
-
-func newRateLimiter(limit int) *rateLimiter {
-	return &rateLimiter{limit: limit, window: map[string]*bucket{}}
-}
-
-// allow counts one request for key; the seconds to wait when it's over.
-func (l *rateLimiter) allow(key string) (bool, int) {
-	if l.limit <= 0 {
-		return true, 0
-	}
-	l.mu.Lock()
-	defer l.mu.Unlock()
-	now := time.Now()
-	b := l.window[key]
-	if b == nil || now.Sub(b.start) >= time.Minute {
-		b = &bucket{start: now}
-		l.window[key] = b
-		if len(l.window) > 10000 {
-			for k, v := range l.window {
-				if now.Sub(v.start) >= time.Minute {
-					delete(l.window, k)
-				}
-			}
+// siteOrigins are the site's own origins: the public site URL's and those
+// in Settings › General › Allowed origins. CORS allows them, and a form's
+// plain post may be sent back to them.
+func (a *App) siteOrigins(ctx context.Context) []string {
+	g := a.general(ctx)
+	out := []string{}
+	for _, o := range append([]string{str(g["site_base_url"])}, strings.FieldsFunc(str(g["cors_origins"]), func(r rune) bool { return r == ',' || r == '\n' || r == ' ' })...) {
+		if o = strings.TrimRight(strings.TrimSpace(o), "/"); o != "" {
+			out = append(out, o)
 		}
 	}
-	b.count++
-	if b.count > l.limit {
-		return false, int(time.Minute.Seconds()-now.Sub(b.start).Seconds()) + 1
-	}
-	return true, 0
+	return out
 }
 
 // ---- small helpers -------------------------------------------------------
 
-func str(v any) string {
-	switch x := v.(type) {
-	case nil:
-		return ""
-	case string:
-		return x
-	case float64:
-		return strconv.FormatFloat(x, 'f', -1, 64)
-	default:
-		return fmt.Sprint(x)
-	}
-}
+// str, boolOf and intOf are jsonv's readers, short because nearly every
+// handler reads its body with them.
+func str(v any) string { return jsonv.String(v) }
 
-func boolOf(v any) bool {
-	switch x := v.(type) {
-	case bool:
-		return x
-	case string:
-		return x == "1" || x == "true" || x == "yes" || x == "on"
-	case float64:
-		return x != 0
-	}
-	return false
-}
+func boolOf(v any) bool { return jsonv.Bool(v) }
 
-// intOf reads an id from JSON: a number or a numeric string; ok false for
-// null or "".
-func intOf(v any) (int64, bool) {
-	switch x := v.(type) {
-	case float64:
-		return int64(x), true
-	case string:
-		n, err := strconv.ParseInt(strings.TrimSpace(x), 10, 64)
-		return n, err == nil
-	case json.Number:
-		n, err := x.Int64()
-		return n, err == nil
-	}
-	return 0, false
-}
+func intOf(v any) (int64, bool) { return jsonv.Int(v) }
 
 func has(m map[string]any, key string) bool {
 	_, ok := m[key]
@@ -569,4 +743,9 @@ func firstOf(m map[string]any, keys ...string) any {
 		}
 	}
 	return nil
+}
+
+func asList(v any) []any {
+	l, _ := v.([]any)
+	return l
 }

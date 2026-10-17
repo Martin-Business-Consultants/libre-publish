@@ -1,22 +1,28 @@
-package cms
+// Package fields is the field DSL, as the Rails core has it
+// (BlockType::Validator): field definitions are [{"name", "label", "type",
+// …}] arrays, shared by block types, collection and page schemas, and
+// globals. Definitions are kept as written (keys this core doesn't know
+// travel untouched); Field is the view of one this core reasons with. The
+// package validates definitions and the data they describe, gives their
+// JSON Schema, and finds the references data makes.
+package fields
 
 import (
 	"encoding/json"
 	"fmt"
+	"maps"
 	"math"
 	"regexp"
 	"slices"
 	"strings"
 	"time"
+
+	"github.com/Martin-Business-Consultants/libre-publish/internal/apierr"
+	"github.com/Martin-Business-Consultants/libre-publish/internal/jsonv"
+	"github.com/Martin-Business-Consultants/libre-publish/internal/store"
 )
 
-// The field DSL, as the Rails core has it (BlockType::Validator): field
-// definitions are [{"name", "label", "type", …}] arrays, shared by block
-// types, collection and page schemas, and globals. Definitions are kept as
-// written (keys this core doesn't know travel untouched); Field is the view
-// of one this core reasons with.
-
-var FieldTypes = []string{
+var fieldTypes = []string{
 	"string", "text", "markdown", "code", "integer", "boolean", "select", "url", "datetime",
 	"link", "asset", "record_ref", "record_refs", "repeater", "group", "blocks", "string_list",
 }
@@ -28,6 +34,11 @@ var (
 
 const maxFieldDepth = 4
 
+// IsBlockSlug is whether s is a block type's slug: lowercase, digits and
+// underscores, starting with a letter.
+func IsBlockSlug(s string) bool { return blockSlugFormat.MatchString(s) }
+
+// Field is one field definition, as this core reads it.
 type Field struct {
 	Name         string
 	Label        string
@@ -40,15 +51,17 @@ type Field struct {
 	Of           []Field
 }
 
-// ParseFields reads definitions from JSON ([…] or {"fields": […]}).
-func ParseFields(raw any) []Field {
+// Parse reads definitions from JSON ([…] or {"fields": […]}).
+func Parse(raw any) []Field {
 	switch x := raw.(type) {
-	case JSON:
+	case store.JSON:
 		var v any
-		json.Unmarshal(x, &v)
-		return ParseFields(v)
+		if err := json.Unmarshal(x, &v); err != nil {
+			return []Field{}
+		}
+		return Parse(v)
 	case map[string]any:
-		return ParseFields(x["fields"])
+		return Parse(x["fields"])
 	case []any:
 		out := make([]Field, 0, len(x))
 		for _, item := range x {
@@ -57,20 +70,20 @@ func ParseFields(raw any) []Field {
 				continue
 			}
 			f := Field{
-				Name: str(m["name"]), Label: str(m["label"]), Type: str(m["type"]),
-				Required: boolOf(m["required"]), Help: str(m["help"]), OfCollection: str(m["of_collection"]),
+				Name: jsonv.String(m["name"]), Label: jsonv.String(m["label"]), Type: jsonv.String(m["type"]),
+				Required: jsonv.Bool(m["required"]), Help: jsonv.String(m["help"]), OfCollection: jsonv.String(m["of_collection"]),
 			}
 			for _, o := range asList(m["options"]) {
 				if om, ok := o.(map[string]any); ok {
-					f.Options = append(f.Options, str(om["value"]))
+					f.Options = append(f.Options, jsonv.String(om["value"]))
 				} else {
-					f.Options = append(f.Options, str(o))
+					f.Options = append(f.Options, jsonv.String(o))
 				}
 			}
 			for _, t := range asList(m["allowed_types"]) {
-				f.AllowedTypes = append(f.AllowedTypes, str(t))
+				f.AllowedTypes = append(f.AllowedTypes, jsonv.String(t))
 			}
-			f.Of = ParseFields(m["of"])
+			f.Of = Parse(m["of"])
 			out = append(out, f)
 		}
 		return out
@@ -83,15 +96,8 @@ func asList(v any) []any {
 	return l
 }
 
-func (f Field) title() string {
-	if f.Label != "" {
-		return f.Label
-	}
-	return strings.ReplaceAll(strings.ToUpper(f.Name[:1])+f.Name[1:], "_", " ")
-}
-
 // ValidateDefinitions checks a schema's field definitions themselves.
-func ValidateDefinitions(raw any, allowBlocks bool, into Invalid, prefix string) {
+func ValidateDefinitions(raw any, allowBlocks bool, into apierr.Invalid, prefix string) {
 	list, ok := raw.([]any)
 	if raw == nil {
 		return
@@ -103,7 +109,7 @@ func ValidateDefinitions(raw any, allowBlocks bool, into Invalid, prefix string)
 	validateDefs(list, allowBlocks, into, prefix, 1)
 }
 
-func validateDefs(list []any, allowBlocks bool, into Invalid, prefix string, depth int) {
+func validateDefs(list []any, allowBlocks bool, into apierr.Invalid, prefix string, depth int) {
 	if depth > maxFieldDepth {
 		into.Add(prefix, fmt.Sprintf("nests deeper than %d levels", maxFieldDepth))
 		return
@@ -116,7 +122,7 @@ func validateDefs(list []any, allowBlocks bool, into Invalid, prefix string, dep
 			into.Add(at, "must be an object")
 			continue
 		}
-		name, typ := str(m["name"]), str(m["type"])
+		name, typ := jsonv.String(m["name"]), jsonv.String(m["type"])
 		if !fieldNameFormat.MatchString(name) {
 			into.Add(at+".name", "must start with a letter and use only a-z, 0-9 and _")
 		}
@@ -124,7 +130,7 @@ func validateDefs(list []any, allowBlocks bool, into Invalid, prefix string, dep
 			into.Add(at+".name", "is used twice: "+name)
 		}
 		seen[name] = true
-		if !slices.Contains(FieldTypes, typ) || (typ == "blocks" && !allowBlocks) {
+		if !slices.Contains(fieldTypes, typ) || (typ == "blocks" && !allowBlocks) {
 			into.Add(at+".type", "isn't a field type here: "+typ)
 		}
 		if typ == "select" && len(asList(m["options"])) == 0 {
@@ -142,7 +148,7 @@ type BlockTypes func(slug string) ([]Field, bool)
 // ValidateData checks data written against fields, adding problems under
 // prefix ("frontmatter", "data", "blocks[2].data"), by the Rails core's
 // rules (BlockType::Validator), so what one core accepts the other reads.
-func ValidateData(fields []Field, data map[string]any, types BlockTypes, into Invalid, prefix string) {
+func ValidateData(fields []Field, data map[string]any, types BlockTypes, into apierr.Invalid, prefix string) {
 	for _, f := range fields {
 		at := joinPath(prefix, f.Name)
 		v := data[f.Name]
@@ -152,7 +158,7 @@ func ValidateData(fields []Field, data map[string]any, types BlockTypes, into In
 			}
 			continue
 		}
-		validateValue(f, v, types, into, at, 1)
+		validateValue(f, v, types, into, at)
 	}
 }
 
@@ -166,7 +172,8 @@ func joinPath(prefix, name string) string {
 var safeSchemes = []string{"http", "https", "mailto", "tel"}
 var schemePattern = regexp.MustCompile(`^([a-zA-Z][a-zA-Z0-9+.\-]*):`)
 
-// SafeURL: http(s), mailto:, tel:, or a path — never javascript: and kin.
+// SafeURL is whether u is http(s), mailto:, tel:, or a path: never
+// javascript: and kin, however it's disguised.
 func SafeURL(u string) bool {
 	clean := strings.Map(func(r rune) rune {
 		if r <= ' ' || r == 0x7f {
@@ -180,79 +187,16 @@ func SafeURL(u string) bool {
 
 const unsafeURLMessage = "must be a web address (http or https), mailto:, tel:, or a path"
 
-func validateValue(f Field, v any, types BlockTypes, into Invalid, at string, depth int) {
+// validateValue checks one value that isn't empty against its field.
+func validateValue(f Field, v any, types BlockTypes, into apierr.Invalid, at string) {
 	switch f.Type {
-	case "string", "text", "markdown", "code", "asset", "record_ref":
-		if _, ok := v.(string); !ok {
-			into.Add(at, "must be a string")
-		}
-	case "url":
-		s, ok := v.(string)
-		if !ok || strings.TrimSpace(s) == "" {
-			into.Add(at, "must be a URL")
-		} else if !SafeURL(s) {
-			into.Add(at, unsafeURLMessage)
-		}
-	case "integer":
-		if n, ok := v.(float64); !ok || n != math.Trunc(n) {
-			into.Add(at, "must be an integer")
-		}
-	case "boolean":
-		if _, ok := v.(bool); !ok {
-			into.Add(at, "must be true or false")
-		}
-	case "select":
-		if s, ok := v.(string); !ok || !slices.Contains(f.Options, s) {
-			into.Add(at, "must be one of "+strings.Join(f.Options, ", "))
-		}
-	case "datetime":
-		s, ok := v.(string)
-		if _, err := time.Parse(time.RFC3339, s); !ok || err != nil {
-			into.Add(at, "must be an ISO 8601 datetime")
-		}
-	case "link":
-		m, ok := v.(map[string]any)
-		val, _ := m["value"].(string)
-		kind := str(m["kind"])
-		if !ok || !slices.Contains([]string{"url", "page", "entry"}, kind) || strings.TrimSpace(val) == "" {
-			into.Add(at, "must be { kind: url|page|entry, value: string }")
-			return
-		}
-		if kind == "url" && !SafeURL(val) {
-			into.Add(at, unsafeURLMessage)
-		}
-		if col, _ := m["collection"].(string); kind == "entry" && strings.TrimSpace(col) == "" {
-			into.Add(at, "kind=entry requires a collection")
-		}
-	case "record_refs":
-		l, ok := v.([]any)
-		for _, item := range l {
-			if s, isStr := item.(string); !isStr || s == "" {
-				ok = false
-			}
-		}
-		if !ok {
-			into.Add(at, "must be an array of record slugs")
-		}
-	case "string_list":
-		l, ok := v.([]any)
-		for _, item := range l {
-			if _, isStr := item.(string); !isStr {
-				ok = false
-			}
-		}
-		if !ok {
-			into.Add(at, "must be an array of strings")
-		}
 	case "group":
 		m, ok := v.(map[string]any)
 		if !ok {
 			into.Add(at, "must be an object")
 			return
 		}
-		if depth < maxFieldDepth {
-			ValidateData(f.Of, m, types, into, at)
-		}
+		ValidateData(f.Of, m, types, into, at)
 	case "repeater":
 		l, ok := v.([]any)
 		if !ok {
@@ -260,13 +204,11 @@ func validateValue(f Field, v any, types BlockTypes, into Invalid, at string, de
 			return
 		}
 		for i, item := range l {
-			m, ok := item.(map[string]any)
-			if !ok {
-				into.Add(fmt.Sprintf("%s[%d]", at, i), "must be an object")
-				continue
-			}
-			if depth < maxFieldDepth {
-				ValidateData(f.Of, m, types, into, fmt.Sprintf("%s[%d]", at, i))
+			itemAt := fmt.Sprintf("%s[%d]", at, i)
+			if m, ok := item.(map[string]any); ok {
+				ValidateData(f.Of, m, types, into, itemAt)
+			} else {
+				into.Add(itemAt, "must be an object")
 			}
 		}
 	case "blocks":
@@ -276,11 +218,95 @@ func validateValue(f Field, v any, types BlockTypes, into Invalid, at string, de
 			return
 		}
 		ValidateBlocks(l, f.AllowedTypes, types, into, at)
+	default:
+		if problem := valueProblem(f, v); problem != "" {
+			into.Add(at, problem)
+		}
 	}
 }
 
+// valueProblem is what's wrong with v as a value of f, a field holding no
+// other fields; "" when nothing is (or f's type is one this core doesn't
+// know).
+func valueProblem(f Field, v any) string {
+	switch f.Type {
+	case "string", "text", "markdown", "code", "asset", "record_ref":
+		if _, ok := v.(string); !ok {
+			return "must be a string"
+		}
+	case "url":
+		s, ok := v.(string)
+		if !ok || strings.TrimSpace(s) == "" {
+			return "must be a URL"
+		}
+		if !SafeURL(s) {
+			return unsafeURLMessage
+		}
+	case "integer":
+		if n, ok := v.(float64); !ok || n != math.Trunc(n) {
+			return "must be an integer"
+		}
+	case "boolean":
+		if _, ok := v.(bool); !ok {
+			return "must be true or false"
+		}
+	case "select":
+		if s, ok := v.(string); !ok || !slices.Contains(f.Options, s) {
+			return "must be one of " + strings.Join(f.Options, ", ")
+		}
+	case "datetime":
+		s, ok := v.(string)
+		if _, err := time.Parse(time.RFC3339, s); !ok || err != nil {
+			return "must be an ISO 8601 datetime"
+		}
+	case "link":
+		return linkProblem(v)
+	case "record_refs":
+		if !allStrings(v, false) {
+			return "must be an array of record slugs"
+		}
+	case "string_list":
+		if !allStrings(v, true) {
+			return "must be an array of strings"
+		}
+	}
+	return ""
+}
+
+// linkProblem is what's wrong with v as a link field's value, or "".
+func linkProblem(v any) string {
+	m, ok := v.(map[string]any)
+	val, _ := m["value"].(string)
+	kind := jsonv.String(m["kind"])
+	if !ok || !slices.Contains([]string{"url", "page", "entry"}, kind) || strings.TrimSpace(val) == "" {
+		return "must be { kind: url|page|entry, value: string }"
+	}
+	if kind == "url" && !SafeURL(val) {
+		return unsafeURLMessage
+	}
+	if col, _ := m["collection"].(string); kind == "entry" && strings.TrimSpace(col) == "" {
+		return "kind=entry requires a collection"
+	}
+	return ""
+}
+
+// allStrings is whether v is a list of strings (non-empty ones unless
+// allowEmpty).
+func allStrings(v any, allowEmpty bool) bool {
+	l, ok := v.([]any)
+	if !ok {
+		return false
+	}
+	for _, item := range l {
+		if s, isStr := item.(string); !isStr || (s == "" && !allowEmpty) {
+			return false
+		}
+	}
+	return true
+}
+
 // ValidateBlocks checks a body of blocks: [{id, type, version, data}].
-func ValidateBlocks(list []any, allowed []string, types BlockTypes, into Invalid, prefix string) {
+func ValidateBlocks(list []any, allowed []string, types BlockTypes, into apierr.Invalid, prefix string) {
 	for i, item := range list {
 		at := fmt.Sprintf("%s[%d]", prefix, i)
 		b, ok := item.(map[string]any)
@@ -288,7 +314,7 @@ func ValidateBlocks(list []any, allowed []string, types BlockTypes, into Invalid
 			into.Add(at, "must be a block object")
 			continue
 		}
-		typ := str(b["type"])
+		typ := jsonv.String(b["type"])
 		if typ == "" {
 			into.Add(at+".type", "is required")
 			continue
@@ -312,6 +338,70 @@ func ValidateBlocks(list []any, allowed []string, types BlockTypes, into Invalid
 		}
 		ValidateData(fields, data, types, into, at+".data")
 	}
+}
+
+// ---- delivering ----------------------------------------------------------
+
+// Declared is a copy of data with only the keys fields declare: what's
+// delivered is what the schema says, whatever older data (a Rails import, a
+// field since removed) still carries. A group keeps its own fields' keys, a
+// repeater's items theirs, and a blocks field's blocks their type's.
+func Declared(fields []Field, data map[string]any, types BlockTypes) map[string]any {
+	out := make(map[string]any, len(fields))
+	for _, f := range fields {
+		v, ok := data[f.Name]
+		if !ok {
+			continue
+		}
+		switch f.Type {
+		case "group":
+			if m, isMap := v.(map[string]any); isMap {
+				v = Declared(f.Of, m, types)
+			}
+		case "repeater":
+			if l, isList := v.([]any); isList {
+				items := make([]any, len(l))
+				for i, item := range l {
+					if m, isMap := item.(map[string]any); isMap {
+						item = Declared(f.Of, m, types)
+					}
+					items[i] = item
+				}
+				v = items
+			}
+		case "blocks":
+			if l, isList := v.([]any); isList {
+				v = DeclaredBlocks(l, types)
+			}
+		}
+		out[f.Name] = v
+	}
+	return out
+}
+
+// DeclaredBlocks is a copy of blocks with each one's data keeping only its
+// type's fields (Declared). A block of a type no longer defined is left as
+// it is.
+func DeclaredBlocks(list []any, types BlockTypes) []any {
+	out := make([]any, len(list))
+	for i, item := range list {
+		b, ok := item.(map[string]any)
+		if !ok {
+			out[i] = item
+			continue
+		}
+		fields, known := types(jsonv.String(b["type"]))
+		data, isMap := b["data"].(map[string]any)
+		if !known || !isMap {
+			out[i] = b
+			continue
+		}
+		cp := make(map[string]any, len(b))
+		maps.Copy(cp, b)
+		cp["data"] = Declared(fields, data, types)
+		out[i] = cp
+	}
+	return out
 }
 
 // ---- JSON Schema ---------------------------------------------------------
@@ -370,10 +460,10 @@ func fieldSchema(f Field) map[string]any {
 		s["type"], s["items"] = "array", map[string]any{"type": "string"}
 	case "repeater":
 		props, req := nested()
-		s["type"], s["items"] = "array", map[string]any{"type": "object", "properties": props, "required": req}
+		s["type"], s["items"] = "array", map[string]any{"type": "object", "properties": props, "required": req, "additionalProperties": false}
 	case "group":
 		props, req := nested()
-		s["type"], s["properties"], s["required"] = "object", props, req
+		s["type"], s["properties"], s["required"], s["additionalProperties"] = "object", props, req, false
 	case "blocks":
 		s["type"] = "array"
 		s["items"] = map[string]any{"type": "object", "required": []string{"type", "data"}, "properties": map[string]any{
@@ -399,8 +489,8 @@ type Ref struct {
 	RefID   string
 }
 
-// FieldRefs walks data against fields for what it points at.
-func FieldRefs(fields []Field, data map[string]any, types BlockTypes, out *[]Ref) {
+// Refs walks data against fields for what it points at.
+func Refs(fields []Field, data map[string]any, types BlockTypes, out *[]Ref) {
 	for _, f := range fields {
 		v, ok := data[f.Name]
 		if !ok || v == nil {
@@ -436,7 +526,7 @@ func FieldRefs(fields []Field, data map[string]any, types BlockTypes, out *[]Ref
 			if val == "" {
 				continue
 			}
-			switch str(m["kind"]) {
+			switch jsonv.String(m["kind"]) {
 			case "url":
 				*out = append(*out, Ref{"link", "url", val})
 			case "page":
@@ -448,12 +538,12 @@ func FieldRefs(fields []Field, data map[string]any, types BlockTypes, out *[]Ref
 			}
 		case "group":
 			if m, ok := v.(map[string]any); ok {
-				FieldRefs(f.Of, m, types, out)
+				Refs(f.Of, m, types, out)
 			}
 		case "repeater":
 			for _, item := range asList(v) {
 				if m, ok := item.(map[string]any); ok {
-					FieldRefs(f.Of, m, types, out)
+					Refs(f.Of, m, types, out)
 				}
 			}
 		case "blocks":
@@ -470,9 +560,9 @@ func BlockRefs(item any, types BlockTypes, out *[]Ref) {
 	if !ok {
 		return
 	}
-	fields, known := types(str(b["type"]))
+	fields, known := types(jsonv.String(b["type"]))
 	data, _ := b["data"].(map[string]any)
 	if known && data != nil {
-		FieldRefs(fields, data, types, out)
+		Refs(fields, data, types, out)
 	}
 }

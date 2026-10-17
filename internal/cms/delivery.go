@@ -1,15 +1,20 @@
 package cms
 
 import (
+	"cmp"
 	"context"
 	"encoding/base64"
 	"fmt"
+	"maps"
 	"net/http"
 	"slices"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/Martin-Business-Consultants/libre-publish/internal/apierr"
+	"github.com/Martin-Business-Consultants/libre-publish/internal/fields"
+	"github.com/Martin-Business-Consultants/libre-publish/internal/store"
 )
 
 // The delivery API, /api/v1: what a site reads to build and serve itself,
@@ -22,7 +27,7 @@ import (
 // what's chosen, as "website_api" does.
 
 func (a *App) deliveryRoutes(mux *http.ServeMux) {
-	h := func(pattern string, fn HandlerFunc) {
+	h := func(pattern string, fn handlerFunc) {
 		a.handle(mux, pattern, func(c *Ctx) error {
 			key := c.ip()
 			if c.Actor.ServiceID != 0 {
@@ -30,11 +35,14 @@ func (a *App) deliveryRoutes(mux *http.ServeMux) {
 			} else if c.Actor.UserID != 0 {
 				key = fmt.Sprintf("user:%d", c.Actor.UserID)
 			}
-			if ok, wait := a.limiter.allow(key); !ok {
+			if ok, wait := a.limiter.Allow(key); !ok {
 				c.W.Header().Set("Retry-After", strconv.Itoa(wait))
-				return &Error{Status: 429, Code: "rate_limited", Message: "Over the delivery API's rate limit (CMS_DELIVERY_RATE_LIMIT)."}
+				return &apierr.Error{Status: 429, Code: "rate_limited", Message: "Over the delivery API's rate limit (CMS_DELIVERY_RATE_LIMIT)."}
 			}
 			c.etag = true
+			if digest := a.schemaDigest(c.R.Context()); digest != "" {
+				c.W.Header().Set(schemaDigestHeader, digest)
+			}
 			return fn(c)
 		})
 	}
@@ -65,7 +73,7 @@ func (a *App) deliveryRoutes(mux *http.ServeMux) {
 // ---- serving -------------------------------------------------------------
 
 func (a *App) servingMode() string {
-	switch m := str(a.general()["serving"]); m {
+	switch m := str(a.general(context.Background())["serving"]); m {
 	case "website_api", "api_only":
 		return m
 	case "website":
@@ -75,14 +83,14 @@ func (a *App) servingMode() string {
 }
 
 func (a *App) servesPages() bool {
-	return a.servingMode() == "api_only" || boolOf(a.general()["api_pages"])
+	return a.servingMode() == "api_only" || boolOf(a.general(context.Background())["api_pages"])
 }
 
 func (a *App) servesCollection(col *Collection) bool {
 	return a.servingMode() == "api_only" || col.APIEnabled
 }
 
-func notServed(msg string) error { return errNotFound(msg) }
+func notServed(msg string) error { return apierr.NotFound(msg) }
 
 func requirePages(c *Ctx) error {
 	if !c.App.servesPages() {
@@ -134,8 +142,8 @@ func (a *App) v1PageJSON(ctx context.Context, p *Content) (Obj, error) {
 	if err != nil {
 		return nil, err
 	}
-	return O("id", p.ID, "path", p.Path, "slug", p.Slug, "title", p.Title, "locale", p.Locale, "url", a.PublicPath(p),
-		"blocks", a.ExpandBlocks(ctx, p.Blocks.List(), true), "frontmatter", p.Frontmatter, "seo", p.Seo,
+	return O("id", p.ID, "path", p.Path, "slug", p.Slug, "title", p.Title, "locale", p.Locale, "url", a.publicPath(p),
+		"blocks", a.deliveredBlocks(ctx, p.Blocks.List()), "frontmatter", a.deliveredData(ctx, fields.Parse(p.Schema), p.Frontmatter.Map()), "seo", deliveredSeo(p.Seo.Map()),
 		"published_at", p.PublishedAt, "updated_at", p.UpdatedAt, "category", cat, "tags", tags, "translations", tr), nil
 }
 
@@ -148,13 +156,19 @@ func (a *App) v1EntryJSON(ctx context.Context, e *Content) (Obj, error) {
 	if err != nil {
 		return nil, err
 	}
-	return O("id", e.ID, "slug", e.Slug, "title", e.Title, "locale", e.Locale, "collection", e.CollectionSlug, "url", a.PublicPath(e),
-		"frontmatter", e.Frontmatter, "body_markdown", e.BodyMarkdown, "blocks", e.Blocks, "seo", e.Seo,
+	defs, err := a.contentFields(ctx, e)
+	if err != nil {
+		return nil, err
+	}
+	return O("id", e.ID, "slug", e.Slug, "title", e.Title, "locale", e.Locale, "collection", e.CollectionSlug, "url", a.publicPath(e),
+		"frontmatter", a.deliveredData(ctx, defs, e.Frontmatter.Map()), "body_markdown", e.BodyMarkdown, "blocks", a.deliveredBlocks(ctx, e.Blocks.List()),
+		"seo", deliveredSeo(e.Seo.Map()),
 		"published_at", e.PublishedAt, "updated_at", e.UpdatedAt, "category", cat, "tags", tags, "translations", tr), nil
 }
 
-func v1GlobalJSON(g *Global) Obj {
-	return O("id", g.ID, "slug", g.Slug, "name", g.Name, "data", Redact(g.Data.Map()), "updated_at", g.UpdatedAt)
+func (a *App) v1GlobalJSON(ctx context.Context, g *Global) Obj {
+	data, _ := redact(g.Data.Map()).(map[string]any)
+	return O("id", g.ID, "slug", g.Slug, "name", g.Name, "data", a.deliveredData(ctx, g.Fields(), data), "updated_at", g.UpdatedAt)
 }
 
 func blockCacheTags(blocks []any) []string {
@@ -183,10 +197,10 @@ func blockCacheTags(blocks []any) []string {
 var contactKeys = []string{"title", "phone", "email", "address_line1", "city", "state", "zip"}
 var entrySortable = []string{"published_at", "updated_at", "created_at", "title"}
 
-// ExpandBlocks resolves what blocks pull in: a collection_list's entries, a
+// expandBlocks resolves what blocks pull in: a collection_list's entries, a
 // contact_info's details, a synced pattern's blocks. live: only published
 // entries, whatever the block says (the delivery API's).
-func (a *App) ExpandBlocks(ctx context.Context, blocks []any, live bool) []any {
+func (a *App) expandBlocks(ctx context.Context, blocks []any, live bool) []any {
 	blocks = a.withPatterns(ctx, blocks)
 	out := make([]any, 0, len(blocks))
 	for _, item := range blocks {
@@ -203,7 +217,7 @@ func (a *App) ExpandBlocks(ctx context.Context, blocks []any, live bool) []any {
 		case "collection_list":
 			b["resolved"] = a.collectionList(ctx, data, live)
 		case "contact_info":
-			g := a.general()
+			g := a.general(ctx)
 			contact := map[string]any{}
 			for _, k := range contactKeys {
 				if v, ok := g[k]; ok {
@@ -217,29 +231,53 @@ func (a *App) ExpandBlocks(ctx context.Context, blocks []any, live bool) []any {
 	return out
 }
 
+// withPatterns puts each synced pattern's blocks where it's used, in a
+// blocks field's lists too, and in patterns used by patterns (three deep:
+// a pattern can't include itself forever).
 func (a *App) withPatterns(ctx context.Context, blocks []any) []any {
-	var out []any
+	return a.patternsIn(ctx, blocks, 3)
+}
+
+func (a *App) patternsIn(ctx context.Context, blocks []any, depth int) []any {
+	out := []any{}
 	for _, item := range blocks {
 		b, ok := item.(map[string]any)
-		if !ok || str(b["type"]) != "pattern" {
+		if !ok {
 			out = append(out, item)
 			continue
 		}
 		data, _ := b["data"].(map[string]any)
-		var pb JSON
-		if a.Store.DB.QueryRowContext(ctx, `SELECT blocks FROM block_patterns WHERE slug = ?`, str(data["pattern"])).Scan(&pb) == nil {
-			out = append(out, pb.List()...)
+		if str(b["type"]) != "pattern" {
+			for k, v := range data {
+				if l, isList := v.([]any); isList && isBlockList(l) {
+					data[k] = a.patternsIn(ctx, l, depth)
+				}
+			}
+			out = append(out, b)
+			continue
 		}
-	}
-	if out == nil {
-		out = []any{}
+		var pb store.JSON
+		if depth > 0 && a.store.QueryRowContext(ctx, `SELECT blocks FROM block_patterns WHERE slug = ?`, str(data["pattern"])).Scan(&pb) == nil {
+			out = append(out, a.patternsIn(ctx, pb.List(), depth-1)...)
+		}
 	}
 	return out
 }
 
+// isBlockList is whether l is a list of blocks ({type, data} objects).
+func isBlockList(l []any) bool {
+	for _, item := range l {
+		m, ok := item.(map[string]any)
+		if !ok || str(m["type"]) == "" || !has(m, "data") {
+			return false
+		}
+	}
+	return len(l) > 0
+}
+
 func (a *App) collectionList(ctx context.Context, data map[string]any, live bool) map[string]any {
 	slug := str(data["collection_slug"])
-	col, err := a.CollectionBySlug(ctx, slug)
+	col, err := a.collectionBySlug(ctx, slug)
 	if err != nil {
 		return map[string]any{"error": "collection not found", "slug": slug, "entries": []any{}, "total": 0}
 	}
@@ -249,14 +287,14 @@ func (a *App) collectionList(ctx context.Context, data map[string]any, live bool
 	}
 	if tags := str(data["filter_tags"]); tags != "" && col.TagsCollectionID.Valid {
 		slugs := []any{}
-		for _, s := range strings.Split(tags, ",") {
+		for s := range strings.SplitSeq(tags, ",") {
 			if s = strings.TrimSpace(s); s != "" {
 				slugs = append(slugs, s)
 			}
 		}
 		if len(slugs) > 0 {
 			where += ` AND (SELECT count(DISTINCT t.tag_entry_id) FROM taggings t JOIN collection_entries te ON te.id = t.tag_entry_id
-				WHERE t.taggable_type = 'CollectionEntry' AND t.taggable_id = e.id AND te.collection_id = ? AND te.slug IN (` + placeholders(len(slugs)) + `)) = ?`
+				WHERE t.taggable_type = 'CollectionEntry' AND t.taggable_id = e.id AND te.collection_id = ? AND te.slug IN (` + store.Placeholders(len(slugs)) + `)) = ?`
 			args = append(append(append(args, col.TagsCollectionID.Int64), slugs...), len(slugs))
 		}
 	}
@@ -268,21 +306,27 @@ func (a *App) collectionList(ctx context.Context, data map[string]any, live bool
 	if str(data["sort_dir"]) == "asc" {
 		dir = "ASC"
 	}
-	var total int
-	a.Store.DB.QueryRowContext(ctx, "SELECT count(*) FROM collection_entries e WHERE e.deleted_at IS NULL AND "+where, args...).Scan(&total)
+	total, err := store.Count(ctx, a.store, "SELECT count(*) FROM collection_entries e WHERE e.deleted_at IS NULL AND "+where, args...)
+	if err != nil {
+		return map[string]any{"error": err.Error(), "entries": []any{}, "total": 0}
+	}
 	q := where + fmt.Sprintf(" ORDER BY e.%s %s, e.id %s", sortBy, dir, dir)
 	if limit, ok := intOf(data["limit"]); ok && limit > 0 {
 		q += fmt.Sprintf(" LIMIT %d", limit)
 	}
-	list, err := a.Entries(ctx, q, args...)
+	list, err := a.entries(ctx, q, args...)
 	if err != nil {
 		return map[string]any{"error": err.Error(), "entries": []any{}, "total": 0}
 	}
-	entries := []any{}
+	entries := []Obj{}
 	for _, e := range list {
 		cat, tags, _ := a.taxonomy(ctx, e)
+		var fm, seo any = e.Frontmatter, e.Seo
+		if live {
+			fm, seo = a.deliveredData(ctx, col.Fields(), e.Frontmatter.Map()), deliveredSeo(e.Seo.Map())
+		}
 		entries = append(entries, O("id", e.ID, "slug", e.Slug, "title", e.Title, "status", e.Status, "locale", e.Locale,
-			"collection", e.CollectionSlug, "url", a.PublicPath(e), "frontmatter", e.Frontmatter, "seo", e.Seo,
+			"collection", e.CollectionSlug, "url", a.publicPath(e), "frontmatter", fm, "seo", seo,
 			"published_at", e.PublishedAt, "updated_at", e.UpdatedAt, "category", cat, "tags", tags))
 	}
 	out := map[string]any{"collection": map[string]any{"slug": col.Slug, "name": col.Name}, "entries": entries, "total": total}
@@ -292,57 +336,56 @@ func (a *App) collectionList(ctx context.Context, data map[string]any, live bool
 	return out
 }
 
-func (a *App) groupEntries(ctx context.Context, col *Collection, entries []any, key string) []any {
-	groups := []any{}
-	bucket := func(match func(Obj) bool) []any {
-		var out []any
-		for _, e := range entries {
-			if match(e.(Obj)) {
-				out = append(out, e)
-			}
-		}
-		return out
-	}
-	pool := func(id NullInt, multi bool) {
-		if !id.Valid {
-			return
-		}
-		refs, _ := a.Entries(ctx, "e.collection_id = ? AND e.status = 'published' ORDER BY e.title", id.Int64)
-		for _, ref := range refs {
-			b := bucket(func(e Obj) bool {
-				if multi {
-					for _, t := range e.Get("tags").([]Obj) {
-						if t.Get("slug") == ref.Slug {
-							return true
-						}
-					}
-					return false
-				}
-				cat, _ := e.Get("category").(Obj)
-				return cat != nil && cat.Get("slug") == ref.Slug
-			})
-			if len(b) > 0 {
-				groups = append(groups, map[string]any{"key": ref.Slug, "label": ref.Title, "entries": b})
-			}
-		}
-	}
+// groupEntries splits a block's entries by key: by the collection's
+// categories or tags (in title order), or else by a frontmatter field's
+// values (in the order they first appear).
+func (a *App) groupEntries(ctx context.Context, col *Collection, entries []Obj, key string) []any {
 	switch key {
 	case "category":
-		pool(col.CategoriesCollectionID, false)
+		return a.groupByPool(ctx, col.CategoriesCollectionID, entries, func(e Obj, slug string) bool {
+			cat, _ := e.Get("category").(Obj)
+			return cat != nil && cat.Get("slug") == slug
+		})
 	case "tags":
-		pool(col.TagsCollectionID, true)
-	default:
-		order := []string{}
-		byValue := map[string][]any{}
-		for _, e := range entries {
-			v := str(e.(Obj).Get("frontmatter").(JSON).Map()[key])
-			if _, ok := byValue[v]; !ok {
-				order = append(order, v)
-			}
-			byValue[v] = append(byValue[v], e)
+		return a.groupByPool(ctx, col.TagsCollectionID, entries, func(e Obj, slug string) bool {
+			tags, _ := e.Get("tags").([]Obj)
+			return slices.ContainsFunc(tags, func(t Obj) bool { return t.Get("slug") == slug })
+		})
+	}
+	groups := []any{}
+	order := []string{}
+	byValue := map[string][]Obj{}
+	for _, e := range entries {
+		fm, _ := e.Get("frontmatter").(store.JSON)
+		v := str(fm.Map()[key])
+		if _, ok := byValue[v]; !ok {
+			order = append(order, v)
 		}
-		for _, v := range order {
-			groups = append(groups, map[string]any{"key": v, "label": v, "entries": byValue[v]})
+		byValue[v] = append(byValue[v], e)
+	}
+	for _, v := range order {
+		groups = append(groups, map[string]any{"key": v, "label": v, "entries": byValue[v]})
+	}
+	return groups
+}
+
+// groupByPool is a group for each live entry of the pool collection that
+// some of entries are in, in title order.
+func (a *App) groupByPool(ctx context.Context, pool store.NullInt, entries []Obj, in func(e Obj, slug string) bool) []any {
+	groups := []any{}
+	if !pool.Valid {
+		return groups
+	}
+	refs, _ := a.entries(ctx, "e.collection_id = ? AND e.status = 'published' ORDER BY e.title", pool.Int64)
+	for _, ref := range refs {
+		var group []Obj
+		for _, e := range entries {
+			if in(e, ref.Slug) {
+				group = append(group, e)
+			}
+		}
+		if len(group) > 0 {
+			groups = append(groups, map[string]any{"key": ref.Slug, "label": ref.Title, "entries": group})
 		}
 	}
 	return groups
@@ -352,16 +395,15 @@ func (a *App) groupEntries(ctx context.Context, col *Collection, entries []any, 
 
 func (a *App) siteLocales(ctx context.Context) []string {
 	locales := []string{a.defaultLocale()}
-	rows, err := a.Store.DB.QueryContext(ctx, `SELECT DISTINCT locale FROM pages WHERE status = 'published' AND deleted_at IS NULL
+	found, err := store.Strings(ctx, a.store.DB, `SELECT DISTINCT locale FROM pages WHERE status = 'published' AND deleted_at IS NULL
 		UNION SELECT DISTINCT locale FROM collection_entries WHERE status = 'published' AND deleted_at IS NULL`)
-	if err == nil {
-		defer rows.Close()
-		for rows.Next() {
-			var l string
-			rows.Scan(&l)
-			if l != "" && !slices.Contains(locales, l) {
-				locales = append(locales, l)
-			}
+	if err != nil {
+		// The default locale alone still answers; the failure is logged.
+		a.log.Error("site locales", "err", err)
+	}
+	for _, l := range found {
+		if l != "" && !slices.Contains(locales, l) {
+			locales = append(locales, l)
 		}
 	}
 	return locales
@@ -371,7 +413,7 @@ func (a *App) v1Site(c *Ctx) error {
 	if err := c.Need("pages:read"); err != nil {
 		return err
 	}
-	g := a.general()
+	g := a.general(c.R.Context())
 	contact := map[string]any{}
 	for _, k := range contactKeys {
 		if v, ok := g[k]; ok {
@@ -379,17 +421,18 @@ func (a *App) v1Site(c *Ctx) error {
 		}
 	}
 	plugins, config := []string{}, map[string]any{}
-	for _, p := range a.Plugins.List() {
+	for _, p := range a.plugins.List() {
 		if p.Enabled {
 			plugins = append(plugins, p.Key)
-			if sc := p.Manifest.Map()["site_config"]; sc != nil {
+			if sc := p.RawManifest.Map()["site_config"]; sc != nil {
 				config[p.Key] = sc
 			}
 		}
 	}
 	return c.deliver(O("name", str(g["title"]), "url", str(g["site_base_url"]), "default_locale", a.defaultLocale(),
-		"locales", a.siteLocales(c.R.Context()), "contact", contact, "plugins", plugins, "plugin_config", config, "api_version", "v1"),
-		O("cms_url", a.BaseURL), nil, "site")
+		"locales", a.siteLocales(c.R.Context()), "contact", contact, "plugins", plugins, "plugin_config", config, "api_version", "v1",
+		"image_widths", slices.Clone(deliveryWidths)),
+		O("cms_url", a.cfg.BaseURL, "cms_version", a.cfg.Version), nil, "site")
 }
 
 func (a *App) v1Pages(c *Ctx) error {
@@ -404,10 +447,12 @@ func (a *App) v1Pages(c *Ctx) error {
 	if l := c.Query("locale"); l != "" {
 		where, args = where+" AND locale = ?", append(args, l)
 	}
-	var total int
-	a.Store.DB.QueryRowContext(ctx, "SELECT count(*) FROM pages WHERE deleted_at IS NULL AND "+where, args...).Scan(&total)
+	total, err := store.Count(ctx, a.store, "SELECT count(*) FROM pages WHERE deleted_at IS NULL AND "+where, args...)
+	if err != nil {
+		return err
+	}
 	page, per, meta := c.deliveryPaging(total)
-	list, err := a.Pages(ctx, where+fmt.Sprintf(" ORDER BY id LIMIT %d OFFSET %d", per, (page-1)*per), args...)
+	list, err := a.pages(ctx, where+fmt.Sprintf(" ORDER BY id LIMIT %d OFFSET %d", per, (page-1)*per), args...)
 	if err != nil {
 		return err
 	}
@@ -434,7 +479,7 @@ func (a *App) v1Page(c *Ctx) error {
 		return err
 	}
 	ctx := c.R.Context()
-	p, err := a.PageByPath(ctx, c.Param("path"), true)
+	p, err := a.pageByPath(ctx, c.Param("path"), true)
 	if err != nil {
 		return err
 	}
@@ -447,7 +492,7 @@ func (a *App) v1Page(c *Ctx) error {
 }
 
 func (a *App) servedCollections(ctx context.Context) ([]*Collection, error) {
-	all, err := a.Collections(ctx, "1=1 ORDER BY slug")
+	all, err := a.collections(ctx, "1=1 ORDER BY slug")
 	if err != nil {
 		return nil, err
 	}
@@ -481,7 +526,7 @@ func (a *App) v1Collections(c *Ctx) error {
 }
 
 func (a *App) v1ServedCollection(c *Ctx) (*Collection, error) {
-	col, err := a.CollectionBySlug(c.R.Context(), c.Param("slug"))
+	col, err := a.collectionBySlug(c.R.Context(), c.Param("slug"))
 	if err != nil {
 		return nil, err
 	}
@@ -515,10 +560,12 @@ func (a *App) v1Entries(c *Ctx) error {
 	if l := c.Query("locale"); l != "" {
 		where, args = where+" AND e.locale = ?", append(args, l)
 	}
-	var total int
-	a.Store.DB.QueryRowContext(ctx, "SELECT count(*) FROM collection_entries e WHERE e.deleted_at IS NULL AND "+where, args...).Scan(&total)
+	total, err := store.Count(ctx, a.store, "SELECT count(*) FROM collection_entries e WHERE e.deleted_at IS NULL AND "+where, args...)
+	if err != nil {
+		return err
+	}
 	page, per, meta := c.deliveryPaging(total)
-	list, err := a.Entries(ctx, where+fmt.Sprintf(" ORDER BY e.published_at DESC, e.id DESC LIMIT %d OFFSET %d", per, (page-1)*per), args...)
+	list, err := a.entries(ctx, where+fmt.Sprintf(" ORDER BY e.published_at DESC, e.id DESC LIMIT %d OFFSET %d", per, (page-1)*per), args...)
 	if err != nil {
 		return err
 	}
@@ -544,7 +591,7 @@ func (a *App) v1Entry(c *Ctx) error {
 		return err
 	}
 	ctx := c.R.Context()
-	e, err := a.EntryBySlug(ctx, col.ID, c.Param("entry"), true)
+	e, err := a.entryBySlug(ctx, col.ID, c.Param("entry"), true)
 	if err != nil {
 		return err
 	}
@@ -564,13 +611,13 @@ func (a *App) v1Globals(c *Ctx) error {
 		return err
 	}
 	ctx := c.R.Context()
-	list, err := a.Globals(ctx, "1=1 ORDER BY slug")
+	list, err := a.globals(ctx, "1=1 ORDER BY slug")
 	if err != nil {
 		return err
 	}
 	data, ids, tags := []Obj{}, []int64{}, []string{}
 	for _, g := range list {
-		data = append(data, v1GlobalJSON(g))
+		data = append(data, a.v1GlobalJSON(ctx, g))
 		ids = append(ids, g.ID)
 		tags = append(tags, "global:"+g.Slug)
 	}
@@ -586,12 +633,12 @@ func (a *App) v1Global(c *Ctx) error {
 		return err
 	}
 	ctx := c.R.Context()
-	g, err := a.GlobalBySlug(ctx, c.Param("slug"))
+	g, err := a.globalBySlug(ctx, c.Param("slug"))
 	if err != nil {
 		return err
 	}
 	c.owns("Global", g.ID)
-	return c.deliver(v1GlobalJSON(g), nil, a.resolveAssets(ctx, a.assetIDs(ctx, "Global", []int64{g.ID})), "global:"+g.Slug)
+	return c.deliver(a.v1GlobalJSON(ctx, g), nil, a.resolveAssets(ctx, a.assetIDs(ctx, "Global", []int64{g.ID})), "global:"+g.Slug)
 }
 
 // v1Content is every live page, entry and global, or — given a previous
@@ -602,20 +649,13 @@ func (a *App) v1Content(c *Ctx) error {
 	}
 	ctx := c.R.Context()
 	now := time.Now().UTC()
-	var since *time.Time
-	if cur := c.Query("since"); cur != "" {
-		if raw, err := base64.RawURLEncoding.DecodeString(cur); err == nil {
-			if t, err := time.Parse(time.RFC3339Nano, string(raw)); err == nil && now.Sub(t) < 30*24*time.Hour {
-				since = &t
-			}
-		}
-	}
+	since := readCursor(c.Query("since"), now)
 	full := since == nil
 	changed := func(col string) (string, []any) {
 		if full {
 			return "1=1", nil
 		}
-		return col + " > ?", []any{TimeOf(*since).DB()}
+		return col + " > ?", []any{store.TimeOf(*since).DB()}
 	}
 
 	pages, entries, globals := []Obj{}, []Obj{}, []Obj{}
@@ -624,7 +664,7 @@ func (a *App) v1Content(c *Ctx) error {
 
 	if a.servesPages() {
 		w, args := changed("updated_at")
-		list, err := a.Pages(ctx, "status = 'published' AND "+w+" ORDER BY id", args...)
+		list, err := a.pages(ctx, "status = 'published' AND "+w+" ORDER BY id", args...)
 		if err != nil {
 			return err
 		}
@@ -637,51 +677,36 @@ func (a *App) v1Content(c *Ctx) error {
 			pageIDs = append(pageIDs, p.ID)
 		}
 		if !full {
-			gone, _ := a.Pages(ctx, "(deleted_at IS NOT NULL OR status != 'published') AND updated_at > ? AND (deleted_at IS NULL OR deleted_at IS NOT NULL)", TimeOf(*since).DB())
+			gone, err := a.pages(ctx, "(deleted_at IS NOT NULL OR status != 'published') AND updated_at > ? AND (deleted_at IS NULL OR deleted_at IS NOT NULL)", store.TimeOf(*since).DB())
+			if err != nil {
+				return err
+			}
 			for _, p := range gone {
 				removed["pages"] = append(removed["pages"], O("id", p.ID, "path", p.Path))
 			}
 		}
 	}
 	if c.can("entries:read") {
-		cols, err := a.servedCollections(ctx)
-		if err != nil {
+		var err error
+		if entries, entryIDs, removed["entries"], err = a.contentEntries(ctx, since); err != nil {
 			return err
-		}
-		for _, col := range cols {
-			w, args := changed("e.updated_at")
-			list, err := a.Entries(ctx, "e.collection_id = ? AND e.status = 'published' AND "+w+" ORDER BY e.id", append([]any{col.ID}, args...)...)
-			if err != nil {
-				return err
-			}
-			for _, e := range list {
-				o, err := a.v1EntryJSON(ctx, e)
-				if err != nil {
-					return err
-				}
-				entries = append(entries, o)
-				entryIDs = append(entryIDs, e.ID)
-			}
-			if !full {
-				gone, _ := a.Entries(ctx, "e.collection_id = ? AND (e.deleted_at IS NOT NULL OR e.status != 'published') AND e.updated_at > ? AND (e.deleted_at IS NULL OR e.deleted_at IS NOT NULL)", col.ID, TimeOf(*since).DB())
-				for _, e := range gone {
-					removed["entries"] = append(removed["entries"], O("id", e.ID, "collection", e.CollectionSlug, "slug", e.Slug))
-				}
-			}
 		}
 	}
 	if c.can("globals:read") && a.servesPages() {
 		w, args := changed("updated_at")
-		list, err := a.Globals(ctx, w+" ORDER BY slug", args...)
+		list, err := a.globals(ctx, w+" ORDER BY slug", args...)
 		if err != nil {
 			return err
 		}
 		for _, g := range list {
-			globals = append(globals, v1GlobalJSON(g))
+			globals = append(globals, a.v1GlobalJSON(ctx, g))
 			globalIDs = append(globalIDs, g.ID)
 		}
 		if !full {
-			gone, _ := a.Globals(ctx, "deleted_at IS NOT NULL AND deleted_at > ?", TimeOf(*since).DB())
+			gone, err := a.globals(ctx, "deleted_at IS NOT NULL AND deleted_at > ?", store.TimeOf(*since).DB())
+			if err != nil {
+				return err
+			}
 			for _, g := range gone {
 				removed["globals"] = append(removed["globals"], O("id", g.ID, "slug", g.Slug))
 			}
@@ -689,15 +714,9 @@ func (a *App) v1Content(c *Ctx) error {
 	}
 
 	assets := map[string]Obj{}
-	for k, v := range a.resolveAssets(ctx, a.assetIDs(ctx, "Page", pageIDs)) {
-		assets[k] = v
-	}
-	for k, v := range a.resolveAssets(ctx, a.assetIDs(ctx, "CollectionEntry", entryIDs)) {
-		assets[k] = v
-	}
-	for k, v := range a.resolveAssets(ctx, a.assetIDs(ctx, "Global", globalIDs)) {
-		assets[k] = v
-	}
+	maps.Copy(assets, a.resolveAssets(ctx, a.assetIDs(ctx, "Page", pageIDs)))
+	maps.Copy(assets, a.resolveAssets(ctx, a.assetIDs(ctx, "CollectionEntry", entryIDs)))
+	maps.Copy(assets, a.resolveAssets(ctx, a.assetIDs(ctx, "Global", globalIDs)))
 	data := O("pages", pages, "entries", entries, "globals", globals)
 	if !full {
 		data = data.Set("removed", removed)
@@ -709,15 +728,73 @@ func (a *App) v1Content(c *Ctx) error {
 	return c.deliver(data, O("cursor", cursor, "full", full, "since", c.Query("since")), assets, "content")
 }
 
+// readCursor is the time a /content cursor stands for; nil (read it all)
+// for none, one that doesn't parse, or one over 30 days old.
+func readCursor(cur string, now time.Time) *time.Time {
+	raw, err := base64.RawURLEncoding.DecodeString(cur)
+	if cur == "" || err != nil {
+		return nil
+	}
+	t, err := time.Parse(time.RFC3339Nano, string(raw))
+	if err != nil || now.Sub(t) >= 30*24*time.Hour {
+		return nil
+	}
+	return &t
+}
+
+// contentEntries is /content's entries: every live one in the served
+// collections, or (since a time) those that changed and those that
+// stopped being live.
+func (a *App) contentEntries(ctx context.Context, since *time.Time) (entries []Obj, ids []int64, removed []any, err error) {
+	entries, removed = []Obj{}, []any{}
+	cols, err := a.servedCollections(ctx)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	for _, col := range cols {
+		where, args := "e.collection_id = ? AND e.status = 'published' ORDER BY e.id", []any{col.ID}
+		if since != nil {
+			where, args = "e.collection_id = ? AND e.status = 'published' AND e.updated_at > ? ORDER BY e.id", append(args, store.TimeOf(*since).DB())
+		}
+		list, err := a.entries(ctx, where, args...)
+		if err != nil {
+			return nil, nil, nil, err
+		}
+		for _, e := range list {
+			o, err := a.v1EntryJSON(ctx, e)
+			if err != nil {
+				return nil, nil, nil, err
+			}
+			entries = append(entries, o)
+			ids = append(ids, e.ID)
+		}
+		if since == nil {
+			continue
+		}
+		gone, err := a.entries(ctx, "e.collection_id = ? AND (e.deleted_at IS NOT NULL OR e.status != 'published') AND e.updated_at > ? AND (e.deleted_at IS NULL OR e.deleted_at IS NOT NULL)", col.ID, store.TimeOf(*since).DB())
+		if err != nil {
+			return nil, nil, nil, err
+		}
+		for _, e := range gone {
+			removed = append(removed, O("id", e.ID, "collection", e.CollectionSlug, "slug", e.Slug))
+		}
+	}
+	return entries, ids, removed, nil
+}
+
 // contentVersion changes whenever anything /content is built from does.
 func (a *App) contentVersion(ctx context.Context) string {
 	var v string
-	a.Store.DB.QueryRowContext(ctx, `SELECT
+	err := a.store.QueryRowContext(ctx, `SELECT
 		COALESCE((SELECT max(updated_at) FROM pages), '') || '/' || (SELECT count(*) FROM pages) || '/' ||
 		COALESCE((SELECT max(updated_at) FROM collection_entries), '') || '/' || (SELECT count(*) FROM collection_entries) || '/' ||
 		COALESCE((SELECT max(updated_at) FROM globals), '') || '/' || COALESCE((SELECT max(deleted_at) FROM globals), '') || '/' ||
 		COALESCE((SELECT max(updated_at) FROM collections), '') || '/' || COALESCE((SELECT max(updated_at) FROM assets), '') || '/' ||
 		COALESCE((SELECT max(updated_at) FROM settings), '')`).Scan(&v)
+	if err != nil {
+		// Unknown, so never the same twice: no false 304.
+		return strconv.FormatInt(time.Now().UnixNano(), 10)
+	}
 	return v
 }
 
@@ -725,53 +802,18 @@ func (a *App) v1Schema(c *Ctx) error {
 	if err := c.Need("block_types:read"); err != nil {
 		return err
 	}
-	ctx := c.R.Context()
-	bts, err := a.BlockTypesList(ctx, "1=1 ORDER BY slug")
+	data, digest, err := a.schema(c.R.Context())
 	if err != nil {
 		return err
 	}
-	blocks := map[string]any{}
-	for _, b := range bts {
-		s := b.Schema()
-		s["$schema"] = "https://json-schema.org/draft/2020-12/schema"
-		blocks[b.Slug] = s
-	}
-	cols, err := a.servedCollections(ctx)
-	if err != nil {
-		return err
-	}
-	collections := map[string]any{}
-	for _, col := range cols {
-		s := JSONSchema(col.Fields())
-		s["title"] = col.Name
-		collections[col.Slug] = s
-	}
-	globals := map[string]any{}
-	if gs, err := a.Globals(ctx, "1=1"); err == nil {
-		for _, g := range gs {
-			s := JSONSchema(g.Fields())
-			s["title"] = g.Name
-			globals[g.Slug] = s
-		}
-	}
-	pages := map[string]any{}
-	if ps, err := a.Pages(ctx, "status = 'published'"); err == nil {
-		for _, p := range ps {
-			if fs := ParseFields(p.Schema); len(fs) > 0 {
-				pages[p.Path] = JSONSchema(fs)
-			}
-		}
-	}
-	seo := seoSchema()
-	return c.deliver(O("$schema", "https://json-schema.org/draft/2020-12/schema", "blocks", blocks, "collections", collections,
-		"globals", globals, "pages", pages, "seo", seo), nil, nil, "schema")
+	return c.deliver(data, O("schema_digest", digest, "cms_version", a.cfg.Version), nil, "schema")
 }
 
-// Sitemap is every URL on the public site, with hreflang alternates.
-func (a *App) Sitemap(ctx context.Context) ([]Obj, error) {
+// sitemap is every URL on the public site, with hreflang alternates.
+func (a *App) sitemap(ctx context.Context) ([]Obj, error) {
 	var recs []*Content
 	if a.servesPages() {
-		ps, err := a.Pages(ctx, "status = 'published' ORDER BY path")
+		ps, err := a.pages(ctx, "status = 'published' ORDER BY path")
 		if err != nil {
 			return nil, err
 		}
@@ -782,7 +824,7 @@ func (a *App) Sitemap(ctx context.Context) ([]Obj, error) {
 		return nil, err
 	}
 	for _, col := range cols {
-		es, err := a.Entries(ctx, "e.collection_id = ? AND e.status = 'published' ORDER BY e.slug", col.ID)
+		es, err := a.entries(ctx, "e.collection_id = ? AND e.status = 'published' ORDER BY e.slug", col.ID)
 		if err != nil {
 			return nil, err
 		}
@@ -799,7 +841,7 @@ func (a *App) Sitemap(ctx context.Context) ([]Obj, error) {
 		for _, t := range tr {
 			alts = append(alts, O("hreflang", t.Get("locale"), "href", t.Get("path")))
 		}
-		out = append(out, O("loc", a.PublicURL(r), "path", a.PublicPath(r), "lastmod", r.UpdatedAt.ISO(), "locale", r.Locale,
+		out = append(out, O("loc", a.publicURL(r), "path", a.publicPath(r), "lastmod", r.UpdatedAt.ISO(), "locale", r.Locale,
 			"type", r.Kind, "alternates", alts))
 	}
 	return out, nil
@@ -809,7 +851,7 @@ func (a *App) v1Sitemap(c *Ctx) error {
 	if err := c.Need("pages:read"); err != nil {
 		return err
 	}
-	urls, err := a.Sitemap(c.R.Context())
+	urls, err := a.sitemap(c.R.Context())
 	if err != nil {
 		return err
 	}
@@ -817,12 +859,12 @@ func (a *App) v1Sitemap(c *Ctx) error {
 }
 
 func (a *App) robotsText(ctx context.Context) (string, string) {
-	s := a.Setting(ctx, "search")
+	s := a.settingOr(ctx, "search")
 	if custom := str(s["robots_txt"]); custom != "" {
 		return custom, "custom"
 	}
 	text := "User-agent: *\nAllow: /\n"
-	if base := strings.TrimRight(str(a.general()["site_base_url"]), "/"); base != "" {
+	if base := strings.TrimRight(str(a.general(ctx)["site_base_url"]), "/"); base != "" {
 		text += "\nSitemap: " + base + "/sitemap.xml\n"
 	}
 	return text, "generated"
@@ -865,18 +907,21 @@ func (a *App) v1Redirects(c *Ctx) error {
 // orderedRedirects: exact rules first, then wildcards longest first, as an
 // edge applies them.
 func (a *App) orderedRedirects(ctx context.Context) ([]*Redirect, error) {
-	list, err := a.Redirects(ctx, "active = 1")
+	list, err := a.redirects(ctx, "active = 1")
 	if err != nil {
 		return nil, err
 	}
-	sort.SliceStable(list, func(i, j int) bool {
-		if list[i].Wildcard != list[j].Wildcard {
-			return !list[i].Wildcard
+	slices.SortStableFunc(list, func(x, y *Redirect) int {
+		switch {
+		case x.Wildcard != y.Wildcard:
+			if x.Wildcard {
+				return 1
+			}
+			return -1
+		case x.Wildcard:
+			return cmp.Compare(len(y.Source), len(x.Source))
 		}
-		if list[i].Wildcard {
-			return len(list[i].Source) > len(list[j].Source)
-		}
-		return list[i].ID < list[j].ID
+		return cmp.Compare(x.ID, y.ID)
 	})
 	return list, nil
 }
@@ -915,13 +960,13 @@ func (a *App) healthChecks(ctx context.Context) []Obj {
 	add := func(key, state, message string) {
 		checks = append(checks, O("key", key, "state", state, "message", message))
 	}
-	g := a.general()
+	g := a.general(ctx)
 	if str(g["site_base_url"]) == "" {
 		add("site_url", "fails", "Settings › General has no public site URL: webhooks and the sitemap can only give relative addresses.")
 	} else {
 		add("site_url", "passes", "The public site URL is set.")
 	}
-	pages, _ := a.Pages(ctx, "status = 'published'")
+	pages, _ := a.pages(ctx, "status = 'published'")
 	var noDesc, longTitle []string
 	for _, p := range pages {
 		seo := p.Seo.Map()
@@ -942,20 +987,24 @@ func (a *App) healthChecks(ctx context.Context) []Obj {
 	} else {
 		add("title_length", "passes", "Page titles fit in search results.")
 	}
-	var home int
-	a.Store.DB.QueryRowContext(ctx, `SELECT count(*) FROM pages WHERE path = 'home' AND status = 'published' AND deleted_at IS NULL`).Scan(&home)
-	if home == 0 {
+	home, err := store.Count(ctx, a.store, `SELECT count(*) FROM pages WHERE path = 'home' AND status = 'published' AND deleted_at IS NULL`)
+	switch {
+	case err != nil:
+		add("home_page", "fails", "Couldn't check: "+err.Error())
+	case home == 0:
 		add("home_page", "fails", "There's no live page at \"home\" (the site's /).")
-	} else {
+	default:
 		add("home_page", "passes", "The home page is live.")
 	}
-	var noAlt int
-	a.Store.DB.QueryRowContext(ctx, `SELECT count(*) FROM assets a JOIN content_references r ON r.ref_type = 'asset' AND r.ref_id = CAST(a.id AS TEXT)
+	noAlt, err := store.Count(ctx, a.store, `SELECT count(*) FROM assets a JOIN content_references r ON r.ref_type = 'asset' AND r.ref_id = CAST(a.id AS TEXT)
 		JOIN active_storage_attachments att ON att.record_type = 'Asset' AND att.record_id = a.id JOIN active_storage_blobs b ON b.id = att.blob_id
-		WHERE a.deleted_at IS NULL AND COALESCE(a.alt, '') = '' AND b.content_type LIKE 'image/%'`).Scan(&noAlt)
-	if noAlt > 0 {
+		WHERE a.deleted_at IS NULL AND COALESCE(a.alt, '') = '' AND b.content_type LIKE 'image/%'`)
+	switch {
+	case err != nil:
+		add("image_alt", "fails", "Couldn't check: "+err.Error())
+	case noAlt > 0:
 		add("image_alt", "fails", fmt.Sprintf("%d images in use have no alt text.", noAlt))
-	} else {
+	default:
 		add("image_alt", "passes", "Every image in use has alt text.")
 	}
 	return checks

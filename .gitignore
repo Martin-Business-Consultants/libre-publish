@@ -1,6 +1,11 @@
 /data/
 /dist/
 *.wasm
+# The default plugins the binary embeds (//go:embed defaults/*.wasm).
+!/internal/cms/defaults/*.wasm
+coverage.out
+# A stray copy of .agents/skills left by the skills installer.
+/agent/
 
 # Left in a working copy by the Rails core (on main).
 /_site/
@@ -10,7 +15,10 @@
 /tmp/
 /vendor/
 /node_modules/
-# Rails-engine plugin checkouts (main's plugins/); only plugins/visits is this repo's.
+# Rails-engine plugin checkouts (main's plugins/); only plugins/forms and
+# plugins/visits are this repo's.
 /plugins/*
+!/plugins/forms/
 !/plugins/visits/
 /ui/node_modules/
+/librepublish

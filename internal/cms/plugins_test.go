@@ -1,31 +1,45 @@
 package cms
 
 import (
+	"context"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sync"
 	"testing"
 	"time"
 )
 
-// buildVisits compiles the example plugin (plugins/visits) to wasm.
+// buildVisits compiles the example plugin (plugins/visits) to wasm, once
+// for every test that wants it.
 func buildVisits(t *testing.T) []byte {
 	t.Helper()
-	out := filepath.Join(t.TempDir(), "visits.wasm")
-	cmd := exec.Command("go", "build", "-buildmode=c-shared", "-o", out, ".")
-	cmd.Dir = filepath.Join("..", "..", "plugins", "visits")
-	cmd.Env = append(os.Environ(), "GOOS=wasip1", "GOARCH=wasm")
-	if b, err := cmd.CombinedOutput(); err != nil {
-		t.Skipf("couldn't build the example plugin: %v\n%s", err, b)
-	}
-	wasm, err := os.ReadFile(out)
+	wasm, err := visitsWasm()
 	if err != nil {
-		t.Fatal(err)
+		t.Skipf("couldn't build the example plugin: %v", err)
 	}
 	return wasm
 }
 
+var visitsWasm = sync.OnceValues(func() ([]byte, error) {
+	dir, err := os.MkdirTemp("", "visits-")
+	if err != nil {
+		return nil, err
+	}
+	defer os.RemoveAll(dir)
+	out := filepath.Join(dir, "visits.wasm")
+	cmd := exec.CommandContext(context.Background(), "go", "build", "-buildmode=c-shared", "-o", out, ".")
+	cmd.Dir = filepath.Join("..", "..", "plugins", "visits")
+	cmd.Env = append(os.Environ(), "GOOS=wasip1", "GOARCH=wasm")
+	if b, err := cmd.CombinedOutput(); err != nil {
+		return nil, fmt.Errorf("%w\n%s", err, b)
+	}
+	return os.ReadFile(out)
+})
+
 func TestWasmPlugin(t *testing.T) {
+	t.Parallel()
 	wasm := buildVisits(t)
 	s := newSite(t)
 	s.must(201, s.do(s.admin, "POST", "/api/pages", map[string]any{"page": map[string]any{"slug": "about", "title": "About", "status": "published"}}))
@@ -64,7 +78,7 @@ func TestWasmPlugin(t *testing.T) {
 	deadline := time.Now().Add(5 * time.Second)
 	for {
 		var v []byte
-		s.app.Store.DB.QueryRow(`SELECT value FROM plugin_kv WHERE plugin_key = 'visits' AND key = 'published:news'`).Scan(&v)
+		s.app.store.QueryRowContext(t.Context(), `SELECT value FROM plugin_kv WHERE plugin_key = 'visits' AND key = 'published:news'`).Scan(&v)
 		if len(v) > 0 {
 			break
 		}

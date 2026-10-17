@@ -5,6 +5,9 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
+
+	"github.com/Martin-Business-Consultants/libre-publish/internal/apierr"
+	"github.com/Martin-Business-Consultants/libre-publish/internal/store"
 )
 
 // The block types the CMS ships, exported from the Rails core's
@@ -19,13 +22,13 @@ func (a *App) listCollections(c *Ctx) error {
 	if err := c.Need("collections:read"); err != nil {
 		return err
 	}
-	list, err := a.Collections(c.R.Context(), "1=1 ORDER BY slug")
+	list, err := a.collections(c.R.Context(), "1=1 ORDER BY slug")
 	if err != nil {
 		return err
 	}
 	out := []Obj{}
 	for _, col := range list {
-		out = append(out, a.CollectionJSON(c.R.Context(), col))
+		out = append(out, a.collectionJSON(c.R.Context(), col))
 	}
 	c.Summary = fmt.Sprintf("%d %s.", len(out), plural(len(out), "collection"))
 	if len(list) > 0 {
@@ -39,7 +42,7 @@ func (a *App) showCollection(c *Ctx) error {
 		return err
 	}
 	ctx := c.R.Context()
-	col, err := a.CollectionBySlug(ctx, c.Param("slug"))
+	col, err := a.collectionBySlug(ctx, c.Param("slug"))
 	if err != nil {
 		return err
 	}
@@ -47,21 +50,21 @@ func (a *App) showCollection(c *Ctx) error {
 	if !c.can("entries:write") {
 		where += " AND e.status = 'published'"
 	}
-	entries, err := a.Entries(ctx, where+" ORDER BY e.updated_at DESC LIMIT 50", col.ID)
+	entries, err := a.entries(ctx, where+" ORDER BY e.updated_at DESC LIMIT 50", col.ID)
 	if err != nil {
 		return err
 	}
 	list := []Obj{}
 	if c.can("entries:read") {
 		for _, e := range entries {
-			o, err := a.EntrySummaryJSON(ctx, e)
+			o, err := a.entrySummaryJSON(ctx, e)
 			if err != nil {
 				return err
 			}
 			list = append(list, o)
 		}
 	}
-	return c.JSON(200, O("collection", append(a.CollectionJSON(ctx, col), kv{"entries", list})))
+	return c.JSON(200, O("collection", append(a.collectionJSON(ctx, col), kv{"entries", list})))
 }
 
 func (a *App) createCollection(c *Ctx) error {
@@ -73,18 +76,18 @@ func (a *App) createCollection(c *Ctx) error {
 		return err
 	}
 	col := &Collection{}
-	if err := a.SaveCollection(c.R.Context(), c.Actor, col, p); err != nil {
+	if err := a.saveCollection(c.R.Context(), c.Actor, col, p); err != nil {
 		return err
 	}
 	c.Crumbs = []Crumb{crumb("Add an entry", fmt.Sprintf(`cms post /collections/%s/entries '{"entry":{"slug":"…","title":"…"}}'`, col.Slug))}
-	return c.JSON(201, O("collection", a.CollectionJSON(c.R.Context(), col)))
+	return c.JSON(201, O("collection", a.collectionJSON(c.R.Context(), col)))
 }
 
 func (a *App) updateCollection(c *Ctx) error {
 	if err := c.Need("collections:write"); err != nil {
 		return err
 	}
-	col, err := a.CollectionBySlug(c.R.Context(), c.Param("slug"))
+	col, err := a.collectionBySlug(c.R.Context(), c.Param("slug"))
 	if err != nil {
 		return err
 	}
@@ -92,10 +95,10 @@ func (a *App) updateCollection(c *Ctx) error {
 	if err != nil {
 		return err
 	}
-	if err := a.SaveCollection(c.R.Context(), c.Actor, col, p); err != nil {
+	if err := a.saveCollection(c.R.Context(), c.Actor, col, p); err != nil {
 		return err
 	}
-	return c.JSON(200, O("collection", a.CollectionJSON(c.R.Context(), col)))
+	return c.JSON(200, O("collection", a.collectionJSON(c.R.Context(), col)))
 }
 
 // schemaBody reads a schema write: {"fields": […]}, {"schema": …}, or a
@@ -118,14 +121,14 @@ func schemaBody(c *Ctx, wrapper string) (any, error) {
 	if f, ok := m["fields"]; ok {
 		return f, nil
 	}
-	return nil, errBadRequest("Send the fields: {\"fields\": [...]}.")
+	return nil, apierr.BadRequest("Send the fields: {\"fields\": [...]}.")
 }
 
 func (a *App) updateCollectionSchema(c *Ctx) error {
 	if err := c.Need("collections:write"); err != nil {
 		return err
 	}
-	col, err := a.CollectionBySlug(c.R.Context(), c.Param("slug"))
+	col, err := a.collectionBySlug(c.R.Context(), c.Param("slug"))
 	if err != nil {
 		return err
 	}
@@ -133,21 +136,21 @@ func (a *App) updateCollectionSchema(c *Ctx) error {
 	if err != nil {
 		return err
 	}
-	if err := a.SaveCollection(c.R.Context(), c.Actor, col, map[string]any{"schema": schema}); err != nil {
+	if err := a.saveCollection(c.R.Context(), c.Actor, col, map[string]any{"schema": schema}); err != nil {
 		return err
 	}
-	return c.JSON(200, O("collection", a.CollectionJSON(c.R.Context(), col)))
+	return c.JSON(200, O("collection", a.collectionJSON(c.R.Context(), col)))
 }
 
 func (a *App) destroyCollection(c *Ctx) error {
 	if err := c.Need("collections:delete"); err != nil {
 		return err
 	}
-	col, err := a.CollectionBySlug(c.R.Context(), c.Param("slug"))
+	col, err := a.collectionBySlug(c.R.Context(), c.Param("slug"))
 	if err != nil {
 		return err
 	}
-	if err := a.DeleteCollection(c.R.Context(), c.Actor, col); err != nil {
+	if err := a.deleteCollection(c.R.Context(), c.Actor, col); err != nil {
 		return err
 	}
 	return c.NoContent()
@@ -163,11 +166,11 @@ func (a *App) bulkDestroyCollections(c *Ctx) error {
 	}
 	n := 0
 	for _, s := range asList(body["slugs"]) {
-		col, err := a.CollectionBySlug(c.R.Context(), str(s))
+		col, err := a.collectionBySlug(c.R.Context(), str(s))
 		if err != nil {
 			return err
 		}
-		if err := a.DeleteCollection(c.R.Context(), c.Actor, col); err != nil {
+		if err := a.deleteCollection(c.R.Context(), c.Actor, col); err != nil {
 			return err
 		}
 		n++
@@ -182,14 +185,14 @@ func (a *App) listGlobals(c *Ctx) error {
 		return err
 	}
 	ctx := c.R.Context()
-	list, err := a.Globals(ctx, "1=1 ORDER BY name")
+	list, err := a.globals(ctx, "1=1 ORDER BY name")
 	if err != nil {
 		return err
 	}
 	out := []Obj{}
 	ids := []int64{}
 	for _, g := range list {
-		out = append(out, a.GlobalJSON(g))
+		out = append(out, a.globalJSON(g))
 		ids = append(ids, g.ID)
 	}
 	body := O("globals", out)
@@ -204,7 +207,7 @@ func (a *App) showGlobal(c *Ctx) error {
 	if err := c.Need("globals:read"); err != nil {
 		return err
 	}
-	g, err := a.GlobalBySlug(c.R.Context(), c.Param("slug"))
+	g, err := a.globalBySlug(c.R.Context(), c.Param("slug"))
 	if err != nil {
 		return err
 	}
@@ -213,7 +216,7 @@ func (a *App) showGlobal(c *Ctx) error {
 
 func (a *App) renderGlobal(c *Ctx, status int, g *Global) error {
 	ctx := c.R.Context()
-	body := O("global", a.GlobalJSON(g))
+	body := O("global", a.globalJSON(g))
 	if c.Query("resolve") != "" {
 		body = body.Set("assets", a.resolveAssets(ctx, a.assetIDs(ctx, "Global", []int64{g.ID})))
 	}
@@ -231,7 +234,7 @@ func (a *App) createGlobal(c *Ctx) error {
 		return err
 	}
 	g := &Global{}
-	if _, err := a.SaveGlobal(c.R.Context(), c.Actor, g, p); err != nil {
+	if _, err := a.saveGlobal(c.R.Context(), c.Actor, g, p); err != nil {
 		return err
 	}
 	return a.renderGlobal(c, 201, g)
@@ -241,7 +244,7 @@ func (a *App) updateGlobal(c *Ctx) error {
 	if err := c.Need("globals:write"); err != nil {
 		return err
 	}
-	g, err := a.GlobalBySlug(c.R.Context(), c.Param("slug"))
+	g, err := a.globalBySlug(c.R.Context(), c.Param("slug"))
 	if err != nil {
 		return err
 	}
@@ -252,7 +255,7 @@ func (a *App) updateGlobal(c *Ctx) error {
 	if err != nil {
 		return err
 	}
-	res, err := a.SaveGlobal(c.R.Context(), c.Actor, g, p)
+	res, err := a.saveGlobal(c.R.Context(), c.Actor, g, p)
 	if err != nil {
 		return err
 	}
@@ -263,7 +266,7 @@ func (a *App) updateGlobalSchema(c *Ctx) error {
 	if err := c.Need("globals:write"); err != nil {
 		return err
 	}
-	g, err := a.GlobalBySlug(c.R.Context(), c.Param("slug"))
+	g, err := a.globalBySlug(c.R.Context(), c.Param("slug"))
 	if err != nil {
 		return err
 	}
@@ -271,7 +274,7 @@ func (a *App) updateGlobalSchema(c *Ctx) error {
 	if err != nil {
 		return err
 	}
-	res, err := a.SaveGlobal(c.R.Context(), c.Actor, g, map[string]any{"schema": schema})
+	res, err := a.saveGlobal(c.R.Context(), c.Actor, g, map[string]any{"schema": schema})
 	if err != nil {
 		return err
 	}
@@ -282,7 +285,7 @@ func (a *App) destroyGlobal(c *Ctx) error {
 	if err := c.Need("globals:delete"); err != nil {
 		return err
 	}
-	g, err := a.GlobalBySlug(c.R.Context(), c.Param("slug"))
+	g, err := a.globalBySlug(c.R.Context(), c.Param("slug"))
 	if err != nil {
 		return err
 	}
@@ -296,11 +299,11 @@ func (a *App) destroyGlobal(c *Ctx) error {
 }
 
 func (a *App) trashGlobal(ctx context.Context, actor *Actor, g *Global) error {
-	if _, err := a.Store.DB.ExecContext(ctx, `UPDATE globals SET deleted_at = ? WHERE id = ?`, Now().DB(), g.ID); err != nil {
+	if _, err := a.store.ExecContext(ctx, `UPDATE globals SET deleted_at = ? WHERE id = ?`, store.Now().DB(), g.ID); err != nil {
 		return err
 	}
 	a.audit(ctx, actor, "global.trashed", "Global", g.ID, g.Name, nil)
-	a.Deploys.Changed("global:" + g.Slug)
+	a.publish(ctx, change{Tags: []string{"global:" + g.Slug}})
 	return nil
 }
 
@@ -314,7 +317,7 @@ func (a *App) bulkDestroyGlobals(c *Ctx) error {
 	}
 	n := 0
 	for _, s := range asList(body["slugs"]) {
-		g, err := a.GlobalBySlug(c.R.Context(), str(s))
+		g, err := a.globalBySlug(c.R.Context(), str(s))
 		if err != nil {
 			return err
 		}
@@ -332,7 +335,7 @@ func (a *App) listBlockTypes(c *Ctx) error {
 	if err := c.Need("block_types:read"); err != nil {
 		return err
 	}
-	list, err := a.BlockTypesList(c.R.Context(), "1=1 ORDER BY category, label")
+	list, err := a.blockTypesList(c.R.Context(), "1=1 ORDER BY category, label")
 	if err != nil {
 		return err
 	}
@@ -348,12 +351,12 @@ func (a *App) listBlockTypes(c *Ctx) error {
 }
 
 func (a *App) blockType(c *Ctx) (*BlockType, error) {
-	list, err := a.BlockTypesList(c.R.Context(), "slug = ?", c.Param("slug"))
+	list, err := a.blockTypesList(c.R.Context(), "slug = ?", c.Param("slug"))
 	if err != nil {
 		return nil, err
 	}
 	if len(list) == 0 {
-		return nil, errNotFound("Couldn't find block type " + c.Param("slug") + ".")
+		return nil, apierr.NotFound("Couldn't find block type " + c.Param("slug") + ".")
 	}
 	return list[0], nil
 }
@@ -378,7 +381,7 @@ func (a *App) createBlockType(c *Ctx) error {
 		return err
 	}
 	b := &BlockType{}
-	if err := a.SaveBlockType(c.R.Context(), c.Actor, b, p); err != nil {
+	if err := a.saveBlockType(c.R.Context(), c.Actor, b, p); err != nil {
 		return err
 	}
 	return c.JSON(201, O("block_type", b.JSON()))
@@ -396,7 +399,7 @@ func (a *App) updateBlockType(c *Ctx) error {
 	if err != nil {
 		return err
 	}
-	if err := a.SaveBlockType(c.R.Context(), c.Actor, b, p); err != nil {
+	if err := a.saveBlockType(c.R.Context(), c.Actor, b, p); err != nil {
 		return err
 	}
 	return c.JSON(200, O("block_type", b.JSON()))
@@ -419,16 +422,19 @@ func (a *App) destroyBlockType(c *Ctx) error {
 }
 
 func (a *App) deleteBlockType(ctx context.Context, actor *Actor, b *BlockType) error {
-	var uses int
 	needle := `%"type":"` + b.Slug + `"%`
-	a.Store.DB.QueryRowContext(ctx, `SELECT (SELECT count(*) FROM pages WHERE blocks LIKE ?) + (SELECT count(*) FROM collection_entries WHERE blocks LIKE ?)`, needle, needle).Scan(&uses)
-	if uses > 0 {
-		return errConflict(fmt.Sprintf("%d pages or entries use %s blocks: mark it deprecated instead, or remove those blocks first.", uses, b.Slug))
+	uses, err := store.Count(ctx, a.store, `SELECT (SELECT count(*) FROM pages WHERE blocks LIKE ?) + (SELECT count(*) FROM collection_entries WHERE blocks LIKE ?)`, needle, needle)
+	if err != nil {
+		return err
 	}
-	if _, err := a.Store.DB.ExecContext(ctx, `DELETE FROM block_types WHERE id = ?`, b.ID); err != nil {
+	if uses > 0 {
+		return apierr.Conflict(fmt.Sprintf("%d pages or entries use %s blocks: mark it deprecated instead, or remove those blocks first.", uses, b.Slug))
+	}
+	if _, err := a.store.ExecContext(ctx, `DELETE FROM block_types WHERE id = ?`, b.ID); err != nil {
 		return err
 	}
 	a.audit(ctx, actor, "block_type.deleted", "BlockType", b.ID, b.Label, nil)
+	a.schemaTouched()
 	return nil
 }
 
@@ -442,12 +448,12 @@ func (a *App) bulkDestroyBlockTypes(c *Ctx) error {
 	}
 	n := 0
 	for _, s := range asList(body["slugs"]) {
-		list, err := a.BlockTypesList(c.R.Context(), "slug = ?", str(s))
+		list, err := a.blockTypesList(c.R.Context(), "slug = ?", str(s))
 		if err != nil {
 			return err
 		}
 		if len(list) == 0 {
-			return errNotFound("Couldn't find block type " + str(s) + ".")
+			return apierr.NotFound("Couldn't find block type " + str(s) + ".")
 		}
 		if err := a.deleteBlockType(c.R.Context(), c.Actor, list[0]); err != nil {
 			return err
@@ -465,16 +471,20 @@ func (a *App) SeedBlockTypes(ctx context.Context, actor *Actor) ([]string, error
 	}
 	added := []string{}
 	for _, def := range pack {
-		var n int
-		a.Store.DB.QueryRowContext(ctx, `SELECT count(*) FROM block_types WHERE slug = ?`, def["slug"]).Scan(&n)
+		n, err := store.Count(ctx, a.store, `SELECT count(*) FROM block_types WHERE slug = ?`, def["slug"])
+		if err != nil {
+			return nil, err
+		}
 		if n > 0 {
 			continue
 		}
 		b := &BlockType{BuiltIn: true}
-		if err := a.SaveBlockType(ctx, actor, b, def); err != nil {
+		if err := a.saveBlockType(ctx, actor, b, def); err != nil {
 			return nil, fmt.Errorf("seeding %s: %w", def["slug"], err)
 		}
-		a.Store.DB.ExecContext(ctx, `UPDATE block_types SET built_in = 1 WHERE id = ?`, b.ID)
+		if _, err := a.store.ExecContext(ctx, `UPDATE block_types SET built_in = 1 WHERE id = ?`, b.ID); err != nil {
+			return nil, err
+		}
 		added = append(added, b.Slug)
 	}
 	return added, nil

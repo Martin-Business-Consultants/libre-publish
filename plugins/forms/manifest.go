@@ -2,7 +2,7 @@ package main
 
 import "github.com/extism/go-pdk"
 
-const version = "1.0.0"
+const version = "1.1.0"
 
 // The field types the builder offers. "input" is how the admin previews
 // one; "props" are what its inspector edits.
@@ -184,6 +184,7 @@ func manifest() int32 {
 			{"key": write, "label": "Build forms and manage submissions"},
 		},
 		"routes": []map[string]any{
+			{"method": "GET", "path": "/list", "export": "list_public", "public": true},
 			{"method": "GET", "path": "/definition", "export": "definition", "public": true},
 			{"method": "POST", "path": "/submit", "export": "submit", "public": true, "max_body": 10 << 20},
 			{"method": "GET", "path": "/forms", "export": "list_forms", "capability": read},
@@ -201,7 +202,7 @@ func manifest() int32 {
 			"menu":    map[string]any{"label": "Forms", "icon": "form", "group": "Content", "badge": "/submissions?count=new"},
 			"screens": screens(),
 		},
-		"site_config": map[string]any{"definition": "/api/x/forms/definition?form=<slug>", "submit": "/api/x/forms/submit?form=<slug>"},
+		"site_config": map[string]any{"list": "/api/x/forms/list", "definition": "/api/x/forms/definition?form=<slug>", "submit": "/api/x/forms/submit?form=<slug>"},
 	})
 	return 0
 }

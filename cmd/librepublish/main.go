@@ -2,18 +2,23 @@
 // database (SQLite) and the plugin host. Download it, run it.
 //
 //	librepublish serve [--data ./data] [--addr :8080] [--url https://cms.example.com]
-//	librepublish user create --email you@example.com --name You --password … [--role Administrator]
+//	librepublish user create --email you@example.com --name You --password - [--role Administrator]
 //	librepublish token create --name PRODUCTION [--role "Production site"]
 //	librepublish seed-blocks
+//	librepublish import backup.tar.gz [--data ./data] [--dry-run] [--force] [--secret-key-file old-secret.key]
 //	librepublish version
 package main
 
 import (
+	"bufio"
 	"context"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"log/slog"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -24,41 +29,77 @@ import (
 
 	"github.com/Martin-Business-Consultants/libre-publish/internal/admin"
 	"github.com/Martin-Business-Consultants/libre-publish/internal/cms"
+	"github.com/Martin-Business-Consultants/libre-publish/internal/datalock"
+	"github.com/Martin-Business-Consultants/libre-publish/internal/restore"
+)
+
+// version is this build's: set from the release tag (make dist VERSION=…).
+var version = "dev"
+
+// usageError is a command line that's wrong, which exits 2.
+type usageError struct{ error }
+
+func usagef(format string, args ...any) error { return usageError{fmt.Errorf(format, args...)} }
+
+// Exit codes besides 0, 1 and 2 (usage), from BSD's sysexits.
+const (
+	exitDataErr  = 65 // the backup can't be imported (EX_DATAERR)
+	exitTempFail = 75 // the data directory is in use; try later (EX_TEMPFAIL)
 )
 
 func main() {
-	args := os.Args[1:]
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	err := run(ctx, stop, os.Args[1:])
+	stop()
+	if err == nil || errors.Is(err, flag.ErrHelp) {
+		return
+	}
+	fmt.Fprintln(os.Stderr, "librepublish:", err)
+	os.Exit(exitCode(err))
+}
+
+func exitCode(err error) int {
+	var usage usageError
+	switch {
+	case errors.As(err, &usage):
+		return 2
+	case errors.Is(err, datalock.ErrLocked):
+		return exitTempFail
+	case errors.Is(err, restore.ErrInvalid), errors.Is(err, restore.ErrTooLarge), errors.Is(err, restore.ErrWrongKey):
+		return exitDataErr
+	}
+	return 1
+}
+
+func run(ctx context.Context, stop func(), args []string) error {
 	cmd := "serve"
 	if len(args) > 0 && !strings.HasPrefix(args[0], "-") {
 		cmd, args = args[0], args[1:]
 	}
-	var err error
 	switch cmd {
 	case "serve":
-		err = serve(args)
+		return serve(ctx, stop, args)
 	case "user":
-		err = user(args)
+		return user(ctx, args)
 	case "token":
-		err = token(args)
+		return token(ctx, args)
 	case "seed-blocks":
-		err = seedBlocks(args)
+		return seedBlocks(ctx, args)
+	case "import":
+		return importBackup(ctx, args)
 	case "version", "--version":
-		fmt.Println("librepublish", cms.Version)
+		fmt.Println("librepublish", version)
+		return nil
 	case "help", "-h", "--help":
-		usage()
-	default:
-		fmt.Fprintf(os.Stderr, "librepublish: unknown command %q\n\n", cmd)
-		usage()
-		os.Exit(2)
+		usage(os.Stdout)
+		return nil
 	}
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "librepublish:", err)
-		os.Exit(1)
-	}
+	usage(os.Stderr)
+	return usagef("unknown command %q", cmd)
 }
 
-func usage() {
-	fmt.Fprint(os.Stderr, `librepublish: a headless CMS in one file.
+func usage(w io.Writer) {
+	fmt.Fprint(w, `librepublish: a headless CMS in one file.
 
   serve        run it (the default)         --data DIR --addr :8080 --url https://cms.example.com
   user create  add a person                 --email --name --password [--role Administrator]
@@ -66,12 +107,29 @@ func usage() {
   user disable-2fa   turn two-factor off    --email
   token create issue a service token        --name PRODUCTION [--role "Production site"]
   seed-blocks  install the starter block types
+  import       replace the site with a backup  ARCHIVE-OR-DIR [--dry-run] [--force]
+               (this core's, or the Rails core's)  [--secret-key-file F] [--json]
   version
 
+import reads a backup from Tools › Backup (either core), a Rails data
+directory backup, or any of them unpacked. --dry-run says what it would do
+and changes nothing; without it the site in --data is replaced (it's kept in
+DATA_DIR/replaced-<time>/), which needs --force when it has users, and
+serve mustn't be running on it. --secret-key-file is the old install's
+secret.key (or a file holding its SECRET_KEY), to carry over the secrets it
+sealed. Exit codes: 65 for a backup that can't be imported, 75 when the
+data directory is in use. docs/import.md has the rest.
+
+--password - reads the password from the first line of stdin, and with no
+--password it comes from LIBREPUBLISH_PASSWORD: either keeps it out of the
+process list and shell history.
+
 Every flag has an environment variable: DATA_DIR, ADDR (or PORT), APP_URL,
-SITE_KEY, CMS_DELIVERY_RATE_LIMIT, SECRET_KEY, and TRUST_PROXY=1 behind a
-proxy (Caddy, nginx, a load balancer) so client addresses come from
-X-Forwarded-For.
+SITE_KEY, CMS_DELIVERY_RATE_LIMIT (requests a minute per token, 0 for no
+limit), SECRET_KEY, IMPORT_MAX_BYTES (the largest backup the admin may
+upload, 10 GiB by default), and TRUST_PROXY=1 behind a proxy (Caddy, nginx, a load
+balancer) so client addresses come from X-Forwarded-For. LOG_LEVEL (debug,
+info, warn, error) and LOG_FORMAT (text, json) shape the log.
 `)
 }
 
@@ -82,8 +140,19 @@ func env(key, def string) string {
 	return def
 }
 
-// common reads the flags every command shares, then the command's own.
-func common(name string, args []string, extra func(*flag.FlagSet)) (cms.Config, *flag.FlagSet, error) {
+// parse reads the flags every command shares, then the command's own, and
+// the environment; a command takes no arguments besides flags.
+func parse(name string, args []string, extra func(*flag.FlagSet)) (cms.Config, error) {
+	cfg, rest, err := parseArgs(name, args, extra)
+	if err == nil && len(rest) > 0 {
+		return cms.Config{}, usagef("%s takes no arguments besides flags: %q", name, rest)
+	}
+	return cfg, err
+}
+
+// parseArgs is parse for a command that takes arguments too, before or
+// after its flags.
+func parseArgs(name string, args []string, extra func(*flag.FlagSet)) (cms.Config, []string, error) {
 	fs := flag.NewFlagSet(name, flag.ContinueOnError)
 	addr := env("ADDR", "")
 	if addr == "" {
@@ -95,8 +164,18 @@ func common(name string, args []string, extra func(*flag.FlagSet)) (cms.Config, 
 	if extra != nil {
 		extra(fs)
 	}
-	if err := fs.Parse(args); err != nil {
-		return cms.Config{}, nil, err
+	var rest []string
+	for {
+		if err := fs.Parse(args); err != nil {
+			if errors.Is(err, flag.ErrHelp) {
+				return cms.Config{}, nil, err
+			}
+			return cms.Config{}, nil, usageError{err}
+		}
+		if fs.NArg() == 0 {
+			break
+		}
+		rest, args = append(rest, fs.Arg(0)), fs.Args()[1:]
 	}
 	base := strings.TrimRight(*url, "/")
 	if base == "" {
@@ -106,167 +185,357 @@ func common(name string, args []string, extra func(*flag.FlagSet)) (cms.Config, 
 		}
 		base = "http://" + host
 	}
-	limit, _ := strconv.Atoi(env("CMS_DELIVERY_RATE_LIMIT", "1200"))
-	if limit == 0 {
-		limit = -1
+	limit, err := rateLimit(os.Getenv("CMS_DELIVERY_RATE_LIMIT"))
+	if err != nil {
+		return cms.Config{}, nil, err
+	}
+	var importMax int64
+	if v := os.Getenv("IMPORT_MAX_BYTES"); v != "" {
+		if importMax, err = strconv.ParseInt(v, 10, 64); err != nil || importMax <= 0 {
+			return cms.Config{}, nil, usagef("IMPORT_MAX_BYTES is a number of bytes, not %q", v)
+		}
+	}
+	logger, err := newLogger(name)
+	if err != nil {
+		return cms.Config{}, nil, err
 	}
 	trust := os.Getenv("TRUST_PROXY") == "1" || os.Getenv("TRUST_PROXY") == "true"
-	return cms.Config{DataDir: *data, Addr: *listen, BaseURL: base, SiteKey: os.Getenv("SITE_KEY"), DeliveryRateLimit: limit, TrustProxy: trust}, fs, nil
+	return cms.Config{DataDir: *data, Addr: *listen, BaseURL: base, SiteKey: os.Getenv("SITE_KEY"), SecretKey: os.Getenv("SECRET_KEY"),
+		Version: version, DeliveryRateLimit: limit, TrustProxy: trust, Logger: logger, ImportMaxBytes: importMax}, rest, nil
 }
 
-func serve(args []string) error {
-	cfg, _, err := common("serve", args, nil)
-	if err != nil {
-		return err
+// rateLimit reads CMS_DELIVERY_RATE_LIMIT: unset is the default, 0 is none
+// (Config's -1).
+func rateLimit(v string) (int, error) {
+	if v == "" {
+		return 0, nil
 	}
-	cfg.Logger = slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelInfo}))
-	app, err := cms.NewApp(cfg)
-	if err != nil {
-		return err
+	n, err := strconv.Atoi(v)
+	if err != nil || n < 0 {
+		return 0, usagef("CMS_DELIVERY_RATE_LIMIT is requests a minute (0 for no limit), not %q", v)
 	}
-	defer app.Close()
-	app.Admin = admin.Handler()
+	if n == 0 {
+		return -1, nil
+	}
+	return n, nil
+}
 
+// newLogger is LOG_LEVEL and LOG_FORMAT's log, on stderr. serve logs
+// from info up, the one-off commands warnings and errors.
+func newLogger(cmd string) (*slog.Logger, error) {
+	level := slog.LevelWarn
+	if cmd == "serve" {
+		level = slog.LevelInfo
+	}
+	if v := os.Getenv("LOG_LEVEL"); v != "" {
+		if err := level.UnmarshalText([]byte(v)); err != nil {
+			return nil, usagef("LOG_LEVEL is debug, info, warn or error, not %q", v)
+		}
+	}
+	opts := &slog.HandlerOptions{Level: level}
+	switch f := env("LOG_FORMAT", "text"); f {
+	case "text":
+		return slog.New(slog.NewTextHandler(os.Stderr, opts)), nil
+	case "json":
+		return slog.New(slog.NewJSONHandler(os.Stderr, opts)), nil
+	default:
+		return nil, usagef("LOG_FORMAT is text or json, not %q", f)
+	}
+}
+
+// serve runs until a signal, then lets requests in flight finish (a second
+// signal quits at once) before closing the app.
+func serve(ctx context.Context, stop func(), args []string) (err error) {
+	cfg, err := parse("serve", args, nil)
+	if err != nil {
+		return err
+	}
+	cfg.Admin = admin.Handler()
+	// One server per data directory, and no import under it.
+	lock, err := datalock.Acquire(cfg.DataDir)
+	if err != nil {
+		return fmt.Errorf("%w: is librepublish already serving %s?", err, cfg.DataDir)
+	}
+	defer func() { err = errors.Join(err, lock.Release()) }()
+	app, err := cms.NewServer(cfg)
+	if err != nil {
+		return err
+	}
+	defer func() { err = errors.Join(err, app.Close()) }()
+	// Bound first, so a taken port says so at once; requests wait in the
+	// backlog until the plugins are loaded.
+	ln, err := (&net.ListenConfig{}).Listen(ctx, "tcp", cfg.Addr)
+	if err != nil {
+		return err
+	}
+	if err := app.Start(ctx); err != nil {
+		ln.Close()
+		return err
+	}
 	srv := &http.Server{
-		Addr:              cfg.Addr,
-		Handler:           logRequests(cfg.Logger, app.Handler()),
+		Handler:           app.Handler(),
 		ReadHeaderTimeout: 10 * time.Second,
 		ReadTimeout:       5 * time.Minute,
 		WriteTimeout:      5 * time.Minute,
 		IdleTimeout:       2 * time.Minute,
+		ErrorLog:          slog.NewLogLogger(cfg.Logger.Handler(), slog.LevelWarn),
 	}
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stop()
-	go func() {
-		<-ctx.Done()
-		shut, cancel := context.WithTimeout(context.Background(), 20*time.Second)
-		defer cancel()
-		srv.Shutdown(shut)
-	}()
-	cfg.Logger.Info("libre publish is up", "version", cms.Version, "admin", cfg.BaseURL+"/cms/", "data", cfg.DataDir, "addr", cfg.Addr)
-	if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+	served := make(chan error, 1)
+	go func() { served <- srv.Serve(ln) }()
+	cfg.Logger.Info("libre publish is up", "version", version, "admin", cfg.BaseURL+"/cms/", "data", cfg.DataDir, "addr", ln.Addr().String())
+
+	select {
+	case err := <-served:
+		return err
+	case <-ctx.Done():
+	}
+	stop()
+	cfg.Logger.Info("shutting down: finishing requests in flight (a second signal quits now)")
+	shut, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(shut); err != nil {
+		return fmt.Errorf("shutdown: %w", err)
+	}
+	if err := <-served; !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
 	return nil
 }
 
-type statusWriter struct {
-	http.ResponseWriter
-	status int
-}
-
-func (w *statusWriter) WriteHeader(s int) {
-	w.status = s
-	w.ResponseWriter.WriteHeader(s)
-}
-
-func logRequests(log *slog.Logger, next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
-		sw := &statusWriter{ResponseWriter: w, status: 200}
-		next.ServeHTTP(sw, r)
-		if r.URL.Path != "/up" {
-			log.Info("request", "method", r.Method, "path", r.URL.Path, "status", sw.status, "ms", time.Since(start).Milliseconds())
+// password is --password, read from stdin when it's "-", or
+// LIBREPUBLISH_PASSWORD when it wasn't given.
+func password(flagValue string) (string, error) {
+	switch flagValue {
+	case "-":
+		line, err := bufio.NewReader(os.Stdin).ReadString('\n')
+		if err != nil && (!errors.Is(err, io.EOF) || line == "") {
+			return "", fmt.Errorf("reading the password from stdin: %w", err)
 		}
-	})
-}
-
-func open(name string, args []string, extra func(*flag.FlagSet)) (*cms.App, error) {
-	cfg, _, err := common(name, args, extra)
-	if err != nil {
-		return nil, err
+		return strings.TrimRight(line, "\r\n"), nil
+	case "":
+		return os.Getenv("LIBREPUBLISH_PASSWORD"), nil
 	}
-	cfg.Logger = slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelWarn}))
-	return cms.NewApp(cfg)
+	return flagValue, nil
 }
 
-func user(args []string) error {
+// required says which of the flags named weren't given.
+func required(flags ...[2]string) error {
+	for _, f := range flags {
+		if f[1] == "" {
+			return usagef("--%s is required", f[0])
+		}
+	}
+	return nil
+}
+
+func user(ctx context.Context, args []string) error {
 	if len(args) > 0 && (args[0] == "password" || args[0] == "disable-2fa") {
-		return userAccount(args[0], args[1:])
+		return userAccount(ctx, args[0], args[1:])
 	}
 	if len(args) == 0 || args[0] != "create" {
-		return errors.New("usage: librepublish user create|password|disable-2fa --email … [--name … --password … --role Administrator]")
+		return usagef("usage: librepublish user create|password|disable-2fa --email … [--name … --password … --role Administrator]")
 	}
-	var email, name, password, role string
-	app, err := open("user create", args[1:], func(fs *flag.FlagSet) {
+	var email, name, pass, role string
+	cfg, err := parse("user create", args[1:], func(fs *flag.FlagSet) {
 		fs.StringVar(&email, "email", "", "their email, which they sign in with")
 		fs.StringVar(&name, "name", "", "their name")
-		fs.StringVar(&password, "password", "", "at least 10 characters")
+		fs.StringVar(&pass, "password", "", "at least 10 characters; - reads it from stdin, unset uses LIBREPUBLISH_PASSWORD")
 		fs.StringVar(&role, "role", "Administrator", "the role")
 	})
 	if err != nil {
 		return err
 	}
-	defer app.Close()
-	ctx := context.Background()
-	id, err := app.CreateUserWithRole(ctx, name, email, password, role)
-	if err != nil {
+	if pass, err = password(pass); err != nil {
 		return err
 	}
-	fmt.Printf("Created user %d (%s), %s. Sign in at %s/cms/\n", id, email, role, app.BaseURL)
-	return nil
+	if err := required([2]string{"email", email}, [2]string{"password", pass}); err != nil {
+		return err
+	}
+	return withApp(cfg, func(app *cms.App) error {
+		id, err := app.CreateUserWithRole(ctx, name, email, pass, role)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("Created user %d (%s), %s. Sign in at %s/cms/\n", id, email, role, app.BaseURL())
+		return nil
+	})
 }
 
 // userAccount: a new password for someone locked out, or a second factor
 // turned off for an account the Rails core set it up on.
-func userAccount(cmd string, args []string) error {
-	var email, password string
-	app, err := open("user "+cmd, args, func(fs *flag.FlagSet) {
+func userAccount(ctx context.Context, cmd string, args []string) error {
+	var email, pass string
+	cfg, err := parse("user "+cmd, args, func(fs *flag.FlagSet) {
 		fs.StringVar(&email, "email", "", "whose account")
 		if cmd == "password" {
-			fs.StringVar(&password, "password", "", "the new password, at least 10 characters")
+			fs.StringVar(&pass, "password", "", "the new password, at least 10 characters; - reads it from stdin, unset uses LIBREPUBLISH_PASSWORD")
 		}
 	})
 	if err != nil {
 		return err
 	}
-	defer app.Close()
+	need := [][2]string{{"email", email}}
 	if cmd == "password" {
-		if err := app.SetPassword(context.Background(), email, password); err != nil {
+		if pass, err = password(pass); err != nil {
 			return err
 		}
-		fmt.Println("Password changed; their sessions were signed out.")
-		return nil
+		need = append(need, [2]string{"password", pass})
 	}
-	if err := app.DisableTwoFactor(context.Background(), email); err != nil {
+	if err := required(need...); err != nil {
 		return err
 	}
-	fmt.Println("Two-factor sign-in is off for", email+". They sign in with their password alone now.")
-	return nil
+	return withApp(cfg, func(app *cms.App) error {
+		if cmd == "password" {
+			if err := app.SetPassword(ctx, email, pass); err != nil {
+				return err
+			}
+			fmt.Println("Password changed; their sessions were signed out.")
+			return nil
+		}
+		if err := app.DisableTwoFactor(ctx, email); err != nil {
+			return err
+		}
+		fmt.Println("Two-factor sign-in is off for", email+". They sign in with their password alone now.")
+		return nil
+	})
 }
 
-func token(args []string) error {
+func token(ctx context.Context, args []string) error {
 	if len(args) == 0 || args[0] != "create" {
-		return errors.New(`usage: librepublish token create --name PRODUCTION [--role "Production site"]`)
+		return usagef(`usage: librepublish token create --name PRODUCTION [--role "Production site"]`)
 	}
 	var name, role string
-	app, err := open("token create", args[1:], func(fs *flag.FlagSet) {
+	cfg, err := parse("token create", args[1:], func(fs *flag.FlagSet) {
 		fs.StringVar(&name, "name", "PRODUCTION", "what it's for")
 		fs.StringVar(&role, "role", "Production site", "the role it acts with")
 	})
 	if err != nil {
 		return err
 	}
-	defer app.Close()
-	plain, err := app.CreateServiceTokenForRole(context.Background(), name, role)
+	return withApp(cfg, func(app *cms.App) error {
+		plain, err := app.CreateServiceTokenForRole(ctx, name, role)
+		if err != nil {
+			return err
+		}
+		fmt.Fprintf(os.Stderr, "Issued %q on %s. It is shown once; keep it in the site's environment, never in a repo.\n", name, role)
+		fmt.Println(plain)
+		return nil
+	})
+}
+
+func seedBlocks(ctx context.Context, args []string) error {
+	cfg, err := parse("seed-blocks", args, nil)
 	if err != nil {
 		return err
 	}
-	fmt.Fprintf(os.Stderr, "Issued %q on %s. It is shown once; keep it in the site's environment, never in a repo.\n", name, role)
-	fmt.Println(plain)
+	return withApp(cfg, func(app *cms.App) error {
+		added, err := app.SeedBlockTypes(ctx, nil)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("Installed %d block types: %s\n", len(added), strings.Join(added, ", "))
+		return nil
+	})
+}
+
+// withApp opens the install for a one-off command (nothing runs in the
+// background) and closes it after.
+func withApp(cfg cms.Config, fn func(*cms.App) error) (err error) {
+	app, err := cms.NewApp(cfg)
+	if err != nil {
+		return err
+	}
+	defer func() { err = errors.Join(err, app.Close()) }()
+	return fn(app)
+}
+
+// importBackup stages a backup, says what it holds, and (without
+// --dry-run) replaces the site in --data with it. The report goes to
+// stdout, as text or --json.
+func importBackup(ctx context.Context, args []string) (err error) {
+	var dryRun, force, asJSON bool
+	var keyFile string
+	cfg, rest, err := parseArgs("import", args, func(fs *flag.FlagSet) {
+		fs.BoolVar(&dryRun, "dry-run", false, "say what it would do, change nothing")
+		fs.BoolVar(&force, "force", false, "replace a site that has users")
+		fs.StringVar(&keyFile, "secret-key-file", "", "the old install's secret.key, or a file holding its SECRET_KEY (- reads stdin)")
+		fs.BoolVar(&asJSON, "json", false, "print the report as JSON")
+	})
+	if err != nil {
+		return err
+	}
+	if len(rest) != 1 {
+		return usagef("usage: librepublish import ARCHIVE-OR-DIR [--data DIR] [--dry-run] [--force] [--secret-key-file F] [--json]")
+	}
+	opts := restore.Options{DataDir: cfg.DataDir, SecretKey: cfg.SecretKey, Force: force, Actor: "librepublish import"}
+	if keyFile != "" {
+		if opts.SourceKey, err = readKey(keyFile); err != nil {
+			return err
+		}
+	}
+	// Nothing may have the database open while it's swapped; a dry run
+	// only stages, which a running server doesn't mind.
+	if !dryRun {
+		lock, lockErr := datalock.Acquire(cfg.DataDir)
+		if lockErr != nil {
+			return fmt.Errorf("%w: stop librepublish serve on %s first, or import from Tools › Backup in its admin", lockErr, cfg.DataDir)
+		}
+		defer func() { err = errors.Join(err, lock.Release()) }()
+	}
+	fmt.Fprintln(os.Stderr, "Reading", rest[0], "…")
+	imp, err := restore.Stage(ctx, rest[0], opts)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if dryRun || err != nil {
+			err = errors.Join(err, imp.Discard())
+		}
+	}()
+	rep := imp.Report
+	if !dryRun {
+		if rep, err = imp.Apply(ctx, opts); err != nil {
+			if errors.Is(err, restore.ErrHasUsers) {
+				printReport(imp.Report, asJSON)
+				return fmt.Errorf("%w; add --force to replace it (the current site is kept in %s/replaced-<time>/)", err, cfg.DataDir)
+			}
+			return err
+		}
+	}
+	printReport(rep, asJSON)
+	if dryRun {
+		fmt.Fprintln(os.Stderr, "Dry run: nothing was changed.")
+	} else {
+		fmt.Fprintln(os.Stderr, "Done. Everyone was signed out; start librepublish serve and sign in with an account from the imported site.")
+	}
 	return nil
 }
 
-func seedBlocks(args []string) error {
-	app, err := open("seed-blocks", args, nil)
-	if err != nil {
-		return err
+func printReport(rep *restore.Report, asJSON bool) {
+	if !asJSON {
+		rep.WriteText(os.Stdout)
+		return
 	}
-	defer app.Close()
-	added, err := app.SeedBlockTypes(context.Background(), nil)
-	if err != nil {
-		return err
+	enc := json.NewEncoder(os.Stdout)
+	enc.SetIndent("", "  ")
+	_ = enc.Encode(rep) // stdout went away; nothing to do
+}
+
+// readKey is --secret-key-file's contents: a file, or stdin for "-".
+func readKey(path string) (string, error) {
+	var raw []byte
+	var err error
+	if path == "-" {
+		raw, err = io.ReadAll(io.LimitReader(os.Stdin, 4096))
+	} else {
+		raw, err = os.ReadFile(path) //nolint:gosec // the operator's own key file
 	}
-	fmt.Printf("Installed %d block types: %s\n", len(added), strings.Join(added, ", "))
-	return nil
+	if err != nil {
+		return "", fmt.Errorf("reading the secret key: %w", err)
+	}
+	key := strings.TrimSpace(string(raw))
+	if key == "" {
+		return "", usagef("--secret-key-file %s is empty", path)
+	}
+	return key, nil
 }

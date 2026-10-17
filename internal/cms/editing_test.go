@@ -1,7 +1,6 @@
 package cms
 
 import (
-	"context"
 	"regexp"
 	"strconv"
 	"strings"
@@ -24,6 +23,7 @@ func mailedToken(t *testing.T, m *captureMailer, to string) string {
 }
 
 func TestPasswordResetAndEmailChange(t *testing.T) {
+	t.Parallel()
 	mail := &captureMailer{}
 	s := newSiteWith(t, Config{NoDefaultPlugins: true, Mailer: mail})
 	s.must(200, s.do(s.admin, "PATCH", "/api/settings/email", map[string]any{"setting": map[string]any{"data": map[string]any{"smtp_host": "smtp.test", "from_email": "cms@site.test"}}}))
@@ -75,13 +75,14 @@ func TestPasswordResetAndEmailChange(t *testing.T) {
 }
 
 func TestEditLocksAutosavesAndPreferences(t *testing.T) {
+	t.Parallel()
 	s := newSite(t)
-	ctx := context.Background()
+	ctx := t.Context()
 	bobID, err := s.app.CreateUserWithRole(ctx, "Bob", "bob@site.test", "password1234", "Editor")
 	if err != nil {
 		t.Fatal(err)
 	}
-	bob, _, _ := s.app.MintUserToken(ctx, bobID)
+	bob, _, _ := s.app.mintUserToken(ctx, bobID)
 	r := s.must(201, s.do(s.admin, "POST", "/api/pages", map[string]any{"page": map[string]any{"slug": "about", "title": "About"}}))
 	id := dig(r.Body, "page", "id")
 
@@ -145,6 +146,7 @@ func TestEditLocksAutosavesAndPreferences(t *testing.T) {
 }
 
 func TestDeliveryShaping(t *testing.T) {
+	t.Parallel()
 	s := newSite(t)
 	s.must(201, s.do(s.admin, "POST", "/api/collections", map[string]any{"collection": map[string]any{"slug": "authors", "name": "Authors"}}))
 	s.must(201, s.do(s.admin, "POST", "/api/collections", map[string]any{"collection": map[string]any{"slug": "posts", "name": "Posts",

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"io"
+	"maps"
 	"mime/multipart"
 	"mime/quotedprintable"
 	"net/http"
@@ -13,6 +14,9 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/Martin-Business-Consultants/libre-publish/internal/mail"
+	"github.com/Martin-Business-Consultants/libre-publish/internal/secret"
 )
 
 // captureMailer keeps what would have been sent.
@@ -22,13 +26,13 @@ type captureMailer struct {
 }
 
 type sentMail struct {
-	cfg  MailConfig
+	cfg  mail.Config
 	from string
 	to   []string
 	raw  string
 }
 
-func (m *captureMailer) Send(ctx context.Context, cfg MailConfig, from string, to []string, msg []byte) error {
+func (m *captureMailer) Send(ctx context.Context, cfg mail.Config, from string, to []string, msg []byte) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.sent = append(m.sent, sentMail{cfg, from, to, string(msg)})
@@ -44,7 +48,7 @@ func (m *captureMailer) take() []sentMail {
 }
 
 func header(raw, name string) string {
-	for _, line := range strings.Split(raw, "\r\n") {
+	for line := range strings.SplitSeq(raw, "\r\n") {
 		if line == "" {
 			break
 		}
@@ -62,8 +66,9 @@ func decodeQP(raw string) string {
 }
 
 func TestEmailSettings(t *testing.T) {
-	mail := &captureMailer{}
-	s := newSiteWith(t, Config{NoDefaultPlugins: true, Mailer: mail})
+	t.Parallel()
+	mailer := &captureMailer{}
+	s := newSiteWith(t, Config{NoDefaultPlugins: true, Mailer: mailer})
 	r := s.must(422, s.do(s.admin, "POST", "/api/settings/email/test", map[string]any{"to": "me@acme.test"}))
 	if !strings.Contains(str(r.Body["message"]), "Settings › Email") {
 		t.Fatalf("unconfigured: %s", r.Raw)
@@ -72,8 +77,8 @@ func TestEmailSettings(t *testing.T) {
 		"smtp_host": "smtp.acme.test", "smtp_username": "acme", "smtp_password": "hunter22", "from_name": "Acme", "from_email": "hello@acme.test"}}}))
 	// The password is sealed at rest and masked when read.
 	var raw string
-	s.app.Store.DB.QueryRow(`SELECT data FROM settings WHERE key = 'email'`).Scan(&raw)
-	if strings.Contains(raw, "hunter22") || !strings.Contains(raw, sealedPrefix) {
+	s.app.store.QueryRowContext(t.Context(), `SELECT data FROM settings WHERE key = 'email'`).Scan(&raw)
+	if strings.Contains(raw, "hunter22") || !strings.Contains(raw, secret.SealedPrefix) {
 		t.Fatalf("password at rest: %s", raw)
 	}
 	r = s.must(200, s.do(s.admin, "GET", "/api/settings/email", nil))
@@ -82,28 +87,29 @@ func TestEmailSettings(t *testing.T) {
 	}
 	// Saving the masked value back keeps the password.
 	s.must(200, s.do(s.admin, "PATCH", "/api/settings/email", map[string]any{"setting": map[string]any{"data": map[string]any{"smtp_password": dig(r.Body, "setting", "data", "smtp_password")}}}))
-	if cfg := s.app.mailConfig(context.Background()); cfg.Password != "hunter22" || cfg.Port != 587 || cfg.Security != "starttls" {
+	if cfg := s.app.mailConfig(t.Context()); cfg.Password != "hunter22" || cfg.Port != 587 || cfg.Security != "starttls" {
 		t.Fatalf("config: %+v", cfg)
 	}
 	s.must(200, s.do(s.admin, "POST", "/api/settings/email/test", map[string]any{"to": "me@acme.test"}))
-	got := mail.take()
+	got := mailer.take()
 	if len(got) != 1 || got[0].from != "hello@acme.test" || header(got[0].raw, "From") != `"Acme" <hello@acme.test>` || got[0].to[0] != "me@acme.test" {
 		t.Fatalf("test mail: %+v", got)
 	}
 	// No header injection through a name or a subject.
-	err := s.app.SendMail(context.Background(), Message{FromName: "x\r\nBcc: evil@x.test", To: []string{"a@acme.test"}, Subject: "hi\r\nBcc: evil@x.test", Text: "."})
+	err := s.app.sendMail(t.Context(), mail.Message{FromName: "x\r\nBcc: evil@x.test", To: []string{"a@acme.test"}, Subject: "hi\r\nBcc: evil@x.test", Text: "."})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if m := mail.take()[0]; strings.Contains(m.raw, "\r\nBcc:") || len(m.to) != 1 {
+	if m := mailer.take()[0]; strings.Contains(m.raw, "\r\nBcc:") || len(m.to) != 1 {
 		t.Fatalf("injection: %q", m.raw)
 	}
-	if err := s.app.SendMail(context.Background(), Message{To: []string{"not an address"}, Subject: "x", Text: "x"}); err == nil {
+	if err := s.app.sendMail(t.Context(), mail.Message{To: []string{"not an address"}, Subject: "x", Text: "x"}); err == nil {
 		t.Fatal("a bad address was sent to")
 	}
 }
 
 func TestFormsPlugin(t *testing.T) {
+	t.Parallel()
 	mail := &captureMailer{}
 	s := newSiteWith(t, Config{Mailer: mail})
 
@@ -146,9 +152,7 @@ func TestFormsPlugin(t *testing.T) {
 		"success_message": "Thanks!",
 	}
 	bad := map[string]any{}
-	for k, v := range form {
-		bad[k] = v
-	}
+	maps.Copy(bad, form)
 	bad["name"], bad["admin_to"], bad["captcha"] = "", []any{"nope"}, "recaptcha"
 	r = s.must(422, s.do(s.admin, "POST", "/api/x/forms/form", map[string]any{"form": bad}))
 	if dig(r.Body, "errors", "name", 0) != "can't be blank" || dig(r.Body, "errors", "admin_to", 0) != "nope isn't an email address" || dig(r.Body, "errors", "recaptcha_secret", 0) != "can't be blank" {
@@ -184,7 +188,10 @@ func TestFormsPlugin(t *testing.T) {
 	}
 	admin, client := sent[0], sent[1]
 	adminBody := decodeQP(admin.raw)
-	adminHTML := adminBody[strings.Index(adminBody, "text/html"):]
+	_, adminHTML, ok := strings.Cut(adminBody, "text/html")
+	if !ok {
+		t.Fatalf("admin email has no HTML part:\n%s", adminBody)
+	}
 	if header(admin.raw, "From") != `"Acme Forms" <hello@acme.test>` || header(admin.raw, "Reply-To") != "ada@example.test" ||
 		header(admin.raw, "To") != "owner@acme.test" || header(admin.raw, "Cc") != "team@acme.test" || !strings.Contains(admin.raw, "Contact us: Ada") {
 		t.Fatalf("admin email:\n%s", admin.raw)
@@ -209,7 +216,10 @@ func TestFormsPlugin(t *testing.T) {
 
 	// A plain HTML form is answered with a redirect back to its page.
 	body := url.Values{"name": {"Grace"}, "email": {"grace@example.test"}, "_ts": {ts}}.Encode()
-	req, _ := http.NewRequest("POST", s.srv.URL+"/api/x/forms/submit?form=contact-us", strings.NewReader(body))
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodPost, s.srv.URL+"/api/x/forms/submit?form=contact-us", strings.NewReader(body))
+	if err != nil {
+		t.Fatal(err)
+	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Set("Accept", "text/html")
 	req.Header.Set("Referer", "https://acme.test/contact")
@@ -219,7 +229,7 @@ func TestFormsPlugin(t *testing.T) {
 		t.Fatal(err)
 	}
 	res.Body.Close()
-	if res.StatusCode != 303 || res.Header.Get("Location") != "https://acme.test/contact?form=contact-us&form_status=sent" {
+	if res.StatusCode != http.StatusSeeOther || res.Header.Get("Location") != "https://acme.test/contact?form=contact-us&form_status=sent" {
 		t.Fatalf("html post: %d %s", res.StatusCode, res.Header.Get("Location"))
 	}
 	mail.take()
@@ -285,6 +295,34 @@ func TestFormsPlugin(t *testing.T) {
 		t.Fatalf("csv: %s", csv)
 	}
 
+	// Or to the _return it sent, when that's on the site; never elsewhere.
+	plainPost := func(ret, referer string) string {
+		t.Helper()
+		body := url.Values{"name": {"Grace"}, "email": {"grace@example.test"}, "_ts": {ts}, "_return": {ret}}.Encode()
+		req, err := http.NewRequestWithContext(t.Context(), http.MethodPost, s.srv.URL+"/api/x/forms/submit?form=contact-us", strings.NewReader(body))
+		if err != nil {
+			t.Fatal(err)
+		}
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		req.Header.Set("Accept", "text/html")
+		req.Header.Set("Referer", referer)
+		res, err := noFollow.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		res.Body.Close()
+		return res.Header.Get("Location")
+	}
+	if got := plainPost("https://acme.test/contact?step=2#top", "https://cms.example/preview"); got != "https://acme.test/contact?form=contact-us&form_status=sent&step=2" {
+		t.Fatalf("_return: %s", got)
+	}
+	for _, ret := range []string{"https://evil.test/contact", "//evil.test/x", "javascript:alert(1)", "https://acme.test@evil.test/", "/contact"} {
+		if got := plainPost(ret, "https://acme.test/from"); got != "https://acme.test/from?form=contact-us&form_status=sent" {
+			t.Fatalf("_return %q went to %s", ret, got)
+		}
+	}
+	mail.take()
+
 	// Closed forms take nothing.
 	form["status"] = "closed"
 	s.must(200, s.do(s.admin, "POST", "/api/x/forms/form?id=contact-us", map[string]any{"form": form}))
@@ -292,6 +330,6 @@ func TestFormsPlugin(t *testing.T) {
 
 	// Removing a default plugin removes it for good: it isn't put back.
 	s.must(204, s.do(s.admin, "DELETE", "/api/plugins/forms", nil))
-	s.app.Plugins.EnsureDefaults(context.Background())
+	s.app.plugins.EnsureDefaults(t.Context())
 	s.must(404, s.do(s.admin, "GET", "/api/plugins/forms", nil))
 }

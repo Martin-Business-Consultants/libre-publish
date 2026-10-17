@@ -14,7 +14,6 @@ import (
 	"net/url"
 	"path"
 	"regexp"
-	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -182,7 +181,7 @@ func submit() int32 {
 			why = verifyCaptcha("https://www.google.com/recaptcha/api/siteverify", f.RecaptchaSecret, strOr(p.one("g-recaptcha-response"), p.one("g_recaptcha_response")), req.IP, f.RecaptchaMinScore)
 		}
 		if why != "" {
-			return answer(req, f, 422, map[string]any{"error": "invalid", "message": why, "errors": map[string][]string{"captcha": {why}}})
+			return answer(req, f, p.one("_return"), 422, map[string]any{"error": "invalid", "message": why, "errors": map[string][]string{"captcha": {why}}})
 		}
 	}
 
@@ -195,7 +194,7 @@ func submit() int32 {
 			pf, has := p.files[fl.Name]
 			if !has {
 				if fl.Required {
-					errs[fl.Name] = append(errs[fl.Name], "choose a file")
+					errs[fl.Name] = append(errs[fl.Name], blankMessage(fl))
 				}
 				continue
 			}
@@ -221,13 +220,7 @@ func submit() int32 {
 		}
 		if len(vals) == 0 {
 			if fl.Required {
-				msg := "can't be blank"
-				if fl.Type == "checkbox" {
-					msg = "must be ticked"
-				} else if fl.Type == "checkboxes" || fl.Type == "radio" || fl.Type == "select" {
-					msg = "choose one"
-				}
-				errs[fl.Name] = append(errs[fl.Name], msg)
+				errs[fl.Name] = append(errs[fl.Name], blankMessage(fl))
 			}
 			continue
 		}
@@ -244,14 +237,14 @@ func submit() int32 {
 		}
 	}
 	if len(errs) > 0 && !quiet {
-		return answer(req, f, 422, map[string]any{"error": "invalid", "message": "Some fields need attention.", "errors": errs})
+		return answer(req, f, p.one("_return"), 422, map[string]any{"error": "invalid", "message": "Some fields need attention.", "errors": errs})
 	}
 
 	// Kept first, then emailed: a slow mail server can't lose a submission.
 	keep := f.StoreSubmissions || sub.Status == "spam"
 	if keep {
 		if e := kvSetJSON("sub:"+f.Slug+":"+sub.ID, sub); e != "" {
-			return answer(req, f, 503, map[string]any{"error": "storage", "message": "The submission couldn't be saved; try again."})
+			return answer(req, f, p.one("_return"), 503, map[string]any{"error": "storage", "message": "The submission couldn't be saved; try again."})
 		}
 		kvSet("all:"+sub.ID, f.Slug)
 		st := formStats(f.Slug)
@@ -264,22 +257,26 @@ func submit() int32 {
 			kvSetJSON("sub:"+f.Slug+":"+sub.ID, sub)
 		}
 	}
-	return answer(req, f, 200, map[string]any{"ok": true, "message": f.SuccessMessage, "redirect": f.RedirectURL})
+	return answer(req, f, p.one("_return"), 200, map[string]any{"ok": true, "message": f.SuccessMessage, "redirect": f.RedirectURL})
 }
 
 // answer replies to a script with JSON, and to a plain HTML form with a
-// redirect: to the thank-you page, or back where it came from.
-func answer(req request, f Form, status int, body map[string]any) int32 {
+// redirect: to the thank-you page, or back to the page it came from — the
+// _return it sent when that's on one of the site's origins, else the
+// Referer.
+func answer(req request, f Form, ret string, status int, body map[string]any) int32 {
 	if wantsJSON(req) {
 		return reply(status, body)
 	}
+	s := siteInfo()
 	to := req.header("Referer")
+	if back, ok := onSite(ret, s.Origins); ok {
+		to = back
+	}
 	if status == 200 && f.RedirectURL != "" {
 		to = f.RedirectURL
-		if strings.HasPrefix(to, "/") {
-			if s := siteInfo(); s.URL != "" {
-				to = s.URL + to
-			}
+		if strings.HasPrefix(to, "/") && s.URL != "" {
+			to = s.URL + to
 		}
 	} else if to != "" {
 		u, err := url.Parse(to)
@@ -297,90 +294,21 @@ func answer(req request, f Form, status int, body map[string]any) int32 {
 	return replyRaw(303, map[string]string{"Location": to, "Content-Type": "text/plain; charset=utf-8"}, "See "+to)
 }
 
-func checkValue(fl Field, vals []string) string {
-	v := vals[0]
-	limit := fl.MaxLength
-	if limit <= 0 {
-		limit = map[bool]int{true: 10000, false: 500}[fl.Type == "textarea"]
+// onSite is raw when it's an absolute http(s) address on one of origins,
+// so a form's return can't send anyone elsewhere.
+func onSite(raw string, origins []string) (string, bool) {
+	u, err := url.Parse(strings.TrimSpace(raw))
+	if raw == "" || err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" || u.User != nil {
+		return "", false
 	}
-	for _, x := range vals {
-		if len([]rune(x)) > limit {
-			return fmt.Sprintf("is longer than %d characters", limit)
-		}
-	}
-	switch fl.Type {
-	case "email":
-		if !emailFormat.MatchString(v) {
-			return "isn't an email address"
-		}
-	case "url":
-		u, err := url.Parse(v)
-		if err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {
-			return "isn't a web address (https://…)"
-		}
-	case "number":
-		n, err := strconv.ParseFloat(v, 64)
-		if err != nil {
-			return "isn't a number"
-		}
-		if fl.Min != nil && n < *fl.Min {
-			return fmt.Sprintf("is at least %g", *fl.Min)
-		}
-		if fl.Max != nil && n > *fl.Max {
-			return fmt.Sprintf("is at most %g", *fl.Max)
-		}
-	case "date":
-		if _, err := time.Parse("2006-01-02", v); err != nil {
-			return "isn't a date"
-		}
-	case "tel":
-		digits := 0
-		for _, r := range v {
-			if r >= '0' && r <= '9' {
-				digits++
-			} else if !strings.ContainsRune(" +-().", r) {
-				return "isn't a phone number"
-			}
-		}
-		if digits < 5 {
-			return "isn't a phone number"
-		}
-	case "select", "radio":
-		if !slices.Contains(fl.Options, v) {
-			return "isn't one of the choices"
-		}
-	case "checkboxes":
-		for _, x := range vals {
-			if !slices.Contains(fl.Options, x) {
-				return x + " isn't one of the choices"
-			}
+	origin := u.Scheme + "://" + u.Host
+	for _, o := range origins {
+		if strings.EqualFold(strings.TrimRight(o, "/"), origin) {
+			u.Fragment = ""
+			return u.String(), true
 		}
 	}
-	return ""
-}
-
-func checkFile(fl Field, pf postedFile) string {
-	max := fl.MaxMB
-	if max <= 0 {
-		max = 5
-	}
-	if float64(pf.size) > max*(1<<20) {
-		return fmt.Sprintf("is larger than %g MB", max)
-	}
-	if fl.Accept != "" {
-		ext := strings.ToLower(path.Ext(pf.Filename))
-		ok := false
-		for _, a := range strings.Split(fl.Accept, ",") {
-			a = strings.ToLower(strings.TrimSpace(a))
-			if a == ext || (strings.HasSuffix(a, "/*") && strings.HasPrefix(pf.ContentType, strings.TrimSuffix(a, "*"))) || a == pf.ContentType {
-				ok = true
-			}
-		}
-		if !ok {
-			return "isn't an allowed type (" + fl.Accept + ")"
-		}
-	}
-	return ""
+	return "", false
 }
 
 // verifyCaptcha checks a token with Turnstile or reCAPTCHA (the same

@@ -2,6 +2,8 @@ module github.com/Martin-Business-Consultants/libre-publish
 
 go 1.26.0
 
+toolchain go1.26.9
+
 require (
 	github.com/extism/go-sdk v1.7.1
 	github.com/tetratelabs/wazero v1.9.0
