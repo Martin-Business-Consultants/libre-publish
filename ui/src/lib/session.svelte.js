@@ -1,4 +1,6 @@
-// Who's signed in, what they can do, and the site's name.
+// Who's signed in, what they can do, and the site's name and branding.
+import { brand } from "./branding.svelte.js";
+
 class Session {
   me = $state(null);
   csrf = $state("");
@@ -16,6 +18,7 @@ class Session {
     try {
       const s = await get("/session", { quiet: true });
       this.site = s.site || "";
+      brand.set(s.branding);
       this.version = s.version || "";
       this.needsSetup = !!s.needs_setup;
       this.me = s.signed_in ? s : null;

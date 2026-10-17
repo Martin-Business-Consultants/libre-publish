@@ -32,8 +32,10 @@
         { name: "city", label: "City", type: "string" }, { name: "state", label: "State or region", type: "string" }, { name: "zip", label: "Postal code", type: "string" },
       ]],
     ] },
-    brand: { title: "Brand", key: "brand", intro: "The brief agents read before writing copy (cms brand): keep it short and specific.", panels: [
-      ["Brand brief", [
+    // Stored under "brand", where agents and the cms CLI read it (cms brand,
+    // the manifest's brand); the visual identity is Settings › Brand.
+    ai: { title: "AI writing brief", key: "brand", intro: "The brief agents read before writing copy (cms brand, and the manifest's brand): keep it short and specific. Nothing in the CMS renders it.", panels: [
+      ["Writing brief", [
         { name: "brand_voice", label: "Voice", type: "text", help: "How the site sounds: plain, warm, technical…" },
         { name: "audience", label: "Audience", type: "text", help: "Who reads it, and what they come for." },
         { name: "key_facts", label: "Facts that must stay accurate", type: "text", help: "Prices, hours, names, claims." },

@@ -32,7 +32,7 @@ export function adminMenu(collections, plugins = []) {
     ]],
     ["Settings", [
       { id: "settings", label: "Settings", icon: "settings-outline", href: "/settings", cap: "settings:read", submenu: [
-        { label: "General", href: "/settings" }, { label: "Deploy", href: "/settings/deploy" }, { label: "Email", href: "/settings/email" }, { label: "Brand", href: "/settings/brand" },
+        { label: "General", href: "/settings" }, { label: "Deploy", href: "/settings/deploy" }, { label: "Email", href: "/settings/email" }, { label: "Brand", href: "/settings/brand" }, { label: "AI", href: "/settings/ai" },
         { label: "Site repository", href: "/settings/github" }, { label: "Service tokens", href: "/settings/tokens" } ] },
     ]],
   ];

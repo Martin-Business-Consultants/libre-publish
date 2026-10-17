@@ -10,6 +10,7 @@
   import { session } from "../session.svelte.js";
   import { site } from "../site.svelte.js";
   import { del } from "../api.js";
+  import { brand } from "../branding.svelte.js";
   let { onsearch } = $props();
 
   const newItems = $derived([
@@ -32,11 +33,15 @@
   const first = $derived((session.me?.user?.name || "").split(" ")[0] || session.me?.user?.email);
 </script>
 
-<header class="bg-background fixed inset-x-0 top-0 z-20 flex h-12 items-center gap-1 border-b px-2">
+<!-- Settings › Brand's top bar "Dark" keeps it dark in light mode too (a logo drawn for a dark ground). -->
+<header class="bg-background text-foreground fixed inset-x-0 top-0 z-20 flex h-12 items-center gap-1 border-b px-2 {brand.current.top_bar === 'dark' ? 'dark' : ''}">
   <SidebarTrigger />
   <Separator orientation="vertical" class="mx-1 data-vertical:h-4 data-vertical:self-center" />
   <Button variant="ghost" size="sm" href="#/" class="font-semibold" title="Dashboard">
-    <Icon name="home" /><span class="hidden md:inline">{session.site || "Libre Publish"}</span>
+    {#if brand.current.logo}
+      <img src={brand.current.logo.thumb} alt="" class="h-6 w-auto max-w-32 object-contain" />
+    {:else}<Icon name="home" />{/if}
+    <span class="hidden md:inline">{session.site || "Libre Publish"}</span>
   </Button>
   {#if site.siteURL}
     <Button variant="ghost" size="icon-sm" href={site.siteURL} title="View site"><Icon name="external" /><span class="sr-only">View site</span></Button>

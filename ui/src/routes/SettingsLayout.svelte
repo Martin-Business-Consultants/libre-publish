@@ -5,7 +5,7 @@
   import { router } from "../lib/router.svelte.js";
   let { title, children } = $props();
   const nav = [
-    ["Site", [["General", "/settings"], ["Brand", "/settings/brand"], ["Site repository", "/settings/github"]]],
+    ["Site", [["General", "/settings"], ["Brand", "/settings/brand"], ["AI", "/settings/ai"], ["Site repository", "/settings/github"]]],
     ["Publishing", [["Deploy", "/settings/deploy"], ["Email", "/settings/email"]]],
     ["Access", [["Service tokens", "/settings/tokens"]]],
   ];

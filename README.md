@@ -94,6 +94,10 @@ database as it is and only adds its own tables (`admin_sessions`,
 `revisions`, `plugins`, `plugin_kv`). Pages, entries, collections, globals,
 block types, redirects, settings, roles, users, the audit log, content
 references and media all carry over, and media URLs move to `/files/<key>/…`.
+Rails' Settings › Branding (the `branding` setting: logo, favicon, colors,
+font, corners, shadow, top bar) is Settings › Brand: the admin wears it, and
+`GET /api/v1/site` delivers it as `branding`. The brief agents write by (the
+`brand` setting, read by `cms brand` and the manifest) is Settings › AI.
 
 What doesn't carry over is what Rails encrypted with its own key
 (`config/credentials`). The Go core can't read those values:
@@ -265,8 +269,8 @@ reach them get a 404:
   port to the WebAssembly contract (docs/plugins.md, "Porting the Rails
   engines").
 - **Agent runs and reporting**: `cms work`, `run-*`, `recommend`, `findings`,
-  `reports`. **Brand** is read from the `brand` setting (and the manifest),
-  but `cms brand` has no endpoint of its own yet.
+  `reports`. **Brand** is read from the `brand` setting (Settings › AI, and
+  the manifest), but `cms brand` has no endpoint of its own yet.
 - **Themes and website mode**: by design, as this core is headless.
 - **The rest:** email (password reset, notifications), two-factor sign-in,
   block patterns' CRUD (synced patterns still expand), version history

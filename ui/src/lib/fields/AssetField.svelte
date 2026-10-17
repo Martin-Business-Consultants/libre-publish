@@ -5,7 +5,8 @@
   import Icon from "../components/Icon.svelte";
   import AssetPicker from "./AssetPicker.svelte";
   import { get } from "../api.js";
-  let { value, onchange } = $props();
+  // accept: a type prefix the picker lists ("image").
+  let { value, onchange, accept = "" } = $props();
   let asset = $state(null), picking = $state(false);
   $effect(() => {
     const id = value;
@@ -33,4 +34,4 @@
     <Icon name="picture-add" size="md" /> Choose a file
   </button>
 {/if}
-<AssetPicker bind:open={picking} onpick={(a) => onchange(String(a.id))} />
+<AssetPicker bind:open={picking} {accept} onpick={(a) => onchange(String(a.id))} />

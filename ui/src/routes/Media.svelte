@@ -133,8 +133,8 @@
         <ul class="divide-y divide-border rounded-lg border border-border">
           {#each current.used_by as u}
             <li class="flex items-center justify-between gap-3 px-3 py-2 text-sm">
-              <a class="min-w-0 truncate font-medium text-foreground hover:underline" href={u.type === "Page" ? `#/pages/edit/${encodeURIComponent(u.path)}` : u.type === "Global" ? `#/globals/${u.path}` : `#/collections/${u.path.split("/")[0]}/edit/${u.path.split("/")[1]}`}>{u.label}</a>
-              <span class="shrink-0 text-xs text-muted-foreground">{u.type === "CollectionEntry" ? "Entry" : u.type} · {u.where}</span>
+              <a class="min-w-0 truncate font-medium text-foreground hover:underline" href={u.type === "Page" ? `#/pages/edit/${encodeURIComponent(u.path)}` : u.type === "Global" ? `#/globals/${u.path}` : u.type === "Setting" ? `#/settings/${u.path}` : `#/collections/${u.path.split("/")[0]}/edit/${u.path.split("/")[1]}`}>{u.label}</a>
+              <span class="shrink-0 text-xs text-muted-foreground">{u.type === "Setting" ? u.where : `${u.type === "CollectionEntry" ? "Entry" : u.type} · ${u.where}`}</span>
             </li>
           {/each}
         </ul>
