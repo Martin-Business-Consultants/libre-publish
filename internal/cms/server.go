@@ -20,6 +20,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/Martin-Business-Consultants/libre-publish/internal/apierr"
@@ -85,6 +86,8 @@ type App struct {
 	// before it's written (events.go).
 	listeners     []listener
 	beforeSetting map[string]func(data map[string]any)
+	// Settings › General's CMS address (cms_url), kept here for BaseURL.
+	cmsURL atomic.Pointer[string]
 
 	limiter *ratelimit.Limiter // the delivery API's, per token
 	// Sign-in: ten tries a minute from one address, and ten at one account
@@ -140,6 +143,12 @@ func NewApp(cfg Config) (*App, error) {
 	a := &App{cfg: cfg, log: cfg.Logger, store: db, secrets: secrets, startedAt: time.Now(),
 		limiter: ratelimit.New(limit), signIns: ratelimit.New(10), forgots: ratelimit.New(5), pluginCalls: ratelimit.New(30)}
 	a.ctx, a.cancel = context.WithCancel(context.Background())
+	// The CMS's address, before anything (webhooks' tenant) reads it.
+	if g, err := a.setting(context.Background(), "general"); err == nil {
+		a.setCMSURL(str(g["cms_url"]))
+	} else {
+		a.log.Warn("settings", "err", err)
+	}
 	a.hooks = webhook.New(db, secrets, a.log, a.tenant(), a.spawn)
 	a.deploys = deploy.New(deploySettings{a}, a.log, a.spawn)
 	a.plugins = plugin.New(pluginEnv{a}, db, a.log, a.spawn, defaultPlugins())
@@ -193,12 +202,36 @@ func (a *App) tenant() string {
 	if a.cfg.SiteKey != "" {
 		return a.cfg.SiteKey
 	}
-	host := strings.TrimPrefix(strings.TrimPrefix(a.cfg.BaseURL, "https://"), "http://")
+	host := strings.TrimPrefix(strings.TrimPrefix(a.BaseURL(), "https://"), "http://")
 	return strings.Split(host, ".")[0]
 }
 
-// BaseURL is the CMS's own address.
-func (a *App) BaseURL() string { return a.cfg.BaseURL }
+// BaseURL is the CMS's own address, which file and admin URLs start with:
+// APP_URL (--url) when it's set, else Settings › General's CMS address, else
+// http://localhost and the port it listens on (fine on a laptop, wrong
+// anywhere else: Site health says so).
+func (a *App) BaseURL() string {
+	if a.cfg.BaseURL != "" {
+		return a.cfg.BaseURL
+	}
+	if u := a.cmsURL.Load(); u != nil && *u != "" {
+		return *u
+	}
+	return a.localURL()
+}
+
+// localURL is the address with nothing set: localhost and the port.
+func (a *App) localURL() string {
+	host := a.cfg.Addr
+	if host == "" || strings.HasPrefix(host, ":") {
+		host = "localhost" + host
+	}
+	return "http://" + host
+}
+
+// addressKnown is whether the CMS's address was given (APP_URL or the
+// setting), not guessed.
+func (a *App) addressKnown() bool { return a.BaseURL() != a.localURL() }
 
 // spawn runs fn in the background with ctx's values but the app's lifetime:
 // it isn't cancelled when a request ends, only when the app closes, and

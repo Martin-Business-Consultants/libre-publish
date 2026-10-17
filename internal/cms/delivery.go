@@ -432,7 +432,7 @@ func (a *App) v1Site(c *Ctx) error {
 	return c.deliver(O("name", str(g["title"]), "url", str(g["site_base_url"]), "default_locale", a.defaultLocale(),
 		"locales", a.siteLocales(c.R.Context()), "contact", contact, "plugins", plugins, "plugin_config", config, "api_version", "v1",
 		"image_widths", slices.Clone(deliveryWidths), "branding", a.brandingJSON(c.R.Context(), false)),
-		O("cms_url", a.cfg.BaseURL, "cms_version", a.cfg.Version), nil, "site")
+		O("cms_url", a.BaseURL(), "cms_version", a.cfg.Version), nil, "site")
 }
 
 func (a *App) v1Pages(c *Ctx) error {
@@ -965,6 +965,11 @@ func (a *App) healthChecks(ctx context.Context) []Obj {
 		add("site_url", "fails", "Settings › General has no public site URL: webhooks and the sitemap can only give relative addresses.")
 	} else {
 		add("site_url", "passes", "The public site URL is set.")
+	}
+	if a.addressKnown() {
+		add("cms_url", "passes", "The CMS's own address is set: file and image URLs start with it.")
+	} else {
+		add("cms_url", "fails", "The CMS doesn't know its own address, so file and image URLs start with "+a.BaseURL()+": set Settings › General's CMS address (or APP_URL).")
 	}
 	pages, _ := a.pages(ctx, "status = 'published'")
 	var noDesc, longTitle []string

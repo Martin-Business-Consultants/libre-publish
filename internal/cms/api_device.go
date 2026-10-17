@@ -39,7 +39,7 @@ func (a *App) deviceCode(c *Ctx) error {
 		return err
 	}
 	return c.JSON(200, O("status", "ok", "user_code", string(code), "device_code", device,
-		"verification_url", a.cfg.BaseURL+"/cms/#/connect?code="+string(code), "interval", devicePollInterval,
+		"verification_url", a.BaseURL()+"/cms/#/connect?code="+string(code), "interval", devicePollInterval,
 		"expires_in", int(time.Until(expires.Time).Seconds()), "account", a.tenant()))
 }
 
@@ -155,5 +155,5 @@ func (a *App) deviceToken(c *Ctx) error {
 		}
 		out = append(out, kv{"token", plain}, kv{"purpose", "user"})
 	}
-	return c.JSON(200, append(out, kv{"user", O("name", user.Name, "email", user.Email)}, kv{"account", a.tenant()}, kv{"api_url", a.cfg.BaseURL}))
+	return c.JSON(200, append(out, kv{"user", O("name", user.Name, "email", user.Email)}, kv{"account", a.tenant()}, kv{"api_url", a.BaseURL()}))
 }

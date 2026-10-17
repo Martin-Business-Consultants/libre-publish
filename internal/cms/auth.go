@@ -378,7 +378,7 @@ func (a *App) signIn(c *Ctx, userID int64) (string, error) {
 // setSessionCookie sets the session cookie (maxAge -1 clears it): HttpOnly,
 // SameSite=Lax, and Secure whenever the site is reached over HTTPS.
 func (a *App) setSessionCookie(c *Ctx, value string, maxAge int) {
-	secure := c.R.TLS != nil || (a.cfg.TrustProxy && c.R.Header.Get("X-Forwarded-Proto") == "https") || strings.HasPrefix(a.cfg.BaseURL, "https://")
+	secure := c.R.TLS != nil || (a.cfg.TrustProxy && c.R.Header.Get("X-Forwarded-Proto") == "https") || strings.HasPrefix(a.BaseURL(), "https://")
 	//nolint:gosec // Secure over HTTPS only: a plain-HTTP localhost install couldn't sign in otherwise
 	http.SetCookie(c.W, &http.Cookie{
 		Name: sessionCookie, Value: value, Path: "/", MaxAge: maxAge,

@@ -1,6 +1,9 @@
-// Package datalock keeps two processes off one data directory where that
-// would do harm: `serve` holds DATA_DIR/.lock while it runs, and `import`,
-// which replaces the database and files under it, refuses while it's held.
+// Package datalock keeps an import off a data directory a server is using:
+// `serve` holds DATA_DIR/.lock shared while it runs (two servers may
+// overlap, as a zero-downtime deploy starts the new one before stopping the
+// old; SQLite keeps them straight), and `import`, which replaces the
+// database and files under it, takes it exclusively, so it refuses while
+// any server holds it.
 // The lock is the operating system's (flock, LockFileEx), so it's released
 // when the process ends however it ends: there's no stale lock to clear.
 package datalock
@@ -22,9 +25,16 @@ type Lock struct {
 	f *os.File
 }
 
-// Acquire takes dir's lock without waiting: ErrLocked (wrapped, saying
-// which process holds it when that's known) when another has it.
-func Acquire(dir string) (*Lock, error) {
+// Acquire takes dir's lock for itself without waiting (an import):
+// ErrLocked (wrapped, saying which process holds it when that's known) when
+// another holds it at all.
+func Acquire(dir string) (*Lock, error) { return acquire(dir, true) }
+
+// AcquireShared takes dir's lock alongside other servers without waiting
+// (serve): ErrLocked only when an import holds it.
+func AcquireShared(dir string) (*Lock, error) { return acquire(dir, false) }
+
+func acquire(dir string, exclusive bool) (*Lock, error) {
 	if err := os.MkdirAll(dir, 0o750); err != nil {
 		return nil, err
 	}
@@ -33,7 +43,7 @@ func Acquire(dir string) (*Lock, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := lock(f); err != nil {
+	if err := lock(f, exclusive); err != nil {
 		f.Close()
 		if errors.Is(err, errWouldBlock) {
 			return nil, fmt.Errorf("%w%s", ErrLocked, holder(path))

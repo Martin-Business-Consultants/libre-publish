@@ -212,7 +212,7 @@ func (c *Ctx) pagingHeaders(page, per, total int) {
 		q.Set("page", strconv.Itoa(n))
 		q.Set("per", strconv.Itoa(per))
 		u := url.URL{Path: c.R.URL.Path, RawQuery: q.Encode()}
-		return fmt.Sprintf("<%s%s>; rel=%q", strings.TrimRight(c.App.cfg.BaseURL, "/"), u.String(), rel)
+		return fmt.Sprintf("<%s%s>; rel=%q", strings.TrimRight(c.App.BaseURL(), "/"), u.String(), rel)
 	}
 	links := []string{link(1, "first")}
 	if page > 1 {

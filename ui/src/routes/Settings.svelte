@@ -1,4 +1,5 @@
 <script>
+  import Notice from "../lib/components/Notice.svelte";
   // A settings section: a form over one settings key, with Save.
   import SettingsLayout from "./SettingsLayout.svelte";
   import Panel from "../lib/components/Panel.svelte";
@@ -19,6 +20,7 @@
       ["The site", [
         { name: "title", label: "Site name", type: "string" },
         { name: "site_base_url", label: "Public site URL", type: "url", help: "Where the site lives (https://example.com). Webhooks, the sitemap and \"View site\" use it." },
+        { name: "cms_url", label: "CMS address", type: "url", help: "This CMS's own address (https://cms.example.com): the URLs of images and files it serves start with it. APP_URL, when the server sets it, wins." },
         { name: "default_locale", label: "Default locale", type: "string", help: "Pages in other locales are served under a prefix: /fr/…" },
       ]],
       ["How the site is served", [
@@ -82,6 +84,12 @@
   {#if !data}
     <div class="flex justify-center py-16"><Spinner /></div>
   {:else}
+    {#if section.key === "general" && !data.cms_url && session.can("settings:write")}
+      <Notice tone="warning">
+        The CMS address isn't set, so image and file URLs may start with localhost.
+        <button type="button" class="font-medium underline underline-offset-4" onclick={() => (data.cms_url = location.origin)}>Use {location.origin}</button>, the address you're on, then save.
+      </Notice>
+    {/if}
     {#each section.panels as [title, fields]}
       <Panel {title}><div class="p-6"><FieldsForm {fields} {data} {errors} /></div></Panel>
     {/each}

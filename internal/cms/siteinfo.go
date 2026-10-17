@@ -84,7 +84,7 @@ func (a *App) siteInfo(ctx context.Context) []infoSection {
 	sections := []infoSection{
 		{"Libre Publish", [][2]string{
 			{"version", a.cfg.Version}, {"go", runtime.Version()}, {"os", runtime.GOOS + "/" + runtime.GOARCH},
-			{"up_since", a.startedAt.UTC().Format(time.RFC3339)}, {"cms_url", a.cfg.BaseURL}, {"site_key", strOr(a.cfg.SiteKey, "—")},
+			{"up_since", a.startedAt.UTC().Format(time.RFC3339)}, {"cms_url", a.BaseURL()}, {"site_key", strOr(a.cfg.SiteKey, "—")},
 			{"trust_proxy", yes(a.cfg.TrustProxy)}, {"delivery_rate_limit", a.limiter.Describe()},
 		}},
 		{"Site", [][2]string{

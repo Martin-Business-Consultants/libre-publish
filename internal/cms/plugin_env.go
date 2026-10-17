@@ -35,7 +35,7 @@ func (e pluginEnv) Site(ctx context.Context) (map[string]any, error) {
 	if err != nil {
 		return nil, err
 	}
-	return map[string]any{"name": str(g["title"]), "url": strings.TrimRight(str(g["site_base_url"]), "/"), "locale": e.a.defaultLocale(), "cms_url": e.a.cfg.BaseURL, "contact_email": strOr(str(g["email"]), strOr(str(email["reply_to"]), str(email["from_email"]))),
+	return map[string]any{"name": str(g["title"]), "url": strings.TrimRight(str(g["site_base_url"]), "/"), "locale": e.a.defaultLocale(), "cms_url": e.a.BaseURL(), "contact_email": strOr(str(g["email"]), strOr(str(email["reply_to"]), str(email["from_email"]))),
 		"origins": e.a.siteOrigins(ctx)}, nil
 }
 

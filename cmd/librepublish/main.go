@@ -178,14 +178,8 @@ func parseArgs(name string, args []string, extra func(*flag.FlagSet)) (cms.Confi
 		}
 		rest, args = append(rest, fs.Arg(0)), fs.Args()[1:]
 	}
+	// Unset, the CMS's address is Settings › General's (cms.App.BaseURL).
 	base := strings.TrimRight(*url, "/")
-	if base == "" {
-		host := *listen
-		if strings.HasPrefix(host, ":") {
-			host = "localhost" + host
-		}
-		base = "http://" + host
-	}
 	limit, err := rateLimit(os.Getenv("CMS_DELIVERY_RATE_LIMIT"))
 	if err != nil {
 		return cms.Config{}, nil, err
@@ -252,11 +246,11 @@ func serve(ctx context.Context, stop func(), args []string) (err error) {
 		return err
 	}
 	cfg.Admin = admin.Handler()
-	// One server per data directory, and no import under it.
-	lock, err := datalock.Acquire(cfg.DataDir)
+	// No import under a server (servers may overlap, as a deploy does).
+	lock, err := datalock.AcquireShared(cfg.DataDir)
 	switch {
 	case errors.Is(err, datalock.ErrLocked):
-		return fmt.Errorf("%w: is librepublish already serving %s?", err, cfg.DataDir)
+		return fmt.Errorf("%w: is an import replacing %s?", err, cfg.DataDir)
 	case errors.Is(err, fs.ErrPermission):
 		return fmt.Errorf("%w: the user librepublish runs as (uid %d) can't write to %s; give it that directory", err, os.Getuid(), cfg.DataDir)
 	case err != nil:
@@ -288,7 +282,7 @@ func serve(ctx context.Context, stop func(), args []string) (err error) {
 	}
 	served := make(chan error, 1)
 	go func() { served <- srv.Serve(ln) }()
-	cfg.Logger.Info("libre publish is up", "version", version, "admin", cfg.BaseURL+"/cms/", "data", cfg.DataDir, "addr", ln.Addr().String())
+	cfg.Logger.Info("libre publish is up", "version", version, "admin", app.App().BaseURL()+"/cms/", "data", cfg.DataDir, "addr", ln.Addr().String())
 
 	select {
 	case err := <-served:

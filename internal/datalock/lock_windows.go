@@ -23,9 +23,13 @@ const (
 
 var errWouldBlock = errorLockViolation
 
-func lock(f *os.File) error {
+func lock(f *os.File, exclusive bool) error {
 	var ol syscall.Overlapped
-	r, _, err := procLockFileEx.Call(f.Fd(), lockfileExclusiveLock|lockfileFailImmediately, 0, 1, 0, uintptr(unsafe.Pointer(&ol))) //nolint:gosec // the Win32 call takes the OVERLAPPED's address
+	flags := uintptr(lockfileFailImmediately)
+	if exclusive {
+		flags |= lockfileExclusiveLock
+	}
+	r, _, err := procLockFileEx.Call(f.Fd(), flags, 0, 1, 0, uintptr(unsafe.Pointer(&ol))) //nolint:gosec // the Win32 call takes the OVERLAPPED's address
 	if r == 0 {
 		return err
 	}

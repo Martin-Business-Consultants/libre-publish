@@ -7,9 +7,11 @@ import (
 	"errors"
 	"fmt"
 	"maps"
+	"net/url"
 	"regexp"
 	"strings"
 
+	"github.com/Martin-Business-Consultants/libre-publish/internal/apierr"
 	"github.com/Martin-Business-Consultants/libre-publish/internal/store"
 )
 
@@ -79,6 +81,17 @@ func (a *App) putSetting(ctx context.Context, actor *Actor, key string, data map
 	if prepare := a.beforeSetting[key]; prepare != nil {
 		prepare(merged)
 	}
+	if key == "general" {
+		u, err := cleanCMSURL(str(merged["cms_url"]))
+		if err != nil {
+			return nil, err
+		}
+		if u == "" {
+			delete(merged, "cms_url")
+		} else {
+			merged["cms_url"] = u
+		}
+	}
 	now := store.Now().DB()
 	_, err = a.store.ExecContext(ctx, `INSERT INTO settings (key, data, created_at, updated_at) VALUES (?,?,?,?)
 		ON CONFLICT(key) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at`, key, string(store.MustJSON(merged)), now, now)
@@ -86,10 +99,36 @@ func (a *App) putSetting(ctx context.Context, actor *Actor, key string, data map
 		return nil, err
 	}
 	a.audit(ctx, actor, "setting.updated", "Setting", 0, key, map[string]any{"keys": keysOf(data)})
+	if key == "general" {
+		a.setCMSURL(str(merged["cms_url"]))
+	}
 	if key == "general" || key == brandingKey {
 		a.publish(ctx, change{Tags: []string{"site"}})
 	}
 	return merged, nil
+}
+
+// setCMSURL keeps Settings › General's CMS address for BaseURL.
+func (a *App) setCMSURL(u string) {
+	u = strings.TrimRight(strings.TrimSpace(u), "/")
+	a.cmsURL.Store(&u)
+}
+
+// cleanCMSURL is the CMS address a person typed, as the base URLs start
+// with: an absolute http(s) address, no query or fragment, no trailing
+// slash; "" for none.
+func cleanCMSURL(raw string) (string, error) {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return "", nil
+	}
+	u, err := url.Parse(raw)
+	if err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" || u.RawQuery != "" || u.Fragment != "" || u.User != nil {
+		inv := apierr.Invalid{}
+		inv.Add("cms_url", "must be this CMS's address, like https://cms.example.com")
+		return "", inv.Err()
+	}
+	return strings.TrimRight(u.String(), "/"), nil
 }
 
 func keepMasked(into, old, data map[string]any) {

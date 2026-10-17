@@ -132,7 +132,7 @@ func (a *App) fileURL(as *Asset, variant string) string {
 	if variant != "" {
 		p += "/" + variant
 	}
-	return a.cfg.BaseURL + p + "/" + urlPathEscape(as.Filename)
+	return a.BaseURL() + p + "/" + urlPathEscape(as.Filename)
 }
 
 func urlPathEscape(s string) string { return url.PathEscape(s) }
