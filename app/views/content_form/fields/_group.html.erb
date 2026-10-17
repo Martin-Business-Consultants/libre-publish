@@ -1,5 +1,0 @@
-<%# locals: (field:, value:, scope:, depth:) %>
-<fieldset class="content-group">
-  <legend class="label content-group__legend"><%= content_field_label(field) %></legend>
-  <%= render "content_form/fields", fields: field["of"], values: (value.is_a?(Hash) ? value : {}), scope: scope, depth: depth %>
-</fieldset>

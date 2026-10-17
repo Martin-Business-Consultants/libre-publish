@@ -1,419 +1,145 @@
-# Plugins
+# Plugins: contract v2
 
-A plugin adds to the CMS without the core knowing about it: a Rails engine
-that owns its tables, reaches core records by id, and extends the core only
-through `Cms::Plugins` (`lib/cms/plugins.rb`) and in-process content events.
-Remove its gem and the CMS runs as before. `engines/hello` is the reference;
-this guide walks through it.
+A plugin is a WebAssembly module that uses [Extism](https://extism.org)'s
+ABI. It does what it declared, gets only the capabilities a person granted,
+and nothing else. It doesn't depend on the core's language, so the core can
+change underneath it.
 
-One plugin comes with the core's code, as the reference, and only for
-working on the core: it's in the development and test bundle, so no install
-carries it.
+Why not Rails engines: an engine runs with full access to everything, and it
+reaches into internals, so core can never change them. Plugins written by AI
+for site owners who can't review the code make that the biggest risk the CMS
+carries. A WebAssembly module can only call what the host hands it.
 
-| Plugin | Key | Default | Holds |
-|---|---|---|---|
-| Hello (`engines/hello`) | `hello` | development and test only | The reference plugin |
+## The file
 
-Every install gets the default plugin, Forms; the others are installed from
-their own repositories (below). Media was a plugin too until 1.12, when it
-joined the core: it's still listed in Settings › Plugins (bundled), so it can
-be switched off, and another plugin can provide the media library in its place
-(`provide :media`). An install that still has the cms-media plugin boots
-without it.
+One `.wasm`. Build it with an Extism PDK:
 
-| Plugin | Key | Default | Holds |
-|---|---|---|---|
-| Forms (`cms-plugins/forms`) | `forms` | on | Forms, their emails, the public `/api/forms/:slug/submissions` endpoint, the Submissions inbox, Settings › Forms |
-| Commerce (`cms-plugins/commerce`) | `commerce` | off | Quote requests and the public `/api/quote_requests` endpoint, invoices and their hosted `/i/:token` page, Settings › Commerce |
-| Leads (`cms-leads`) | `leads` | off | Leads from form submissions and quote requests, each with an owner and a next step; playbooks, Needs you, templates, replies drafted by the AI plugin, follow-up emails, `/api/leads`, Settings › Leads |
-| AI (`cms-ai`) | `ai` | off | One AI provider for every plugin (OpenCode Zen, Anthropic, OpenAI, OpenRouter, Ollama), its key set once in Settings › AI, with a monthly token limit; plugins ask it through `Ai.structured` |
-| Market (`cms-market`) | `market` | off | The site's market: competitors' websites read weekly, DataForSEO search data within a monthly budget, Google Maps across a ZIP and radius, findings with exact evidence (`/api/market/findings?since=`), a health report, a plan drafted by the AI plugin, and AI suggestions whose page changes and posts go to Approvals; `/api/market`, Settings › Market |
-| Google (`cms-google`) | `google` | off | One Google sign-in for Search Console, Analytics and Business Profile, synced nightly for Market and the Calendar; `/api/google`, Settings › Google |
-| Calendar (`cms-calendar`) | `calendar` | off | A content calendar: site posts and pages and social posts to Facebook, Instagram, LinkedIn, X and the Business Profile, planned from Market, drafted by the AI plugin, sent when due; `/api/calendar/items`, Settings › Calendar |
-
-## Where plugins live
-
-- **From Settings › Plugins**: an admin gives a plugin's GitHub repository
-  (`owner/name`) under "Add a plugin", and the CMS installs its latest
-  release on the server, in `CMS_DATA_DIR/plugins/<key>`, where it stays
-  through deploys and core updates, then restarts (`PluginChange`,
-  `config/installed_plugins.rb`). Each one installed this way has an Update
-  button (its newest release) and a Remove button (its code goes, its tables
-  stay). These aren't bundled: a plugin's `lib/` goes on the load path and
-  it's required by name, so it may depend only on gems the core bundles, as
-  a plugin built like `engines/hello` does. One the install already bundles
-  (below) wins. `CMS_INSTALLED_PLUGINS=off` boots without them.
-- **Bundled** plugins ship with the core in `engines/<name>`. Only
-  `engines/hello` does, as the reference, and only in development and test.
-- **Installed** plugins live in `plugins/<name>` (ignored by git — they
-  belong to the install, like its data), one repository each:
-
-      bin/rails "plugins:install[https://github.com/org/cms-plugin,v1.0.0]"
-      bin/rails "plugins:update[cms-plugin]"      # or all of them, with no name
-      bin/rails "plugins:remove[cms-plugin]"      # its tables stay
-      bin/rails plugins:list
-
-  Installing clones the repo, then bundles, migrates and asks Puma to
-  restart. A Docker install (Kamal, or a tool that runs it) lists its plugins in the
-  `CMS_PLUGINS` builder secret instead, and each build fetches them into
-  `plugins/` before bundling (`bin/fetch-plugins`, docs/install.md).
-
-  - **Default** plugins are installed ones that every install gets at
-    setup: `config/default_plugins.yml` lists them (Forms and Media), each
-    pinned to the commit the release is tested with (CI runs their specs);
-    `plugins:update` leaves a pinned plugin where it is.
-    `bin/setup` and `bin/install` run `bin/rails plugins:install_defaults`,
-    which installs any that aren't there; a Docker build fetches them along
-    with `CMS_PLUGINS`. They stay ordinary plugins, so an install can go
-    without one or swap it for another: `plugins:remove` it, or list `-forms`
-    in `CMS_PLUGINS`. A Docker install with nothing beyond the defaults sets
-    `CMS_PLUGINS=default`, since some hosts won't keep an empty secret.
-
-  Forms and Commerce, which were part of the core, are installed this way
-  now. Working on one beside the core, keep its repository next to the
-  checkout (`../cms-plugins/forms`) and link it in:
-  `ln -s ../../cms-plugins/forms plugins/forms`.
-
-Plugins aren't in the Gemfile: `config/installed_plugins.rb` loads each at
-boot, from the data directory (installed or updated from Settings ›
-Plugins), then `plugins/` and `themes/` (the image's), then `engines/` (in
-development and test). Where one name is in several, the newest version
-runs, and on a tie the data directory's. So a plugin may depend only on gems
-the core bundles. Each records its GitHub repository in
-`.cms-plugin.json` (`bin/fetch-plugins`, `bin/fetch-theme` and Settings ›
-Plugins write it), which is where its updates come from: a daily check shows
-a newer release in Settings › Plugins and the admin bar, and Update installs
-it into the data directory, over the image's copy.
-Every plugin is off until an administrator switches it on in Settings ›
-Plugins, unless its manifest says `enabled_by_default: true`. Off keeps its
-data.
-
-## The directory
-
-Settings › Plugins and Settings › Themes list the plugins and themes in the
-[plugin directory](https://github.com/Martin-Business-Consultants/libre-publish-plugins),
-reviewed and pinned to a release's commit. The list is signed with the
-directory's Ed25519 key, and the CMS refuses one whose signature doesn't
-match the public key it ships with (`PluginDirectory::PUBLIC_KEY`).
-Installing or updating a listed plugin downloads exactly the pinned commit.
-To list yours, open a pull request there (its README says what's checked).
-A company running its own directory sets `CMS_PLUGIN_DIRECTORY_URL` (the
-JSON, with its signature at the same address plus `.sig`) and
-`CMS_PLUGIN_DIRECTORY_KEY` (the public key, PEM).
-
-## The shape of one
-
-    engines/hello/
-      hello.gemspec
-      lib/hello.rb                  # module Hello; table_name_prefix "hello_"
-      lib/hello/engine.rb           # registration, routes, migrations, event subscribers
-      db/migrate/…_create_hello_greetings.rb
-      app/models/hello/greeting.rb  # records, their concerns, and plain objects
-      app/jobs/hello/…              # shallow: perform calls a model's *_now
-      app/controllers/hello/…       # include PluginGated; plugin :hello
-      app/views/hello/…             # Herb rules as in the core
-      app/assets/stylesheets/hello/hello.css
-
-- **Tables** are prefixed with the plugin's key (`hello_greetings`) and never
-  change core tables. Migrations join the app's (an initializer adds the
-  engine's `db/migrate`), so `db:migrate` runs them. The exception is a
-  feature that moved out of the core into a plugin: its tables predate
-  plugins and keep their names (`forms`, `form_submissions`, `form_emails`,
-  `quote_requests`, `invoices`), as do its model and controller class names
-  (`Form`, `Invoice`), so polymorphic references and audit rows stay valid.
-  Its old migrations stay in the core's `db/migrate`. Such a plugin names
-  them in its manifest (`tables: %w[forms form_submissions]`) so they count as
-  its own. Removing a plugin from Settings › Plugins can delete its data too:
-  the tables named for its key and those it names, the record that its
-  migrations ran, and the settings named for it.
-- **Routes** join the app's route set from an initializer
-  (`app.routes.append { scope "hello", module: "hello", as: "hello" … }`) rather
-  than mounting an isolated engine, so the core's layout and helpers work on
-  plugin pages. Admin pages go under `/cms`, inside `scope path: Cms::PATH`
-  ("/" is the website's), and API routes under `/api/<key>/`, at the root. A
-  plugin that should also run on a core from before `/cms` (1.7 and earlier)
-  guards it: `defined?(Cms::PATH) ? scope(path: Cms::PATH, &admin) : admin.call`.
-- **Controllers** inherit the core's (`ApplicationController`,
-  `Settings::BaseController`, `Api::BaseController`), `include PluginGated`
-  and say `plugin :hello`: every action is a 404 while the plugin is off. They
-  declare capabilities with `requires_capability` like core controllers. An
-  API controller also says `enforce_authorization`: the core's API refuses
-  an action that declares nothing, but keeps a plugin's open until it opts
-  in, as plugins written before that expect. Saying it once on a plugin's
-  own API base controller covers every controller under it (from 1.32.3;
-  before, those were left open, so a plugin that runs on older cores also
-  sets `subclass._skip_authorization = false` in that base's `inherited`).
-- **Behaviour** lives in the plugin's `app/models`, as in the core
-  (STYLE.md): verbs on its records, concerns under `app/models/<model>/`, and
-  plain objects for anything without a record (a client for an outside API,
-  an import pipeline, a report definition). A plugin has no `app/services`;
-  `spec/architecture` fails the build if one appears.
-- **Jobs** are shallow and named for their record (`Invoice::DeliveryJob`):
-  the model has `deliver_later`, which enqueues it, and `deliver_now`, which
-  the job calls. Renaming a job keeps the old class one release as a
-  subclass, so jobs already queued still run.
-- **API responses** are jbuilder views under the plugin's `app/views/api/`;
-  a controller renders JSON itself only for an error body. 
-- **Views** follow the core's frontend rules (STYLE.md: the admin's own
-  classes, named for what a thing is — `panel`, `btn btn--primary`,
-  `field`, `data-table`, `stack`, `badge` — and the core's partials, strict
-  locals, no inline styles); `bin/ci` lints `engines/` with Herb, and the
-  classes spec checks a plugin's views as it does the core's: a class
-  nothing defines fails it, and so does a rule in the plugin's stylesheet
-  that nothing uses. What's the plugin's alone gets a class named for the
-  plugin (`hello-greeting`), drawn in its stylesheet with the admin's
-  tokens (`--gray-*`, `--space-*`, `--radius-*`), so it follows Settings ›
-  Branding and the dark theme. Tailwind's classes and `ui(...)` are gone:
-  a view that still uses them loses its styling, and `ui(...)`
-  raises `NoMethodError`.
-
-## Registering
-
-In the engine's `config.to_prepare` (re-run on every code reload, so it
-replaces rather than duplicates):
-
-    Cms::Plugins.register :hello, name: "Hello", version: "0.1.0", description: "…",
-      author: "…", bundled: true, enabled_by_default: false,
-      requires: ">= 1.0",          # core versions it runs on (VERSION)
-      depends_on: [:forms],        # plugins that must be on too
-      homepage: "https://…"
-
-A plugin whose `requires` this version doesn't meet can't be switched on;
-one whose `depends_on` aren't on is switched on but "waiting". Changes to
-`engine.rb` need a server restart.
-
-What a plugin may call, and how long it keeps working, is in
-docs/compatibility.md: the registrations here are public API, so within a
-major version none is removed or changed in a way that breaks a call. A
-keyword this core doesn't know yet (from a plugin made for a newer one) is
-left out with a warning rather than failing the boot.
-
-`adopt_if: -> { Form.with_discarded.exists? }` is for a feature moved out of
-the core: while nobody has switched the plugin on or off, an install that
-already holds its data gets it switched on (and saved as on), so an upgrade
-never takes a feature away. A check that can't run yet — tables missing
-while the database is being prepared — counts as no. Adopting a plugin also
-switches on the plugins it `depends_on` that nobody has switched either.
-
-## Extension points
-
-| Call | Adds |
-|---|---|
-| `menu key, :id, label:, icon:, group:, path: -> { … }, capability:, after: :globals, group_after: "Content"` | A top-level item in the admin menu (WordPress's `add_menu_page`), with an `icon_tag` name, in a core group (`"Content"`, `"Insights"`, `"Tools"`, `"Access"`) or a new one, which `group_after:` places (else it goes last, before Settings). `after:` is the id of the item it follows; `:start` puts it first. The item goes to `path`, or to its first submenu link when `path` is nil. |
-| `submenu key, :parent, label:, path: -> { … }, capability:, after: "Redirects"` | A link in a top-level item's submenu (`add_submenu_page`): a core item's (`:pages`, `:collections`, `:globals`, `:audit_log`, `:trash`, `:tools`, `:plugins`, `:users`, `:roles`, `:settings`; Media adds `:media`) or a plugin's own. `after:` is the label it follows. A plugin's settings page (`settings`) joins the Settings submenu by itself. |
-| `new_item key, label:, path: -> { … }, capability:, after: "Global"` | An entry in the admin bar's "+ New" menu. |
-| `slot name, key, "partial"` | A partial in a core view: `:nav_actions` (the admin bar, no locals), `:dashboard` (no locals), `:webhook_filters` (the webhook form, `webhook:`), `:content_form` (once on every content editor page, outside its form, no locals), `:content_aside` (under the Publish box of a saved page or entry, `record:`; inside the editor's form, so its controls name a form drawn by `:content_form` with the `form` attribute). |
-| `settings key, label, -> { path }, description:, capability:, group: "Workspace", after: "Brand context"` | A page in Settings (under "Plugins" unless `group:` names another), linked from the plugin's card. Its controller inherits `Settings::BaseController`. |
-| `permissions key, "Group", %w[key:read key:write], after: "Globals", defaults: {editor: […], author: […], site: […], agent: […]}` | Capabilities, offered in the role editor while the plugin is on and kept on roles while it's off; `defaults:` is what the built-in roles start with (`Permissions.defaults_for`) — on a fresh install seeded with the plugin on, or granted the first time someone switches it on (see below). |
-| `counts key, after: :globals, things: -> { Thing.count }` | Counts in `/api/manifest`'s `counts` and the backup summary (`backup: false` for the manifest only). |
-| `manifest_section key, :things, -> { […] }, after: :collections` | A top-level key in `/api/manifest`. |
-| `trashable key, "thing", "Thing", label: "Things", meta: ->(r) { {slug: r.slug} }, after: "entry"` | A soft-deletable model the trash lists, restores and purges (`Trash`). |
-| `hold_api_writes key, ->(write) { … }` | Holds content writes made over the API with a token (the CLI, MCP, a script) instead of applying them: creating, changing or deleting a page, entry or global. The lambda gets a `Cms::Plugins::HeldWrite` (`action`, `record` — unsaved for a create —, `attributes`, `prefix`) and returns what the API answers with 202, or nil to let the write through. While one is on, the bulk content endpoints refuse tokens (409). Approvals (`cms-plugins/approvals`) is the one that does. |
-| `provide key, :name, -> { … }` | Something the core reads if a plugin supplies it (`Cms::Plugins.provided(:name)`, nil otherwise; a lambda is called): Site Health reads `:published_forms` and `:spam_protection` from Forms. |
-| `stylesheet key, "key/name"` | A stylesheet from the engine's `app/assets/stylesheets`, on the pages that show the plugin: its own (its controllers' `plugin :key`), those rendering one of its slots (Media's picker in the content form), and every page when it has a `:nav_actions` slot in the admin bar. |
-| `nightly key, -> { … }` | Work for `PluginsNightlyJob` (1am); a failure is logged and doesn't stop the others. |
-| `minutely key, :name, -> { … }, every: 2` | Work for `PluginsMinutelyJob` (every minute), run on the minutes divisible by `every`; each task is named so one failing doesn't stop another. Keep it to enqueueing a job. |
-| `bootstrap key, -> { … }` | What the plugin sets up on a site: run by `SiteBootstrap` on a fresh install while the plugin is on, the first time someone switches it on in Settings › Plugins, or by `plugins:settle` for a plugin that's on but was never set up (see below). Must be idempotent. |
-| `api key, "/api/key/things", description:` | Lists an endpoint with the plugin in `/api/manifest` (`plugins`), where the CLI and agents find it. |
-| `block_types key, [block type hashes], package: "@org/blocks"` | A block type pack, with the npm package holding its Astro components. |
-| `field_type key, "type", validator: ->(value) { errors }, partial: "…"` | A field type for collection and page schemas. |
-| `deploy_provider key, "provider_key", ProviderClass` | A way to rebuild the site (a `Deploys::Provider` subclass), offered in Settings › Deploy. |
-| `update_strategy key, "via", -> { RunnerClass }` | Another way Settings › Updates can update the install (Update strategies, below). |
-| `webhook_event_filter key, "thing.created", permit: ->(raw) { hash or nil }, validate: ->(value, errors) { … }, match: ->(value, payload) { bool }` | Per-event criteria a webhook stores in `event_filters[event]` (Forms narrows `submission.created` to chosen forms): `permit` is the only shape kept from submitted params, `validate` adds to the webhook's errors, `match` decides a delivery (value nil: no criteria). Pair it with a `:webhook_filters` slot for the form. |
-| `webhook_events key, "Label", %w[thing.created thing.done], after: "submission.created", deploy: false` | Events the plugin announces (`announce("thing.created")` from a model that includes `Eventable`), in `Webhook.events` and `/api/webhooks`. A webhook may subscribe to any installed plugin's events, on or off; the webhook form offers only those of plugins that are on. `deploy: true` makes one schedule a site rebuild. |
-
-A plugin's own Stimulus controllers live in the engine's
-`app/javascript/controllers/<key>/` and load with the admin's: the engine adds
-its `config/importmap.rb` (`pin_all_from … under: "controllers/<key>"`) to
-`config.importmap.paths` and its `app/javascript` to `config.assets.paths`, and
-the controllers are named `<key>--<name>`. Forms does this for its builder
-(`forms--builder`).
-
-The block type pack and field type registries are read-only so far: the core
-lists them (`Cms::Plugins.enabled_block_type_packs` and friends) but doesn't
-yet offer them anywhere.
-
-The first time someone switches a plugin on in Settings › Plugins, the
-built-in roles (Editor, Author, Production site, Agent) get the capabilities
-its `defaults:` names that they don't hold yet, and the audit log records
-`plugin.permissions_granted`. It never revokes, and it doesn't happen on a
-later switch-on — so a capability someone took away stays away.
-
-A plugin that starts on (Forms, Media) is set up with the roles on a fresh
-install. One that arrives later — installed into a running site with
-`plugins:install`, Settings › Plugins or `CMS_PLUGINS`, or adopted by an
-upgrade — is set up by `bin/rails plugins:settle`, which runs after every
-`db:migrate` and `db:prepare` (every way in ends with one): its bootstrap task,
-its block types, and its `defaults:` for each built-in role that holds none of
-its capabilities yet. Each plugin's setup runs once (Setting
-`plugin_setups`), so the site's Production site token can read the forms a
-plugin installed after it was issued.
-
-`after:` puts an addition straight after the item it names (a menu item's id or a submenu label, a
-permission group, a trash kind, a manifest key, a webhook event),
-after earlier additions to the same place; without it, or when that item isn't
-there, the addition goes last; `after: :start` puts it first. It keeps what people read — and what the API
-returns — in the order it had before a feature moved into a plugin.
-
-It may name another plugin's addition — the addition waits for it, so the
-order plugins load in (alphabetically) doesn't matter — and may be a list, the
-first one present winning: Commerce's permission group says
-`after: ["Forms", "Globals"]`, so it follows Forms, or Globals when Forms is
-off.
-
-## Update strategies
-
-Settings › Updates updates an install one of a few ways (`Upgrade.via`): the
-core's `local`, `github` and `in_place`, or `manual`. A plugin adds another —
-through a deploy tool the install runs under, say — with
-`update_strategy :key, "via", -> { Runner }`. `CMS_UPDATES=via` picks it, and
-a production install with `CMS_UPDATES` unset picks the first plugin
-strategy whose runner says it's `configured?`.
-
-A runner is a plain class. On the class:
-
-- `label`, `description` — how Settings › Updates names it;
-- `configured?` — whether this install is set up for it;
-- `unavailable_reason` — why the button can't use it yet, or nil;
-- `redeploys?` (optional) — true when it deploys a new image, so an in-place
-  update that needs one goes through it.
-
-`new(upgrade)` takes the Upgrade record, and the instance answers:
-
-- `start` — ask for the deploy, keeping its handle in `upgrade.external_id`
-  and a link in `external_url`;
-- `check` — follow it, and `upgrade.fail_with(message)` when it fails;
-- `timing_out_since` — when the clock started (nil while it's waiting on a
-  person), and `where_to_look` — where to read why after a timeout;
-- `follow_text`, `note` (optional) — the link's label and a line under it.
-
-Raise a subclass of `Upgrade::Error` for an answer that fails the update.
-The update succeeds when the install boots on the new version.
-
-## The admin menu
-
-The admin is laid out like WordPress's: the admin bar across the top, the
-admin menu down the left in groups, the page beside it
-(`NavigationHelper::ADMIN_MENU`, `layouts/shared/_admin_menu`). A plugin adds
-to it the way a WordPress plugin does. `engines/hello` adds a top-level item
-with its own submenu, a link in the core's Tools submenu, and a "+ New" entry:
-
-```ruby
-Cms::Plugins.menu :hello, :hello, label: "Hello", icon: "reaction", group: "Tools", after: :tools,
-  path: -> { hello_greetings_path }, capability: "hello:read"
-Cms::Plugins.submenu :hello, :hello, label: "Greetings", path: -> { hello_greetings_path }
-Cms::Plugins.submenu :hello, :hello, label: "Settings", path: -> { hello_settings_path }, after: "Greetings"
-Cms::Plugins.submenu :hello, :tools, label: "Hello greetings", path: -> { hello_greetings_path }
-Cms::Plugins.new_item :hello, label: "Greeting", path: -> { hello_greetings_path(anchor: "new_greeting") }
-```
-
-The current item is the one whose links best match the page; it opens with
-its submenu, and every other item's submenu flies out on hover and keyboard
-focus. Everything shows only while the plugin is on and the role holds the
-capability.
-
-A plugin's screens use the same conventions as the core's:
-`layouts/shared/page_header` (the title, its primary action beside it through
-`content_for :page_actions`, then the notices), and for a list
-`layouts/shared/status_links`, `layouts/shared/bulk_actions` (the "Bulk
-actions" select, Apply, and the search box) and `layouts/shared/row_links`
-(Edit | … | Delete under the title).
-
-## Hooks
-
-WordPress's filters and actions. A **filter** changes a value the core is
-about to use: the block gets the value and the hook's context as keywords
-and returns the value, changed or not. Lowest `priority` runs first (10 by
-default).
-
-    Cms::Plugins.filter(:seo_plus, "website.seo") { |seo, record:| seo.merge(title: "#{seo[:title]} | Acme") }
-    Cms::Plugins.filter(:analytics, "website.head") { |html, request:| html + tag.script(src: "…", defer: true) }
-
-| Filter | Value | Context |
+| Language | PDK | Build |
 | --- | --- | --- |
-| `website.seo` | `{title:, description:, canonical:, image:, robots:}` for the `<head>` | `record:` |
-| `website.block` | a block's HTML, as the theme drew it | `block:` |
-| `website.markdown` | Markdown drawn as HTML | `text:` |
-| `website.head` | HTML for the end of `<head>`, after the "scripts" global's | `request:` |
-| `website.body` | HTML for the end of `<body>` | `request:` |
-| `content.publish_refusal` | nil, or why this person may not publish or schedule this page or entry now (a review that hasn't approved it): the save is refused with it, in the editor, the bulk actions and the API alike. Not asked of scheduled publishing, which runs as no one | `record:`, `user:` |
-| `website.scripts` | The "scripts" global's items (hashes: `name`, `head`, `body`, `enabled`) before they're printed, for each part; return the list, changed or not (a consent plugin holds some back) | `part:` ("head" or "body"), `request:` |
-| `sitemap.entries` | the sitemap's rows | |
-| `website.cache_version` | What a cached website page depends on, a list joined into its ETag; add a stamp of anything your plugin draws into a page that the content doesn't cover (Forms adds its forms, so an edited form reaches visitors at once) | |
+| Go | `github.com/extism/go-pdk` | `GOOS=wasip1 GOARCH=wasm go build -buildmode=c-shared -o p.wasm .` |
+| Rust | `extism-pdk` | `cargo build --target wasm32-unknown-unknown --release` |
+| TypeScript/JS | `@extism/js-pdk` | `extism-js plugin.js -i plugin.d.ts -o p.wasm` |
+| Python | `extism-py` | `extism-py plugin.py -o p.wasm` |
 
-HTML a filter returns is escaped unless it's marked safe, as ERB would:
-build it with tag helpers or `safe_join`.
+## Exports
 
-An **action** runs on something that happened, any event below:
+### `manifest` (required)
 
-    Cms::Plugins.on(:hello, "page.published") { |payload| Hello::Greeting.create!(page_url: payload[:data][:url]) }
+It takes no input and outputs JSON:
 
-A plugin announces its own with `Cms::Hooks.run("hello.greeted", greeting:)`,
-and applies its own filters with `Cms::Hooks.apply("hello.greeting", text,
-greeting:)` for other plugins to hook. Hooks run only while their plugin is
-on. One that raises is reported (`Rails.error`) and passed over, so a
-plugin's bug doesn't take a page down. Registering again (a code reload)
-drops the plugin's hooks first, so register them in `config.to_prepare`
-with the rest.
-
-## The admin's language
-
-The admin shows in each person's language (Settings › Account, else the
-workspace's in Settings › General): English, Español, Français or Deutsch.
-Its words are English in the views, passed through `tx` where they're shown,
-and translated from `config/locales/admin/<locale>.yml`, keyed by the English
-itself; a string without a translation shows in English. A plugin's words
-work the same way: wrap them in `tx("…")` (`tx("%{count} waiting", count: n)`
-for values), and ship `config/locales/<locale>.yml` in the engine, which Rails
-loads with the rest:
-
-```yaml
-es:
-  admin_text:
-    "Reviews": "Revisiones"
-    "%{count} waiting": "%{count} en espera"
+```json
+{
+  "key": "visits",
+  "name": "Visits",
+  "version": "1.0.0",
+  "description": "Counts the page views a site reports.",
+  "permissions": { "content:read": true, "storage": true, "http": ["api.example.com"] },
+  "hooks": ["page.published"],
+  "routes": [
+    { "method": "POST", "path": "/hit", "export": "hit", "public": true },
+    { "method": "GET", "path": "/stats", "export": "stats" }
+  ],
+  "admin": { "screens": [ { "id": "stats", "title": "Visits", "source": "/stats",
+    "table": { "rows": "pages", "columns": [ { "key": "path", "label": "Page" }, { "key": "views", "label": "Views" } ] } } ] },
+  "site_config": { "endpoint": "/api/x/visits/hit" }
+}
 ```
 
-Menu labels, submenu links, Settings pages and postbox titles a plugin
-registers are passed through `tx` by the core, so translating them is only
-the YAML.
+- `key`: lowercase letters, digits and `_`. It is the plugin's namespace
+  (storage, routes) and stays the same across versions.
+- `permissions`: what it asks for. Hosts are names (`api.example.com`), never
+  `*` or URLs.
+- `site_config`: what `/api/v1/site` publishes under `plugin_config.<key>`
+  for the site's build.
 
-## Events
+The manifest is read in a sandbox with nothing granted. The plugin is stored
+switched off.
 
-Everything goes out through `Event` (STYLE.md, Events). A plugin's model
-includes `Eventable` and uses the same two calls the core does:
+### `on_event`
 
-    invoice.track_event(:voided)       # an audit row, "invoice.voided"
-    invoice.announce("invoice.paid")   # webhooks, subscribers, in-process
+Each event the plugin hooks arrives as input: `{"event": "page.published",
+"data": {…}}`, where `data` is the webhook payload. Events are delivered in
+the background, so a slow or failing plugin never holds up a save. The
+events are `page.published|updated|unpublished|deleted`,
+`entry.published|updated|unpublished|deleted` and `global.updated`.
 
-`track_event` rows land in the audit log with everyone else's; name the
-action after the model (`eventable_prefix` to keep an older name). Announce
-only events you've registered with `webhook_events`, or a `<kind>.created`
-for in-process listeners.
+### Route exports
 
-Every recorded event is published in-process as `"event.cms"` with
-`{action:, target:, particulars:}`. Every webhook event — `page.published`,
-`page.updated`, `page.unpublished`, `page.deleted`, the same four for
-`entry`, `global.updated`, and what plugins add with `webhook_events`
-(Forms' `submission.created`, Commerce's `quote_request.created`,
-`invoice.sent`, `invoice.paid`) — is published as `"<event>.cms"` with
-`{event:, data:}` (`data` is the webhook payload). `page.created` and
-`entry.created` are published the same way, with `record:` too. A
-subscriber checks that its plugin is on:
+A route is served at `/api/x/<key><path>`. The export gets:
 
-    ActiveSupport::Notifications.subscribe("page.published.cms") do |event|
-      next unless Cms::Plugins.enabled?(:hello)
+```json
+{ "method": "POST", "path": "/hit", "query": {…}, "headers": {"Content-Type": "…"},
+  "body": "<the request body, up to 1 MB>", "ip": "…",
+  "actor": { "name": "…", "type": "User|ServiceToken", "capabilities": [ … ] } }
+```
 
-      Hello::Greeting.record_publication
-    end
+`actor` is `null` on a public route called by no one signed in. A route
+that isn't `public` needs a caller with `plugins:read`.
 
-## Testing
+It answers `{"status": 200, "headers": {…}, "body": "…"}`. Any other output
+is sent as JSON with a 200. `Set-Cookie` is dropped, and every answer is
+served with `Content-Security-Policy: sandbox`, so a plugin can't run script
+as the CMS's origin.
 
-A bundled plugin's specs live with the core's
-(`spec/requests/plugins/hello_spec.rb`); an installed one keeps its own in
-its repository's `spec/`, written against the core's `rails_helper`, and they
-run from the core checkout with the plugin in `plugins/`:
-`bin/rspec plugins/forms/spec`. In either,
-`switch_plugin :hello, on: true` turns one on for an example, and
-`forget_plugin :key` removes a plugin a spec registered itself
-(`spec/support/plugin_registry.rb`).
+## The host's capabilities
+
+These are imports from `extism:host/user`. Each one takes a string and
+returns JSON (memory offsets, Extism's convention). One that wasn't granted
+answers `{"error": "lp_kv_set wasn't granted to this plugin"}` instead of
+trapping.
+
+| Import | Needs | Input | Output |
+| --- | --- | --- | --- |
+| `lp_log` | always | a message | `{"ok": true}` |
+| `lp_content` | `content:read` | `{"page": "about"}`, `{"pages": true}`, `{"collection": "posts"}`, `{"collection": "posts", "entry": "hello"}` or `{"global": "nav"}` | live content, shaped as `/api/v1` shapes it |
+| `lp_kv_get` | `storage` | a key | `{"found": bool, "value": "…"}` |
+| `lp_kv_set` | `storage` | `{"key": "…", "value": "…"}` (value ≤ 1 MB, ≤ 100,000 keys) | `{"ok": true}` |
+| `lp_kv_delete` | `storage` | a key | `{"ok": true}` |
+| `lp_kv_list` | `storage` | a key prefix | `{"keys": […]}` (≤ 1000) |
+| Extism `http_request` | `http` | the PDK's HTTP call | only to granted hosts, responses ≤ 4 MB |
+
+Storage is the plugin's own (`plugin_kv`, keyed by its `key`). Other plugins
+can't see it, and it survives upgrades. Removing a plugin keeps its storage
+unless removal is asked to purge it.
+
+Limits: each call gets a fresh instance, 10 seconds, and 64 MB of memory.
+
+## Installing, granting, upgrading
+
+```
+POST   /api/plugins            the .wasm as the body (or multipart "file")   plugins:write
+PATCH  /api/plugins/<key>      {"plugin": {"granted": {…}, "enabled": true}}  plugins:write
+DELETE /api/plugins/<key>[?purge_data=1]                                      plugins:write
+GET    /api/plugins[/<key>]                                                   plugins:read
+```
+
+A grant is never wider than what's asked: granting more than the manifest
+requests grants what it requests. Uploading a new version of an installed
+plugin keeps the grants it still asks for. If it asks for more, it stays off
+until someone grants the rest. A plugin that fails to load is left off and
+logged, never fatal, so plugins can't break the site.
+
+## Admin screens, as data
+
+The admin draws what `admin.screens` describes. Today that's a table filled
+from one of the plugin's GET routes (`source`), with the rows under
+`table.rows` and the columns as listed. Forms (fields in the CMS's own field
+DSL, posted to a route) come next. A sandboxed iframe served from a route is
+the escape hatch for what data can't describe.
+
+## Porting the Rails engines
+
+The engines map onto this contract like this:
+
+- **Forms**: a form's definition in storage, a public `POST /submit` route
+  (honeypot and captcha checks via `http` to the captcha provider's host),
+  submissions in storage, an admin table of submissions, `site_config`
+  publishing each form's fields and action.
+- **Commerce (quotes and invoices)**: a public `POST /quote` route, quotes and
+  invoices in storage, and admin screens. Sending an invoice needs email,
+  which is a host capability still to add (`lp_mail`, granted per plugin,
+  sent through the install's mail settings).
+- **Leads, AI, Market**: these need `content:read`, storage and `http` to
+  their APIs. AI's writes to content need a `content:write` capability that
+  goes through the same publish gate as any other writer, so its writes to
+  live content come back as revisions.

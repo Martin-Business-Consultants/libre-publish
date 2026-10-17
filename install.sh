@@ -1,0 +1,67 @@
+#!/bin/sh
+# Installs Libre Publish: one file, for this machine, from the latest
+# release (or LIBREPUBLISH_VERSION=v2.0.0), checked against the release's
+# checksums.
+#
+#   curl -fsSL https://raw.githubusercontent.com/Martin-Business-Consultants/libre-publish/go-rewrite/install.sh | sh
+#
+# It goes to /usr/local/bin when that's writable, else ~/.local/bin
+# (LIBREPUBLISH_DIR=… to choose).
+set -eu
+
+repo="Martin-Business-Consultants/libre-publish"
+version="${LIBREPUBLISH_VERSION:-latest}"
+
+case "$(uname -s)" in
+  Linux) os=linux ;;
+  Darwin) os=darwin ;;
+  *) echo "librepublish: no build for $(uname -s); on Windows, download librepublish-windows-amd64.exe from https://github.com/$repo/releases" >&2; exit 1 ;;
+esac
+case "$(uname -m)" in
+  x86_64 | amd64) arch=amd64 ;;
+  arm64 | aarch64) arch=arm64 ;;
+  *) echo "librepublish: no build for $(uname -m)" >&2; exit 1 ;;
+esac
+
+if [ -n "${LIBREPUBLISH_BASE_URL:-}" ]; then
+  base="$LIBREPUBLISH_BASE_URL" # a mirror, or a local dist/ to test with
+elif [ "$version" = latest ]; then
+  base="https://github.com/$repo/releases/latest/download"
+else
+  base="https://github.com/$repo/releases/download/$version"
+fi
+file="librepublish-$os-$arch"
+
+if [ -n "${LIBREPUBLISH_DIR:-}" ]; then
+  dir="$LIBREPUBLISH_DIR"
+elif [ -w /usr/local/bin ]; then
+  dir=/usr/local/bin
+else
+  dir="$HOME/.local/bin"
+fi
+mkdir -p "$dir"
+
+tmp="$(mktemp -d)"
+trap 'rm -rf "$tmp"' EXIT
+echo "Downloading $file ($version)…"
+curl -fsSL "$base/$file" -o "$tmp/$file"
+curl -fsSL "$base/checksums.txt" -o "$tmp/checksums.txt"
+
+expected="$(grep " $file\$" "$tmp/checksums.txt" | cut -d' ' -f1)"
+if command -v sha256sum >/dev/null 2>&1; then
+  actual="$(sha256sum "$tmp/$file" | cut -d' ' -f1)"
+else
+  actual="$(shasum -a 256 "$tmp/$file" | cut -d' ' -f1)"
+fi
+if [ -z "$expected" ] || [ "$expected" != "$actual" ]; then
+  echo "librepublish: the download doesn't match the release's checksum; not installing it." >&2
+  exit 1
+fi
+
+chmod +x "$tmp/$file"
+mv "$tmp/$file" "$dir/librepublish"
+echo "Installed $("$dir/librepublish" version) at $dir/librepublish"
+case ":$PATH:" in *":$dir:"*) ;; *) echo "Add $dir to your PATH to run it as \`librepublish\`." ;; esac
+echo
+echo "Start it:  librepublish serve --data ./data"
+echo "Then open http://localhost:8080/cms/ and make the first administrator."

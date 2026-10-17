@@ -6,8 +6,8 @@ Webhooks (or `cms webhooks`), choose its events, and the CMS POSTs to its URL
 each time one happens.
 
 What a receiver can rely on is pinned in
-`spec/fixtures/contracts/webhook_contract.json`, and
-`spec/contracts/webhook_contract_spec.rb` holds the CMS to it.
+`contracts/webhook_contract.json`, and
+the tests in `internal/cms` hold the CMS to it.
 
 ## The request
 

@@ -8,16 +8,18 @@ management).
 Authenticate with the site's service token (Settings › Service tokens, the
 "Production site" role): `Authorization: Bearer <token>`.
 
-## On, off, or some of it
+## On, or some of it
 
-It's off unless the site is served over the API: Settings › General › How
-the site is served.
+This CMS is headless, so the delivery API is on. Settings › General › How
+the site is served chooses how much it serves:
 
 | Mode | The delivery API |
 | --- | --- |
-| **Website** (the default) | Off: `/api/v1` and the frontend's endpoints (`/api/frontend`, `/frontend/…`) answer 404. The theme draws the site. |
-| **Website + API** | What's chosen: each collection that's "Available over the API" (its settings, or General), and the pages with the globals, all or none. The rest answers 404. |
-| **API only** | Everything live. The theme is off, and the CMS's own address shows a blank page (`robots.txt` disallows all; `sitemap.xml` is the frontend's, from `/api/v1/sitemap`). |
+| **API only** (the default) | Everything live. The CMS's own address shows a blank page, and `robots.txt` disallows all. |
+| **Website + API** | What's chosen: each collection that's "Available over the API", and the pages with the globals (`api_pages`), all or none. The rest answers 404. |
+
+A database moved over from the Rails core with **Website** set is served as
+**Website + API**.
 
 The management API (`/api/pages`… for the `cms` CLI, MCP and agents) is on
 in every mode, as are the Forms plugin's public submissions and webhooks. A
@@ -76,7 +78,7 @@ use `/api/v1`.
 
 | Endpoint | What |
 |---|---|
-| `GET /api/v1/site` | Name, public URL, `default_locale`, `locales` (every one but the default is a path prefix: `/fr/…`), contact details, enabled plugins, and `plugin_config` (Forms: its captcha; Commerce: where quote requests post). `meta.cms_url` is the CMS's own address (`APP_HOST`), which asset URLs start with. |
+| `GET /api/v1/site` | Name, public URL, `default_locale`, `locales` (every one but the default is a path prefix: `/fr/…`), contact details, enabled plugins, and `plugin_config` (Forms: its captcha; Commerce: where quote requests post). `meta.cms_url` is the CMS's own address (`APP_URL`), which asset URLs start with. |
 | `GET /api/v1/content[?since=<cursor>]` | Every live page (blocks expanded), entry and global — or, with a previous read's `meta.cursor`, only what changed, plus `data.removed` (what stopped being live). `meta.full: true` means replace what you have. A cursor older than 30 days gets a full answer. |
 | `GET /api/v1/pages[?locale=]`, `/api/v1/pages/<path>` | Live pages, blocks expanded (below), with `translations: [{locale, path}]`. |
 | `GET /api/v1/collections`, `/collections/<slug>` | Collections and their fields. |

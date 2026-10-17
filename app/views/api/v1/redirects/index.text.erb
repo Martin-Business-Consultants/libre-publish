@@ -1,3 +1,0 @@
-<% @redirects.each do |redirect| -%>
-<%= redirect.source_path %> <%= redirect.wildcard && redirect.destination_url.end_with?("/*") ? redirect.destination_url.delete_suffix("*") + ":splat" : redirect.destination_url %> <%= redirect.status_code %>
-<% end -%>

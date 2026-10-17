@@ -1,7 +1,0 @@
-/* A role's permissions (roles/_form): a box per group of capabilities, its
-   tick-all on top. */
-@layer components {
-  .permission-group {
-    padding: var(--space-4);
-  }
-}
