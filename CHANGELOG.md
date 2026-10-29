@@ -8,6 +8,11 @@ out.
 
 ## Unreleased
 
+### Fixed
+- **Send test email** (Settings › Email delivery) could spin without end when
+  the mail server never answered. It now gives up after 20 seconds and says
+  which server and port didn't answer; any other failure names them too.
+
 ## 1.33.2
 
 ### Fixed

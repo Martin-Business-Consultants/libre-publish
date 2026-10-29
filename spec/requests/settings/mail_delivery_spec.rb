@@ -50,6 +50,13 @@ RSpec.describe "Settings › Email delivery", type: :request do
     expect(flash[:alert]).to include("didn't send", "535")
   end
 
+  it "gives up on a server that never answers, and says which one" do
+    Setting.set("mail_delivery", {"address" => "smtp.example.com", "security" => "ssl"})
+    allow_any_instance_of(Mail::Message).to receive(:deliver).and_raise(Timeout::Error)
+    post settings_mail_delivery_test_path
+    expect(flash[:alert]).to include("didn't send", "smtp.example.com:465", "didn't answer")
+  end
+
   it "isn't the sender's place: that's Settings › Forms alone" do
     get settings_general_path
     expect(response.body).not_to include("Email sender", "email_from_name")
