@@ -8,6 +8,15 @@ out.
 
 ## Unreleased
 
+### Fixed
+- **Form emails came out in the wrong theme's design** on an install with
+  more than one theme installed: a theme switched off in Settings › Plugins
+  could draw every form email (and its block partials) in place of the theme
+  drawing the site, because each installed theme's views sat on every
+  controller's path and the email renderer never put the site's theme first.
+  `Website.render` now looks in the theme drawing the site first, as a visit
+  to a page does.
+
 ## 1.33.3
 
 ### Fixed

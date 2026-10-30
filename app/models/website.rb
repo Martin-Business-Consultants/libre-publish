@@ -70,9 +70,21 @@ module Website
     return unless draws?(template)
 
     uri = URI.parse(Setting.get("general")["site_base_url"].presence || "#{Rails.configuration.x.app_protocol || "https"}://#{Site.host}")
-    renderer = Website::PagesController.renderer.new(http_host: [uri.host, uri.port].join(":"), https: uri.scheme == "https")
+    renderer = renderer_for(theme).new(http_host: [uri.host, uri.port].join(":"), https: uri.scheme == "https")
     renderer.render(template: template, locals: locals, layout: false)
   end
+
+  # Website::PagesController with the theme's views looked in first, as a
+  # visit has them (its before_action, which a renderer doesn't run). Without
+  # it the template and its partials came from whichever installed theme's
+  # engine put its views first on every controller's path: a switched-off
+  # theme drew the site's emails. Made afresh each time, not kept, so it
+  # never holds on to a PagesController that code reloading has replaced.
+  def renderer_for(theme)
+    views = theme.views
+    Class.new(Website::PagesController) { prepend_view_path views }.renderer
+  end
+  private_class_method :renderer_for
 
   # What a cached page depends on: the content (DeliveryVersion), the theme
   # drawing it, its design settings, and what plugins add (the
