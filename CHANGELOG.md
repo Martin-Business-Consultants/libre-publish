@@ -8,6 +8,8 @@ out.
 
 ## Unreleased
 
+## 1.33.4
+
 ### Fixed
 - **Form emails came out in the wrong theme's design** on an install with
   more than one theme installed: a theme switched off in Settings › Plugins
