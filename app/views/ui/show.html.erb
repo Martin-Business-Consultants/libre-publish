@@ -414,6 +414,25 @@
       </header>
     </dialog>
 
+    <h3 class="ui-card__title">The admin's own pieces</h3>
+    <dl class="fact-list">
+      <dt>Status</dt><dd><%= ui_status_badge "published" %></dd>
+      <dt>Updated</dt><dd>2 hours ago</dd>
+    </dl>
+    <dl class="fact-list fact-list--wide">
+      <dt>A longer label</dt><dd>fact-list--wide gives labels 10rem.</dd>
+    </dl>
+    <div class="ui-styleguide__row">
+      <button type="button" class="ui-button ui-button--outline" command="show-modal" commandfor="sg-sheet-wide">Half-window sheet</button>
+      <button type="button" class="ui-button ui-button--outline" command="show-modal" commandfor="sg-sheet-md">36rem sheet</button>
+    </div>
+    <dialog class="ui-sheet app-sheet--wide" id="sg-sheet-wide" closedby="any" aria-label="Half-window sheet">
+      <header class="ui-dialog__header"><h2 class="ui-dialog__title">Half the window</h2></header>
+    </dialog>
+    <dialog class="ui-sheet app-sheet--md" id="sg-sheet-md" closedby="any" aria-label="36rem sheet">
+      <header class="ui-dialog__header"><h2 class="ui-dialog__title">36rem wide</h2></header>
+    </dialog>
+
     <div class="ui-toaster">
       <div class="ui-toast" role="status"><%= icon_tag "check-circle" %> A toast, as the flash draws it</div>
       <div class="ui-toast ui-toast--error" role="alert"><%= icon_tag "close-circle" %> An alert's toast</div>

@@ -59,8 +59,8 @@ module PaginationHelper
   #   <%= table_empty_row "No pages yet.", columns: 5 if @pages.none? %>
   #   <%= table_empty_row "No pages match.", columns: 5, link: ["Show all", pages_path] %>
   def table_empty_row(message, columns:, link: nil)
-    tag.tr do
-      tag.td colspan: columns, class: "data-table__empty" do
+    tag.tr class: "ui-data-table__empty" do
+      tag.td colspan: columns do
         safe_join([message, (link_to(link.first, link.last, class: "link") if link)].compact, " ")
       end
     end

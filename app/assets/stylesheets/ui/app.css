@@ -35,4 +35,40 @@
     inline-size: 2rem;
     place-items: center;
   }
+
+  /* A record's facts, labels beside values (<dl class="fact-list">): the labels muted, the
+  /* values in the text's colour. --wide for longer labels. */
+  .fact-list {
+    display: grid;
+    font-size: var(--text-normal);
+    gap: 0.5rem 1rem;
+    grid-template-columns: 6rem minmax(0, 1fr);
+    margin: 0;
+
+    dt {
+      color: var(--muted-foreground);
+    }
+
+    dd {
+      margin: 0;
+      min-inline-size: 0;
+      overflow-wrap: anywhere;
+    }
+  }
+
+  .fact-list--wide {
+    grid-template-columns: 10rem minmax(0, 1fr);
+  }
+
+  /* A sheet that takes half the window (an editor's sheet: a redirect, a webhook). The kit's
+  /* sheet is 24rem at most; this one is half the window, at least 36rem where there's room. */
+  .ui-sheet.app-sheet--wide {
+    inline-size: max(50vw, min(36rem, 100vw));
+    max-inline-size: 100vw;
+  }
+
+  .ui-sheet.app-sheet--md {
+    inline-size: min(36rem, 100vw);
+    max-inline-size: 100vw;
+  }
 }

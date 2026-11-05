@@ -47,15 +47,5 @@
     text-align: end;
   }
 
-  .data-table .data-table__empty {
-    color: var(--muted-foreground);
-    padding-block: var(--space-12);
-    text-align: center;
-  }
-
-  .data-table tbody tr:has(.data-table__empty):hover {
-    background-color: transparent;
-  }
-
 }
 
