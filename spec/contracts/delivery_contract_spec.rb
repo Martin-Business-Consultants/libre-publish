@@ -197,6 +197,16 @@ RSpec.describe "Delivery contract (the Go core's, for @librepublish/astro)", typ
       expect(CollectionEntry.find_by!(slug: "first-post").frontmatter).to include("retired_field" => "left over")
     end
 
+    it "gives files at the Go core's addresses, which the integration allows and copies: <CMS>/files/<key>/[w<width>/]<name>" do
+      get "/api/v1/pages/home", headers: token
+      theirs = go("delivery/page-home.json").dig("included", "assets", "1")
+      ours = json.dig("included", "assets").values.first
+      pattern = ->(url) { url.sub(%r{\Ahttps?://[^/]+/files/[^/]+/}, "/files/<blob>/") }
+
+      expect(pattern.(ours["url"])).to eq(pattern.(theirs["url"]))
+      expect(ours["variants"].transform_values(&pattern)).to eq(theirs["variants"].transform_values(&pattern))
+    end
+
     it "answers OPTIONS on a resource with its JSON Schema" do
       process :options, "/api/v1/collections/posts/entries", headers: token
 

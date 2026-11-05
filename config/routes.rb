@@ -20,6 +20,11 @@ Rails.application.routes.draw do
   # Where browsers report what a Content-Security-Policy blocked (Settings › Security policy).
   post "csp-reports", to: "csp_reports#create", as: :csp_reports
 
+  # A media library file, and an image's renditions, at the address the
+  # delivery API gives sites (FilesController, Asset::Delivery).
+  get "files/:key(/:rendition)/:filename", to: "files#show", as: :delivered_file, format: false,
+    constraints: {key: /[a-z0-9]{20,64}/, rendition: /w\d{2,4}/, filename: %r{[^/]+}}
+
   # Public sitemap for search engines.
   get "sitemap.xml", to: "sitemaps#xml", as: :sitemap_xml, defaults: {format: :xml}
 
