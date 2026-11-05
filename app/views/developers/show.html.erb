@@ -34,28 +34,28 @@
 
     <% if Serving.api? then %>
     <%= postbox "developers-astro", "Connect an Astro site" do %>
-      <p class="text-body">Run this in the site's project (its root or its <code class="code">src/</code>). It installs the <code class="code">@librepublish/astro</code> integration and gets the site a read-only token of its own, approved in your browser.</p>
+      <p class="text-body">Run this in the site's project (its root or its <code class="code">src/</code>). It installs the <code class="code">@librepublish/astro</code> integration, gets the site a read-only token of its own, approved in your browser, and writes this CMS's section of the site's <code class="code">AGENTS.md</code>: how the site works with this CMS, and what the integration enforces (<%= link_to "read it", frontend_agents_md_path, class: "link", target: "_blank", rel: "noopener" %>).</p>
       <div class="row">
         <code class="code-block code-block--wrap grow">curl -fsSL <%= cms_url %>/frontend/install.sh | sh</code>
         <%= copy_button "curl -fsSL #{cms_url}/frontend/install.sh | sh" %>
       </div>
       <div class="prose">
-        <p>Then add <code class="code">cms()</code> to <code class="code">astro.config</code>. From then on, every <code class="code">astro dev</code> and <code class="code">astro build</code>:</p>
+        <p>Then add <code class="code">cms()</code> to <code class="code">astro.config</code> and pin this CMS's schema with <code class="code">npx librepublish-astro sync</code> (<code class="code">cms.lock.json</code>: commit it). From then on, every <code class="code">astro check</code> and <code class="code">astro build</code>:</p>
         <ul>
-          <li>loads pages, entries and globals through content collections, and types them from this CMS's schema;</li>
-          <li>writes <code class="code">AGENTS.md</code> in the site's repo: how the site works with this CMS, and the Site health checks it's held to (<%= link_to "read it", frontend_agents_md_path, class: "link", target: "_blank", rel: "noopener" %>);</li>
-          <li>after a build, writes <code class="code">_redirects</code>, <code class="code">sitemap.xml</code> and <code class="code">robots.txt</code>, checks Site health, and reports the build here.</li>
+          <li>stops when this CMS's schema has moved since the lock, until the site is synced and checked against it;</li>
+          <li>loads pages, entries and globals through content collections and checks every record against the schema, and types them from it: every block type needs a component;</li>
+          <li>after a build, writes <code class="code">_redirects</code> (this CMS's redirects, and only those), <code class="code">sitemap.xml</code> and <code class="code">robots.txt</code>, checks Site health and its launch checklist, and reports the build here (Settings › Deploy).</li>
         </ul>
       </div>
       <details class="developers__by-hand">
         <summary class="developers__by-hand-summary">Or by hand</summary>
         <div class="developers__by-hand-body stack stack--sm">
-          <pre class="code-block code-block--wrap">npm install @librepublish/astro@github:Martin-Business-Consultants/libre-cms-astro</pre>
+          <pre class="code-block code-block--wrap">npm install @librepublish/astro@github:Martin-Business-Consultants/librepublish-astro</pre>
           <pre class="code-block code-block--wrap">// astro.config.mjs
 import cms from "@librepublish/astro";
 export default defineConfig({ integrations: [cms()] });</pre>
           <code class="code-block code-block--wrap">CMS_BASE_URL=<%= cms_url %>  CMS_API_TOKEN=&lt;a service token&gt;</code>
-          <p class="help">Forms, Media and Commerce come with it. The source: github.com/Martin-Business-Consultants/libre-cms-astro.</p>
+          <p class="help">Blocks, images, rich text, SEO, branding and forms come with it. The source: github.com/Martin-Business-Consultants/librepublish-astro.</p>
         </div>
       </details>
     <% end %>

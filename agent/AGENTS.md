@@ -49,6 +49,21 @@ cms patch /settings/github '{"setting":{"data":{"frontend_github_repo":"owner/na
 Store it as `owner/name`, not a URL. The `token` under that same key reads back
 masked (`***abcd`) — that's deliberate, and it doesn't affect the repo field.
 
+The site is built with `@librepublish/astro`, which holds it to this CMS's
+schema; its AGENTS.md says how (`__CMS_URL__/frontend/AGENTS.md`). What that
+means for a change you make here:
+
+- **A change to block types, collections, globals or a page's fields moves
+  the schema** (`cms get /v1/schema` → `meta.schema_digest`), and the site's
+  next build stops until someone runs `npx librepublish-astro sync` and
+  `npx astro check` in the site repo and commits `cms.lock.json` with the
+  fixes. Make that change and the site's in one piece of work — a new block
+  type needs its component — or say plainly that the site needs it.
+- **Redirects belong here** (`cms redirect add`), never in the site repo: a
+  site that defines its own fails its build.
+- **The site renders only declared fields**: a value under a field that
+  isn't in the schema isn't delivered. Add the field, then the value.
+
 ## The CMS
 
 ```sh

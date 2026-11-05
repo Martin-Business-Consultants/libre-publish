@@ -19,6 +19,7 @@
 #   redirects                   the redirect rules
 #   robots                      robots.txt
 #   site                        the site's name, URL and contact details (/api/v1/site)
+#   schema                      the delivery schema (/api/v1/schema, schema.changed)
 module Deploys::Change
   module_function
 
