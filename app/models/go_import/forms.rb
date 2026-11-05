@@ -9,18 +9,27 @@
 #   sub:<slug>:<id>    a submission: values, status, address, browser
 #   all:<id>, stat:<slug>   indexes and counts, rebuilt here from the rows
 #
-# Each form keeps its slug, name, fields (as the Go builder wrote them, which
-# the Rails plugin reads by the same names), submit label and thank-you;
-# "active" is published, anything else a draft. The email to the site's
-# people is its "notification" and the one to the visitor its
-# "confirmation", merge tags written the Rails plugin's way. Submissions keep
-# their answers, address, browser, page and status.
+# Each form keeps its slug, name, submit label and thank-you; "active" is
+# published, anything else a draft. Its fields keep their names, labels,
+# help and whether they're required; the types the Rails plugin has keep
+# theirs (a choice's options become its {value, label} pairs), and the rest
+# become text fields (a heading, which asks nothing, goes), each named. The
+# email to the site's people is its "notification" and the one to the
+# visitor its "confirmation", written as the Rails plugin's email blocks:
+# the message as a Text block, {{ all_fields }} as the Submission answers
+# block, merge tags written its way. Submissions keep their answers,
+# address, browser, page and status.
 #
 # Only when this install has the Forms plugin's tables: without them, and
 # for every other plugin's records, what the Go plugins kept is returned for
 # the import to write to a file beside the database, and reported.
 class GoImport::Forms
   TAGS = {"form_name" => "form_title", "date" => "submitted_at"}.freeze
+  # The Rails plugin's field types (FormValidator::FIELD_TYPES), from the Go one's.
+  TYPES = %w[text email tel url textarea select radio checkbox file].index_with(&:itself).freeze
+  OPTIONED = %w[select radio].freeze
+  FIELD_KEYS = %w[name label type required placeholder help default rows max_length accept].freeze
+  ALL_FIELDS = /<p>\s*\{\{\s*all_fields\s*\}\}\s*<\/p>|\{\{\s*all_fields\s*\}\}/
 
   def initialize(db, report:, tables:)
     @db = db
@@ -76,7 +85,7 @@ class GoImport::Forms
 
   def insert_form(slug, form)
     @report.forms[:forms] += 1
-    values = [slug, form["name"].presence || slug, (form["status"] == "active") ? "published" : "draft", JSON.generate(fields(form)),
+    values = [slug, form["name"].presence || slug, (form["status"] == "active") ? "published" : "draft", JSON.generate(fields(slug, form)),
       form["submit_label"].presence || "Submit", form["success_message"], time(form["created_at"]), time(form["updated_at"])]
     @db.execute("INSERT INTO forms (slug, title, status, fields, submit_label, success_message, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", values)
     id = @db.last_insert_row_id
@@ -85,8 +94,21 @@ class GoImport::Forms
     id
   end
 
-  def fields(form)
-    Array(form["fields"]).filter_map { it.except("id") if it.is_a?(Hash) }
+  def fields(slug, form)
+    Array(form["fields"]).filter_map do |field|
+      next unless field.is_a?(Hash)
+
+      label = field["label"].presence || field["text"].presence || field["name"]
+      if field["type"] == "heading"
+        @report.not_carry("form #{slug}: its heading #{label.to_s.inspect} (the Forms plugin here has no headings)")
+        next
+      end
+      type = TYPES[field["type"]]
+      @report.not_carry("form #{slug}: field #{field["name"]} was a #{field["type"]} field, and is a text field here") unless type
+      field.slice(*FIELD_KEYS).merge("type" => type || "text", "label" => label).tap do |out|
+        out["options"] = Array(field["options"]).map { {"value" => it.to_s, "label" => it.to_s} } if OPTIONED.include?(type)
+      end.compact_blank
+    end
   end
 
   def emails(id, form)
@@ -97,8 +119,8 @@ class GoImport::Forms
       next if subject.blank? && body.blank? && recipients.blank?
 
       now = time(form["updated_at"])
-      @db.execute("INSERT INTO form_emails (form_id, kind, enabled, recipients, from_field, subject, body, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        [id, kind, enabled ? 1 : 0, recipients.presence, from_field, tags(subject.to_s), tags(body.to_s), now, now])
+      @db.execute("INSERT INTO form_emails (form_id, kind, enabled, recipients, from_field, subject, body, blocks, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, '', ?, ?, ?)",
+        [id, kind, enabled ? 1 : 0, recipients.presence, from_field, tags(subject.to_s), JSON.generate(blocks(tags(body.to_s))), now, now])
       @report.forms[:emails] += 1
     end
   end
@@ -111,6 +133,18 @@ class GoImport::Forms
       [form_id, JSON.generate(submission["values"] || {}), submission["ip"].presence, JSON.generate(meta), at, at])
     @report.forms[:submissions] += 1
   end
+
+  # The message as Text blocks, split where {{ all_fields }} stood by the
+  # Submission answers block.
+  def blocks(html)
+    parts = html.split(ALL_FIELDS, -1)
+    parts.each_with_index.flat_map do |part, i|
+      text = part.strip.empty? ? [] : [block("email_text", "body" => part.strip)]
+      (i < parts.size - 1) ? text + [block("email_submission", "title" => "Submission details", "skip_empty" => false)] : text
+    end
+  end
+
+  def block(type, data) = {"id" => SecureRandom.uuid, "type" => type, "version" => 1, "data" => data}
 
   # {{ form_name }} as {{form_title}}; a field's {{ name }} as {{name}}.
   def tags(text)

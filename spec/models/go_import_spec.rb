@@ -77,7 +77,8 @@ RSpec.describe GoImport do
       expect(owner.role).to eq(Role.system_admin)
       clerk = User.find_by(email: "clerk@example.test")
       expect(clerk.authenticate("another long password 42")).to be_truthy
-      expect(clerk.role).to have_attributes(name: "Forms clerk", permissions: ["pages:read"])
+      # forms:read and forms:write are kept where the Forms plugin is installed.
+      expect(clerk.role).to have_attributes(name: "Forms clerk", permissions: ["pages:read", "forms:read", "forms:write"].select { Permissions.known?(it) })
       expect(Role.all).to all(be_valid)
 
       hero = BlockType.find_by(slug: "hero")
@@ -123,12 +124,26 @@ RSpec.describe GoImport do
       expect(Setting.get("email")).not_to have_key("smtp_password")
 
       expect(query("SELECT slug, title, status, submit_label FROM forms")).to eq([["contact", "Contact", "published", "Send it"]])
-      expect(JSON.parse(query("SELECT fields FROM forms").first.first).map { it["name"] }).to eq(%w[name email message topic])
-      expect(query("SELECT kind, recipients, subject, body, enabled FROM form_emails"))
-        .to eq([["notification", "owner@example.test", "New {{form_title}} submission", "<p>From {{name}}</p><p>{{all_fields}}</p>", 1]])
+      expect(JSON.parse(query("SELECT fields FROM forms").first.first)).to eq([
+        {"name" => "name", "label" => "Your name", "type" => "text", "required" => true},
+        {"name" => "email", "label" => "Email", "type" => "email", "required" => true},
+        {"name" => "message", "label" => "Message", "type" => "textarea"},
+        {"name" => "topic", "label" => "Topic", "type" => "select", "options" => [{"value" => "Sales", "label" => "Sales"}, {"value" => "Support", "label" => "Support"}]}
+      ])
+      expect(query("SELECT kind, recipients, subject, enabled FROM form_emails")).to eq([["notification", "owner@example.test", "New {{form_title}} submission", 1]])
+      blocks = JSON.parse(query("SELECT blocks FROM form_emails").first.first)
+      expect(blocks.map { [it["type"], it["data"]] }).to eq([["email_text", {"body" => "<p>From {{name}}</p>"}],
+        ["email_submission", {"title" => "Submission details", "skip_empty" => false}]])
       data, meta = query("SELECT data, meta FROM form_submissions").first.map { JSON.parse(it) }
       expect(data).to eq("email" => "ada@example.test", "message" => "Hello there", "name" => "Ada Lovelace", "topic" => "Sales")
       expect(meta).to include("status" => "new")
+      if defined?(Form) # the Forms plugin, installed (bin/setup puts it in plugins/)
+        form = Form.find_by(slug: "contact")
+        expect(form).to be_valid
+        expect(form.emails.map(&:kind)).to eq(["notification"])
+        expect(form.emails).to all(be_valid)
+        expect(form.submissions.count).to eq(1)
+      end
 
       expect(Session.count).to eq(0)
       expect(RecordDocument.where(record_type: "Page").count).to eq(2)
@@ -138,7 +153,7 @@ RSpec.describe GoImport do
     end
 
     expect(out.string).to include("files: 1 whole", "secrets: 5 sealed, 5 carried", "4 rich text fields", "forms: 1 forms, 1 emails, 1 submissions",
-      "owners: owner@example.test", "role Forms clerk: forms:read (no such capability here)", "Done.")
+      "owners: owner@example.test", "Done.")
   end
 
   it "clears the secrets it can't open without the old key, and says so" do

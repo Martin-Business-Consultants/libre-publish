@@ -59,13 +59,14 @@ class GoImport
     build
     @report.lines.each { @out.puts it }
 
-    return finish("Nothing was changed.") if @dry_run
-    if @report.target_users.positive? && !@force
+    if @dry_run
+      finish("Nothing was changed.")
+    elsif @report.target_users.positive? && !@force
       raise Error, "This install already has users: importing replaces its whole site. Re-run with FORCE=1 to replace it (the current database is kept beside it)."
+    else
+      apply
+      finish("Done. Everyone is signed out: sign in with an account from the imported site.")
     end
-
-    apply
-    finish("Done. Everyone is signed out: sign in with an account from the imported site.")
   rescue Archive::Unsafe => e
     raise Error, "#{@source} can't be imported: #{e.message}"
   ensure

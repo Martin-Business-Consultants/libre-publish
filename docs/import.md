@@ -99,11 +99,17 @@ their deliveries, settings, the audit log, content references.
   signs in but can't be revealed, a webhook gets a new secret (give it to the
   receiver), a setting loses that value.
 - **Forms.** When this install has the Forms plugin's tables, the Go Forms
-  plugin's forms become its forms (slug, name, fields, submit label,
-  thank-you; open is published, closed a draft), its emails the
-  notification and confirmation (merge tags written `{{form_title}}`,
-  `{{submitted_at}}`, `{{name}}`), and its submissions theirs, with their
-  status, address and browser. Without those tables, and for any other Go
+  plugin's forms become its forms (slug, name, submit label, thank-you; open
+  is published, closed a draft). Fields keep their names, labels, help and
+  whether they're required; text, email, phone, website, paragraph,
+  dropdown, choice, consent and file fields keep their type (a choice's
+  options become its value and label pairs), number, date, checkboxes and
+  hidden fields become text fields, and headings go, each named in the
+  report. The emails become the notification and confirmation, as the
+  plugin's email blocks: the message a Text block, `{{ all_fields }}` the
+  Submission answers block, merge tags written `{{form_title}}`,
+  `{{submitted_at}}`, `{{name}}`. Submissions keep their answers, address
+  and browser, and their status in their details. Without those tables, and for any other Go
   plugin, what the plugin kept is written beside the database as
   `go-plugins-<time>.json` and reported.
 - **Everyone is signed out.** Sessions, device sign-ins, password-reset

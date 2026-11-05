@@ -49,7 +49,7 @@ class GoImport::Secrets
     rows.each do |rowid, value|
       changed =
         if GoImport::Keyring.sealed?(value)
-          whole(where, open(where, value), not_null.to_i == 1)
+          whole(where, unseal(where, value), not_null.to_i == 1)
         elsif value.start_with?("{", "[")
           in_json(where, value)
         else
@@ -59,7 +59,7 @@ class GoImport::Secrets
     end
   end
 
-  def open(where, value)
+  def unseal(where, value)
     @report.secrets[:total] += 1
     @keyring.open(value).tap do |plain|
       if plain
@@ -95,7 +95,7 @@ class GoImport::Secrets
         out[key] = opened unless opened.nil? && GoImport::Keyring.sealed?(item)
       end
     when Array then value.map { strings(where, it) }
-    when String then GoImport::Keyring.sealed?(value) ? open(where, value) : value
+    when String then GoImport::Keyring.sealed?(value) ? unseal(where, value) : value
     else value
     end
   end
