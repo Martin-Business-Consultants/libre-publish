@@ -4,7 +4,7 @@
 <section class="panel" aria-labelledby="dashboard_activity">
   <header class="panel__header dashboard__header">
     <h2 id="dashboard_activity" class="heading">Recent activity</h2>
-    <%= link_to "Audit log", audit_logs_path, class: "btn btn--sm" %>
+    <%= link_to "Audit log", audit_logs_path, class: "ui-button ui-button--outline ui-button--sm" %>
   </header>
   <% if entries.any? %>
     <ul class="divided">
@@ -13,7 +13,7 @@
         <li class="dashboard__row dashboard__row--inset">
           <span class="cluster grow">
             <span class="text-medium text-ink"><%= entry.actor_label.presence || "system" %></span>
-            <span class="badge"><%= entry.current_action %></span>
+            <span class="ui-badge ui-badge--secondary"><%= entry.current_action %></span>
             <% if entry.target_label.present? %>
               <span class="truncate text-body"><%= audit_target_link(entry) %></span>
             <% end %>

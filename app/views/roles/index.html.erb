@@ -18,12 +18,12 @@
     <thead>
       <tr>
         <% if can_delete %>
-          <th class="data-table__check text-center"><input type="checkbox" aria-label="Select every row" data-select-all-target="all" data-action="select-all#toggle"></th>
+          <th class="data-table__check text-center"><input class="ui-checkbox" type="checkbox" aria-label="Select every row" data-select-all-target="all" data-action="select-all#toggle"></th>
         <% end %>
         <th>Name</th>
         <th>Description</th>
-        <th class="data-table__num">Capabilities</th>
-        <th class="data-table__num">Users</th>
+        <th class="ui-table__numeric">Capabilities</th>
+        <th class="ui-table__numeric">Users</th>
       </tr>
     </thead>
     <tbody>
@@ -33,7 +33,7 @@
           <% if can_delete %>
             <td class="data-table__check text-center">
               <% unless role.system? %>
-                <input type="checkbox" data-select-all-target="box" data-action="select-all#sync" name="ids[]" value="<%= role.id %>" form="roles_bulk_deletion" aria-label="Select <%= role.name %>">
+                <input class="ui-checkbox" type="checkbox" data-select-all-target="box" data-action="select-all#sync" name="ids[]" value="<%= role.id %>" form="roles_bulk_deletion" aria-label="Select <%= role.name %>">
               <% end %>
             </td>
           <% end %>
@@ -50,8 +50,8 @@
                   delete_message: "Users holding it are left with no role." %>
           </td>
           <td><span class="text-muted"><%= role.description %></span></td>
-          <td class="data-table__num"><%= role.admin? ? "All" : role.permissions.size %></td>
-          <td class="data-table__num"><%= role.users.size %></td>
+          <td class="ui-table__numeric"><%= role.admin? ? "All" : role.permissions.size %></td>
+          <td class="ui-table__numeric"><%= role.users.size %></td>
         </tr>
       <% end %>
     </tbody>

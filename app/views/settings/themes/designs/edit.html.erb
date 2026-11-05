@@ -15,8 +15,8 @@
           <%# herb:key setting.name %>
           <% value = @values[setting.name] %>
           <% if setting.type == "boolean" %>
-            <label class="choice choice--top text-ink">
-              <%= form.check_box setting.name, { checked: value }, "1", "0" %>
+            <label class="ui-field ui-field--inline text-ink">
+              <%= form.check_box setting.name, { checked: value, class: "ui-checkbox" }, "1", "0" %>
               <span><%= setting.label %></span>
             </label>
           <% else %>
@@ -25,17 +25,17 @@
               <% when "color" %>
                 <%= form.color_field setting.name, value: value, class: "theme-design__color" %>
               <% when "select" %>
-                <%= form.select setting.name, setting.options.keys.map { |option| [option.humanize, option] }, { selected: value } %>
+                <%= form.select setting.name, setting.options.keys.map { |option| [option.humanize, option] }, { selected: value }, { class: "ui-select" } %>
               <% else %>
-                <%= form.text_field setting.name, value: value, placeholder: setting.default %>
+                <%= form.text_field setting.name, value: value, placeholder: setting.default, class: "ui-input" %>
               <% end %>
             <% end %>
           <% end %>
         <% end %>
       </section>
       <div class="cluster">
-        <button type="submit" class="btn btn--primary">Save</button>
-        <%= link_to "View site", root_path, class: "btn", target: "_blank", rel: "noopener" %>
+        <button type="submit" class="ui-button">Save</button>
+        <%= link_to "View site", root_path, class: "ui-button ui-button--outline", target: "_blank", rel: "noopener" %>
       </div>
     <% end %>
     <%= button_to "Reset to the theme’s defaults", settings_theme_design_path(@theme.key), method: :delete, class: "link" %>

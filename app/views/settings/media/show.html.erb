@@ -15,10 +15,10 @@
       </div>
       <div class="grid grid--2 fields-grid">
         <%= settings_field "Largest file (KB)", hint: "#{ImageLimits::DEFAULT_MAX_KB} KB suits most sites; 1000 KB is 1 MB." do %>
-          <%= form.number_field :max_kb, value: @limits["max_kb"], min: ImageLimits::KB_RANGE.min, max: ImageLimits::KB_RANGE.max, step: 50 %>
+          <%= form.number_field :max_kb, value: @limits["max_kb"], min: ImageLimits::KB_RANGE.min, max: ImageLimits::KB_RANGE.max, step: 50, class: "ui-input" %>
         <% end %>
         <%= settings_field "Longest side (pixels)", hint: "#{ImageLimits::DEFAULT_MAX_SIDE} is sharp on large, high-density screens." do %>
-          <%= form.number_field :max_side, value: @limits["max_side"], min: ImageLimits::SIDE_RANGE.min, max: ImageLimits::SIDE_RANGE.max, step: 10 %>
+          <%= form.number_field :max_side, value: @limits["max_side"], min: ImageLimits::SIDE_RANGE.min, max: ImageLimits::SIDE_RANGE.max, step: 10, class: "ui-input" %>
         <% end %>
       </div>
       <%= settings_switch form, :optimize_uploads, "Make uploads lighter as they arrive",
@@ -38,5 +38,5 @@
       <% end %>
     </p>
   </div>
-  <%= link_to "Open the Media Library", file_manager_path, class: "btn" unless @over.zero? %>
+  <%= link_to "Open the Media Library", file_manager_path, class: "ui-button ui-button--outline" unless @over.zero? %>
 </section>

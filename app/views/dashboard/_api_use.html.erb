@@ -5,7 +5,7 @@
 <section class="panel dashboard__box">
   <header class="row row--between row--base">
     <h2 class="heading row"><%= icon_tag "ai", class: "icon--sm text-faint" %> Working through the API</h2>
-    <%= link_to "Developers", developers_path, class: "btn btn--sm" %>
+    <%= link_to "Developers", developers_path, class: "ui-button ui-button--outline ui-button--sm" %>
   </header>
   <% if uses.any? %>
     <ul class="divided">
@@ -23,7 +23,7 @@
   <% else %>
     <p class="text-muted">No token has used the API this week.</p>
   <% end %>
-  <p class="help">
+  <p class="ui-field__description">
     Drive this CMS from an agent: <code class="code">curl -fsSL <%= request.base_url %>/agent/install.sh | sh</code>, then <code class="code">cms connect</code> to use it from Claude, Codex or another AI app.
   </p>
 </section>

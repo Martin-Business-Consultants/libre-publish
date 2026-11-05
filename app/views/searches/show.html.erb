@@ -3,9 +3,9 @@
 <%= render "layouts/shared/page_header", title: @page_title %>
 
 <%= form_with url: search_path, method: :get, class: "row measure--lg", role: "search" do |form| %>
-  <%= form.search_field :q, value: @search.term, class: "grow", placeholder: "Search pages, entries, globals, users…",
+  <%= form.search_field :q, value: @search.term, class: "ui-input grow", placeholder: "Search pages, entries, globals, users…",
         autofocus: true, autocomplete: "off", aria: { label: "Search everything" } %>
-  <button type="submit" class="btn btn--primary">Search</button>
+  <button type="submit" class="ui-button">Search</button>
 <% end %>
 
 <% if @search.term.present? && !@search.searchable? %>
@@ -32,7 +32,7 @@
                 <p class="search-results__snippet"><%= sanitize snippet, tags: %w[mark] %></p>
               <% end %>
             </td>
-            <td><span class="badge"><%= GlobalSearch.kind_label(record) %></span></td>
+            <td><span class="ui-badge ui-badge--secondary"><%= GlobalSearch.kind_label(record) %></span></td>
           </tr>
         <% end %>
         <%= table_empty_row("Nothing holds “" + @search.term + "”.", columns: 2) if @results.empty? %>

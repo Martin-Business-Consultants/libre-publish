@@ -10,7 +10,7 @@
         <h2 class="heading row"><%= icon_tag "link", class: "icon--sm text-faint" %> API</h2>
         <p class="text-body">JSON over HTTP at <code class="code">/api</code>, with a bearer token. What the site builds from, and what every other surface stands on.</p>
         <code class="code-block code-block--wrap">curl -H "Authorization: Bearer $TOKEN" <%= cms_url %>/api/manifest</code>
-        <p class="help">Tokens: <%= link_to "yours", settings_api_token_path, class: "link" %> (your role) or a <%= link_to "service token", settings_service_tokens_path, class: "link" %> (a site's, a job's).</p>
+        <p class="ui-field__description">Tokens: <%= link_to "yours", settings_api_token_path, class: "link" %> (your role) or a <%= link_to "service token", settings_service_tokens_path, class: "link" %> (a site's, a job's).</p>
       </section>
       <section class="panel developers__surface stack stack--md">
         <h2 class="heading row"><%= icon_tag "code", class: "icon--sm text-faint" %> CLI</h2>
@@ -19,7 +19,7 @@
           <code class="code-block code-block--wrap grow">curl -fsSL <%= cms_url %>/agent/install.sh | sh</code>
           <%= copy_button "curl -fsSL #{cms_url}/agent/install.sh | sh" %>
         </div>
-        <p class="help">Then <code class="code">cms doctor</code>, <code class="code">cms manifest</code>, <code class="code">cms commands --json</code>.</p>
+        <p class="ui-field__description">Then <code class="code">cms doctor</code>, <code class="code">cms manifest</code>, <code class="code">cms commands --json</code>.</p>
       </section>
       <section class="panel developers__surface stack stack--md">
         <h2 class="heading row"><%= icon_tag "ai", class: "icon--sm text-faint" %> MCP</h2>
@@ -28,7 +28,7 @@
           <code class="code-block code-block--wrap grow">cms connect</code>
           <%= copy_button "cms connect" %>
         </div>
-        <p class="help">Every answer comes wrapped with what to call next.</p>
+        <p class="ui-field__description">Every answer comes wrapped with what to call next.</p>
       </section>
     </div>
 
@@ -55,7 +55,7 @@
 import cms from "@librepublish/astro";
 export default defineConfig({ integrations: [cms()] });</pre>
           <code class="code-block code-block--wrap">CMS_BASE_URL=<%= cms_url %>  CMS_API_TOKEN=&lt;a service token&gt;</code>
-          <p class="help">Forms, Media and Commerce come with it. The source: github.com/Martin-Business-Consultants/libre-cms-astro.</p>
+          <p class="ui-field__description">Forms, Media and Commerce come with it. The source: github.com/Martin-Business-Consultants/libre-cms-astro.</p>
         </div>
       </details>
     <% end %>
@@ -113,7 +113,7 @@ export default defineConfig({ integrations: [cms()] });</pre>
       <% else %>
         <div class="stack stack--xs">
           <p class="cluster text-body"><%= status_tag "not connected" %> No build has reported yet.</p>
-          <p class="help">A site with the Astro integration reports each build here.</p>
+          <p class="ui-field__description">A site with the Astro integration reports each build here.</p>
         </div>
       <% end %>
       <dl class="details details--even">
@@ -133,7 +133,7 @@ export default defineConfig({ integrations: [cms()] });</pre>
           <dt><%= kind.to_s.humanize %></dt><dd class="text-tabular"><%= number_with_delimiter(count) %></dd>
         <% end %>
       </dl>
-      <p class="help">Its full shape — every field and block type's JSON schema — is <code class="code">GET /api/v1/schema</code>, which a connected site turns into its types.</p>
+      <p class="ui-field__description">Its full shape — every field and block type's JSON schema — is <code class="code">GET /api/v1/schema</code>, which a connected site turns into its types.</p>
     <% end %>
   </aside>
 </div>

@@ -8,12 +8,12 @@
     </div>
 
     <%= form_with url: identity_password_reset_path, class: "fields", data: { controller: "form" } do |form| %>
-      <label class="field">
-        <span class="label">Email address</span>
-        <%= form.email_field :email, required: true, autofocus: true, autocomplete: "off", placeholder: "email@example.com" %>
+      <label class="ui-field">
+        <span class="ui-label">Email address</span>
+        <%= form.email_field :email, required: true, autofocus: true, autocomplete: "off", placeholder: "email@example.com", class: "ui-input" %>
       </label>
 
-      <button type="submit" class="btn btn--primary btn--block" data-form-target="submit">
+      <button type="submit" class="ui-button ui-button--block" data-form-target="submit">
         <span>Email password reset link</span>
         <%= icon_tag "arrow-right", class: "icon--sm" %>
       </button>

@@ -37,7 +37,7 @@
     <% InstalledPlugins.failed.each do |name, error| %>
       <%# herb:key name %>
       <div class="cluster cluster--sm">
-        <p class="field-error"><strong><%= name %></strong> is installed but didn’t load: <%= error %></p>
+        <p class="ui-field__error"><strong><%= name %></strong> is installed but didn’t load: <%= error %></p>
         <% if Current.user.admin? && InstalledPlugins.present.key?(name) %>
           <%= render "settings/plugins/remove_dialog", plugin: InstalledPlugins::Unloaded.new(key: name, name: name), tables: [] %>
         <% end %>
@@ -56,9 +56,9 @@
         since a plugin runs with the CMS’s full access.
       </p>
       <%= form_with url: settings_plugins_installations_path, class: "cluster" do |form| %>
-        <%= form.text_field :repo, class: "grow", placeholder: "owner/cms-thing", autocomplete: "off", required: true,
+        <%= form.text_field :repo, class: "ui-input grow", placeholder: "owner/cms-thing", autocomplete: "off", required: true,
               aria: { label: "GitHub repository" } %>
-        <button type="submit" class="btn btn--primary">Install</button>
+        <button type="submit" class="ui-button">Install</button>
       <% end %>
     </section>
   <% end %>
@@ -68,7 +68,7 @@
       <div class="cluster cluster--between">
         <h2 class="heading">Recent changes</h2>
         <% if Current.user.admin? && @changes.any?(&:failed?) %>
-          <%= button_to "Clear failed updates", settings_plugins_failures_path, method: :delete, class: "btn btn--sm",
+          <%= button_to "Clear failed updates", settings_plugins_failures_path, method: :delete, class: "ui-button ui-button--outline ui-button--sm",
                 form: { data: { turbo_confirm: "Clear the failed changes from this list?" } } %>
         <% end %>
       </div>

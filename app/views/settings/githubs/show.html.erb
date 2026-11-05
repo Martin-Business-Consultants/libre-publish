@@ -11,12 +11,12 @@
   <%= form_with url: settings_github_path, id: "settings_form", method: :patch, scope: :settings do |form| %>
     <%= tag.fieldset class: "fields", disabled: !Current.user.can?("settings:write") do %>
       <%= settings_field "Personal access token" do %>
-        <%= form.password_field :token, autocomplete: "off", placeholder: (@token_hint ? "Already set · ends in " + @token_hint : "ghp_…"), class: "text-mono", data: { "1p-ignore": true } %>
+        <%= form.password_field :token, autocomplete: "off", placeholder: (@token_hint ? "Already set · ends in " + @token_hint : "ghp_…"), class: "ui-input text-mono", data: { "1p-ignore": true } %>
       <% end %>
-      <p class="help">Needs the <code>repo</code> scope. Create one at <a href="https://github.com/settings/tokens" class="link" target="_blank" rel="noreferrer">github.com/settings/tokens</a>. Leave blank to keep the existing value.</p>
+      <p class="ui-field__description">Needs the <code>repo</code> scope. Create one at <a href="https://github.com/settings/tokens" class="link" target="_blank" rel="noreferrer">github.com/settings/tokens</a>. Leave blank to keep the existing value.</p>
       <% if Serving.api? then %>
         <%= settings_field "Frontend repo", hint: "owner/name — the Astro site this workspace publishes." do %>
-          <%= form.text_field :frontend_github_repo, value: @frontend_github_repo, placeholder: "acme/acme-site", class: "text-mono" %>
+          <%= form.text_field :frontend_github_repo, value: @frontend_github_repo, placeholder: "acme/acme-site", class: "ui-input text-mono" %>
         <% end %>
       <% end %>
     <% end %>

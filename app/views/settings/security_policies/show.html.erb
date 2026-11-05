@@ -23,7 +23,7 @@
       <% end %>
     </ul>
     <% if can_write %>
-      <%= button_to "Allow them", settings_security_policy_path, method: :patch, class: "btn btn--sm", form_class: "contents",
+      <%= button_to "Allow them", settings_security_policy_path, method: :patch, class: "ui-button ui-button--outline ui-button--sm", form_class: "contents",
             params: {security_policy: {presets: @policy["presets"] | @suggestions[:presets],
                                        sources: SecurityPolicy::DIRECTIVES.to_h { |directive| [directive, (Array(@policy["sources"][directive]) | Array(@suggestions[:hosts][directive])).join("\n")] }}} %>
     <% end %>
@@ -38,11 +38,11 @@
         <p class="text-muted">A Content-Security-Policy tells visitors' browsers what the site may load and run, so a script slipped into a page can't. Test it with <strong>Report only</strong>: nothing is blocked, and what it would block shows below. Enforce it once that list is clean.</p>
       </div>
       <%= settings_field "Policy", hint: "Off sends none (as before)." do %>
-        <%= form.select :mode, SecurityPolicy::MODES.invert.to_a, selected: @policy["mode"] %>
+        <%= form.select :mode, SecurityPolicy::MODES.invert.to_a, { selected: @policy["mode"] }, { class: "ui-select" } %>
       <% end %>
-      <label class="choice">
-        <%= form.check_box :strict, {checked: @policy["strict"]}, "1", "0" %>
-        <span>Strict inline scripts <span class="text-small text-muted">Only inline scripts the CMS prints (the theme's, the Scripts global's, plugins') run, each carrying a fresh nonce. A script added any other way is stopped. Test with Report only first.</span></span>
+      <label class="ui-field ui-field--inline">
+        <%= form.check_box :strict, { checked: @policy["strict"], class: "ui-checkbox" }, "1", "0" %>
+        <span class="ui-label">Strict inline scripts <span class="text-small text-muted">Only inline scripts the CMS prints (the theme's, the Scripts global's, plugins') run, each carrying a fresh nonce. A script added any other way is stopped. Test with Report only first.</span></span>
       </label>
     </section>
 
@@ -55,9 +55,9 @@
       <%= hidden_field_tag "security_policy[presets][]", "", id: nil %>
       <% presets.each do |key, preset| %>
         <%# herb:key key %>
-        <label class="choice">
-          <%= check_box_tag "security_policy[presets][]", key, @policy["presets"].include?(key), id: "security_policy_preset_#{key}" %>
-          <span><%= preset[:label] %><%= tag.span(" · found in your scripts", class: "text-small text-muted") if @suggestions[:presets].include?(key) %></span>
+        <label class="ui-field ui-field--inline">
+          <%= check_box_tag "security_policy[presets][]", key, @policy["presets"].include?(key), id: "security_policy_preset_#{key}", class: "ui-checkbox" %>
+          <span class="ui-label"><%= preset[:label] %><%= tag.span(" · found in your scripts", class: "text-small text-muted") if @suggestions[:presets].include?(key) %></span>
         </label>
       <% end %>
     </section>
@@ -71,7 +71,7 @@
         <% SecurityPolicy::DIRECTIVES.each do |directive| %>
           <%# herb:key directive %>
           <%= settings_field directive do %>
-            <%= text_area_tag "security_policy[sources][#{directive}]", Array(@policy["sources"][directive]).join("\n"), rows: 3, class: "text-mono text-small", id: "security_policy_sources_#{directive}", spellcheck: false %>
+            <%= text_area_tag "security_policy[sources][#{directive}]", Array(@policy["sources"][directive]).join("\n"), rows: 3, class: "ui-textarea text-mono text-small", id: "security_policy_sources_#{directive}", spellcheck: false %>
           <% end %>
         <% end %>
       </div>
@@ -86,7 +86,7 @@
         <% SecurityPolicy::ADMIN_DIRECTIVES.each do |directive| %>
           <%# herb:key directive %>
           <%= settings_field directive do %>
-            <%= text_area_tag "security_policy[admin_sources][#{directive}]", Array(@policy["admin_sources"][directive]).join("\n"), rows: 2, class: "text-mono text-small", id: "security_policy_admin_#{directive}", spellcheck: false %>
+            <%= text_area_tag "security_policy[admin_sources][#{directive}]", Array(@policy["admin_sources"][directive]).join("\n"), rows: 2, class: "ui-textarea text-mono text-small", id: "security_policy_admin_#{directive}", spellcheck: false %>
           <% end %>
         <% end %>
       </div>
@@ -102,7 +102,7 @@
   <% if @reports.any? %>
     <div class="panel--scroll">
       <table class="data-table">
-        <thead><tr><th>Blocked</th><th>Where</th><th class="data-table__num">Times</th><th>Last</th><th></th></tr></thead>
+        <thead><tr><th>Blocked</th><th>Where</th><th class="ui-table__numeric">Times</th><th>Last</th><th></th></tr></thead>
         <tbody>
           <% @reports.each do |report| %>
             <%# herb:key report.id %>
@@ -112,12 +112,12 @@
                 <div class="text-small text-muted"><span class="text-mono"><%= report.directive %></span><%= " · on #{report.page}" if report.page.present? %></div>
               </td>
               <td class="text-small"><%= report.surface.capitalize %></td>
-              <td class="data-table__num"><%= number_with_delimiter report.count %></td>
+              <td class="ui-table__numeric"><%= number_with_delimiter report.count %></td>
               <td class="text-small nowrap"><%= time_ago_tag report.last_seen_at %></td>
               <td class="nowrap">
                 <% if can_write %>
-                  <%= button_to "Allow", allow_settings_security_policy_path(report), class: "btn btn--sm", form_class: "contents" %>
-                  <%= button_to "Dismiss", dismiss_settings_security_policy_path(report), method: :delete, class: "btn btn--sm btn--plain", form_class: "contents" %>
+                  <%= button_to "Allow", allow_settings_security_policy_path(report), class: "ui-button ui-button--outline ui-button--sm", form_class: "contents" %>
+                  <%= button_to "Dismiss", dismiss_settings_security_policy_path(report), method: :delete, class: "ui-button ui-button--ghost ui-button--sm", form_class: "contents" %>
                 <% end %>
               </td>
             </tr>

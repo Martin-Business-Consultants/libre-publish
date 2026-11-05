@@ -8,6 +8,6 @@
     <button type="button" class="markdown-editor__tab" role="tab" aria-selected="true" data-markdown-editor-target="writeTab" data-action="markdown-editor#write">Write</button>
     <button type="button" class="markdown-editor__tab" role="tab" aria-selected="false" data-markdown-editor-target="previewTab" data-action="markdown-editor#preview">Preview</button>
   </div>
-  <%= text_area_tag scope.name, value, id: scope.dom_id, rows: 10, class: "full-width markdown-editor__input", spellcheck: true, data: { markdown_editor_target: "input" } %>
+  <%= text_area_tag scope.name, value, id: scope.dom_id, rows: 10, class: "ui-textarea full-width markdown-editor__input", spellcheck: true, data: { markdown_editor_target: "input" } %>
   <div class="markdown-editor__output" data-markdown-editor-target="output" hidden></div>
 </div>

@@ -7,13 +7,13 @@
   <% if can_write %>
     <label class="cluster">
       <span class="text-body">Move the ticked files to</span>
-      <%= select_tag :to, options_for_select([["All files (top level)", "/"]] + folders.map { [it, it] }), id: nil %>
+      <%= select_tag :to, options_for_select([["All files (top level)", "/"]] + folders.map { [it, it] }), id: nil, class: "ui-select" %>
     </label>
-    <button type="submit" class="btn btn--sm" formaction="<%= file_manager_moves_path %>">Move</button>
+    <button type="submit" class="ui-button ui-button--outline ui-button--sm" formaction="<%= file_manager_moves_path %>">Move</button>
   <% end %>
   <% if can_delete %>
     <div class="contents" data-controller="dialog" data-dialog-modal-value="true" data-action="keydown.esc->dialog#close:stop">
-      <button type="button" class="btn btn--danger btn--sm push-end" data-action="dialog#open">
+      <button type="button" class="ui-button ui-button--destructive ui-button--sm push-end" data-action="dialog#open">
         <%= icon_tag "trash" %>
         <span>Delete ticked</span>
       </button>
@@ -21,8 +21,8 @@
         <h3 class="heading heading--lg">Delete the ticked files?</h3>
         <p class="text-body">They go to the trash, where they can be restored.</p>
         <div class="dialog__actions">
-          <button type="button" class="btn" data-action="dialog#close">Cancel</button>
-          <button type="submit" class="btn btn--destructive" formaction="<%= file_manager_bulk_deletions_path %>">
+          <button type="button" class="ui-button ui-button--outline" data-action="dialog#close">Cancel</button>
+          <button type="submit" class="ui-button ui-button--destructive" formaction="<%= file_manager_bulk_deletions_path %>">
             <%= icon_tag "trash" %>
             <span>Delete</span>
           </button>

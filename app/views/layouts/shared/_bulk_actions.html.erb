@@ -29,7 +29,7 @@
             <% end %>
           </select>
           <input type="hidden" name="status" value="" data-bulk-actions-target="status">
-          <button type="button" class="btn" data-action="bulk-actions#apply">Apply</button>
+          <button type="button" class="ui-button ui-button--outline" data-action="bulk-actions#apply">Apply</button>
         </div>
       </div>
       <noscript>
@@ -37,15 +37,15 @@
           <% if status_path %>
             <% Array(statuses).each do |status| %>
               <%# herb:key status %>
-              <button type="submit" class="btn btn--sm" formaction="<%= status_path %>" name="status" value="<%= status %>">Set to <%= status.to_s.humanize.downcase %></button>
+              <button type="submit" class="ui-button ui-button--outline ui-button--sm" formaction="<%= status_path %>" name="status" value="<%= status %>">Set to <%= status.to_s.humanize.downcase %></button>
             <% end %>
           <% end %>
           <% if deletion_path %>
             <details>
-              <summary class="btn btn--danger btn--sm">Delete…</summary>
+              <summary class="ui-button ui-button--destructive ui-button--sm">Delete…</summary>
               <div class="list-toolbar__confirm cluster text-body">
                 <span><%= message %></span>
-                <button type="submit" class="btn btn--destructive btn--sm" formaction="<%= deletion_path %>">Delete the ticked <%= noun.pluralize %></button>
+                <button type="submit" class="ui-button ui-button--destructive ui-button--sm" formaction="<%= deletion_path %>">Delete the ticked <%= noun.pluralize %></button>
               </div>
             </details>
           <% end %>
@@ -55,8 +55,8 @@
         <h3 class="heading heading--lg">Delete the ticked <%= noun.pluralize %>?</h3>
         <p class="text-body"><%= message %></p>
         <div class="dialog__actions">
-          <button type="button" class="btn" data-action="bulk-actions#cancel">Cancel</button>
-          <button type="submit" class="btn btn--destructive">
+          <button type="button" class="ui-button ui-button--outline" data-action="bulk-actions#cancel">Cancel</button>
+          <button type="submit" class="ui-button ui-button--destructive">
             <%= icon_tag "trash", class: "icon--sm" %>
             <span>Delete</span>
           </button>

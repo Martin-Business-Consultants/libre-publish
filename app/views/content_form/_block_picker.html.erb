@@ -5,7 +5,7 @@
         aria-label="Add a block">
   <header class="row row--between row--base">
     <h2 class="heading heading--lg">Add a block</h2>
-    <button type="button" class="btn btn--sm" data-action="sortable-list#closePicker">Close</button>
+    <button type="button" class="ui-button ui-button--outline ui-button--sm" data-action="sortable-list#closePicker">Close</button>
   </header>
   <input type="search" class="full-width" placeholder="Filter block types…" autocomplete="off" aria-label="Filter block types"
          data-action="input->sortable-list#filterPicker">
@@ -41,7 +41,7 @@
     <% if deprecated.any? %>
       <details class="content-picker__deprecated stack stack--sm">
         <summary class="text-small text-medium text-muted">Deprecated (<%= deprecated.size %>)</summary>
-        <p class="help">Kept for content that already uses them. They're still added like any other, but a newer type usually does the same job.</p>
+        <p class="ui-field__description">Kept for content that already uses them. They're still added like any other, but a newer type usually does the same job.</p>
         <%= render "content_form/picker_types", types: deprecated %>
       </details>
     <% end %>

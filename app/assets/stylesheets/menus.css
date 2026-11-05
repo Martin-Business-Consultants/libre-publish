@@ -17,30 +17,6 @@
     padding: var(--space-1);
   }
 
-  .menu__item {
-    align-items: center;
-    border-radius: var(--radius-md);
-    color: var(--foreground);
-    display: flex;
-    font-size: var(--text-sm);
-    gap: var(--space-2);
-    inline-size: 100%;
-    line-height: var(--leading-sm);
-    padding: var(--space-1-5) var(--space-2-5);
-    text-align: start;
-
-    &:hover,
-    &[aria-selected="true"],
-    &[aria-current] {
-      background-color: var(--accent);
-      color: var(--foreground);
-    }
-
-    .icon {
-      --icon-size: 1rem;
-    }
-  }
-
   .popup-anchor {
     position: relative;
   }

@@ -15,6 +15,6 @@
 
 <% if can_restore && diff[:fields].any? %>
   <%= form_with url: restore_path, class: "version-restore" do %>
-    <button type="submit" class="btn btn--primary">Restore this version</button>
+    <button type="submit" class="ui-button">Restore this version</button>
   <% end %>
 <% end %>

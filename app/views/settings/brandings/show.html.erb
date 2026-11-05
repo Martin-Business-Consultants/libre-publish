@@ -71,13 +71,13 @@
         <h2 class="heading">Color</h2>
         <div class="grid grid--2 fields-grid">
           <%= settings_field "Primary color", hint: "Buttons, links, focus and what’s current. Black when blank." do %>
-            <%= form.text_field :primary_color, value: @branding[:primary_color], pattern: "#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})", placeholder: "#b45309", class: "text-mono" %>
+            <%= form.text_field :primary_color, value: @branding[:primary_color], pattern: "#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})", placeholder: "#b45309", class: "ui-input text-mono" %>
           <% end %>
           <%= settings_field "Secondary color", hint: "Tints the grays: surfaces, lines and text. Neutral when blank." do %>
-            <%= form.text_field :secondary_color, value: @branding[:secondary_color], pattern: "#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})", placeholder: "#1c1917", class: "text-mono" %>
+            <%= form.text_field :secondary_color, value: @branding[:secondary_color], pattern: "#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})", placeholder: "#1c1917", class: "ui-input text-mono" %>
           <% end %>
           <%= settings_field "Top bar", hint: "Dark keeps the bar along the top dark in light mode too, for a logo drawn for a dark ground." do %>
-            <%= form.select :top_bar, Branding::TOP_BARS.invert.to_a, { selected: @branding[:top_bar].presence || "match" } %>
+            <%= form.select :top_bar, Branding::TOP_BARS.invert.to_a, { selected: @branding[:top_bar].presence || "match" }, { class: "ui-select" } %>
           <% end %>
         </div>
       </section>
@@ -86,16 +86,16 @@
         <h2 class="heading">Type and surface</h2>
         <div class="grid grid--3 fields-grid">
           <%= settings_field "Font", hint: "Every word in the admin." do %>
-            <%= form.select :font, Branding::FONTS.invert.to_a, { include_blank: "Default", selected: @branding[:font] } %>
+            <%= form.select :font, Branding::FONTS.invert.to_a, { include_blank: "Default", selected: @branding[:font] }, { class: "ui-select" } %>
           <% end %>
           <%= settings_field "Corners", hint: "Buttons, fields, panels and menus." do %>
-            <%= form.select :border_radius, Branding::RADII.map { |value| [value.humanize, value] }, { include_blank: "Default", selected: @branding[:border_radius] } %>
+            <%= form.select :border_radius, Branding::RADII.map { |value| [value.humanize, value] }, { include_blank: "Default", selected: @branding[:border_radius] }, { class: "ui-select" } %>
           <% end %>
           <%= settings_field "Shadow", hint: "Under panels, and under what floats: menus, dialogs." do %>
-            <%= form.select :box_shadow, Branding::SHADOWS.map { |value| [value.humanize, value] }, { include_blank: "Default", selected: @branding[:box_shadow] } %>
+            <%= form.select :box_shadow, Branding::SHADOWS.map { |value| [value.humanize, value] }, { include_blank: "Default", selected: @branding[:box_shadow] }, { class: "ui-select" } %>
           <% end %>
         </div>
-        <div><button type="submit" class="btn btn--primary">Save branding</button></div>
+        <div><button type="submit" class="ui-button">Save branding</button></div>
       </section>
     <% end %>
   <% end %>
@@ -113,10 +113,10 @@
         <% Settings::BrandsController::LABELS.each do |field, (field_label, hint)| %>
           <%# herb:key field %>
           <%= settings_field field_label, hint: hint do %>
-            <%= form.text_area field, value: @brand_context[field], rows: 4 %>
+            <%= form.text_area field, value: @brand_context[field], rows: 4, class: "ui-textarea" %>
           <% end %>
         <% end %>
-        <div><button type="submit" class="btn">Save brand context</button></div>
+        <div><button type="submit" class="ui-button ui-button--outline">Save brand context</button></div>
       <% end %>
     <% end %>
   </section>

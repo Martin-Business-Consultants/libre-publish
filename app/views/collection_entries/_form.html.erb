@@ -56,9 +56,9 @@
 
     <%= postbox "entry-attributes", "Entry Attributes" do %>
       <%= render "content_form/permalink", record: entry, form: form, hint: "Made from the name when blank." %>
-      <label class="field">
-        <span class="label">Locale</span>
-        <%= form.text_field :locale, required: true, placeholder: "en", autocomplete: "off" %>
+      <label class="ui-field">
+        <span class="ui-label">Locale</span>
+        <%= form.text_field :locale, required: true, placeholder: "en", autocomplete: "off", class: "ui-input" %>
       </label>
       <% if sidebar_fields.any? %>
         <%= render "content_form/fields", fields: sidebar_fields, values: entry.frontmatter, scope: fm_scope, depth: 1 %>

@@ -16,7 +16,7 @@
   <% end %>
   <% if selectable %>
     <label class="media-tile__select">
-      <input type="checkbox" name="ids[]" value="<%= asset.id %>" form="assets_bulk">
+      <input class="ui-checkbox" type="checkbox" name="ids[]" value="<%= asset.id %>" form="assets_bulk">
       <span class="visually-hidden">Select <%= asset.title %></span>
     </label>
   <% end %>

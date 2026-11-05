@@ -15,10 +15,10 @@
         <span class="row">
           <span class="content-row__name"><%= block_type ? (block_type.label.presence || block_type.slug) : "Unknown block type" %></span>
           <% if block_type&.category.present? %>
-            <span class="badge content-row__category"><%= block_type.category %></span>
+            <span class="ui-badge ui-badge--secondary content-row__category"><%= block_type.category %></span>
           <% end %>
           <% if errors.any? %>
-            <span class="badge badge--danger"><%= pluralize(errors.size, "error") %></span>
+            <span class="ui-badge ui-badge--negative"><%= pluralize(errors.size, "error") %></span>
           <% end %>
         </span>
         <% if summary %>
@@ -34,7 +34,7 @@
         <%= hidden_field_tag scope["type"].name, block["type"], id: nil %>
         <%= hidden_field_tag scope["version"].name, block["version"], id: nil %>
         <% if errors.any? %>
-          <ul class="notice notice--danger notice--stacked content-row__errors">
+          <ul class="ui-alert ui-alert--destructive content-row__errors">
             <% errors.each do |message| %>
               <%# herb:key message %>
               <li><%= message %></li>
@@ -44,7 +44,7 @@
         <%= render "content_form/fields", fields: block_type.fields, values: block["data"], scope: scope["data"], depth: depth %>
       <% else %>
         <%= hidden_field_tag scope["_json"].name, block.to_json, id: nil %>
-        <p class="notice notice--danger">
+        <p class="ui-alert ui-alert--destructive">
           <span>This block’s type, <code><%= block["type"] %></code>, doesn’t exist any more. It’s kept as it is; remove it or add the block type back.</span>
         </p>
       <% end %>

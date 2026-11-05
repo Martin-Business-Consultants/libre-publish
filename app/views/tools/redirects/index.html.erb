@@ -2,7 +2,7 @@
 
 <% content_for :page_actions do %>
   <% if Current.user.can?("redirects:write") %>
-    <%= link_to new_tools_redirect_path, class: "btn", data: { keys: "n", turbo_frame: "redirect_sheet", action: "dialog#open" } do %>
+    <%= link_to new_tools_redirect_path, class: "ui-button ui-button--outline", data: { keys: "n", turbo_frame: "redirect_sheet", action: "dialog#open" } do %>
       <%= icon_tag "add" %>
       <span>New redirect</span>
     <% end %>
@@ -18,13 +18,13 @@
 <div class="cluster cluster--end">
   <% if Current.user.can?("redirects:write") %>
     <%= form_with url: tools_redirects_import_path, class: "contents", data: { controller: "form" } do |form| %>
-      <label class="btn btn--sm" title="Import CSV">
+      <label class="ui-button ui-button--outline ui-button--sm" title="Import CSV">
         <span>Import CSV</span>
-        <%= form.file_field :file, accept: ".csv,text/csv", hidden: true, data: { action: "change->form#submit" } %>
+        <%= form.file_field :file, accept: ".csv,text/csv", hidden: true, data: { action: "change->form#submit" }, class: "ui-input" %>
       </label>
     <% end %>
   <% end %>
-  <%= link_to tools_redirects_export_path, class: "btn btn--sm", data: { turbo: false } do %>
+  <%= link_to tools_redirects_export_path, class: "ui-button ui-button--outline ui-button--sm", data: { turbo: false } do %>
     <span>Export</span>
   <% end %>
 </div>
@@ -40,13 +40,13 @@
     <thead>
       <tr>
         <% if can_delete %>
-          <th class="data-table__check"><% if @redirects.any? %><input type="checkbox" aria-label="Select every row" data-select-all-target="all" data-action="select-all#toggle"><% end %></th>
+          <th class="data-table__check"><% if @redirects.any? %><input class="ui-checkbox" type="checkbox" aria-label="Select every row" data-select-all-target="all" data-action="select-all#toggle"><% end %></th>
         <% end %>
         <th>Source</th>
         <th>Destination</th>
         <th>Status</th>
         <th>State</th>
-        <th class="data-table__num">Hits</th>
+        <th class="ui-table__numeric">Hits</th>
       </tr>
     </thead>
     <tbody>

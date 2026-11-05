@@ -4,9 +4,9 @@
 <% included = @entries.count(&:included?) %>
 
 <% content_for :page_actions do %>
-  <%= link_to "robots.txt", sitemap_robots_path, class: "btn" %>
-  <%= link_to "View sitemap.xml", "/sitemap.xml", class: "btn", target: "_blank", rel: "noopener" %>
-  <button type="button" class="btn" data-controller="copy-to-clipboard" data-copy-to-clipboard-content-value="<%= xml_url %>" data-copy-to-clipboard-success-class="btn--success" data-action="copy-to-clipboard#copy">Copy URL</button>
+  <%= link_to "robots.txt", sitemap_robots_path, class: "ui-button ui-button--outline" %>
+  <%= link_to "View sitemap.xml", "/sitemap.xml", class: "ui-button ui-button--outline", target: "_blank", rel: "noopener" %>
+  <button type="button" class="ui-button ui-button--outline" data-controller="copy-to-clipboard" data-copy-to-clipboard-content-value="<%= xml_url %>" data-copy-to-clipboard-success-class="ui-button--secondary" data-action="copy-to-clipboard#copy">Copy URL</button>
 <% end %>
 <%= render "layouts/shared/page_header", title: @page_title %>
 
@@ -30,7 +30,7 @@
         <th>Title</th>
         <th>Type</th>
         <th>Status</th>
-        <th class="data-table__num">Priority</th>
+        <th class="ui-table__numeric">Priority</th>
         <th>Change freq.</th>
         <th>Last modified</th>
       </tr>
@@ -65,28 +65,28 @@
                     <% if Current.user.can?(Sitemap.publish_capability(entry.source)) %>
                       <label class="quick-edit__field">
                         <span class="quick-edit__label">Status</span>
-                        <%= select_tag "entry[status]", options_for_select(Page::STATUSES, entry.status), id: nil %>
+                        <%= select_tag "entry[status]", options_for_select(Page::STATUSES, entry.status), id: nil, class: "ui-select" %>
                       </label>
                     <% end %>
                     <label class="quick-edit__field">
                       <span class="quick-edit__label">Priority</span>
-                      <%= number_field_tag "entry[sitemap_priority]", entry.priority, step: 0.1, min: 0, max: 1, class: "quick-edit__number", id: nil %>
+                      <%= number_field_tag "entry[sitemap_priority]", entry.priority, step: 0.1, min: 0, max: 1, class: "ui-input quick-edit__number", id: nil %>
                     </label>
                     <label class="quick-edit__field">
                       <span class="quick-edit__label">Change freq.</span>
-                      <%= select_tag "entry[sitemap_changefreq]", options_for_select(Sitemap::CHANGEFREQS, entry.changefreq), id: nil %>
+                      <%= select_tag "entry[sitemap_changefreq]", options_for_select(Sitemap::CHANGEFREQS, entry.changefreq), id: nil, class: "ui-select" %>
                     </label>
-                    <label class="choice quick-edit__check">
+                    <label class="ui-field ui-field--inline quick-edit__check">
                       <%= hidden_field_tag "entry[noindex]", "false", id: nil %>
-                      <%= check_box_tag "entry[noindex]", "true", entry.noindex, id: nil %>
+                      <%= check_box_tag "entry[noindex]", "true", entry.noindex, id: nil, class: "ui-checkbox" %>
                       <span>noindex</span>
                     </label>
-                    <label class="choice quick-edit__check">
+                    <label class="ui-field ui-field--inline quick-edit__check">
                       <%= hidden_field_tag "entry[nofollow]", "false", id: nil %>
-                      <%= check_box_tag "entry[nofollow]", "true", entry.nofollow, id: nil %>
+                      <%= check_box_tag "entry[nofollow]", "true", entry.nofollow, id: nil, class: "ui-checkbox" %>
                       <span>nofollow</span>
                     </label>
-                    <button type="submit" class="btn btn--primary">Update</button>
+                    <button type="submit" class="ui-button">Update</button>
                   <% end %>
                 </details>
               <% end %>
@@ -99,7 +99,7 @@
               <%= status_tag "noindex" %>
             <% end %>
           </td>
-          <td class="data-table__num"><%= format("%.2f", entry.priority.to_f) %></td>
+          <td class="ui-table__numeric"><%= format("%.2f", entry.priority.to_f) %></td>
           <td><%= entry.changefreq %></td>
           <td class="text-small nowrap"><%= entry.lastmod.present? ? time_ago_tag(Time.zone.parse(entry.lastmod.to_s)) : "—" %></td>
         </tr>

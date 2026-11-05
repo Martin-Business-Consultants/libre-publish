@@ -32,17 +32,17 @@
           trash_name: "this global", trash_path: (global_path(global.slug) if trash), trash_form: ("global_trash_form" if trash) %>
 
     <%= postbox "global-identity", "Global" do %>
-      <label class="field">
-        <span class="label">Slug</span>
-        <%= form.text_field :slug, required: true, class: "text-mono", autocomplete: "off" %>
+      <label class="ui-field">
+        <span class="ui-label">Slug</span>
+        <%= form.text_field :slug, required: true, class: "ui-input text-mono", autocomplete: "off" %>
       </label>
-      <label class="field">
-        <span class="label">Description</span>
-        <%= form.text_field :description %>
+      <label class="ui-field">
+        <span class="ui-label">Description</span>
+        <%= form.text_field :description, class: "ui-input" %>
       </label>
-      <label class="field">
-        <span class="label">Icon</span>
-        <%= form.text_field :icon, autocomplete: "off" %>
+      <label class="ui-field">
+        <span class="ui-label">Icon</span>
+        <%= form.text_field :icon, autocomplete: "off", class: "ui-input" %>
       </label>
       <%= render "content_form/reference", reference: "globals/" + global.slug %>
     <% end %>

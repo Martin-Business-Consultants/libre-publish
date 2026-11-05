@@ -9,34 +9,34 @@
     <%= render "layouts/shared/errors", record: redirect %>
 
     <%= form_with model: [:tools, redirect], class: "fields", data: { turbo_frame: "_top" } do |form| %>
-      <label class="field">
-        <span class="label">Source path</span>
-        <%= form.text_field :source_path, required: true, class: "text-mono", autofocus: true, autocomplete: "off", placeholder: "/old-page  or  /old-section/*" %>
-        <span class="help">A path on this site, with the leading slash. End it with <code class="code">/*</code> to match every path beneath it.</span>
+      <label class="ui-field">
+        <span class="ui-label">Source path</span>
+        <%= form.text_field :source_path, required: true, class: "ui-input text-mono", autofocus: true, autocomplete: "off", placeholder: "/old-page  or  /old-section/*" %>
+        <span class="ui-field__description">A path on this site, with the leading slash. End it with <code class="code">/*</code> to match every path beneath it.</span>
       </label>
 
-      <label class="field">
-        <span class="label">Destination</span>
-        <%= form.text_field :destination_url, required: true, class: "text-mono", autocomplete: "off", placeholder: "/new-page  or  https://example.com/new" %>
-        <span class="help">A path or a full URL. For a wildcard source, end it with <code class="code">/*</code> to carry the rest of the path across.</span>
+      <label class="ui-field">
+        <span class="ui-label">Destination</span>
+        <%= form.text_field :destination_url, required: true, class: "ui-input text-mono", autocomplete: "off", placeholder: "/new-page  or  https://example.com/new" %>
+        <span class="ui-field__description">A path or a full URL. For a wildcard source, end it with <code class="code">/*</code> to carry the rest of the path across.</span>
       </label>
 
-      <label class="field">
-        <span class="label">HTTP status</span>
-        <%= form.select :status_code, redirect_status_options %>
+      <label class="ui-field">
+        <span class="ui-label">HTTP status</span>
+        <%= form.select :status_code, redirect_status_options, {}, { class: "ui-select" } %>
       </label>
 
-      <label class="choice choice--top">
-        <%= form.check_box :active %>
+      <label class="ui-field ui-field--inline">
+        <%= form.check_box :active, class: "ui-checkbox" %>
         <span class="stack stack--2xs">
-          <span class="label">Active</span>
-          <span class="help">Enforced on requests. Untick to keep the rule without applying it.</span>
+          <span class="ui-label">Active</span>
+          <span class="ui-field__description">Enforced on requests. Untick to keep the rule without applying it.</span>
         </span>
       </label>
 
-      <label class="field">
-        <span class="label">Notes <span class="label__note">(optional)</span></span>
-        <%= form.text_area :notes, rows: 3, placeholder: "Why this redirect exists, or when it can be removed." %>
+      <label class="ui-field">
+        <span class="ui-label">Notes <span class="label__note">(optional)</span></span>
+        <%= form.text_area :notes, rows: 3, placeholder: "Why this redirect exists, or when it can be removed.", class: "ui-textarea" %>
       </label>
 
       <% if redirect.persisted? %>
@@ -53,8 +53,8 @@
                   message: "Anyone visiting " + redirect.source_path_was.to_s + " will get a 404 instead." %>
           </span>
         <% end %>
-        <button type="button" class="btn" data-action="dialog#close">Cancel</button>
-        <%= form.button (redirect.new_record? ? "Add redirect" : "Save changes"), class: "btn btn--primary" %>
+        <button type="button" class="ui-button ui-button--outline" data-action="dialog#close">Cancel</button>
+        <%= form.button (redirect.new_record? ? "Add redirect" : "Save changes"), class: "ui-button" %>
       </div>
     <% end %>
   </div>

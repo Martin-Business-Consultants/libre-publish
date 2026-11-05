@@ -4,17 +4,17 @@
     the direct-upload controller lists each file's progress under the button. %>
 <%= form_with url: file_manager_assets_path, class: "upload-anchor", data: { controller: "form media--direct-upload" } do |form| %>
   <%= form.hidden_field :folder, value: folder, id: nil, data: { media__file_drop_target: "filesFolder" } %>
-  <label class="btn btn--primary" title="Upload files">
+  <label class="ui-button" title="Upload files">
     <%= icon_tag "add" %>
     <span>Upload files</span>
     <%= form.file_field :files, multiple: true, direct_upload: true, hidden: true,
-          data: { action: "change->form#submit", media__direct_upload_target: "input", media__file_drop_target: "filesInput" } %>
+          data: { action: "change->form#submit", media__direct_upload_target: "input", media__file_drop_target: "filesInput" }, class: "ui-input" %>
   </label>
   <ul class="upload-popover upload-popover--progress upload-list" data-media--direct-upload-target="list" hidden></ul>
 <% end %>
 
 <details class="upload-anchor--wide" data-media--file-drop-target="zipBox">
-  <summary class="btn" title="Upload a zip of images">
+  <summary class="ui-button ui-button--outline" title="Upload a zip of images">
     <%= icon_tag "package" %>
     <span>Upload a zip</span>
   </summary>
@@ -22,11 +22,11 @@
         data: { controller: "media--direct-upload" } do |form| %>
     <%= form.hidden_field :folder, value: folder, id: nil, data: { media__file_drop_target: "zipFolder" } %>
     <p class="text-body">A .zip of images, each turned into a WebP in <strong class="text-medium text-ink"><%= folder %></strong>. HEIC, AVIF, JPEG, PNG, GIF and TIFF all work.</p>
-    <%= form.file_field :archive, accept: ".zip,application/zip", direct_upload: true, required: true, class: "full-width",
+    <%= form.file_field :archive, accept: ".zip,application/zip", direct_upload: true, required: true, class: "ui-input full-width",
           data: { media__direct_upload_target: "input", media__file_drop_target: "zipInput" } %>
     <ul class="upload-list" data-media--direct-upload-target="list" hidden></ul>
     <div>
-      <button type="submit" class="btn">
+      <button type="submit" class="ui-button ui-button--outline">
         <span>Unpack into this folder</span>
         <%= icon_tag "arrow-right" %>
       </button>

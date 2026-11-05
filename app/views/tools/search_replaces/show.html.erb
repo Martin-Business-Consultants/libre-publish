@@ -8,17 +8,17 @@
     <section class="panel panel--padded stack">
       <div class="grid grid--2">
         <%= settings_field "Find" do %>
-          <%= form.text_field :term, value: params[:term], required: true, minlength: SearchReplace::MIN_LENGTH, autocomplete: "off" %>
+          <%= form.text_field :term, value: params[:term], required: true, minlength: SearchReplace::MIN_LENGTH, autocomplete: "off", class: "ui-input" %>
         <% end %>
         <%= settings_field "Replace with" do %>
-          <%= form.text_field :replacement, value: params[:replacement], autocomplete: "off" %>
+          <%= form.text_field :replacement, value: params[:replacement], autocomplete: "off", class: "ui-input" %>
         <% end %>
       </div>
-      <label class="choice text-ink">
-        <%= form.check_box :case_sensitive, { checked: params[:case_sensitive] == "1" }, "1", nil %>
+      <label class="ui-field ui-field--inline text-ink">
+        <%= form.check_box :case_sensitive, { checked: params[:case_sensitive] == "1", class: "ui-checkbox" }, "1", nil %>
         <span>Match case</span>
       </label>
-      <div><button type="submit" class="btn">Find</button></div>
+      <div><button type="submit" class="ui-button ui-button--outline">Find</button></div>
     </section>
   <% end %>
 
@@ -46,7 +46,7 @@
             <%= form.hidden_field :term, value: @search.term %>
             <%= form.hidden_field :replacement, value: @search.replacement %>
             <%= form.hidden_field :case_sensitive, value: params[:case_sensitive] %>
-            <button type="submit" class="btn btn--primary">Replace all with “<%= @search.replacement %>”</button>
+            <button type="submit" class="ui-button">Replace all with “<%= @search.replacement %>”</button>
             <span class="text-small text-muted">Each record keeps its previous version in its history.</span>
           <% end %>
         <% end %>

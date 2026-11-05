@@ -1,6 +1,6 @@
 <%# locals: (field:, value:, scope:) %>
-<label class="choice" for="<%= scope.dom_id %>">
+<label class="ui-field ui-field--inline" for="<%= scope.dom_id %>">
   <%= hidden_field_tag scope.name, "0", id: nil %>
-  <%= check_box_tag scope.name, "1", value == true || value == "true", id: scope.dom_id %>
+  <%= check_box_tag scope.name, "1", value == true || value == "true", id: scope.dom_id, class: "ui-checkbox" %>
   <span class="text-medium text-ink"><%= content_field_label(field) %></span>
 </label>

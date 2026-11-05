@@ -8,7 +8,7 @@
           <th>When</th>
           <th>Event</th>
           <th>Result</th>
-          <th class="data-table__num">Time</th>
+          <th class="ui-table__numeric">Time</th>
           <th>Error</th>
         </tr>
       </thead>
@@ -22,10 +22,10 @@
               <% if delivery.success %>
                 <%= status_tag((delivery.response_status || "OK").to_s, highlight: true) %>
               <% else %>
-                <span class="badge badge--danger"><%= delivery.response_status || "Failed" %></span>
+                <span class="ui-badge ui-badge--negative"><%= delivery.response_status || "Failed" %></span>
               <% end %>
             </td>
-            <td class="data-table__num nowrap"><%= "#{delivery.duration_ms} ms" if delivery.duration_ms %></td>
+            <td class="ui-table__numeric nowrap"><%= "#{delivery.duration_ms} ms" if delivery.duration_ms %></td>
             <td><span class="text-small text-muted"><%= delivery.error %></span></td>
           </tr>
         <% end %>

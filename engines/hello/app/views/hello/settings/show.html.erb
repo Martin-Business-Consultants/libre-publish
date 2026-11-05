@@ -7,8 +7,8 @@
 
   <%= form_with url: hello_settings_path, method: :patch, scope: :settings, class: "fields" do |form| %>
     <%= settings_field "Default greeting", hint: "What the Greetings form starts with." do %>
-      <%= form.text_field :default_message, value: @settings["default_message"], maxlength: 200 %>
+      <%= form.text_field :default_message, value: @settings["default_message"], maxlength: 200, class: "ui-input" %>
     <% end %>
-    <div><button type="submit" class="btn btn--primary">Save</button></div>
+    <div><button type="submit" class="ui-button">Save</button></div>
   <% end %>
 </section>

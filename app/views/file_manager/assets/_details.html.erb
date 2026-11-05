@@ -7,7 +7,7 @@
 <% usages = asset.referencing_records %>
 <div class="stack stack--lg">
   <% if flash[:notice].present? && turbo_frame_request? %>
-    <p class="notice notice--success"><%= flash[:notice] %></p>
+    <p class="ui-alert ui-alert--success"><%= flash[:notice] %></p>
   <% end %>
 
   <div class="media-details__preview">
@@ -29,16 +29,16 @@
   </dl>
 
   <div class="cluster">
-    <button type="button" class="btn btn--sm" data-controller="copy-to-clipboard" data-copy-to-clipboard-content-value="<%= asset.url %>"
-      data-copy-to-clipboard-success-class="btn--success" data-action="copy-to-clipboard#copy">
+    <button type="button" class="ui-button ui-button--outline ui-button--sm" data-controller="copy-to-clipboard" data-copy-to-clipboard-content-value="<%= asset.url %>"
+      data-copy-to-clipboard-success-class="ui-button--secondary" data-action="copy-to-clipboard#copy">
       <%= icon_tag "copy-paste" %>
       <span>Copy URL</span>
     </button>
-    <%= link_to rails_blob_path(asset.file, disposition: "attachment"), class: "btn btn--sm", data: { turbo: false } do %>
+    <%= link_to rails_blob_path(asset.file, disposition: "attachment"), class: "ui-button ui-button--outline ui-button--sm", data: { turbo: false } do %>
       <span>Download</span>
     <% end %>
     <% if can_write && asset.optimized? %>
-      <%= button_to "Restore original", file_manager_asset_restoration_path(asset), class: "btn btn--sm",
+      <%= button_to "Restore original", file_manager_asset_restoration_path(asset), class: "ui-button ui-button--outline ui-button--sm",
             title: "Put back the " + asset.original_file.filename.to_s + " (" + number_to_human_size(asset.original_file.byte_size) + ") the Image Optimizer replaced",
             form: { data: { turbo_confirm: "Put the original " + asset.original_file.filename.to_s + " back in place of this WebP?" } } %>
     <% end %>
@@ -51,31 +51,31 @@
   <%= render "layouts/shared/errors", record: asset %>
   <%= form_with model: asset, url: file_manager_asset_path(asset), scope: :asset do |form| %>
     <%= tag.fieldset class: "fields", disabled: !can_write do %>
-      <label class="field">
-        <span class="label">Alternative text</span>
-        <%= form.text_area :alt, rows: 2, placeholder: "What the image shows, for people who can’t see it." %>
-        <span class="help">Read aloud by screen readers, and shown when the image can’t load. Leave it empty if the image is purely decorative.</span>
+      <label class="ui-field">
+        <span class="ui-label">Alternative text</span>
+        <%= form.text_area :alt, rows: 2, placeholder: "What the image shows, for people who can’t see it.", class: "ui-textarea" %>
+        <span class="ui-field__description">Read aloud by screen readers, and shown when the image can’t load. Leave it empty if the image is purely decorative.</span>
       </label>
-      <label class="field">
-        <span class="label">Title</span>
-        <%= form.text_field :name, placeholder: asset.filename, autocomplete: "off" %>
+      <label class="ui-field">
+        <span class="ui-label">Title</span>
+        <%= form.text_field :name, placeholder: asset.filename, autocomplete: "off", class: "ui-input" %>
       </label>
-      <label class="field">
-        <span class="label">Caption</span>
-        <%= form.text_area :caption, rows: 2 %>
-        <span class="help">Shown with it on the site, where the site shows captions.</span>
+      <label class="ui-field">
+        <span class="ui-label">Caption</span>
+        <%= form.text_area :caption, rows: 2, class: "ui-textarea" %>
+        <span class="ui-field__description">Shown with it on the site, where the site shows captions.</span>
       </label>
-      <label class="field">
-        <span class="label">Description</span>
-        <%= form.text_area :description, rows: 3 %>
+      <label class="ui-field">
+        <span class="ui-label">Description</span>
+        <%= form.text_area :description, rows: 3, class: "ui-textarea" %>
       </label>
-      <label class="field">
-        <span class="label">Folder</span>
-        <%= form.select :folder, options_for_select([["Top level", "/"]] + folders.map { [it, it] }, asset.folder) %>
+      <label class="ui-field">
+        <span class="ui-label">Folder</span>
+        <%= form.select :folder, options_for_select([["Top level", "/"]] + folders.map { [it, it] }, asset.folder), {}, { class: "ui-select" } %>
       </label>
       <% if can_write %>
         <div>
-          <%= form.button "Save", class: "btn btn--primary" %>
+          <%= form.button "Save", class: "ui-button" %>
         </div>
       <% end %>
     <% end %>

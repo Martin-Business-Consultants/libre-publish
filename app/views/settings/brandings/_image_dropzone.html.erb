@@ -3,8 +3,8 @@
     click to choose one, and it's saved to the media library (folder
     /branding) with the form. <kind>_id keeps the current one; Remove clears
     it (image_dropzone_controller). settings.css colors the zone by state. %>
-<div class="field">
-  <span class="label"><%= label %></span>
+<div class="ui-field">
+  <span class="ui-label"><%= label %></span>
   <div class="<%= class_names("image-dropzone", "image-dropzone--filled": asset) %>" data-controller="image-dropzone"
        data-action="dragover->image-dropzone#over dragleave->image-dropzone#leave drop->image-dropzone#dropped">
     <%= form.hidden_field "#{kind}_id", value: asset&.id, data: { image_dropzone_target: "id" } %>
@@ -21,8 +21,8 @@
           data: { image_dropzone_target: "file", action: "change->image-dropzone#chosen" } %>
   </div>
   <div class="row row--between">
-    <span class="help"><%= hint %></span>
-    <%= tag.button "Remove", type: "button", class: "btn btn--plain btn--sm", hidden: asset.nil?,
+    <span class="ui-field__description"><%= hint %></span>
+    <%= tag.button "Remove", type: "button", class: "ui-button ui-button--ghost ui-button--sm", hidden: asset.nil?,
           data: { image_dropzone_target: "remove", action: "image-dropzone#remove" } %>
   </div>
 </div>

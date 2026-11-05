@@ -40,14 +40,14 @@
 
     <%= postbox "page-attributes", "Page Attributes" do %>
       <%= render "content_form/permalink", record: page, form: form, required: true, hint: "Lowercase letters, digits and dashes." %>
-      <label class="field">
-        <span class="label">Parent</span>
-        <%= form.select :parent_id, parents.map { [ ("  " * it.depth.to_i) + "/" + it.path, it.id ] }, { include_blank: "No parent (top level)" } %>
-        <span class="help">Nests this page under another; its URL becomes the parent’s path plus its slug.</span>
+      <label class="ui-field">
+        <span class="ui-label">Parent</span>
+        <%= form.select :parent_id, parents.map { [ ("  " * it.depth.to_i) + "/" + it.path, it.id ] }, { include_blank: "No parent (top level)" }, { class: "ui-select" } %>
+        <span class="ui-field__description">Nests this page under another; its URL becomes the parent’s path plus its slug.</span>
       </label>
-      <label class="field">
-        <span class="label">Locale</span>
-        <%= form.text_field :locale, required: true, placeholder: "en", autocomplete: "off" %>
+      <label class="ui-field">
+        <span class="ui-label">Locale</span>
+        <%= form.text_field :locale, required: true, placeholder: "en", autocomplete: "off", class: "ui-input" %>
       </label>
       <% if page.persisted? %>
         <%= render "content_form/reference", reference: "/" + page.path %>

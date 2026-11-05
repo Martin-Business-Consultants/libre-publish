@@ -14,7 +14,7 @@
   <% end %>
   <label class="visually-hidden" for="list_search_s"><%= label %></label>
   <%= icon_tag "search", class: "input-with-icon__icon" %>
-  <input type="search" id="list_search_s" name="s" value="<%= search_term %>" placeholder="<%= label %>" autocomplete="off" autocorrect="off" data-1p-ignore="true"
+  <input class="ui-input" type="search" id="list_search_s" name="s" value="<%= search_term %>" placeholder="<%= label %>" autocomplete="off" autocorrect="off" data-1p-ignore="true"
     data-filter-target="input" data-keys="/" data-keys-focus
     data-action="input->filter#filter keydown.esc->filter#clearInput keydown.esc->filter#filter:stop">
 </form>

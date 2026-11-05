@@ -8,7 +8,7 @@
       <span class="truncate text-mono text-small text-muted"><%= item %></span>
     </span>
   <% else %>
-    <%= text_field_tag scope.name, (item == "__VALUE__" ? nil : item), id: nil, class: "grow", autocomplete: "off", aria: { label: "Item" } %>
+    <%= text_field_tag scope.name, (item == "__VALUE__" ? nil : item), id: nil, class: "ui-input grow", autocomplete: "off", aria: { label: "Item" } %>
   <% end %>
   <%= render "content_form/row_moves", noun: "item" %>
 </li>

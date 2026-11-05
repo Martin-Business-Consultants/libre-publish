@@ -9,8 +9,8 @@
     <%= link_to "How frontends work with the CMS", developers_path, class: "link", data: { turbo_frame: "_top" } %>
   </p>
 
-  <div class="field">
-    <span class="label">Endpoint</span>
+  <div class="ui-field">
+    <span class="ui-label">Endpoint</span>
     <div class="row">
       <code class="code-block grow">GET <%= url %></code>
       <%= copy_button url %>
@@ -18,7 +18,7 @@
   </div>
 
   <details open>
-    <summary class="label">Fetch it</summary>
+    <summary class="ui-label">Fetch it</summary>
     <pre class="code-block api-json__fetch"><%= api_json_cli_call(preview.path) %>   # the cms CLI, or the same tool over MCP</pre>
     <pre class="code-block api-json__fetch">curl -H "Authorization: Bearer $CMS_API_TOKEN" "<%= url %>"</pre>
     <pre class="code-block api-json__fetch">// In an Astro site with @librepublish/astro: published content only
@@ -26,9 +26,9 @@
 <%= api_json_client_call(preview.path) %></pre>
   </details>
 
-  <div class="field">
+  <div class="ui-field">
     <div class="row row--between row--base">
-      <span class="label">Response</span>
+      <span class="ui-label">Response</span>
       <%= copy_button preview.json %>
     </div>
     <pre class="code-block api-json__body"><code><%= preview.json %></code></pre>

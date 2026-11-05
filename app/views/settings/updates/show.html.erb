@@ -32,7 +32,7 @@
       </div>
       <div><dt>Updates by</dt><dd><%= update_method_description %></dd></div>
     </dl>
-    <div><%= button_to "Check now", settings_updates_check_path, class: "btn btn--sm" %></div>
+    <div><%= button_to "Check now", settings_updates_check_path, class: "ui-button ui-button--outline ui-button--sm" %></div>
   </section>
 
   <% if @upgrade %>
@@ -72,7 +72,7 @@
       <% if !Upgrade.available? %>
         <p class="text-body"><%= Upgrade.unavailable_reason %> On the server:</p>
         <pre class="<%= settings_code_classes %>"><code><%= manual_update_command(release_tag) %></code></pre>
-        <p class="help">
+        <p class="ui-field__description">
           To use a button instead, run from a checkout made by <code>bin/install</code>, or for a Docker install set
           <code>CMS_GITHUB_TOKEN</code> and <code>CMS_DEPLOY_DESTINATION</code>. See <code>docs/install.md</code>.
         </p>
@@ -93,7 +93,7 @@
       <div class="cluster cluster--between">
         <h2 class="heading">Past updates</h2>
         <% if Current.user.admin? && @upgrades.any?(&:failed?) %>
-          <%= button_to "Clear failed updates", settings_updates_failures_path, method: :delete, class: "btn btn--sm",
+          <%= button_to "Clear failed updates", settings_updates_failures_path, method: :delete, class: "ui-button ui-button--outline ui-button--sm",
                 form: { data: { turbo_confirm: "Clear the failed updates from this list?" } } %>
         <% end %>
       </div>

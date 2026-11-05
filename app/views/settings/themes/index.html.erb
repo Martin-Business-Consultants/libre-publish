@@ -47,20 +47,20 @@
               <div class="item__actions">
                 <%= status_tag drawing ? "Active" : "Off" %>
                 <% if drawing %>
-                  <%= link_to "View site", root_path, class: "btn btn--sm", target: "_blank", rel: "noopener" %>
+                  <%= link_to "View site", root_path, class: "ui-button ui-button--outline ui-button--sm", target: "_blank", rel: "noopener" %>
                 <% end %>
                 <% if theme.settings.any? %>
-                  <%= link_to "Customize", edit_settings_theme_design_path(theme.key), class: "btn btn--sm" %>
+                  <%= link_to "Customize", edit_settings_theme_design_path(theme.key), class: "ui-button ui-button--outline ui-button--sm" %>
                 <% end %>
                 <% if plugin && Current.user.can?("settings:write") %>
                   <% if Cms::Plugins.switched_on?(plugin) %>
-                    <%= button_to "Switch off", settings_plugin_activation_path(plugin.key, from: "themes"), method: :delete, class: "btn btn--sm" %>
+                    <%= button_to "Switch off", settings_plugin_activation_path(plugin.key, from: "themes"), method: :delete, class: "ui-button ui-button--outline ui-button--sm" %>
                   <% elsif plugin.compatible? %>
-                    <%= button_to "Switch on", settings_plugin_activation_path(plugin.key, from: "themes"), class: "btn btn--sm" %>
+                    <%= button_to "Switch on", settings_plugin_activation_path(plugin.key, from: "themes"), class: "ui-button ui-button--outline ui-button--sm" %>
                   <% end %>
                 <% end %>
                 <% if plugin && source && Current.user.admin? %>
-                  <%= button_to "Update", settings_plugin_upgrade_path(plugin.key, from: "themes"), class: class_names("btn btn--sm", "btn--primary": newer),
+                  <%= button_to "Update", settings_plugin_upgrade_path(plugin.key, from: "themes"), class: ui_button_classes(newer ? :default : :outline, size: :sm),
                         title: "Install " + source + "’s latest release in place of this one" %>
                 <% end %>
               </div>
@@ -84,9 +84,9 @@
         since a plugin runs with the CMS’s full access. Then switch it on here.
       </p>
       <%= form_with url: settings_plugins_installations_path(from: "themes"), class: "cluster" do |form| %>
-        <%= form.text_field :repo, class: "grow", placeholder: "owner/acme-theme", autocomplete: "off", required: true,
+        <%= form.text_field :repo, class: "ui-input grow", placeholder: "owner/acme-theme", autocomplete: "off", required: true,
               aria: { label: "GitHub repository" } %>
-        <button type="submit" class="btn btn--primary">Install</button>
+        <button type="submit" class="ui-button">Install</button>
       <% end %>
     </section>
   <% end %>

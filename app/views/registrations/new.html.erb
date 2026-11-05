@@ -10,27 +10,27 @@
     <%= render "layouts/shared/errors", record: @user %>
 
     <%= form_with url: sign_up_path, class: "fields", data: { controller: "form" } do |form| %>
-      <label class="field">
-        <span class="label">Name</span>
-        <%= form.text_field :name, required: true, autofocus: true, autocomplete: "name", placeholder: "Full name", value: @user.name %>
+      <label class="ui-field">
+        <span class="ui-label">Name</span>
+        <%= form.text_field :name, required: true, autofocus: true, autocomplete: "name", placeholder: "Full name", value: @user.name, class: "ui-input" %>
       </label>
 
-      <label class="field">
-        <span class="label">Email address</span>
-        <%= form.email_field :email, required: true, autocomplete: "email", placeholder: "email@example.com", value: @user.email %>
+      <label class="ui-field">
+        <span class="ui-label">Email address</span>
+        <%= form.email_field :email, required: true, autocomplete: "email", placeholder: "email@example.com", value: @user.email, class: "ui-input" %>
       </label>
 
-      <label class="field">
-        <span class="label">Password</span>
-        <%= form.password_field :password, required: true, autocomplete: "new-password", placeholder: "Password" %>
+      <label class="ui-field">
+        <span class="ui-label">Password</span>
+        <%= form.password_field :password, required: true, autocomplete: "new-password", placeholder: "Password", class: "ui-input" %>
       </label>
 
-      <label class="field">
-        <span class="label">Confirm password</span>
-        <%= form.password_field :password_confirmation, required: true, autocomplete: "new-password", placeholder: "Confirm password" %>
+      <label class="ui-field">
+        <span class="ui-label">Confirm password</span>
+        <%= form.password_field :password_confirmation, required: true, autocomplete: "new-password", placeholder: "Confirm password", class: "ui-input" %>
       </label>
 
-      <button type="submit" class="btn btn--primary btn--block" data-form-target="submit">
+      <button type="submit" class="ui-button ui-button--block" data-form-target="submit">
         <span>Create account</span>
         <%= icon_tag "arrow-right", class: "icon--sm" %>
       </button>

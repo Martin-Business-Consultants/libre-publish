@@ -1,7 +1,7 @@
 <% @page_title = "Revision" %>
 <%= parent_page "Revisions", global_versions_path(@global.slug) %>
 <% content_for :page_actions do %>
-  <%= link_to "All revisions", global_versions_path(@global.slug), class: "btn" %>
+  <%= link_to "All revisions", global_versions_path(@global.slug), class: "ui-button ui-button--outline" %>
 <% end %>
 <%= render "layouts/shared/page_header", title: "Compare a revision of “" + @global.name + "”" %>
 <section class="panel panel--padded fields">

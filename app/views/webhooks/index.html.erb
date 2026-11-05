@@ -6,7 +6,7 @@
     wraps the whole page, as the New button sits in the title row. %>
 <% content_for :page_actions do %>
   <% if Current.user.can?("webhooks:write") %>
-    <%= link_to new_webhook_path, class: "btn", data: { keys: "n", turbo_frame: "webhook_sheet", action: "dialog#open" } do %>
+    <%= link_to new_webhook_path, class: "ui-button ui-button--outline", data: { keys: "n", turbo_frame: "webhook_sheet", action: "dialog#open" } do %>
       <%= icon_tag "add" %>
       <span>New webhook</span>
     <% end %>
@@ -22,7 +22,7 @@
       <tr>
         <th>Name</th>
         <th>URL</th>
-        <th class="data-table__num">Events</th>
+        <th class="ui-table__numeric">Events</th>
         <th>Health</th>
         <th>Last delivery</th>
       </tr>
@@ -42,7 +42,7 @@
                 delete_message: "Its receiver stops hearing about changes. Its delivery log goes too." %>
           </td>
           <td><span class="webhooks__url truncate text-mono text-small text-muted"><%= webhook.url %></span></td>
-          <td class="data-table__num" title="<%= Array(webhook.events).join(", ") %>"><%= Array(webhook.events).size %></td>
+          <td class="ui-table__numeric" title="<%= Array(webhook.events).join(", ") %>"><%= Array(webhook.events).size %></td>
           <td><%= webhook_health(webhook) %></td>
           <td><span class="nowrap text-small text-muted"><%= time_ago_tag webhook.last_delivery_at %></span></td>
         </tr>

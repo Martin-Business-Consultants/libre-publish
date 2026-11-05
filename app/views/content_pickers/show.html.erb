@@ -4,7 +4,7 @@
       <% @choices.each do |label, value, detail| %>
         <%# herb:key value %>
         <li role="option">
-          <button type="button" class="menu__item picker__choice" data-value="<%= value %>" data-label="<%= label %>" data-action="picker#choose">
+          <button type="button" class="ui-menu__item picker__choice" data-value="<%= value %>" data-label="<%= label %>" data-action="picker#choose">
             <span class="grow truncate"><%= label %></span>
             <span class="no-shrink text-mono text-small text-muted"><%= detail %></span>
           </button>

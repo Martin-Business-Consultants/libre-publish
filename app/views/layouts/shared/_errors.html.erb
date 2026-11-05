@@ -1,7 +1,7 @@
 <%# locals: (record:) %>
 <%# A record's validation errors, above the form that didn't save. %>
 <% if record.errors.any? %>
-  <div class="notice notice--danger" role="alert">
+  <div class="ui-alert ui-alert--destructive" role="alert">
     <%= icon_tag "close-circle" %>
     <div class="stack stack--xs">
       <p class="text-medium">That didn’t work:</p>

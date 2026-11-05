@@ -3,10 +3,10 @@
       description: "Every change to General, Branding, Search, Forms and Email delivery, newest first. Open one to compare it with now and restore it. Secrets are never kept." %>
 
 <nav class="cluster cluster--sm" aria-label="Setting">
-  <%= link_to "All", settings_histories_path, class: "btn btn--sm", aria: { current: (@key.nil? ? "page" : nil) } %>
+  <%= link_to "All", settings_histories_path, class: "ui-button ui-button--outline ui-button--sm", aria: { current: (@key.nil? ? "page" : nil) } %>
   <% SettingVersion::VERSIONED.each do |key, label| %>
     <%# herb:key key %>
-    <%= link_to label, settings_histories_path(key: key), class: "btn btn--sm", aria: { current: (@key == key ? "page" : nil) } %>
+    <%= link_to label, settings_histories_path(key: key), class: "ui-button ui-button--outline ui-button--sm", aria: { current: (@key == key ? "page" : nil) } %>
   <% end %>
 </nav>
 

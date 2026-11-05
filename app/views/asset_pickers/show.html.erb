@@ -11,30 +11,30 @@
         <%= hidden_field_tag :folder, @folder, id: nil %>
         <%= icon_tag "search", class: "input-with-icon__icon" %>
         <%= search_field_tag :q, @query, id: nil, placeholder: (@folder ? "Search #{@folder}…" : "Search every folder…"), autocomplete: "off",
-              aria: { label: "Search files" } %>
+              aria: { label: "Search files" }, class: "ui-input" %>
       <% end %>
       <%= form_with url: asset_picker_path, method: :get, data: { controller: "form" } do %>
         <%= hidden_field_tag :q, @query, id: nil %>
         <%= select_tag :folder, options_for_select([["All folders", ""]] + @folders, @folder.to_s), id: nil, aria: { label: "Folder" },
-              data: { action: "change->form#submit" } %>
+              data: { action: "change->form#submit" }, class: "ui-select" %>
       <% end %>
     </div>
 
     <% if Current.user.can?("assets:write") %>
       <%= form_with url: asset_picker_path, class: "cluster", data: { controller: "form media--direct-upload" } do |form| %>
         <%= form.hidden_field :folder, value: @folder || "/", id: nil %>
-        <label class="btn btn--sm" title="Upload into this folder">
+        <label class="ui-button ui-button--outline ui-button--sm" title="Upload into this folder">
           <%= icon_tag "add" %>
           <span>Upload into <%= @folder || "/" %></span>
           <%= form.file_field :files, multiple: true, direct_upload: true, hidden: true,
-                data: { action: "change->form#submit", media__direct_upload_target: "input" } %>
+                data: { action: "change->form#submit", media__direct_upload_target: "input" }, class: "ui-input" %>
         </label>
         <ul class="stack stack--xs full-width text-small text-body" data-media--direct-upload-target="list" hidden></ul>
       <% end %>
     <% end %>
 
     <% if @upload_errors.present? %>
-      <ul class="notice notice--danger notice--stacked">
+      <ul class="ui-alert ui-alert--destructive">
         <% @upload_errors.each do |message| %>
           <%# herb:key message %>
           <li><%= message %></li>

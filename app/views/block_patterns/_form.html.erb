@@ -15,20 +15,20 @@
   <aside>
     <section class="panel panel--padded stack">
       <%= settings_field "Slug", hint: "Lowercase letters, digits and dashes. A synced pattern is placed by it." do %>
-        <%= form.text_field :slug, required: true, pattern: "[a-z0-9][a-z0-9-]*" %>
+        <%= form.text_field :slug, required: true, pattern: "[a-z0-9][a-z0-9-]*", class: "ui-input" %>
       <% end %>
       <%= settings_field "Description", hint: "What it’s for, shown in the block picker." do %>
-        <%= form.text_area :description, rows: 3 %>
+        <%= form.text_area :description, rows: 3, class: "ui-textarea" %>
       <% end %>
-      <label class="choice choice--top text-ink">
-        <%= form.check_box :synced %>
+      <label class="ui-field ui-field--inline text-ink">
+        <%= form.check_box :synced, class: "ui-checkbox" %>
         <span>
           Synced: placed as one block that always shows this pattern, so a change here changes every page using it.
           Unsynced, it’s added as a copy to change freely.
         </span>
       </label>
       <div class="row row--between">
-        <button type="submit" class="btn btn--primary">Save</button>
+        <button type="submit" class="ui-button">Save</button>
       </div>
     </section>
     <% if pattern.persisted? && Current.user.can?("pages:delete") %>

@@ -2,8 +2,8 @@
 <% can_write = Current.user.can?("settings:write") %>
 
 <% content_for :page_actions do %>
-  <%= link_to "Sitemap", sitemap_path, class: "btn" %>
-  <%= link_to "View robots.txt", "#{@base_url}/robots.txt", class: "btn", target: "_blank", rel: "noopener" %>
+  <%= link_to "Sitemap", sitemap_path, class: "ui-button ui-button--outline" %>
+  <%= link_to "View robots.txt", "#{@base_url}/robots.txt", class: "ui-button ui-button--outline", target: "_blank", rel: "noopener" %>
 <% end %>
 <%= render "layouts/shared/page_header", title: @page_title %>
 
@@ -17,7 +17,7 @@
       <div class="fields" data-controller="show-if">
         <div data-field-name="robots_mode">
           <%= settings_field "robots.txt is" do %>
-            <%= form.select :robots_mode, [["Made from Settings › Search (recommended)", "generated"], ["Written here, exactly as I write it", "custom"]], selected: @robots.custom? ? "custom" : "generated" %>
+            <%= form.select :robots_mode, [["Made from Settings › Search (recommended)", "generated"], ["Written here, exactly as I write it", "custom"]], { selected: @robots.custom? ? "custom" : "generated" }, { class: "ui-select" } %>
           <% end %>
         </div>
         <div class="stack stack--sm" data-show-if='{"field":"robots_mode","equals":"generated"}'>
@@ -26,20 +26,20 @@
             (now: AI search <strong><%= @settings["ai_search"] == "block" ? "kept out" : "let in" %></strong>, AI training <strong><%= @settings["ai_training"] == "block" ? "kept out" : "let in" %></strong>), and the sitemap's address.
           </p>
           <%= settings_field "Extra rules", hint: "Added as written: a crawler or a path the choices don't cover." do %>
-            <%= form.text_area :robots_extra, value: @settings["robots_extra"], rows: 5, class: "text-mono text-small", placeholder: "User-agent: *\nDisallow: /thank-you\nDisallow: /search" %>
+            <%= form.text_area :robots_extra, value: @settings["robots_extra"], rows: 5, class: "ui-textarea text-mono text-small", placeholder: "User-agent: *\nDisallow: /thank-you\nDisallow: /search" %>
           <% end %>
         </div>
         <div class="stack stack--sm" data-show-if='{"field":"robots_mode","equals":"custom"}'>
           <%= settings_field "robots.txt", hint: "The whole file. Keep a Sitemap line, and never “Disallow: /” for every crawler unless the site should leave search." do %>
-            <%= form.text_area :robots_custom, value: @settings["robots_custom"].presence || @robots.generated, rows: 18, class: "text-mono text-small", spellcheck: false %>
+            <%= form.text_area :robots_custom, value: @settings["robots_custom"].presence || @robots.generated, rows: 18, class: "ui-textarea text-mono text-small", spellcheck: false %>
           <% end %>
         </div>
       </div>
       <% if can_write %>
         <div class="cluster cluster--sm">
-          <button type="submit" class="btn btn--primary">Save</button>
+          <button type="submit" class="ui-button">Save</button>
           <% if @robots.custom? %>
-            <button type="submit" name="reset" value="1" class="btn btn--plain" data-turbo-confirm="Go back to robots.txt made from Settings › Search? What's written here is kept for later.">Use the made one again</button>
+            <button type="submit" name="reset" value="1" class="ui-button ui-button--ghost" data-turbo-confirm="Go back to robots.txt made from Settings › Search? What's written here is kept for later.">Use the made one again</button>
           <% end %>
         </div>
       <% end %>
@@ -55,7 +55,7 @@
       <ul class="stack stack--xs">
         <% @warnings.each_with_index do |warning, index| %>
           <%# herb:key index %>
-          <li class="notice notice--warning text-small"><%= warning %></li>
+          <li class="ui-alert ui-alert--warning text-small"><%= warning %></li>
         <% end %>
       </ul>
     <% else %>

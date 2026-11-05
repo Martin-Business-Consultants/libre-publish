@@ -22,20 +22,20 @@
     <div class="item__actions">
       <%= status_tag enabled ? "Active" : (switched_on ? "Waiting" : "Off") %>
       <% if enabled && settings_page %>
-        <%= link_to instance_exec(&settings_page.path), class: "btn btn--plain btn--icon", title: plugin.name + " settings" do %>
+        <%= link_to instance_exec(&settings_page.path), class: "ui-button ui-button--ghost ui-button--icon", title: plugin.name + " settings" do %>
           <%= icon_tag "settings-outline" %>
           <span class="visually-hidden"><%= plugin.name %> settings</span>
         <% end %>
       <% end %>
       <% if Current.user.can?("settings:write") %>
         <% if switched_on %>
-          <%= button_to "Switch off", settings_plugin_activation_path(plugin.key), method: :delete, class: "btn btn--sm" %>
+          <%= button_to "Switch off", settings_plugin_activation_path(plugin.key), method: :delete, class: "ui-button ui-button--outline ui-button--sm" %>
         <% elsif plugin.compatible? %>
-          <%= button_to "Switch on", settings_plugin_activation_path(plugin.key), class: "btn btn--sm" %>
+          <%= button_to "Switch on", settings_plugin_activation_path(plugin.key), class: "ui-button ui-button--outline ui-button--sm" %>
         <% end %>
       <% end %>
       <% if source && Current.user.admin? %>
-        <%= button_to "Update", settings_plugin_upgrade_path(plugin.key), class: class_names("btn btn--sm", "btn--primary": newer),
+        <%= button_to "Update", settings_plugin_upgrade_path(plugin.key), class: ui_button_classes(newer ? :default : :outline, size: :sm),
               title: "Install " + source + "’s latest release in place of this one" %>
       <% end %>
       <% if removable && Current.user.admin? %>
@@ -45,9 +45,9 @@
     </div>
   </div>
   <% unless plugin.compatible? %>
-    <p class="field-error">Needs CMS <%= plugin.requires %>; this is <%= cms_version %>.</p>
+    <p class="ui-field__error">Needs CMS <%= plugin.requires %>; this is <%= cms_version %>.</p>
   <% end %>
   <% if missing.any? %>
-    <p class="field-error">Needs <%= missing.map { |dependency| Cms::Plugins.manifests[dependency]&.name || dependency.to_s }.to_sentence %> switched on.</p>
+    <p class="ui-field__error">Needs <%= missing.map { |dependency| Cms::Plugins.manifests[dependency]&.name || dependency.to_s }.to_sentence %> switched on.</p>
   <% end %>
 </li>

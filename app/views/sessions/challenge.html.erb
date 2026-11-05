@@ -8,13 +8,13 @@
     </div>
 
     <%= form_with url: sessions_challenge_path, class: "fields", data: { controller: "form" } do |form| %>
-      <label class="field">
-        <span class="label">Code</span>
-        <%= form.text_field :code, required: true, autofocus: true, autocomplete: "one-time-code", inputmode: "text", class: "one-time-code", placeholder: "000000" %>
-        <span class="help">Recovery codes are 16 characters; codes from an authenticator are 6 digits.</span>
+      <label class="ui-field">
+        <span class="ui-label">Code</span>
+        <%= form.text_field :code, required: true, autofocus: true, autocomplete: "one-time-code", inputmode: "text", class: "ui-input one-time-code", placeholder: "000000" %>
+        <span class="ui-field__description">Recovery codes are 16 characters; codes from an authenticator are 6 digits.</span>
       </label>
 
-      <button type="submit" class="btn btn--primary btn--block" data-form-target="submit">
+      <button type="submit" class="ui-button ui-button--block" data-form-target="submit">
         <span>Verify</span>
         <%= icon_tag "arrow-right", class: "icon--sm" %>
       </button>

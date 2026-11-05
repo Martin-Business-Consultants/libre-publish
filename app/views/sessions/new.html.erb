@@ -8,20 +8,20 @@
     </div>
 
     <%= form_with url: sign_in_path, class: "fields", data: { controller: "form" } do |form| %>
-      <label class="field">
-        <span class="label"><%= tx("Email address") %></span>
-        <%= form.email_field :email, required: true, autofocus: true, autocomplete: "email", placeholder: "email@example.com", value: params[:email] %>
+      <label class="ui-field">
+        <span class="ui-label"><%= tx("Email address") %></span>
+        <%= form.email_field :email, required: true, autofocus: true, autocomplete: "email", placeholder: "email@example.com", value: params[:email], class: "ui-input" %>
       </label>
 
-      <label class="field">
+      <label class="ui-field">
         <span class="row row--between row--md">
-          <span class="label"><%= tx("Password") %></span>
+          <span class="ui-label"><%= tx("Password") %></span>
           <%= link_to tx("Forgot password?"), new_identity_password_reset_path, class: "link text-small" %>
         </span>
-        <%= form.password_field :password, required: true, autocomplete: "current-password", placeholder: tx("Password") %>
+        <%= form.password_field :password, required: true, autocomplete: "current-password", placeholder: tx("Password"), class: "ui-input" %>
       </label>
 
-      <button type="submit" class="btn btn--primary btn--block" data-form-target="submit">
+      <button type="submit" class="ui-button ui-button--block" data-form-target="submit">
         <span><%= tx("Log in") %></span>
         <%= icon_tag "arrow-right", class: "icon--sm" %>
       </button>

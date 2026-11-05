@@ -4,28 +4,28 @@
 <% category_pool = record.category_pool %>
 <% tag_pool = record.tag_pool %>
 <% if category_pool %>
-  <div class="field">
-    <label class="label" for="<%= scope + "_category_entry_id" %>">Category</label>
+  <div class="ui-field">
+    <label class="ui-label" for="<%= scope + "_category_entry_id" %>">Category</label>
     <%= select_tag scope + "[category_entry_id]",
           options_from_collection_for_select(category_pool.entries.where(status: "published").order(:title), :id, :title, record.category_entry_id),
-          include_blank: "None", id: scope + "_category_entry_id" %>
-    <p class="help">From <%= category_pool.name %></p>
+          include_blank: "None", id: scope + "_category_entry_id", class: "ui-select" %>
+    <p class="ui-field__description">From <%= category_pool.name %></p>
   </div>
 <% end %>
 <% if tag_pool %>
   <fieldset class="stack stack--sm">
-    <legend class="label content-taxonomy__legend">Tags</legend>
+    <legend class="ui-label content-taxonomy__legend">Tags</legend>
     <%= hidden_field_tag scope + "[tag_ids][]", "", id: nil %>
     <% chosen = record.tag_ids %>
     <div class="content-taxonomy__tags">
       <% tag_pool.entries.where(status: "published").order(:title).each do |tag_entry| %>
         <%# herb:key tag_entry.id %>
-        <label class="choice">
-          <%= check_box_tag scope + "[tag_ids][]", tag_entry.id, chosen.include?(tag_entry.id), id: nil %>
-          <span><%= tag_entry.title %></span>
+        <label class="ui-field ui-field--inline">
+          <%= check_box_tag scope + "[tag_ids][]", tag_entry.id, chosen.include?(tag_entry.id), id: nil, class: "ui-checkbox" %>
+          <span class="ui-label"><%= tag_entry.title %></span>
         </label>
       <% end %>
     </div>
-    <p class="help">From <%= tag_pool.name %></p>
+    <p class="ui-field__description">From <%= tag_pool.name %></p>
   </fieldset>
 <% end %>

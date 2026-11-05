@@ -12,22 +12,22 @@
     <%= form_with url: identity_password_reset_path, method: :patch, class: "fields", data: { controller: "form" } do |form| %>
       <%= hidden_field_tag :sid, params[:sid] %>
 
-      <label class="field">
-        <span class="label">Email</span>
-        <input type="email" value="<%= @user.email %>" autocomplete="email" readonly>
+      <label class="ui-field">
+        <span class="ui-label">Email</span>
+        <input class="ui-input" type="email" value="<%= @user.email %>" autocomplete="email" readonly>
       </label>
 
-      <label class="field">
-        <span class="label">Password</span>
-        <%= form.password_field :password, required: true, autofocus: true, autocomplete: "new-password", placeholder: "Password" %>
+      <label class="ui-field">
+        <span class="ui-label">Password</span>
+        <%= form.password_field :password, required: true, autofocus: true, autocomplete: "new-password", placeholder: "Password", class: "ui-input" %>
       </label>
 
-      <label class="field">
-        <span class="label">Confirm password</span>
-        <%= form.password_field :password_confirmation, required: true, autocomplete: "new-password", placeholder: "Confirm password" %>
+      <label class="ui-field">
+        <span class="ui-label">Confirm password</span>
+        <%= form.password_field :password_confirmation, required: true, autocomplete: "new-password", placeholder: "Confirm password", class: "ui-input" %>
       </label>
 
-      <button type="submit" class="btn btn--primary btn--block" data-form-target="submit">
+      <button type="submit" class="ui-button ui-button--block" data-form-target="submit">
         <span>Reset password</span>
         <%= icon_tag "arrow-right", class: "icon--sm" %>
       </button>

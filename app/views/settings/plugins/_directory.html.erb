@@ -23,7 +23,7 @@
               </span>
               <span class="item__description"><%= entry.description %></span>
               <% unless entry.compatible? %>
-                <span class="field-error">Needs CMS <%= entry.requires %>; this is <%= cms_version %>.</span>
+                <span class="ui-field__error">Needs CMS <%= entry.requires %>; this is <%= cms_version %>.</span>
               <% end %>
             </div>
             <div class="item__actions">
@@ -31,7 +31,7 @@
               <% if entry.installed? %>
                 <span class="text-muted">Installed</span>
               <% elsif entry.compatible? %>
-                <%= button_to "Install", settings_plugins_installations_path(from: from), params: { repo: entry.repo }, class: "btn btn--sm" %>
+                <%= button_to "Install", settings_plugins_installations_path(from: from), params: { repo: entry.repo }, class: "ui-button ui-button--outline ui-button--sm" %>
               <% end %>
             </div>
           </div>

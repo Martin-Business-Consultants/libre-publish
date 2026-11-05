@@ -28,11 +28,11 @@
   <% end %>
 
   <% if @bulk_upload.finished? %>
-    <%= link_to folder_path, class: "btn btn--primary" do %>
+    <%= link_to folder_path, class: "ui-button" do %>
       <span>See the folder</span>
       <%= icon_tag "arrow-right" %>
     <% end %>
   <% else %>
-    <p class="help">This page updates itself. You can leave it; the unpacking carries on.</p>
+    <p class="ui-field__description">This page updates itself. You can leave it; the unpacking carries on.</p>
   <% end %>
 <% end %>

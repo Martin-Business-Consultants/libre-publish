@@ -52,17 +52,6 @@
     }
   }
 
-  .btn--destructive {
-    background-color: var(--destructive);
-    border-color: var(--destructive);
-    color: #fff;
-
-    &:hover:not(:disabled) {
-      background-color: var(--destructive);
-      border-color: var(--destructive);
-    }
-  }
-
   .btn--plain {
     background-color: transparent;
     border-color: transparent;
@@ -89,10 +78,6 @@
     &.btn--sm {
       inline-size: 1.75rem;
     }
-  }
-
-  .btn--block {
-    inline-size: 100%;
   }
 }
 
@@ -124,47 +109,6 @@
       margin-block: calc((var(--size) / 3) * -1);
       margin-inline: calc((var(--size) / 2) * -1);
       position: absolute;
-    }
-  }
-}
-
-/* A Copy button that just copied (copy_to_clipboard_controller adds its
-   success class, btn--success): green for a couple of seconds, with a small
-   pop, then back to its own colors. An animation's values beat the button's
-   classes while it runs. */
-@layer components {
-  .btn--success {
-    animation: copied 2s ease-out;
-  }
-
-  @keyframes copied {
-    0% {
-      background-color: color-mix(in oklch, var(--success) 8%, var(--background));
-      border-color: color-mix(in oklch, var(--success) 50%, var(--background));
-      color: var(--success);
-      scale: 0.94;
-    }
-
-    12% {
-      scale: 1;
-    }
-
-    80% {
-      background-color: color-mix(in oklch, var(--success) 8%, var(--background));
-      border-color: color-mix(in oklch, var(--success) 50%, var(--background));
-      color: var(--success);
-    }
-  }
-}
-
-/* With reduced motion the animation ends at once, so it stays green instead
-   (in the helpers layer, after the components', to beat the button's colors). */
-@layer helpers {
-  @media (prefers-reduced-motion: reduce) {
-    .btn--success {
-      background-color: color-mix(in oklch, var(--success) 8%, var(--background));
-      border-color: color-mix(in oklch, var(--success) 50%, var(--background));
-      color: var(--success);
     }
   }
 }

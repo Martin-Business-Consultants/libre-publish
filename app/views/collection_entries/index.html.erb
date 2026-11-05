@@ -8,10 +8,10 @@
 
 <% content_for :page_actions do %>
   <% if @collection.build_board? %>
-    <%= link_to "Build", build_collection_entries_path(@collection.slug), class: "btn" %>
+    <%= link_to "Build", build_collection_entries_path(@collection.slug), class: "ui-button ui-button--outline" %>
   <% end %>
   <% if Current.user.can?("collections:write") %>
-    <%= link_to "Schema", collection_schema_path(@collection.slug), class: "btn" %>
+    <%= link_to "Schema", collection_schema_path(@collection.slug), class: "ui-button ui-button--outline" %>
   <% end %>
   <% if can_write %>
     <%= render "layouts/shared/new_link", text: "New entry", path: new_collection_entry_path(@collection.slug) %>
@@ -31,7 +31,7 @@
     <thead>
       <tr>
         <% if ticks %>
-          <th class="data-table__check"><% if @entries.any? %><input type="checkbox" aria-label="Select every row" data-select-all-target="all" data-action="select-all#toggle"><% end %></th>
+          <th class="data-table__check"><% if @entries.any? %><input class="ui-checkbox" type="checkbox" aria-label="Select every row" data-select-all-target="all" data-action="select-all#toggle"><% end %></th>
         <% end %>
         <th>Title</th>
         <th>Slug</th>
@@ -48,7 +48,7 @@
         <%# herb:key entry.id %>
         <tr id="<%= dom_id(entry) %>" data-filter-target="item">
           <% if ticks %>
-            <td class="data-table__check"><input type="checkbox" data-select-all-target="box" data-action="select-all#sync" name="slugs[]" value="<%= entry.slug %>" form="entries_bulk" aria-label="Select <%= entry.title %>"></td>
+            <td class="data-table__check"><input class="ui-checkbox" type="checkbox" data-select-all-target="box" data-action="select-all#sync" name="slugs[]" value="<%= entry.slug %>" form="entries_bulk" aria-label="Select <%= entry.title %>"></td>
           <% end %>
           <td>
             <%= link_to entry.title, edit_collection_entry_path(@collection.slug, entry.slug), class: "title-link" %>

@@ -16,7 +16,7 @@
   <%= form_with url: settings_deploy_path, id: "settings_form", method: :patch, scope: :settings do |form| %>
     <%= tag.fieldset class: "fields", disabled: !Current.user.can?("settings:write") do %>
       <%= settings_field "Provider", hint: "GitHub sends a repository_dispatch (type “cms-publish”) to the repository in Settings › GitHub, using its token; the site’s workflow builds on it. A build hook is a URL the CMS POSTs to." do %>
-        <%= form.select :provider, Deploys.providers.map { |key, provider| [provider.label, key] }, { selected: @provider.key } %>
+        <%= form.select :provider, Deploys.providers.map { |key, provider| [provider.label, key] }, { selected: @provider.key }, { class: "ui-select" } %>
       <% end %>
       <% if @provider.key == "github" %>
         <p class="text-body">
@@ -28,7 +28,7 @@
         </p>
       <% end %>
       <%= settings_field "Deploy hook URL", hint: "For Cloudflare: Pages › your project › Settings › Builds › Deploy hooks, or Workers › your worker › Settings › Build › Deploy hooks. For a build hook: the same idea on Vercel and Netlify." do %>
-        <%= form.url_field :url, value: @settings["url"], autocomplete: "off", placeholder: "https://api.cloudflare.com/client/v4/pages/.../deploy_hooks/...", class: "text-mono" %>
+        <%= form.url_field :url, value: @settings["url"], autocomplete: "off", placeholder: "https://api.cloudflare.com/client/v4/pages/.../deploy_hooks/...", class: "ui-input text-mono" %>
       <% end %>
       <%= settings_switch form, :paused, "Pause auto-deploys", checked: @settings["paused"] == true,
             hint: "Stop firing the hook on content changes. Useful while you’re doing a big edit-pass and don’t want every save to trigger a build." %>
@@ -37,7 +37,7 @@
 
   <% if Deploys.ready?(@settings) %>
     <% if writable %>
-      <div><%= button_to "Deploy now", settings_deploy_trigger_path, class: "btn" %></div>
+      <div><%= button_to "Deploy now", settings_deploy_trigger_path, class: "ui-button ui-button--outline" %></div>
     <% end %>
   <% end %>
 </section>
@@ -70,7 +70,7 @@
           That changes how publishing reaches the site, so it waits for approval: a build’s token can’t change it on its own.
         </p>
         <% if writable %>
-          <div><%= button_to "Approve", settings_deploy_delivery_approval_path, class: "btn btn--sm", form: { data: { turbo_confirm: "Publishing will follow what the site reported. Approve?" } } %></div>
+          <div><%= button_to "Approve", settings_deploy_delivery_approval_path, class: "ui-button ui-button--outline ui-button--sm", form: { data: { turbo_confirm: "Publishing will follow what the site reported. Approve?" } } %></div>
         <% end %>
       </div>
     <% end %>
@@ -78,7 +78,7 @@
       <p class="text-body">Purges go to <span class="text-mono"><%= Frontend.purge_url %></span>, signed with this secret — the site’s <code>CMS_WEBHOOK_SECRET</code>:</p>
       <% if writable %>
         <%= render "settings/secret", frame_id: "purge_secret", masked: "•" * 24, visible: true, reveal_path: settings_deploy_purge_secret_reveal_path %>
-        <div><%= button_to "Rotate the secret", settings_deploy_purge_secret_rotation_path, class: "btn btn--sm", form: { data: { turbo_confirm: "The site needs the new secret before it accepts another purge. Rotate it?" } } %></div>
+        <div><%= button_to "Rotate the secret", settings_deploy_purge_secret_rotation_path, class: "ui-button ui-button--outline ui-button--sm", form: { data: { turbo_confirm: "The site needs the new secret before it accepts another purge. Rotate it?" } } %></div>
       <% end %>
     <% end %>
   <% else %>

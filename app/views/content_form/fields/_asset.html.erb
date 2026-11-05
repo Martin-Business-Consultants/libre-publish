@@ -23,12 +23,12 @@
         <% end %>
       </span>
       <div class="row">
-        <button type="button" class="btn btn--sm" data-action="asset-field#choose">Choose…</button>
-        <button type="button" class="btn btn--plain btn--sm" data-action="asset-field#clear">Clear</button>
+        <button type="button" class="ui-button ui-button--outline ui-button--sm" data-action="asset-field#choose">Choose…</button>
+        <button type="button" class="ui-button ui-button--ghost ui-button--sm" data-action="asset-field#clear">Clear</button>
       </div>
     </div>
   </div>
 <% else %>
-  <%= text_field_tag scope.name, value, id: scope.dom_id, class: "text-mono", placeholder: "Asset id", autocomplete: "off" %>
-  <span class="help">No media library is installed, so give the asset’s id.</span>
+  <%= text_field_tag scope.name, value, id: scope.dom_id, class: "ui-input text-mono", placeholder: "Asset id", autocomplete: "off" %>
+  <span class="ui-field__description">No media library is installed, so give the asset’s id.</span>
 <% end %>

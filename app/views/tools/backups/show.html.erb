@@ -4,7 +4,7 @@
     title row: what it will hold, and the download. %>
 <div class="contents" data-controller="dialog" data-dialog-modal-value="true" data-action="keydown.esc->dialog#close:stop">
 <% content_for :page_actions do %>
-  <button type="button" class="btn" data-keys="n" data-action="dialog#open">
+  <button type="button" class="ui-button ui-button--outline" data-keys="n" data-action="dialog#open">
     <%= icon_tag "package" %>
     <span>Download a backup</span>
   </button>
@@ -18,7 +18,7 @@
         <tr>
           <th>Automatic backup</th>
           <th>Taken</th>
-          <th class="data-table__num">Size</th>
+          <th class="ui-table__numeric">Size</th>
           <th><span class="visually-hidden">Download</span></th>
         </tr>
       </thead>
@@ -28,10 +28,10 @@
           <tr id="archive_<%= archive.name.parameterize %>">
             <td class="text-mono text-small"><%= archive.name %></td>
             <td><span class="nowrap text-small text-muted"><%= time_ago_tag archive.taken_at %></span></td>
-            <td class="data-table__num nowrap"><%= number_to_human_size(archive.byte_size) %></td>
+            <td class="ui-table__numeric nowrap"><%= number_to_human_size(archive.byte_size) %></td>
             <td class="text-end">
               <% if Current.user.admin? then %>
-                <%= link_to "Download", tools_backup_archive_path(archive.name), class: "btn btn--sm", data: { turbo: false } %>
+                <%= link_to "Download", tools_backup_archive_path(archive.name), class: "ui-button ui-button--outline ui-button--sm", data: { turbo: false } %>
               <% end %>
             </td>
           </tr>
@@ -48,7 +48,7 @@
 <dialog class="dialog dialog--sheet" data-dialog-target="dialog" aria-label="Download a backup" closedby="any">
   <header class="dialog__header">
     <h2 class="heading heading--lg">Download a backup</h2>
-    <button type="button" class="btn btn--sm" data-action="dialog#close">Close</button>
+    <button type="button" class="ui-button ui-button--outline ui-button--sm" data-action="dialog#close">Close</button>
   </header>
   <p class="text-body">The site’s database and every uploaded file, as one .tar.gz. It will hold:</p>
   <ul class="boxed-list">
@@ -57,11 +57,11 @@
       <li><%= number_with_delimiter(count) %> <%= kind.to_s.humanize(capitalize: false) %></li>
     <% end %>
   </ul>
-  <p class="help">Restoring one is done on the server — see <code class="code">docs/install.md</code>.</p>
+  <p class="ui-field__description">Restoring one is done on the server — see <code class="code">docs/install.md</code>.</p>
   <div class="dialog__actions">
-    <button type="button" class="btn" data-action="dialog#close">Cancel</button>
+    <button type="button" class="ui-button ui-button--outline" data-action="dialog#close">Cancel</button>
     <% if Current.user.admin? then %>
-      <%= button_to tools_backup_path, class: "btn btn--primary", form_class: "contents", data: { turbo: false } do %>
+      <%= button_to tools_backup_path, class: "ui-button", form_class: "contents", data: { turbo: false } do %>
         <span>Download backup</span>
       <% end %>
     <% else %>

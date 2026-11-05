@@ -34,11 +34,11 @@
   <% end %>
 
   <% if @optimization.finished? %>
-    <%= link_to file_manager_path, class: "btn btn--primary" do %>
+    <%= link_to file_manager_path, class: "ui-button" do %>
       <span>Back to the library</span>
       <%= icon_tag "arrow-right" %>
     <% end %>
   <% else %>
-    <p class="help">This page updates itself. You can leave it; the optimizer carries on.</p>
+    <p class="ui-field__description">This page updates itself. You can leave it; the optimizer carries on.</p>
   <% end %>
 <% end %>

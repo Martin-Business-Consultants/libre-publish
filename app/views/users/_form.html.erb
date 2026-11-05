@@ -19,15 +19,15 @@
     <%= postbox "user-account", "Signing in" do %>
       <div class="fields">
         <%= settings_field "Email", hint: "They sign in with it, and get the workspace's emails at it." do %>
-          <%= form.email_field :email, required: true, autocomplete: "off", placeholder: "email@example.com" %>
+          <%= form.email_field :email, required: true, autocomplete: "off", placeholder: "email@example.com", class: "ui-input" %>
         <% end %>
         <div class="grid grid--2 fields-grid">
           <%= settings_field (user.new_record? ? "Password" : "New password") do %>
             <%= form.password_field :password, required: user.new_record?, autocomplete: "new-password",
-                  placeholder: user.new_record? ? "At least 8 characters" : "Leave blank to keep it" %>
+                  placeholder: user.new_record? ? "At least 8 characters" : "Leave blank to keep it", class: "ui-input" %>
           <% end %>
           <%= settings_field "Confirm password" do %>
-            <%= form.password_field :password_confirmation, required: user.new_record?, autocomplete: "new-password" %>
+            <%= form.password_field :password_confirmation, required: user.new_record?, autocomplete: "new-password", class: "ui-input" %>
           <% end %>
         </div>
       </div>
@@ -38,14 +38,14 @@
     <% settings = capture do %>
       <div class="fields">
         <%= settings_field "Role" do %>
-          <%= form.select :role_id, Role.ordered.map { |role| [role.name, role.id] }, { include_blank: "No role" } %>
+          <%= form.select :role_id, Role.ordered.map { |role| [role.name, role.id] }, { include_blank: "No role" }, { class: "ui-select" } %>
         <% end %>
         <% if user.role&.description.present? %>
           <p class="text-small text-muted"><%= user.role.description %></p>
         <% end %>
-        <label class="choice">
-          <%= form.check_box :verified %>
-          <span>Email is verified</span>
+        <label class="ui-field ui-field--inline">
+          <%= form.check_box :verified, class: "ui-checkbox" %>
+          <span class="ui-label">Email is verified</span>
         </label>
       </div>
     <% end %>

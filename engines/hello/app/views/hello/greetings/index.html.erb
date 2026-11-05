@@ -7,8 +7,8 @@
   <% if Current.user.can?("hello:write") %>
     <%= render "layouts/shared/errors", record: @greeting %>
     <%= form_with model: @greeting, url: hello_greetings_path, scope: :greeting, class: "row" do |form| %>
-      <%= form.text_field :message, class: "grow", maxlength: 200, aria: { label: "Greeting" } %>
-      <button type="submit" class="btn btn--primary">Say it</button>
+      <%= form.text_field :message, class: "ui-input grow", maxlength: 200, aria: { label: "Greeting" } %>
+      <button type="submit" class="ui-button">Say it</button>
     <% end %>
   <% end %>
 

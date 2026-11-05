@@ -52,7 +52,7 @@ module UiHelper
     variant = variant.to_sym
     raise ArgumentError, "unknown badge variant #{variant}" unless BADGE_VARIANTS.include?(variant)
 
-    tag.span text, **options, class: ["ui-badge", (variant == :default) ? nil : "ui-badge--#{variant}", options[:class].presence].compact.join(" ")
+    tag.span text, class: ["ui-badge", (variant == :default) ? nil : "ui-badge--#{variant}", options[:class].presence].compact.join(" "), **options.except(:class)
   end
 
   STATUS_BADGES = {"positive" => :positive, "negative" => :negative, "waiting" => :warning, "progress" => :info, "neutral" => :neutral}.freeze

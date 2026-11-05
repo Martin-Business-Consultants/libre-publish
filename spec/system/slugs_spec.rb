@@ -15,8 +15,17 @@ RSpec.describe "Slugs from titles", type: :system do
     expect(page).to have_css("#admin-menu")
   end
 
+  # The page's JavaScript loads as modules after the page: wait for its controllers before
+  # using them, or a click lands before anything listens for it.
+  def wait_for_controllers(*identifiers)
+    script = "!!window.Stimulus && #{identifiers.to_json}.every(id => window.Stimulus.controllers.some(c => c.identifier === id))"
+    deadline = Time.now + Capybara.default_max_wait_time
+    sleep 0.05 until page.evaluate_script(script) || Time.now > deadline
+  end
+
   it "fills a new page's slug from its title, until someone types their own" do
     visit pages_path
+    wait_for_controllers "dialog", "slug"
     click_on "New page"
 
     within "dialog[open]" do
@@ -31,6 +40,7 @@ RSpec.describe "Slugs from titles", type: :system do
 
   it "uses underscores for a global, starting with a letter" do
     visit globals_path
+    wait_for_controllers "dialog", "slug"
     click_on "New global"
 
     within "dialog[open]" do
@@ -43,6 +53,7 @@ RSpec.describe "Slugs from titles", type: :system do
     saved = Page.create!(slug: "about", title: "About", status: "draft", locale: "en")
 
     visit edit_page_path(saved.path)
+    wait_for_controllers "slug"
     fill_in "page[title]", with: "About the bakery"
 
     expect(page).to have_field("page[slug]", with: "about")

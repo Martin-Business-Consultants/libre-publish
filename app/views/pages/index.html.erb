@@ -33,7 +33,7 @@
         <% if ticks %>
           <th class="data-table__check">
             <% if @pages.any? %>
-              <input type="checkbox" aria-label="Select every page" data-select-all-target="all" data-action="select-all#toggle">
+              <input class="ui-checkbox" type="checkbox" aria-label="Select every page" data-select-all-target="all" data-action="select-all#toggle">
             <% end %>
           </th>
         <% end %>
@@ -50,7 +50,7 @@
         <tr id="<%= dom_id(page) %>" data-filter-target="item">
           <% if ticks %>
             <td class="data-table__check">
-              <input type="checkbox" data-select-all-target="box" data-action="select-all#sync" name="slugs[]" value="<%= page.path %>" form="pages_bulk" aria-label="Select <%= page.title %>">
+              <input class="ui-checkbox" type="checkbox" data-select-all-target="box" data-action="select-all#sync" name="slugs[]" value="<%= page.path %>" form="pages_bulk" aria-label="Select <%= page.title %>">
             </td>
           <% end %>
           <td>

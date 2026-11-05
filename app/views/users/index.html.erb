@@ -18,7 +18,7 @@
     <thead>
       <tr>
         <% if can_delete %>
-          <th class="data-table__check text-center"><input type="checkbox" aria-label="Select every row" data-select-all-target="all" data-action="select-all#toggle"></th>
+          <th class="data-table__check text-center"><input class="ui-checkbox" type="checkbox" aria-label="Select every row" data-select-all-target="all" data-action="select-all#toggle"></th>
         <% end %>
         <th>Name</th>
         <th>Email</th>
@@ -35,7 +35,7 @@
           <% if can_delete %>
             <td class="data-table__check text-center">
               <% unless yourself %>
-                <input type="checkbox" data-select-all-target="box" data-action="select-all#sync" name="ids[]" value="<%= user.id %>" form="users_bulk_deletion" aria-label="Select <%= user.email %>">
+                <input class="ui-checkbox" type="checkbox" data-select-all-target="box" data-action="select-all#sync" name="ids[]" value="<%= user.id %>" form="users_bulk_deletion" aria-label="Select <%= user.email %>">
               <% end %>
             </td>
           <% end %>

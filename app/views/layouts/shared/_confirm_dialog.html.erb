@@ -4,17 +4,19 @@
     The trigger is a small secondary button, red when negative; primary: the
     screen's one primary button instead, full size. trigger_class: classes
     to add to the trigger. %>
-<% trigger_classes = class_names("btn", primary ? "btn--primary" : ["btn--sm", ("btn--danger" if negative)], trigger_class) %>
+<% trigger_classes = class_names(ui_button_classes(primary ? :default : (negative ? :destructive : :outline), size: primary ? :default : :sm), trigger_class) %>
 <div class="contents" data-controller="dialog" data-dialog-modal-value="true" data-action="keydown.esc->dialog#close:stop">
   <button type="button" class="<%= trigger_classes %>" data-action="dialog#open"><%= label %></button>
-  <dialog class="dialog dialog--action" data-dialog-target="dialog">
-    <h3 class="heading heading--lg"><%= title %></h3>
-    <% if message %>
-      <p class="text-body"><%= message %></p>
-    <% end %>
-    <div class="dialog__actions">
-      <button type="button" class="btn" data-action="dialog#close">Cancel</button>
-      <%= button_to(button || label, path, method: method || :post, params: params || {}, class: (negative ? "btn btn--danger" : "btn btn--primary"), data: { turbo_frame: "_top" }) %>
-    </div>
+  <dialog class="ui-dialog" data-dialog-target="dialog" aria-label="<%= title %>">
+    <header class="ui-dialog__header">
+      <h2 class="ui-dialog__title"><%= title %></h2>
+      <% if message %>
+        <p class="ui-dialog__description"><%= message %></p>
+      <% end %>
+    </header>
+    <footer class="ui-dialog__footer">
+      <button type="button" class="ui-button ui-button--outline" data-action="dialog#close">Cancel</button>
+      <%= button_to(button || label, path, method: method || :post, params: params || {}, class: ui_button_classes(negative ? :destructive : :default), data: { turbo_frame: "_top" }) %>
+    </footer>
   </dialog>
 </div>

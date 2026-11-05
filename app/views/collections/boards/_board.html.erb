@@ -19,7 +19,7 @@
         <% on_column = column == "on" %>
         <span class="<%= class_names("board-dot", "board-dot--on" => on_column) %>" aria-hidden="true"></span>
         <h2 class="heading heading--sm"><%= label %></h2>
-        <span class="badge text-tabular" data-drag-and-drop-counter><%= cards.size %></span>
+        <span class="ui-badge ui-badge--secondary text-tabular" data-drag-and-drop-counter><%= cards.size %></span>
       </header>
       <div class="stack stack--sm" data-drag-drop-item-container>
         <% cards.each do |entry| %>

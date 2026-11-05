@@ -32,12 +32,12 @@
   <%= errors_for.("profile") %>
   <%= form_with url: settings_profile_path, method: :patch, class: "fields" do |form| %>
     <%= settings_field "Name" do %>
-      <%= form.text_field :name, value: @user.name, required: true, autocomplete: "name", placeholder: "Full name" %>
+      <%= form.text_field :name, value: @user.name, required: true, autocomplete: "name", placeholder: "Full name", class: "ui-input" %>
     <% end %>
     <%= settings_field tx("Language"), hint: tx("The admin's own words, for you. Content keeps its own languages.") do %>
-      <%= form.select :locale, AdminLocale::LANGUAGES.invert.to_a, { selected: @user.locale, include_blank: tx("The workspace's (%{language})", language: AdminLocale::LANGUAGES[AdminLocale.workspace]) } %>
+      <%= form.select :locale, AdminLocale::LANGUAGES.invert.to_a, { selected: @user.locale, include_blank: tx("The workspace's (%{language})", language: AdminLocale::LANGUAGES[AdminLocale.workspace]) }, { class: "ui-select" } %>
     <% end %>
-    <div><button type="submit" class="btn"><%= tx("Save") %></button></div>
+    <div><button type="submit" class="ui-button ui-button--outline"><%= tx("Save") %></button></div>
   <% end %>
 </section>
 
@@ -49,12 +49,12 @@
   <%= errors_for.("email") %>
   <%= form_with url: settings_email_path, method: :patch, class: "fields" do |form| %>
     <%= settings_field "Email address" do %>
-      <%= form.email_field :email, value: @user.email, required: true, autocomplete: "email" %>
+      <%= form.email_field :email, value: @user.email, required: true, autocomplete: "email", class: "ui-input" %>
     <% end %>
     <%= settings_field "Current password", hint: "To confirm it’s you." do %>
-      <%= form.password_field :password_challenge, required: true, autocomplete: "current-password" %>
+      <%= form.password_field :password_challenge, required: true, autocomplete: "current-password", class: "ui-input" %>
     <% end %>
-    <div><button type="submit" class="btn">Save email</button></div>
+    <div><button type="submit" class="ui-button ui-button--outline">Save email</button></div>
   <% end %>
   <% unless @user.verified? %>
     <div class="cluster">
@@ -72,15 +72,15 @@
   <%= errors_for.("password") %>
   <%= form_with url: settings_password_path, method: :patch, class: "fields" do |form| %>
     <%= settings_field "Current password" do %>
-      <%= form.password_field :password_challenge, required: true, autocomplete: "current-password" %>
+      <%= form.password_field :password_challenge, required: true, autocomplete: "current-password", class: "ui-input" %>
     <% end %>
     <%= settings_field "New password", hint: "At least 8 characters." do %>
-      <%= form.password_field :password, required: true, autocomplete: "new-password" %>
+      <%= form.password_field :password, required: true, autocomplete: "new-password", class: "ui-input" %>
     <% end %>
     <%= settings_field "Confirm new password" do %>
-      <%= form.password_field :password_confirmation, required: true, autocomplete: "new-password" %>
+      <%= form.password_field :password_confirmation, required: true, autocomplete: "new-password", class: "ui-input" %>
     <% end %>
-    <div><button type="submit" class="btn">Save password</button></div>
+    <div><button type="submit" class="ui-button ui-button--outline">Save password</button></div>
   <% end %>
 </section>
 
@@ -115,21 +115,21 @@
 
     <div class="cluster cluster--top">
       <details>
-        <summary class="btn btn--sm">Regenerate recovery codes…</summary>
+        <summary class="ui-button ui-button--outline ui-button--sm">Regenerate recovery codes…</summary>
         <div class="disclosure__body stack stack--sm stack--start">
           <p class="text-body">Your old codes stop working immediately.</p>
           <%= form_with url: settings_two_factor_recovery_codes_path, class: "stack stack--sm stack--start", data: { turbo: false } do |form| %>
-            <%= form.password_field :password_challenge, required: true, autocomplete: "current-password", placeholder: "Your password", class: "full-width", aria: { label: "Your password" } %>
-            <button type="submit" class="btn btn--sm">Generate new codes</button>
+            <%= form.password_field :password_challenge, required: true, autocomplete: "current-password", placeholder: "Your password", class: "ui-input full-width", aria: { label: "Your password" } %>
+            <button type="submit" class="ui-button ui-button--outline ui-button--sm">Generate new codes</button>
           <% end %>
         </div>
       </details>
       <details>
-        <summary class="btn btn--danger btn--sm">Disable two-factor…</summary>
+        <summary class="ui-button ui-button--destructive ui-button--sm">Disable two-factor…</summary>
         <%= form_with url: settings_two_factor_path, method: :delete, class: "disclosure__body stack stack--sm stack--start" do |form| %>
           <p class="text-body">Your account will be protected by its password alone.</p>
-          <%= form.password_field :password_challenge, required: true, autocomplete: "current-password", placeholder: "Your password", class: "full-width", aria: { label: "Your password" } %>
-          <button type="submit" class="btn btn--danger btn--sm">Disable</button>
+          <%= form.password_field :password_challenge, required: true, autocomplete: "current-password", placeholder: "Your password", class: "ui-input full-width", aria: { label: "Your password" } %>
+          <button type="submit" class="ui-button ui-button--destructive ui-button--sm">Disable</button>
         <% end %>
       </details>
     </div>
@@ -137,12 +137,12 @@
     <ol class="number-list">
       <li class="stack stack--sm">
         <p>Add this account to your authenticator app — open the link on your phone, or enter the secret by hand.</p>
-        <p class="label">Secret</p>
+        <p class="ui-label">Secret</p>
         <div class="row">
           <code class="<%= settings_code_classes("grow") %>"><%= @totp.totp_secret %></code>
           <%= copy_button @totp.totp_secret %>
         </div>
-        <p class="label">otpauth link</p>
+        <p class="ui-label">otpauth link</p>
         <div class="row">
           <code class="<%= settings_code_classes("grow") %>"><%= @totp.totp_provisioning_uri %></code>
           <%= copy_button @totp.totp_provisioning_uri %>
@@ -154,9 +154,9 @@
             <p class="text-danger"><%= @code_error %></p>
           <% end %>
           <%= settings_field "Enter the 6-digit code from the app" do %>
-            <%= form.text_field :code, required: true, inputmode: "numeric", autocomplete: "one-time-code", pattern: "[0-9 ]{6,7}", placeholder: "000000", class: "otp-input" %>
+            <%= form.text_field :code, required: true, inputmode: "numeric", autocomplete: "one-time-code", pattern: "[0-9 ]{6,7}", placeholder: "000000", class: "ui-input otp-input" %>
           <% end %>
-          <div><button type="submit" class="btn btn--primary">Verify and enable</button></div>
+          <div><button type="submit" class="ui-button">Verify and enable</button></div>
         <% end %>
       </li>
     </ol>
@@ -181,7 +181,7 @@
         <% if session == Current.session %>
           <%= status_tag "This device" %>
         <% else %>
-          <%= button_to "Sign out", session_path(session), method: :delete, class: "btn btn--sm" %>
+          <%= button_to "Sign out", session_path(session), method: :delete, class: "ui-button ui-button--outline ui-button--sm" %>
         <% end %>
       </li>
     <% end %>
@@ -195,12 +195,12 @@
   </div>
   <%= errors_for.("delete") %>
   <%= tag.details open: @failed == "delete" do %>
-    <summary class="btn btn--danger btn--sm">Delete my account…</summary>
+    <summary class="ui-button ui-button--destructive ui-button--sm">Delete my account…</summary>
     <%= form_with url: settings_profile_path, method: :delete, class: "disclosure__body fields" do |form| %>
       <%= settings_field "Your password", hint: "To confirm it’s you." do %>
-        <%= form.password_field :password_challenge, required: true, autocomplete: "current-password" %>
+        <%= form.password_field :password_challenge, required: true, autocomplete: "current-password", class: "ui-input" %>
       <% end %>
-      <div><button type="submit" class="btn btn--danger">Delete account</button></div>
+      <div><button type="submit" class="ui-button ui-button--destructive">Delete account</button></div>
     <% end %>
   <% end %>
 </section>

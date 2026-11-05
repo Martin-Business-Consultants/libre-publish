@@ -24,16 +24,16 @@
 
       <%= form_with url: connect_path, method: :post, class: "row" do %>
         <%= hidden_field_tag :code, @authorization.user_code, id: nil %>
-        <button name="decision" value="approve" class="btn btn--primary">Approve</button>
-        <button name="decision" value="deny" class="btn">Deny</button>
+        <button name="decision" value="approve" class="ui-button">Approve</button>
+        <button name="decision" value="deny" class="ui-button ui-button--outline">Deny</button>
       <% end %>
     <% else %>
       <p class="text-muted">Enter the code your terminal is showing.</p>
 
       <%= form_with url: connect_path, method: :get, class: "row" do %>
-        <%= text_field_tag :code, @code, placeholder: "ABCD-EFGH", autocomplete: "off", class: "grow text-mono device-code", autofocus: true,
+        <%= text_field_tag :code, @code, placeholder: "ABCD-EFGH", autocomplete: "off", class: "ui-input grow text-mono device-code", autofocus: true,
               aria: { label: "Code" } %>
-        <button type="submit" class="btn btn--primary">Continue</button>
+        <button type="submit" class="ui-button">Continue</button>
       <% end %>
 
       <% if @code.present? %>

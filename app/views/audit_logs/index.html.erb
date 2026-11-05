@@ -3,25 +3,25 @@
 <%= render "layouts/shared/page_header", title: @page_title %>
 
 <%= form_with url: audit_logs_path, method: :get, class: "panel audit-filters", data: { turbo_action: "advance" } do %>
-  <label class="field">
-    <span class="label">Actor</span>
-    <%= text_field_tag :actor, params[:actor], placeholder: "email or name", autocomplete: "off" %>
+  <label class="ui-field">
+    <span class="ui-label">Actor</span>
+    <%= text_field_tag :actor, params[:actor], placeholder: "email or name", autocomplete: "off", class: "ui-input" %>
   </label>
-  <label class="field">
-    <span class="label">Action</span>
-    <%= select_tag :action_filter, options_for_select(@known_actions, params[:action_filter]), include_blank: "Any action" %>
+  <label class="ui-field">
+    <span class="ui-label">Action</span>
+    <%= select_tag :action_filter, options_for_select(@known_actions, params[:action_filter]), include_blank: "Any action", class: "ui-select" %>
   </label>
-  <label class="field">
-    <span class="label">From</span>
+  <label class="ui-field">
+    <span class="ui-label">From</span>
     <%= datetime_local_field_tag :from, params[:from] %>
   </label>
-  <label class="field">
-    <span class="label">To</span>
+  <label class="ui-field">
+    <span class="ui-label">To</span>
     <%= datetime_local_field_tag :to, params[:to] %>
   </label>
   <div class="row">
-    <button type="submit" class="btn">Apply</button>
-    <%= link_to "Clear", audit_logs_path, class: "btn btn--plain" %>
+    <button type="submit" class="ui-button ui-button--outline">Apply</button>
+    <%= link_to "Clear", audit_logs_path, class: "ui-button ui-button--ghost" %>
   </div>
 <% end %>
 

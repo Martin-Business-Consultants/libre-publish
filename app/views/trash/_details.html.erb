@@ -29,7 +29,7 @@
 
   <% if can_write %>
     <div class="cluster">
-      <%= button_to trash_item_restoration_path(kind, record.id), class: "btn btn--primary", form_class: "contents", data: { turbo_frame: "_top" } do %>
+      <%= button_to trash_item_restoration_path(kind, record.id), class: "ui-button", form_class: "contents", data: { turbo_frame: "_top" } do %>
         <%= icon_tag "refresh" %>
         <span>Restore</span>
       <% end %>
@@ -37,7 +37,7 @@
             message: "It’s deleted for good. This can’t be undone.", trigger_text: "Delete permanently" %>
     </div>
     <% if Trash.publish_capability(record) && record.try(:status) == "published" && !Current.user.can?(Trash.publish_capability(record)) %>
-      <p class="help">It was live; restored by you, it comes back as a draft for someone who can publish.</p>
+      <p class="ui-field__description">It was live; restored by you, it comes back as a draft for someone who can publish.</p>
     <% end %>
   <% end %>
 </div>

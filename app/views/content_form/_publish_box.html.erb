@@ -15,7 +15,7 @@
   <div data-controller="publish-box">
     <% if statusful && status == "draft" %>
       <div class="publish-box__draft">
-        <button type="submit" class="btn btn--sm" data-action="publish-box#submit" data-publish-box-status-param="draft"><%= tx("Save Draft") %></button>
+        <button type="submit" class="ui-button ui-button--outline ui-button--sm" data-action="publish-box#submit" data-publish-box-status-param="draft"><%= tx("Save Draft") %></button>
       </div>
     <% end %>
 
@@ -30,7 +30,7 @@
                 <summary class="link"><%= tx("Edit") %></summary>
                 <label class="publish-box__field">
                   <span class="visually-hidden"><%= tx("Status") %></span>
-                  <%= form.select :status, statuses.map { [tx(it), it] }, {}, class: "full-width", data: { publish_box_target: "status" } %>
+                  <%= form.select :status, statuses.map { [tx(it), it] }, {}, class: "ui-select full-width", data: { publish_box_target: "status" } %>
                 </label>
               </details>
             </div>
@@ -57,7 +57,7 @@
             </div>
           </div>
           <% if record.unpublish_at.present? && record.unpublish_at > Time.current && status == "published" %>
-            <p class="notice notice--warning"><span><%= tx("Will unpublish") %> <%= site_time_tag(record.unpublish_at) %>.</span></p>
+            <p class="ui-alert ui-alert--warning"><span><%= tx("Will unpublish") %> <%= site_time_tag(record.unpublish_at) %>.</span></p>
           <% end %>
         <% end %>
 
@@ -74,7 +74,7 @@
         <% end %>
 
         <% unless can_publish %>
-          <p class="notice notice--warning">
+          <p class="ui-alert ui-alert--warning">
             <% if statusful && status == "draft" %>
               <%= tx("Your role can't publish. Save it as a draft, and someone who can publishes it.") %>
             <% elsif record.persisted? %>
@@ -92,7 +92,7 @@
                 message: tx("It goes to the trash, where it can be restored.") %>
         <% end %>
         <% if label %>
-          <button type="submit" class="btn btn--primary push-end" data-action="publish-box#submit" data-publish-box-status-param="<%= sets_status %>"><%= tx(label) %></button>
+          <button type="submit" class="ui-button push-end" data-action="publish-box#submit" data-publish-box-status-param="<%= sets_status %>"><%= tx(label) %></button>
         <% end %>
       </div>
     <% end %>
