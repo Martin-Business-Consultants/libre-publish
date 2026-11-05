@@ -11,10 +11,7 @@
   <% end %>
 </p>
 
-<% diff[:fields].each do |field| %>
-  <%# herb:key field[:key] %>
-  <%= render "versions/field", field: field %>
-<% end %>
+<%= render partial: "versions/field", collection: diff[:fields], as: :field %>
 
 <% if can_restore && diff[:fields].any? %>
   <%= form_with url: restore_path, class: "version-restore" do %>

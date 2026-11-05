@@ -24,10 +24,7 @@
 
     <% if @plugins.any? %>
       <ul class="item-list">
-        <% @plugins.each do |plugin| %>
-          <%# herb:key plugin.key %>
-          <%= render "settings/plugins/plugin", plugin: plugin %>
-        <% end %>
+        <%= render partial: "settings/plugins/plugin", collection: @plugins, as: :plugin %>
       </ul>
     <% else %>
       <p class="empty-state">No plugins are installed.</p>
