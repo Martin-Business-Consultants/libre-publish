@@ -24,6 +24,27 @@ RSpec.describe "Frontend builds", type: :request do
     expect(Frontend.prerendered?).to be(true)
   end
 
+  it "keeps the build's launch checklist and the schema it was checked against, and shows them on Settings › Deploy" do
+    digest = "sha256:#{"a" * 64}"
+    post "/api/frontend/builds", params: {render: "static", schema_digest: digest, checks_url: "https://acme.test/_cms/checks",
+      checks: [{key: "secrets", group: "Build", title: "No secrets in the build", state: "passes", launch: true},
+        {key: "redirects", title: "Redirects come from the CMS", state: "fails", evidence: "public/_redirects has 2", fix: "javascript:alert(1)"},
+        {title: "No key"}]}, headers: site_token, as: :json
+
+    expect(JSON.parse(response.body)).to include("ok" => true, "approval_pending" => false)
+    build = Frontend.last_build
+    expect(build).to include(schema_digest: digest, checks_url: "https://acme.test/_cms/checks")
+    expect(build[:checks]).to eq([
+      {"key" => "secrets", "group" => "Build", "title" => "No secrets in the build", "state" => "passes", "launch" => true},
+      {"key" => "redirects", "title" => "Redirects come from the CMS", "state" => "fails", "evidence" => "public/_redirects has 2"}
+    ])
+    expect(AuditLog.last.metadata.keys).not_to include("checks")
+
+    sign_in_as admin
+    get settings_deploy_path
+    expect(response.body).to include("No secrets in the build", "public/_redirects has 2", "aaaaaaaaaaaa")
+  end
+
   it "won't let the site's read-only token switch publishing to purges, or say where they go" do
     post "/api/frontend/builds", params: on_demand, headers: site_token, as: :json
 

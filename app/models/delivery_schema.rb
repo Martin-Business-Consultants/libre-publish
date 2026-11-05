@@ -56,12 +56,16 @@ class DeliverySchema
 
   # Announces `schema.changed` ({schema_digest}) to webhooks and the deploy
   # (which rebuilds or purges, tag `schema`) when the digest isn't the one
-  # last announced. The first reading is only noted: there's nothing it
-  # changed from.
+  # last announced, or, before any was, the one the site's last build was
+  # checked against (Frontend.last_build). With neither, the reading is
+  # only noted: there's nothing it changed from.
   def self.announce_now
     digest = self.digest
     before = nil
-    Setting.set(SETTING) { |data| {"announced_digest" => digest}.tap { before = data["announced_digest"] } }
+    Setting.set(SETTING) { |data|
+      before = data["announced_digest"].presence || Frontend.last_build&.dig(:schema_digest)
+      {"announced_digest" => digest}
+    }
     Event.announce("schema.changed", {schema_digest: digest}) if before.present? && before != digest
   end
 

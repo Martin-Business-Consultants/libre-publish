@@ -61,7 +61,25 @@
       Last build <%= time_ago_tag build[:built_at] %>
       <% if build[:integration] %> · <%= build[:integration] %> <%= build[:integration_version] %><% end %>
       <% if build[:content_cursor] %> · built from content <span class="text-mono"><%= build[:content_cursor].first(16) %></span><% end %>
+      <% if build[:schema_digest] %> · checked against schema <span class="text-mono"><%= build[:schema_digest].delete_prefix("sha256:").first(12) %></span><% if build[:schema_digest] != DeliverySchema.digest %> (the CMS’s has changed since: the site needs <code>npx librepublish-astro sync</code>)<% end %><% end %>
     </p>
+    <% if build[:checks].present? %>
+      <h3 class="heading heading--sm">The build’s launch checklist</h3>
+      <table class="data-table">
+        <tbody>
+          <% build[:checks].each do |check| %>
+            <tr>
+              <td><%= status_tag(check["state"] || "unknown") %></td>
+              <td>
+                <span class="text-ink"><%= check["title"] %></span>
+                <% if check["evidence"].present? %><span class="text-muted"> — <%= check["evidence"] %></span><% end %>
+                <% if check["fix"].present? %> · <%= link_to check["fix_label"].presence || "Fix it", check["fix"], class: "link", rel: "noopener", target: "_blank" %><% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% end %>
     <% if (pending = Frontend.pending_delivery) %>
       <div class="callout callout--warning">
         <p>

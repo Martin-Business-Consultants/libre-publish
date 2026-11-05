@@ -290,6 +290,15 @@ RSpec.describe "Delivery contract (the Go core's, for @librepublish/astro)", typ
       expect { DeliverySchema.announce_now }.to have_enqueued_job(Webhook::DeliveryJob).with(anything, "schema.changed", {schema_digest: DeliverySchema.digest})
     end
 
+    it "announces schema.changed against the schema the site's last build was checked against, before any announcement" do
+      seed_go_contract_site
+      Frontend.record_build("render" => "static", "schema_digest" => DeliverySchema.digest)
+      Webhook.create!(name: "site", url: "https://hooks.acme.test/in", events: ["schema.changed"])
+      Collection.find_by!(slug: "posts").update!(name: "Articles")
+
+      expect { DeliverySchema.announce_now }.to have_enqueued_job(Webhook::DeliveryJob).with(anything, "schema.changed", {schema_digest: DeliverySchema.digest})
+    end
+
     it "signs an on-demand site's purge as webhooks are signed" do
       sent = capture { Deploys::Purge.fire(reason: "page.published", changes: [], url: "https://acme.test/_cms/webhook", secret: "purge-secret") }
 
