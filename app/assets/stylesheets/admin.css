@@ -4,63 +4,11 @@
    select and Apply on the left, the list's search box on the right
    (layouts/shared/_list_search), on a line of its own on a phone. */
 @layer components {
-  .list-toolbar {
-    align-items: center;
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2);
-    justify-content: space-between;
-  }
-
-  .list-toolbar__choice {
-    inline-size: 11rem;
-  }
-
-  .list-toolbar__confirm {
-    margin-block-start: var(--space-2);
-  }
-
-  .list-toolbar__search {
-    inline-size: 100%;
-    margin-inline-start: auto;
-
-    @media (width >= 40rem) {
-      inline-size: auto;
-    }
-  }
 
   .input-with-icon.list-search > input {
     @media (width >= 40rem) {
       inline-size: 16rem;
     }
-  }
-}
-
-/* A Fizzy quick filter (layouts/shared/_quick_filter): a select-like button
-   showing the current choice, and a menu of the others under it. */
-@layer components {
-  .quick-filter__button {
-    max-inline-size: 20rem;
-  }
-
-  .quick-filter__menu {
-    inline-size: 14rem;
-  }
-
-  .quick-filter__title {
-    color: var(--muted-foreground);
-    font-size: var(--text-xs);
-    font-weight: var(--weight-medium);
-    line-height: var(--leading-xs);
-    padding: var(--space-1-5) var(--space-2-5) var(--space-1);
-  }
-
-  .quick-filter__option {
-    justify-content: space-between;
-  }
-
-  .quick-filter__option--chosen {
-    font-weight: var(--weight-medium);
   }
 }
 

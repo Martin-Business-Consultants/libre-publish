@@ -10,7 +10,6 @@
   .text-body { color: var(--foreground); }
   .text-muted { color: var(--muted-foreground); }
   .text-faint { color: var(--muted-foreground); }
-  .text-accent { color: var(--primary); }
   .text-danger { color: var(--destructive); }
 
   /* Text size: small is 12px, large 16px; the body is 14px. */

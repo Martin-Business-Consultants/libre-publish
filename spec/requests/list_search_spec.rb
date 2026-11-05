@@ -10,7 +10,7 @@ RSpec.describe "List search", type: :request do
   before { sign_in_as admin }
 
   # The rows the list shows (not the New page dialog's parent list).
-  def row_text = Nokogiri::HTML5(response.body).css("table.data-table tbody").text
+  def row_text = Nokogiri::HTML5(response.body).css("table.ui-table tbody, table.data-table tbody").text
 
   def make_page(slug, title, status: "published")
     Page.create!(slug: slug, title: title, status: status, locale: "en")

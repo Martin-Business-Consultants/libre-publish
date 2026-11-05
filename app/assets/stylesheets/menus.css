@@ -16,28 +16,4 @@
     color: var(--foreground);
     padding: var(--space-1);
   }
-
-  .popup-anchor {
-    position: relative;
-  }
-
-  .popup {
-    inset: calc(100% + var(--space-1)) auto auto 0;
-    margin: 0;
-    max-block-size: 70dvh;
-    max-inline-size: calc(100vw - var(--space-4));
-    overflow-y: auto;
-    position: absolute;
-    z-index: var(--z-popup);
-
-    &.orient-left {
-      inset-inline: auto 0;
-      translate: var(--orient-offset, 0px);
-    }
-
-    &.orient-right {
-      inset-inline: 0 auto;
-      translate: var(--orient-offset, 0px);
-    }
-  }
 }
