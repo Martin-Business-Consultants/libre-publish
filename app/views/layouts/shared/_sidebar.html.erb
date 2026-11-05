@@ -1,0 +1,141 @@
+<%# locals: () %>
+<%# The admin menu as shadcn/ui's Sidebar (NavigationHelper#admin_menu): the site at the top,
+    New, then the menu's groups, each item with its submenu folded under it (a <details>, open
+    on the current item), plugins' actions and update notices, and the signed-in person at the
+    foot, whose menu holds their profile, Settings, light or dark and signing out. Folds to
+    icons; below 768px it's a drawer the header's toggle opens (admin_menu_controller,
+    ui/app-shell.css). %>
+<% branding = current_branding %>
+<% site_name = branding[:site_title].presence || Site.key %>
+<% site_url = public_site_url %>
+<% new_items = admin_new_items %>
+<% user_name = Current.user.name.presence || Current.user.email %>
+<aside id="admin-menu" class="<%= class_names("app-sidebar", "app-sidebar--dark" => Branding.current.dark_top_bar?) %>" aria-label="<%= tx("Admin menu") %>">
+  <%= link_to dashboard_path, class: "app-sidebar__brand", title: tx("Dashboard (g h)"), data: { keys: "g h" } do %>
+    <% if branding[:logo_url_small].present? %>
+      <span class="app-sidebar__brand-mark app-sidebar__brand-mark--logo"><%= image_tag branding[:logo_url_small], alt: "" %></span>
+    <% else %>
+      <span class="app-sidebar__brand-mark"><%= icon_tag "home" %></span>
+    <% end %>
+    <span class="app-sidebar__brand-text app-sidebar__label">
+      <span class="app-sidebar__brand-name"><%= site_name %></span>
+      <span class="app-sidebar__brand-sub"><%= tx("Dashboard") %></span>
+    </span>
+  <% end %>
+
+  <% if new_items.any? %>
+    <div class="app-sidebar__new" data-controller="ui--popover">
+      <button type="button" class="ui-button ui-button--outline ui-button--sm ui-button--block" popovertarget="admin_new_menu" title="<%= tx("New") %>">
+        <%= icon_tag "add" %>
+        <span class="app-sidebar__new-label"><%= tx("New") %></span>
+      </button>
+      <div class="ui-menu" id="admin_new_menu" popover data-ui--popover-target="popover">
+        <% new_items.each do |label, url| %>
+          <%# herb:key label %>
+          <%= link_to tx(label), url, class: "ui-menu__item" %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <nav class="app-sidebar__content">
+    <% admin_menu.each do |group, entries| %>
+      <%# herb:key group.to_s %>
+      <div class="app-sidebar__group" data-menu-group="<%= group %>">
+        <p class="app-sidebar__group-label"><%= tx(group) %></p>
+        <ul class="app-sidebar__menu">
+          <% entries.each do |entry| %>
+            <%# herb:key entry.id %>
+            <% current_link = entry.submenu.find(&:current) %>
+            <li class="<%= class_names("app-sidebar__item", "app-sidebar__item--current": entry.current) %>">
+              <%= link_to entry.url, class: "app-sidebar__link", title: tx(entry.label),
+                    aria: { current: ("page" if entry.current && current_link.nil?) } do %>
+                <%= icon_tag entry.icon %>
+                <span class="app-sidebar__label truncate"><%= tx(entry.label) %></span>
+              <% end %>
+              <% if entry.submenu.any? %>
+                <%= tag.details class: "app-sidebar__collapsible", open: entry.current do %>
+                  <summary class="app-sidebar__action" title="<%= tx("Show or hide %{name}", name: tx(entry.label)) %>">
+                    <%= icon_tag "caret-down" %>
+                    <span class="visually-hidden"><%= tx("Show or hide %{name}", name: tx(entry.label)) %></span>
+                  </summary>
+                  <ul class="app-sidebar__sub" aria-label="<%= tx(entry.label) %>">
+                    <% entry.submenu.each do |link| %>
+                      <%# herb:key link.url %>
+                      <li>
+                        <%= link_to link.url, class: "app-sidebar__sub-link", aria: { current: ("page" if link.current) } do %>
+                          <% if link.icon %>
+                            <%= icon_tag link.icon %>
+                          <% end %>
+                          <span class="truncate"><%= tx(link.label) %></span>
+                        <% end %>
+                      </li>
+                    <% end %>
+                  </ul>
+                <% end %>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+  </nav>
+
+  <div class="app-sidebar__footer">
+    <div class="app-sidebar__notices">
+      <% if UpdateCheck.update_available? && Current.user.can?("settings:read") %>
+        <%= link_to settings_updates_path, class: "app-sidebar__link app-sidebar__notice", title: tx("A newer version is available") do %>
+          <%= icon_tag "refresh" %>
+          <span class="app-sidebar__label truncate"><%= tx("Version %{version} available", version: UpdateCheck.latest_version) %></span>
+        <% end %>
+      <% end %>
+      <% plugin_updates = UpdateCheck::Plugins.available %>
+      <% if plugin_updates.any? && Current.user.admin? %>
+        <%= link_to settings_plugins_path, class: "app-sidebar__link app-sidebar__notice", title: tx("Newer plugin releases are available") do %>
+          <%= icon_tag "refresh" %>
+          <span class="app-sidebar__label truncate"><%= tx(plugin_updates.size == 1 ? "1 plugin update" : "%{count} plugin updates", count: plugin_updates.size) %></span>
+        <% end %>
+      <% end %>
+      <%= plugin_slots(:nav_actions) %>
+    </div>
+
+    <div data-controller="ui--popover" data-ui--popover-side-value="top">
+      <button type="button" class="app-sidebar__user-button" popovertarget="admin_user_menu" title="<%= user_name %>">
+        <%= ui_avatar user_name, size: :sm %>
+        <span class="app-sidebar__user-text app-sidebar__label">
+          <span class="app-sidebar__user-name"><%= user_name %></span>
+          <span class="app-sidebar__user-email"><%= Current.user.email %></span>
+        </span>
+        <%= icon_tag "menu-dots-vertical", class: "app-sidebar__label" %>
+      </button>
+      <div class="ui-menu app-sidebar__user-menu" id="admin_user_menu" popover data-ui--popover-target="popover">
+        <div class="ui-menu__label">
+          <span class="app-sidebar__user-name"><%= user_name %></span>
+          <span class="app-sidebar__user-email"><%= Current.user.email %></span>
+        </div>
+        <hr class="ui-menu__separator">
+        <%= link_to settings_profile_path, class: "ui-menu__item" do %>
+          <%= icon_tag "person" %> <span><%= tx("Edit profile") %></span>
+        <% end %>
+        <%= link_to settings_path, class: "ui-menu__item", data: { keys: "g s" } do %>
+          <%= icon_tag "settings-outline" %> <span><%= tx("Settings") %></span> <kbd class="ui-menu__shortcut">G S</kbd>
+        <% end %>
+        <% if site_url %>
+          <%= link_to site_url, class: "ui-menu__item", target: "_blank", rel: "noopener" do %>
+            <%= icon_tag "external" %> <span><%= tx("View site") %></span>
+          <% end %>
+        <% end %>
+        <button type="button" class="ui-menu__item theme-toggle" data-controller="theme" data-action="theme#toggle">
+          <%= icon_tag "moon", class: "theme-toggle__moon" %>
+          <%= icon_tag "sun", class: "theme-toggle__sun" %>
+          <span><%= tx("Light or dark") %></span>
+        </button>
+        <hr class="ui-menu__separator">
+        <%= button_to session_path(Current.session), method: :delete, class: "ui-menu__item", form_class: "contents" do %>
+          <%= icon_tag "logout" %> <span><%= tx("Sign out") %></span>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</aside>
+<div class="app-sidebar__backdrop" data-action="click->admin-menu#closeDrawer"></div>

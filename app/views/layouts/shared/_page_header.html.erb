@@ -1,33 +1,32 @@
 <%# locals: (title:, icon: nil, **) %>
-<%# An admin page's title row: the title, and its actions (content_for
-    :page_actions, a New button first) across from it at the right. No line
-    under it on what the page is for: other locals (a plugin's
-    description:) are taken and not shown. On a Settings page it goes above
+<%# An admin page's title row: the title, and its actions (content_for :page_actions, a New
+    button first) across from it at the right. No line under it on what the page is for: other
+    locals (a plugin's description:) are taken and not shown. On a Settings page it goes above
     the page and its sidebar (layouts/settings) rather than where it's rendered. %>
 <% header = capture do %>
-<div class="page-header">
-  <h1 class="page-title row">
+<div class="page-heading">
+  <h1 class="page-heading__title">
     <% if icon %>
-      <%= icon_tag icon, class: "icon--lg text-faint" %>
+      <%= icon_tag icon %>
     <% end %>
     <%= title.is_a?(String) && !title.html_safe? ? tx(title) : title %>
   </h1>
   <% if content_for?(:page_actions) %>
-    <div class="page-header__actions">
+    <div class="page-heading__actions">
       <%= content_for(:page_actions) %>
     </div>
   <% end %>
 </div>
 <% if (cli = cli_command_hint) %>
-  <p class="cluster text-small text-muted">
+  <p class="page-heading__note">
     <span><%= tx("From the CLI or MCP:") %></span>
     <code class="code"><%= cli %></code>
-    <button type="button" class="btn btn--plain btn--sm" title="<%= tx("Copy the command") %>" data-controller="copy-to-clipboard"
-            data-copy-to-clipboard-content-value="<%= cli %>" data-copy-to-clipboard-success-class="btn--success" data-action="copy-to-clipboard#copy"><%= tx("Copy") %></button>
+    <button type="button" class="ui-button ui-button--ghost ui-button--sm" title="<%= tx("Copy the command") %>" data-controller="copy-to-clipboard"
+            data-copy-to-clipboard-content-value="<%= cli %>" data-copy-to-clipboard-success-class="ui-button--secondary" data-action="copy-to-clipboard#copy"><%= icon_tag "copy-paste" %> <%= tx("Copy") %></button>
   </p>
 <% end %>
 <% if search_term %>
-  <p class="text-body">
+  <p class="page-heading__note">
     <%= tx("Search results for") %> “<strong><%= search_term %></strong>”
     <%= link_to tx("Clear"), url_for(request.query_parameters.except("s", "page")), class: "link" %>
   </p>

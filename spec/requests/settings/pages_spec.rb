@@ -208,13 +208,13 @@ RSpec.describe "Settings pages", type: :request do
       sign_in_as admin
 
       get settings_branding_path
-      expect(response.body).not_to include("admin-bar--dark")
+      expect(response.body).not_to include("app-sidebar--dark")
 
       patch settings_branding_path, params: {branding: {top_bar: "dark"}}
       expect(Setting.get("branding")).to include("top_bar" => "dark")
 
       get settings_branding_path
-      expect(Nokogiri::HTML(response.body).at_css("header#header")["class"]).to include("admin-bar--dark")
+      expect(Nokogiri::HTML(response.body).at_css("aside#admin-menu")["class"]).to include("app-sidebar--dark")
     end
 
     it "serves the secondary color, corners and shadow as the admin's tokens too" do

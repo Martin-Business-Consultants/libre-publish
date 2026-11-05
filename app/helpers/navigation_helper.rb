@@ -125,8 +125,28 @@ module NavigationHelper
   # The page one level up. Not a button: a <link rel="up"> in the head, which
   # Esc follows (keyboard_controller).
   def parent_page(label, url)
+    @parent_page = [label, url_for(url)]
     content_for :parent_page, tag.link(rel: "up", href: url_for(url), title: label)
     nil
+  end
+
+  # Where this page is, for the header's breadcrumb (layouts/shared/_inset_header):
+  # [[label, url], …, [this page's title, nil]] — the menu item it's under, the page one level
+  # up (parent_page) when that's another, and the page's own title.
+  def breadcrumb_items
+    entry = admin_menu.flat_map(&:last).find(&:current)
+    items = []
+    items << [tx(entry.label), entry.url] if entry
+    if @parent_page && items.none? { |_, url| url == @parent_page.last }
+      items << [tx(@parent_page.first.to_s), @parent_page.last]
+    end
+    title = @page_title.presence && tx(@page_title.to_s)
+    if title && items.last&.first != title
+      items << [title, nil]
+    elsif items.any?
+      items[-1] = [items.last.first, nil]
+    end
+    items.presence || [[tx("Dashboard"), nil]]
   end
 
   # Where "View site" goes: Settings › General's site address, if set.

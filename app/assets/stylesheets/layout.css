@@ -113,7 +113,7 @@
       }
 
       &.with-sidebar--sticky > :last-child {
-        inset-block-start: calc(var(--admin-bar-height, 3rem) + var(--space-4));
+        inset-block-start: calc(3.5rem + var(--space-4));
         position: sticky;
       }
     }

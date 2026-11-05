@@ -144,68 +144,6 @@
    it. The picked result (arrow keys, the pointer) is shaded; letters a
    fuzzy match found are marked. */
 @layer components {
-  .global-search {
-    gap: var(--space-2);
-    padding: var(--space-3);
-  }
-
-  .global-search[open] {
-    inline-size: 50vw;
-    block-size: 50vh;
-    min-inline-size: min(36rem, calc(100vw - var(--space-8)));
-    min-block-size: min(24rem, calc(100dvh - var(--space-8)));
-    overflow: hidden;
-  }
-
-  .global-search__result {
-    &[aria-selected="true"] { background-color: var(--accent); }
-
-    mark {
-      background: none;
-      color: inherit;
-      font-weight: 700;
-      text-decoration: underline;
-      text-decoration-color: var(--ring);
-      text-underline-offset: 2px;
-    }
-  }
-
-  .global-search__results {
-    flex: 1 1 0%;
-    min-block-size: 0;
-    overflow-y: auto;
-  }
-
-  /* What comes back as you type (searches/_quick): a small uppercase heading
-     (.eyebrow) over each group, a row per result (its title, a line of the text that
-     matched, its kind), and a link to every result at the end. */
-  .search-results__empty {
-    color: var(--muted-foreground);
-    font-size: var(--text-sm);
-    line-height: var(--leading-sm);
-    padding: var(--space-8) var(--space-3);
-    text-align: center;
-  }
-
-  .search-results__heading {
-    padding: var(--space-3) var(--space-3) var(--space-1);
-  }
-
-  .search-results__item {
-    align-items: flex-start;
-    border-radius: var(--radius-md);
-    color: var(--foreground);
-    display: flex;
-    font-size: var(--text-sm);
-    gap: var(--space-3);
-    line-height: var(--leading-sm);
-    padding: var(--space-2) var(--space-3);
-  }
-
-  .search-results__title {
-    display: block;
-    font-weight: var(--weight-medium);
-  }
 
   .search-results__snippet {
     color: var(--muted-foreground);
@@ -213,12 +151,6 @@
     font-size: var(--text-xs);
     line-height: var(--leading-xs);
     margin-block-start: var(--space-0-5);
-  }
-
-  .search-results__all {
-    color: var(--primary);
-    display: block;
-    margin-block-start: var(--space-2);
   }
 }
 

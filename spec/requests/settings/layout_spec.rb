@@ -14,7 +14,7 @@ RSpec.describe "Settings layout", type: :request do
 
     body = response.body
     columns = body.index('class="settings-columns"')
-    expect(body.index('class="page-header"')).to be < columns
+    expect(body.index('class="page-heading"')).to be < columns
     aside = body[%r{<aside class="settings-aside".*?</aside>}m]
     expect(aside).to include('form="settings_form"', "Save changes", 'aria-label="Settings sections"', 'aria-current="page"')
     expect(body).to include('id="settings_form"')
