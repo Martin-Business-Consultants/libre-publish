@@ -8,6 +8,23 @@ out.
 
 ## Unreleased
 
+### Added
+- **Move a site from the Go core.** `bin/rails "cms:import[PATH]"` takes the
+  Go core's backup (Tools › Backup there, `GET /api/tools/backup`), unpacked
+  or not, or its data directory, and replaces this install's site with it:
+  pages, entries, globals, block types, media and files, people and their
+  passwords, roles, tokens, webhooks, redirects, settings and the audit log,
+  ids kept. Rich text fields become this core's rich text, with their
+  documents drawn as HTML; links to Go-served files point at the same files
+  here; the Go Forms plugin's forms and submissions become the Forms
+  plugin's; the secrets the Go core sealed are opened with its key
+  (`SECRET_KEY_FILE`, or the backup's own `secret.key`) and kept as this
+  core keeps them, or cleared and reported without it. `DRY_RUN=1` reports
+  what it would carry, what's missing or damaged and what doesn't round-trip;
+  `FORCE=1` replaces a site that has people, keeping its database beside the
+  new one. The same task still imports the shared deployment's backups
+  (`cms:import_tenant` stays). docs/import.md.
+
 ## 1.33.4
 
 ### Fixed

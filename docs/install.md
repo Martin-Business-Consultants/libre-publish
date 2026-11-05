@@ -323,6 +323,15 @@ the site as `CMS_WEBHOOK_SECRET`. The cache tags are the CMS's one
 vocabulary: `page:<path>` (`page:` is the home page), `entry:<collection>/<slug>`,
 `collection:<slug>`, `global:<slug>`, `pages`, `sitemap`, `redirects`.
 
+## Moving a site from the Go core
+
+A site on the Go core (librepublishgo) moves into this install with its
+backup: `bin/rails "cms:import[site.tar.gz]"`, `DRY_RUN=1` to look first and
+`SECRET_KEY_FILE` (the Go install's `secret.key`) to carry its secrets. Rich
+text, file addresses, roles, forms and secrets are brought onto this core's
+terms as it goes: [Importing a site](import.md) has how, and what doesn't
+round-trip.
+
 ## Moving a site from the shared deployment
 
 The old deployment kept one SQLite database per tenant
