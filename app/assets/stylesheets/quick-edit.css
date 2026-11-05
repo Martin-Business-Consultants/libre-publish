@@ -26,7 +26,7 @@
    settings a line of small fields on a gray well, ending in Save. */
 @layer components {
   .quick-edit__link {
-    color: var(--accent-600);
+    color: var(--primary);
 
     &:hover {
       text-decoration: underline;
@@ -35,8 +35,8 @@
 
   .quick-edit__form {
     align-items: flex-end;
-    background-color: var(--gray-50);
-    border: 1px solid var(--gray-200);
+    background-color: var(--muted);
+    border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     display: flex;
     flex-wrap: wrap;
@@ -52,7 +52,7 @@
   }
 
   .quick-edit__label {
-    color: var(--gray-700);
+    color: var(--foreground);
     font-size: var(--text-xs);
     font-weight: var(--weight-medium);
     line-height: var(--leading-xs);

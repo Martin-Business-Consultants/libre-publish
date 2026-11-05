@@ -2,7 +2,7 @@
    two-factor): the logo over a box on the gray page. */
 @layer components {
   .public {
-    background-color: var(--gray-50);
+    background-color: var(--muted);
     display: flex;
     flex-direction: column;
     min-block-size: 100dvh;

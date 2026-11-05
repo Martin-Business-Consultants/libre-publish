@@ -7,12 +7,12 @@
   }
 
   .developers__by-hand {
-    border: 1px solid var(--gray-200);
+    border: 1px solid var(--border);
     border-radius: var(--radius-lg);
   }
 
   .developers__by-hand-summary {
-    color: var(--gray-900);
+    color: var(--foreground);
     font-size: var(--text-sm);
     font-weight: var(--weight-medium);
     line-height: var(--leading-sm);
@@ -20,14 +20,14 @@
   }
 
   .developers__by-hand-body {
-    border-block-start: 1px solid var(--gray-200);
+    border-block-start: 1px solid var(--border);
     padding: var(--space-3);
   }
 
   /* library candidate: a table in a hairline frame inside a box, scrolling
      sideways when it's wide. */
   .table-frame {
-    border: 1px solid var(--gray-200);
+    border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     overflow-x: auto;
   }

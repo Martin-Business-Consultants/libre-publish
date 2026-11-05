@@ -9,7 +9,7 @@
   /* A greeting in the list: its words, and when, at the far end. */
   .hello-greeting {
     align-items: baseline;
-    color: var(--gray-900);
+    color: var(--foreground);
     display: flex;
     gap: var(--space-4);
     justify-content: space-between;

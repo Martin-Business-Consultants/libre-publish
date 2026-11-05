@@ -154,18 +154,26 @@ JSON, with its signature at the same address plus `.sig`) and
   subclass, so jobs already queued still run.
 - **API responses** are jbuilder views under the plugin's `app/views/api/`;
   a controller renders JSON itself only for an error body. 
-- **Views** follow the core's frontend rules (STYLE.md: the admin's own
-  classes, named for what a thing is — `panel`, `btn btn--primary`,
-  `field`, `data-table`, `stack`, `badge` — and the core's partials, strict
-  locals, no inline styles); `bin/ci` lints `engines/` with Herb, and the
-  classes spec checks a plugin's views as it does the core's: a class
-  nothing defines fails it, and so does a rule in the plugin's stylesheet
-  that nothing uses. What's the plugin's alone gets a class named for the
-  plugin (`hello-greeting`), drawn in its stylesheet with the admin's
-  tokens (`--gray-*`, `--space-*`, `--radius-*`), so it follows Settings ›
-  Branding and the dark theme. Tailwind's classes and `ui(...)` are gone:
-  a view that still uses them loses its styling, and `ui(...)`
-  raises `NoMethodError`.
+- **Views** are drawn with **Runwell UI**, the core's no-build port of
+  shadcn/ui (STYLE.md, and every component at `/cms/ui` in development):
+  `ui-card`, `ui-button` (`ui_button`, `ui_link_button`,
+  `ui_button_classes`), `ui-field` with `ui-label` and `ui-input`,
+  `ui-badge` (`ui_status_badge`), `ui-menu`, `ui-dialog`, and an index as
+  the data table (`render "ui/data_table", …`), with the core's layout
+  pieces (`stack`, `row`, `cluster`, `grid`) and partials, strict locals, no
+  inline styles. That is the styling contract: the `ui-` classes and the
+  kit's tokens keep their names and meaning. `bin/ci` lints `engines/` with
+  Herb, and the classes spec checks a plugin's views as it does the
+  core's: a class nothing defines fails it, and so does a rule in the
+  plugin's stylesheet that nothing uses. What's the plugin's alone gets a
+  class named for the plugin (`hello-greeting`), drawn in its stylesheet
+  with the kit's tokens (`--card`, `--border`, `--muted-foreground`,
+  `--primary`, `--radius-lg`, `--shadow-sm`…; never a color of its own),
+  so it follows Settings › Branding and the dark theme. The admin's
+  classes from before the kit (`panel`, `btn btn--primary`, `field`,
+  `data-table`, `badge`…) still draw, in the kit's look, from the core's
+  `legacy.css`, so a plugin written for them keeps working; move it to the
+  kit when you next touch it — new markup on them isn't accepted.
 
 ## Registering
 

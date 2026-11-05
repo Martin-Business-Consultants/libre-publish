@@ -10,31 +10,31 @@
     }
 
     > li + li {
-      border-block-start: 1px solid var(--gray-100);
+      border-block-start: 1px solid var(--accent);
     }
   }
 
   /* library candidate: a short list in a bordered box, a hairline between
      its rows (what a backup will hold). */
   .boxed-list {
-    border: 1px solid var(--gray-200);
+    border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     font-size: var(--text-sm);
     line-height: var(--leading-sm);
 
     > li {
-      color: var(--gray-700);
+      color: var(--foreground);
       padding: var(--space-2) var(--space-3);
     }
 
     > li + li {
-      border-block-start: 1px solid var(--gray-100);
+      border-block-start: 1px solid var(--accent);
     }
   }
 
   /* Replace all, ruled off under the matches. */
   .search-replace__confirm {
-    border-block-start: 1px solid var(--gray-100);
+    border-block-start: 1px solid var(--accent);
     padding-block-start: var(--space-4);
   }
 

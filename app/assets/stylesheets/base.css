@@ -9,8 +9,8 @@
   }
 
   body {
-    background-color: var(--surface);
-    color: var(--gray-900);
+    background-color: var(--background);
+    color: var(--foreground);
     -moz-osx-font-smoothing: grayscale;
     -webkit-font-smoothing: antialiased;
     -webkit-text-size-adjust: none;
@@ -32,7 +32,7 @@
   }
 
   a:not([class]) {
-    color: var(--accent-600);
+    color: var(--primary);
     text-decoration: underline;
     text-decoration-color: color-mix(in oklch, currentColor 40%, transparent);
     text-underline-offset: 2px;
@@ -58,7 +58,7 @@
   }
 
   :is(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
-    outline: var(--focus-ring);
+    outline: 2px solid var(--ring);
     outline-offset: 2px;
   }
 
@@ -77,10 +77,10 @@
   :where(input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"], [type="hidden"], [type="submit"], [type="button"], [type="reset"], [type="image"])),
   :where(select),
   :where(textarea) {
-    background-color: var(--surface);
-    border: 1px solid var(--gray-300);
+    background-color: var(--background);
+    border: 1px solid var(--input);
     border-radius: var(--radius-md);
-    color: var(--gray-900);
+    color: var(--foreground);
     font-size: var(--text-sm);
     line-height: var(--leading-sm);
     max-inline-size: 100%;
@@ -88,22 +88,22 @@
     padding: 0.3125rem var(--space-2-5);
 
     &::placeholder {
-      color: var(--gray-400);
+      color: var(--muted-foreground);
       opacity: 1;
     }
 
     &:hover:not(:focus, :disabled) {
-      border-color: var(--gray-400);
+      border-color: var(--muted-foreground);
     }
 
     /* Payload's field focus: the border darkens, no ring. */
     &:focus {
-      border-color: var(--gray-900);
+      border-color: var(--foreground);
       outline: none;
     }
 
     &[aria-invalid="true"] {
-      border-color: var(--red-500);
+      border-color: var(--destructive);
     }
   }
 
@@ -122,7 +122,7 @@
   }
 
   :where(input[type="checkbox"], input[type="radio"], progress, input[type="range"]) {
-    accent-color: var(--accent-600);
+    accent-color: var(--primary);
   }
 
   :where(input[type="checkbox"], input[type="radio"]) {
@@ -136,10 +136,10 @@
     font-size: var(--text-sm);
 
     &::file-selector-button {
-      background: var(--surface);
-      border: 1px solid var(--gray-300);
+      background: var(--background);
+      border: 1px solid var(--input);
       border-radius: var(--radius-md);
-      color: var(--gray-900);
+      color: var(--foreground);
       cursor: pointer;
       font-weight: var(--weight-medium);
       margin-inline-end: var(--space-3);
@@ -155,11 +155,11 @@
   }
 
   kbd {
-    background: var(--gray-50);
-    border: 1px solid var(--gray-300);
+    background: var(--muted);
+    border: 1px solid var(--input);
     border-block-end-width: 2px;
     border-radius: var(--radius-sm);
-    color: var(--gray-600);
+    color: var(--muted-foreground);
     font-family: var(--font-mono);
     font-size: 0.75em;
     font-weight: var(--weight-medium);
@@ -177,7 +177,7 @@
   }
 
   ::selection {
-    background-color: var(--accent-200);
+    background-color: color-mix(in oklch, var(--primary) 25%, var(--background));
   }
 
   :where(ul, ol):where([role="list"]) {
@@ -220,7 +220,7 @@
 
   @media screen and (-webkit-min-device-pixel-ratio: 0) and (min-resolution: 0.001dpcm) {
     * {
-      scrollbar-color: var(--gray-300) transparent;
+      scrollbar-color: var(--input) transparent;
       scrollbar-width: thin;
     }
   }

@@ -8,11 +8,11 @@
 @layer components {
   .btn {
     align-items: center;
-    background-color: var(--surface);
+    background-color: var(--background);
     block-size: var(--space-8);
-    border: 1px solid var(--gray-300);
+    border: 1px solid var(--input);
     border-radius: var(--radius-md);
-    color: var(--gray-900);
+    color: var(--foreground);
     display: inline-flex;
     font-size: var(--text-sm);
     font-weight: var(--weight-semibold);
@@ -23,8 +23,8 @@
     white-space: nowrap;
 
     &:hover:not(:disabled) {
-      background-color: var(--gray-50);
-      border-color: var(--gray-400);
+      background-color: var(--muted);
+      border-color: var(--muted-foreground);
     }
 
     .icon {
@@ -33,45 +33,45 @@
   }
 
   .btn--primary {
-    background-color: var(--accent-600);
-    border-color: var(--accent-600);
-    color: var(--on-accent);
+    background-color: var(--primary);
+    border-color: var(--primary);
+    color: var(--primary-foreground);
 
     &:hover:not(:disabled) {
-      background-color: var(--accent-700);
-      border-color: var(--accent-700);
+      background-color: var(--primary);
+      border-color: var(--primary);
     }
   }
 
   .btn--danger {
-    color: var(--red-600);
+    color: var(--destructive);
 
     &:hover:not(:disabled) {
-      background-color: var(--red-50);
-      border-color: var(--gray-300);
+      background-color: color-mix(in oklch, var(--destructive) 8%, var(--background));
+      border-color: var(--input);
     }
   }
 
   .btn--destructive {
-    background-color: var(--red-600);
-    border-color: var(--red-600);
+    background-color: var(--destructive);
+    border-color: var(--destructive);
     color: #fff;
 
     &:hover:not(:disabled) {
-      background-color: var(--red-700);
-      border-color: var(--red-700);
+      background-color: var(--destructive);
+      border-color: var(--destructive);
     }
   }
 
   .btn--plain {
     background-color: transparent;
     border-color: transparent;
-    color: var(--gray-600);
+    color: var(--muted-foreground);
 
     &:hover:not(:disabled) {
-      background-color: var(--gray-100);
+      background-color: var(--accent);
       border-color: transparent;
-      color: var(--gray-900);
+      color: var(--foreground);
     }
   }
 
@@ -139,9 +139,9 @@
 
   @keyframes copied {
     0% {
-      background-color: var(--green-50);
-      border-color: var(--green-300);
-      color: var(--green-700);
+      background-color: color-mix(in oklch, var(--success) 8%, var(--background));
+      border-color: color-mix(in oklch, var(--success) 50%, var(--background));
+      color: var(--success);
       scale: 0.94;
     }
 
@@ -150,9 +150,9 @@
     }
 
     80% {
-      background-color: var(--green-50);
-      border-color: var(--green-300);
-      color: var(--green-700);
+      background-color: color-mix(in oklch, var(--success) 8%, var(--background));
+      border-color: color-mix(in oklch, var(--success) 50%, var(--background));
+      color: var(--success);
     }
   }
 }
@@ -162,9 +162,9 @@
 @layer helpers {
   @media (prefers-reduced-motion: reduce) {
     .btn--success {
-      background-color: var(--green-50);
-      border-color: var(--green-300);
-      color: var(--green-700);
+      background-color: color-mix(in oklch, var(--success) 8%, var(--background));
+      border-color: color-mix(in oklch, var(--success) 50%, var(--background));
+      color: var(--success);
     }
   }
 }

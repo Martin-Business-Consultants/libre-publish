@@ -89,6 +89,9 @@ Rails.application.routes.draw do
 
     get :dashboard, to: "dashboard#index"
 
+    # Runwell UI's styleguide (app/views/ui), for whoever draws a screen or a plugin.
+    resource :ui, only: :show, controller: "ui" if Rails.env.development?
+
     get :sitemap,       to: "sitemaps#index", as: :sitemap, constraints: {format: /html|/}
     get "sitemap/robots",   to: "robots#edit", as: :sitemap_robots
     patch "sitemap/robots", to: "robots#update"

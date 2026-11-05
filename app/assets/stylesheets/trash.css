@@ -2,8 +2,8 @@
 @layer components {
   .trash-item__preview {
     align-items: center;
-    background-color: var(--gray-50);
-    border: 1px solid var(--gray-200);
+    background-color: var(--muted);
+    border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     display: flex;
     justify-content: center;

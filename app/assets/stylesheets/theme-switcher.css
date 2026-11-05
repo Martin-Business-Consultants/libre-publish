@@ -3,22 +3,22 @@
 /* change with that state, so they're set here rather than in the markup. */
 @layer components {
   .theme-switcher__btn {
-    background-color: var(--surface);
-    border-color: var(--gray-200);
-    color: var(--gray-700);
+    background-color: var(--background);
+    border-color: var(--border);
+    color: var(--foreground);
 
     &:hover {
-      background-color: var(--gray-50);
+      background-color: var(--muted);
     }
 
     &:has(input:checked) {
-      background-color: var(--accent-50);
-      border-color: var(--accent-500);
-      color: var(--accent-700);
+      background-color: color-mix(in oklch, var(--primary) 6%, var(--background));
+      border-color: var(--ring);
+      color: var(--primary);
     }
 
     &:has(input:focus-visible) {
-      outline: var(--focus-ring);
+      outline: 2px solid var(--ring);
       outline-offset: 2px;
     }
   }

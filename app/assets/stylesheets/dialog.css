@@ -14,11 +14,11 @@
   .dialog {
     --dialog-duration: 150ms;
 
-    background-color: var(--surface);
-    border: 1px solid var(--gray-200);
+    background-color: var(--background);
+    border: 1px solid var(--border);
     border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-overlay);
-    color: var(--gray-900);
+    box-shadow: var(--shadow-lg);
+    color: var(--foreground);
     gap: var(--space-4);
     /* Centered: the reset takes away the browser's margin: auto. */
     margin: auto;
@@ -158,14 +158,14 @@
   }
 
   .global-search__result {
-    &[aria-selected="true"] { background-color: var(--gray-100); }
+    &[aria-selected="true"] { background-color: var(--accent); }
 
     mark {
       background: none;
       color: inherit;
       font-weight: 700;
       text-decoration: underline;
-      text-decoration-color: var(--accent-500);
+      text-decoration-color: var(--ring);
       text-underline-offset: 2px;
     }
   }
@@ -180,7 +180,7 @@
      (.eyebrow) over each group, a row per result (its title, a line of the text that
      matched, its kind), and a link to every result at the end. */
   .search-results__empty {
-    color: var(--gray-500);
+    color: var(--muted-foreground);
     font-size: var(--text-sm);
     line-height: var(--leading-sm);
     padding: var(--space-8) var(--space-3);
@@ -194,7 +194,7 @@
   .search-results__item {
     align-items: flex-start;
     border-radius: var(--radius-md);
-    color: var(--gray-900);
+    color: var(--foreground);
     display: flex;
     font-size: var(--text-sm);
     gap: var(--space-3);
@@ -208,7 +208,7 @@
   }
 
   .search-results__snippet {
-    color: var(--gray-500);
+    color: var(--muted-foreground);
     display: block;
     font-size: var(--text-xs);
     line-height: var(--leading-xs);
@@ -216,7 +216,7 @@
   }
 
   .search-results__all {
-    color: var(--accent-600);
+    color: var(--primary);
     display: block;
     margin-block-start: var(--space-2);
   }
@@ -232,23 +232,23 @@
   .update-progress__spinner {
     animation: update-progress-spin 0.8s linear infinite;
     block-size: 1.25rem;
-    border: 2px solid var(--gray-200);
-    border-block-start-color: var(--accent-600);
+    border: 2px solid var(--border);
+    border-block-start-color: var(--primary);
     border-radius: 9999px;
     flex: none;
     inline-size: 1.25rem;
 
-    .update-progress--finished & { animation: none; border-color: var(--gray-200); }
+    .update-progress--finished & { animation: none; border-color: var(--border); }
   }
 
   .update-progress__bar {
-    background-color: var(--gray-100);
+    background-color: var(--accent);
     block-size: 0.5rem;
     border-radius: 9999px;
     overflow: hidden;
 
     > span {
-      background-color: var(--accent-600);
+      background-color: var(--primary);
       block-size: 100%;
       border-radius: inherit;
       display: block;
@@ -256,7 +256,7 @@
       transition: inline-size 300ms ease-out;
     }
 
-    .update-progress--failed & > span { background-color: var(--red-600); }
+    .update-progress--failed & > span { background-color: var(--destructive); }
   }
 
   @keyframes update-progress-spin {
@@ -282,7 +282,7 @@
 
   .image-editor__stage {
     align-items: center;
-    background: repeating-conic-gradient(var(--gray-100) 0 25%, var(--surface) 0 50%) 0 0 / 16px 16px;
+    background: repeating-conic-gradient(var(--accent) 0 25%, var(--background) 0 50%) 0 0 / 16px 16px;
     block-size: min(65vh, 40rem);
     border-radius: 0.5rem;
     display: flex;
@@ -321,8 +321,8 @@
   .image-editor__loading { position: absolute; }
 
   .image-editor__chip[aria-pressed="true"] {
-    background-color: var(--gray-900);
-    border-color: var(--gray-900);
-    color: var(--surface);
+    background-color: var(--foreground);
+    border-color: var(--foreground);
+    color: var(--background);
   }
 }

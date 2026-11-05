@@ -14,7 +14,7 @@
   }
 
   .board-column {
-    border: 1px solid var(--gray-200);
+    border: 1px solid var(--border);
     border-radius: var(--radius-xl);
     display: flex;
     flex-direction: column;
@@ -31,7 +31,7 @@
   }
 
   .board-column__empty {
-    color: var(--gray-400);
+    color: var(--muted-foreground);
     font-size: var(--text-sm);
     line-height: var(--leading-sm);
     padding: var(--space-8) var(--space-4);
@@ -39,7 +39,7 @@
   }
 
   .board-dot {
-    background-color: var(--gray-300);
+    background-color: var(--input);
     block-size: var(--space-2);
     border-radius: var(--radius-full);
     flex-shrink: 0;
@@ -47,12 +47,12 @@
   }
 
   .board-dot--on {
-    background-color: var(--green-500);
+    background-color: var(--success);
   }
 
   .board-card {
-    background-color: var(--surface);
-    border: 1px solid var(--gray-200);
+    background-color: var(--background);
+    border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     display: flex;
     flex-direction: column;
@@ -60,7 +60,7 @@
     padding: var(--space-3);
 
     &:hover {
-      border-color: var(--gray-300);
+      border-color: var(--input);
     }
   }
 
@@ -69,7 +69,7 @@
   }
 
   .board-card__grip {
-    color: var(--gray-400);
+    color: var(--muted-foreground);
     line-height: var(--leading-sm);
     user-select: none;
   }
@@ -77,7 +77,7 @@
   /* The fields the collection puts on a card in the right-hand column, under
      a hairline. */
   .board-card__fields {
-    border-block-start: 1px solid var(--gray-100);
+    border-block-start: 1px solid var(--accent);
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
@@ -85,7 +85,7 @@
   }
 
   .board-card__field-label {
-    color: var(--gray-500);
+    color: var(--muted-foreground);
     flex-shrink: 0;
     font-size: var(--text-xs);
     inline-size: 6rem;

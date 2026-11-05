@@ -134,6 +134,6 @@
 
   /* Hairlines between children: a list of rows. */
   .divided > * + * {
-    border-block-start: 1px solid var(--gray-100);
+    border-block-start: 1px solid var(--accent);
   }
 }

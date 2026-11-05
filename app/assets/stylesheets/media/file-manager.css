@@ -30,8 +30,8 @@
   /* Grid or list: two icon links in a box, the current one shaded. */
   .view-switch {
     align-items: center;
-    background-color: var(--surface);
-    border: 1px solid var(--gray-300);
+    background-color: var(--background);
+    border: 1px solid var(--input);
     border-radius: var(--radius-md);
     display: inline-flex;
     gap: var(--space-0-5);
@@ -42,26 +42,26 @@
     align-items: center;
     block-size: 1.75rem;
     border-radius: var(--radius-sm);
-    color: var(--gray-500);
+    color: var(--muted-foreground);
     display: inline-flex;
     inline-size: 1.75rem;
     justify-content: center;
 
     &:hover {
-      color: var(--gray-900);
+      color: var(--foreground);
     }
 
     &[aria-current] {
-      background-color: var(--gray-100);
-      color: var(--gray-900);
+      background-color: var(--accent);
+      color: var(--foreground);
     }
   }
 
   /* The drop zone, always there above the library. */
   .upload-zone {
     align-items: center;
-    background-color: var(--gray-50);
-    border: 2px dashed var(--gray-300);
+    background-color: var(--muted);
+    border: 2px dashed var(--input);
     border-radius: var(--radius-xl);
     display: flex;
     flex-direction: column;
@@ -75,11 +75,11 @@
     --icon-size: 1.25rem;
 
     align-items: center;
-    background-color: var(--surface);
+    background-color: var(--background);
     block-size: var(--space-10);
-    border: 1px solid var(--gray-200);
+    border: 1px solid var(--border);
     border-radius: var(--radius-full);
-    color: var(--gray-500);
+    color: var(--muted-foreground);
     display: flex;
     inline-size: var(--space-10);
     justify-content: center;
@@ -91,10 +91,10 @@
   }
 
   .upload-popover {
-    background-color: var(--surface);
-    border: 1px solid var(--gray-200);
+    background-color: var(--background);
+    border: 1px solid var(--border);
     border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-overlay);
+    box-shadow: var(--shadow-lg);
     display: flex;
     flex-direction: column;
     inset: calc(100% + var(--space-2)) auto auto 0;
@@ -127,7 +127,7 @@
 
   /* A file's progress as it uploads (media--direct-upload builds the rows). */
   .upload-list {
-    color: var(--gray-700);
+    color: var(--foreground);
     display: flex;
     flex-direction: column;
     font-size: var(--text-xs);
@@ -142,7 +142,7 @@
   }
 
   .upload-list__item--failed {
-    color: var(--red-600);
+    color: var(--destructive);
   }
 
   .upload-list__name {
@@ -163,10 +163,10 @@
     --icon-size: 1rem;
 
     align-items: center;
-    background-color: var(--surface);
-    border: 1px solid var(--gray-200);
+    background-color: var(--background);
+    border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    color: var(--gray-900);
+    color: var(--foreground);
     display: flex;
     font-size: var(--text-sm);
     font-weight: var(--weight-medium);
@@ -175,12 +175,12 @@
     padding: var(--space-2-5) var(--space-3);
 
     &:hover {
-      background-color: var(--gray-50);
-      border-color: var(--gray-300);
+      background-color: var(--muted);
+      border-color: var(--input);
     }
 
     > .icon {
-      color: var(--gray-400);
+      color: var(--muted-foreground);
     }
   }
 
@@ -189,9 +189,9 @@
      --row for a list row's 40px one. */
   .media-thumb {
     align-items: center;
-    background-color: var(--gray-50);
-    border: 1px solid var(--gray-200);
-    color: var(--gray-400);
+    background-color: var(--muted);
+    border: 1px solid var(--border);
+    color: var(--muted-foreground);
     display: flex;
     justify-content: center;
     overflow: hidden;
@@ -245,14 +245,14 @@
   }
 
   .media-tile__name {
-    color: var(--gray-900);
+    color: var(--foreground);
     font-size: var(--text-sm);
     font-weight: var(--weight-medium);
     line-height: var(--leading-sm);
   }
 
   .media-tile__meta {
-    color: var(--gray-500);
+    color: var(--muted-foreground);
     font-size: var(--text-xs);
     line-height: var(--leading-xs);
   }
@@ -276,7 +276,7 @@
   .media-tile:focus-visible .media-thumb,
   .media-tile:has(:focus-visible) .media-thumb,
   .media-library:has([data-media-bulk]:checked) .media-tile:has(:checked) .media-thumb {
-    outline: 2px solid var(--accent-600);
+    outline: 2px solid var(--primary);
     outline-offset: 2px;
   }
 
@@ -287,7 +287,7 @@
 
   /* The grid with nothing in it: one quiet line in a box. */
   .media-library__empty {
-    border: 1px solid var(--gray-200);
+    border: 1px solid var(--border);
     border-radius: var(--radius-xl);
   }
 
@@ -314,8 +314,8 @@
 
   .media-bulk-actions {
     align-items: center;
-    background-color: var(--gray-50);
-    border: 1px solid var(--gray-200);
+    background-color: var(--muted);
+    border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     display: flex;
     flex-wrap: wrap;
@@ -337,10 +337,10 @@
      a gray box. */
   .media-details__preview {
     align-items: center;
-    background-color: var(--gray-50);
-    border: 1px solid var(--gray-200);
+    background-color: var(--muted);
+    border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    color: var(--gray-400);
+    color: var(--muted-foreground);
     display: flex;
     justify-content: center;
     min-block-size: 10rem;
@@ -355,7 +355,7 @@
 
   /* A section under a rule (the details' Used in, a job's failures). */
   .media-section {
-    border-block-start: 1px solid var(--gray-200);
+    border-block-start: 1px solid var(--border);
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
@@ -385,8 +385,8 @@
 
   .file-drop__overlay {
     align-items: center;
-    background-color: color-mix(in oklch, var(--accent-600) 8%, transparent);
-    border: 2px dashed var(--accent-600);
+    background-color: color-mix(in oklch, var(--primary) 8%, transparent);
+    border: 2px dashed var(--primary);
     border-radius: var(--radius-xl);
     display: flex;
     inset: 0;
@@ -397,18 +397,18 @@
   }
 
   .file-drop__message {
-    background-color: var(--surface);
-    border: 1px solid var(--gray-200);
+    background-color: var(--background);
+    border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-overlay);
-    color: var(--gray-900);
+    box-shadow: var(--shadow-lg);
+    color: var(--foreground);
     font-size: var(--text-sm);
     line-height: var(--leading-sm);
     padding: var(--space-3) var(--space-4);
   }
 
   .file-drop__folder--over {
-    outline: 2px solid var(--accent-600);
+    outline: 2px solid var(--primary);
     outline-offset: 2px;
   }
 }

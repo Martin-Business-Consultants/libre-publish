@@ -193,14 +193,15 @@ RSpec.describe "Settings pages", type: :request do
 
       get branding_stylesheet_path
       expect(response.media_type).to eq("text/css")
-      expect(response.body).to include("--brand-600: #b45309;", %(--font-sans: "Lora"))
-      expect(response.body).to include("--brand-50: color-mix(in oklch, #b45309 8%, white);")
+      # The kit's theming tokens (ui/theme.css): the accent as OKLCH, lifted for the dark theme.
+      expect(response.body).to include("--lch-accent: 55.5% 0.146 49.0;", %(--font-sans: "Lora"))
+      expect(response.body).to include(%(html[data-theme="dark"] {\n  --lch-accent: 70% 0.146 49.0;))
       # White words on a dark accent; dark ones on a light accent.
-      expect(response.body).not_to include("--on-accent")
+      expect(response.body).not_to include("--lch-ink-inverted")
 
       Setting.set("branding", primary_color: "#fde68a")
       get branding_stylesheet_path
-      expect(response.body).to include("--brand-600: #fde68a;", "--on-accent: #1c1917;")
+      expect(response.body).to include("--lch-accent: 92.4% 0.115 95.7;", "--lch-ink-inverted: var(--lch-black);")
     end
 
     it "keeps the top bar dark in light mode when asked" do
@@ -221,10 +222,11 @@ RSpec.describe "Settings pages", type: :request do
 
       get branding_stylesheet_path
 
-      expect(response.body).to include("--neutral-tint: #1e3a5f;")
-      expect(response.body).to include("--radius-md: 0.625rem;", "--radius-xl: 1.25rem;")
-      expect(response.body).to include("--shadow-surface: 0 1px 2px 0 rgb(0 0 0 / 0.05);", "--shadow-overlay: ")
-      expect(response.body).not_to include("--brand-")
+      # The ink steps take the secondary color's hue, faintly, in both themes.
+      expect(response.body).to include("--lch-ink-darkest: 14.1% 0.037 256.0;", "--lch-ink-darkest: 98.5% 0.037 256.0;")
+      expect(response.body).to include("--radius-scale: 1.6;", "--radius-control: 0.75rem;")
+      expect(response.body).to include("--shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);", "--shadow-lg: ")
+      expect(response.body).not_to include("--lch-accent")
     end
 
     it "leaves anything that isn't a hex color or a listed font, corner or shadow out of the stylesheet" do

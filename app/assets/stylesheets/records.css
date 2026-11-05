@@ -42,7 +42,7 @@
      its title ruled off, its body padded, a status line at its foot
      (.panel__footer). */
   .editor__section-title {
-    border-block-end: 1px solid var(--gray-200);
+    border-block-end: 1px solid var(--border);
     padding: var(--space-3-5) var(--space-5);
   }
 
@@ -63,7 +63,7 @@
 @layer components {
   .template-choice {
     align-items: flex-start;
-    border: 1px solid var(--gray-200);
+    border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     display: flex;
     font-size: var(--text-sm);
@@ -72,7 +72,7 @@
     padding: var(--space-2-5) var(--space-3);
 
     &:hover {
-      background-color: var(--gray-50);
+      background-color: var(--muted);
     }
 
     > input {
@@ -86,11 +86,11 @@
 @layer components {
   .entry-flag {
     align-items: center;
-    background-color: var(--surface);
+    background-color: var(--background);
     block-size: var(--space-6);
-    border: 1px solid var(--gray-300);
+    border: 1px solid var(--input);
     border-radius: var(--radius-md);
-    color: var(--gray-600);
+    color: var(--muted-foreground);
     display: inline-flex;
     font-size: var(--text-xs);
     font-weight: var(--weight-medium);
@@ -99,13 +99,13 @@
     padding-inline: var(--space-2);
 
     &:hover {
-      background-color: var(--gray-50);
+      background-color: var(--muted);
     }
 
     &[aria-pressed="true"] {
-      background-color: var(--accent-50);
-      border-color: var(--accent-200);
-      color: var(--accent-700);
+      background-color: color-mix(in oklch, var(--primary) 6%, var(--background));
+      border-color: color-mix(in oklch, var(--primary) 25%, var(--background));
+      color: var(--primary);
     }
   }
 }
@@ -117,7 +117,7 @@
    (data-op). */
 @layer components {
   .version-field {
-    border-block-start: 1px solid var(--gray-200);
+    border-block-start: 1px solid var(--border);
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
@@ -125,7 +125,7 @@
   }
 
   .version-restore {
-    border-block-start: 1px solid var(--gray-200);
+    border-block-start: 1px solid var(--border);
     display: flex;
     justify-content: flex-end;
     padding-block-start: var(--space-5);
@@ -141,9 +141,9 @@
   }
 
   .diff-value {
-    background-color: var(--gray-50);
+    background-color: var(--muted);
     border-radius: var(--radius-md);
-    color: var(--gray-700);
+    color: var(--foreground);
     font-family: var(--font-mono);
     font-size: var(--text-xs);
     line-height: var(--leading-xs);
@@ -154,18 +154,18 @@
 
   .diff-value[data-tone="add"],
   .diff-lines__line[data-op="add"] {
-    background-color: var(--green-50);
-    color: var(--green-800);
+    background-color: color-mix(in oklch, var(--success) 8%, var(--background));
+    color: color-mix(in oklch, var(--success) 80%, var(--foreground));
   }
 
   .diff-value[data-tone="del"],
   .diff-lines__line[data-op="del"] {
-    background-color: var(--red-50);
-    color: var(--red-800);
+    background-color: color-mix(in oklch, var(--destructive) 8%, var(--background));
+    color: color-mix(in oklch, var(--destructive) 80%, var(--foreground));
   }
 
   .diff-lines {
-    border: 1px solid var(--gray-200);
+    border: 1px solid var(--border);
     border-radius: var(--radius-md);
     font-family: var(--font-mono);
     font-size: var(--text-xs);
@@ -174,20 +174,20 @@
   }
 
   .diff-lines__line {
-    color: var(--gray-700);
+    color: var(--foreground);
     overflow-wrap: break-word;
     padding: var(--space-0-5) var(--space-3);
     white-space: pre-wrap;
   }
 
   .diff-lines__line[data-op="skip"] {
-    background-color: var(--gray-50);
-    color: var(--gray-500);
+    background-color: var(--muted);
+    color: var(--muted-foreground);
   }
 
   .diff-block {
-    background-color: var(--surface);
-    border: 1px solid var(--gray-200);
+    background-color: var(--background);
+    border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     display: flex;
     flex-direction: column;
@@ -196,13 +196,13 @@
   }
 
   .diff-block[data-op="added"] {
-    background-color: var(--green-50);
-    border-color: var(--green-200);
+    background-color: color-mix(in oklch, var(--success) 8%, var(--background));
+    border-color: color-mix(in oklch, var(--success) 30%, var(--background));
   }
 
   .diff-block[data-op="removed"] {
-    background-color: var(--red-50);
-    border-color: var(--red-200);
+    background-color: color-mix(in oklch, var(--destructive) 8%, var(--background));
+    border-color: color-mix(in oklch, var(--destructive) 30%, var(--background));
   }
 }
 
@@ -242,10 +242,10 @@
   .asset-picker__thumb {
     align-items: center;
     aspect-ratio: 1 / 1;
-    background-color: var(--gray-50);
-    border: 1px solid var(--gray-200);
+    background-color: var(--muted);
+    border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    color: var(--gray-400);
+    color: var(--muted-foreground);
     display: flex;
     inline-size: 100%;
     justify-content: center;
@@ -260,14 +260,14 @@
   }
 
   .asset-picker__more {
-    color: var(--gray-500);
+    color: var(--muted-foreground);
     grid-column: 1 / -1;
     padding-block: var(--space-4);
     text-align: center;
   }
 
   .asset-picker__empty {
-    border: 1px solid var(--gray-200);
+    border: 1px solid var(--border);
     border-radius: var(--radius-xl);
   }
 }
@@ -276,7 +276,7 @@
    matches: a menu row's padding, muted, not a choice. */
 @layer components {
   .content-picker__empty {
-    color: var(--gray-500);
+    color: var(--muted-foreground);
     font-size: var(--text-sm);
     line-height: var(--leading-sm);
     padding: var(--space-1-5) var(--space-2-5);

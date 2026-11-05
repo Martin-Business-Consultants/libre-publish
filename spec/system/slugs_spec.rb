@@ -21,11 +21,11 @@ RSpec.describe "Slugs from titles", type: :system do
 
     within "dialog[open]" do
       fill_in "page[title]", with: "Our Café & Bar"
-      expect(find_field("page[slug]").value).to eq("our-cafe-bar")
+      expect(page).to have_field("page[slug]", with: "our-cafe-bar")
 
       fill_in "page[slug]", with: "visit"
       fill_in "page[title]", with: "Our Café & Bar, Downtown"
-      expect(find_field("page[slug]").value).to eq("visit")
+      expect(page).to have_field("page[slug]", with: "visit")
     end
   end
 
@@ -35,7 +35,7 @@ RSpec.describe "Slugs from titles", type: :system do
 
     within "dialog[open]" do
       fill_in "global[name]", with: "2026 Site Settings"
-      expect(find_field("global[slug]").value).to eq("site_settings")
+      expect(page).to have_field("global[slug]", with: "site_settings")
     end
   end
 
@@ -45,6 +45,6 @@ RSpec.describe "Slugs from titles", type: :system do
     visit edit_page_path(saved.path)
     fill_in "page[title]", with: "About the bakery"
 
-    expect(find_field("page[slug]").value).to eq("about")
+    expect(page).to have_field("page[slug]", with: "about")
   end
 end

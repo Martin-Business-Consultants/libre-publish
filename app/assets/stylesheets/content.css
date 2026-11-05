@@ -13,7 +13,7 @@
   .page-tree__title[data-depth="6"] { padding-inline-start: 7.5rem; }
 
   .page-tree__title:not([data-depth="0"])::before {
-    color: var(--gray-400);
+    color: var(--muted-foreground);
     content: "↳ ";
   }
 }

@@ -6,12 +6,12 @@
   /* Text color, by role: ink for what matters, body for running text, muted
      for what's secondary (dates, counts, help), faint for what's barely
      there (placeholders, separators); red for what went wrong. */
-  .text-ink { color: var(--gray-900); }
-  .text-body { color: var(--gray-700); }
-  .text-muted { color: var(--gray-500); }
-  .text-faint { color: var(--gray-400); }
-  .text-accent { color: var(--accent-600); }
-  .text-danger { color: var(--red-600); }
+  .text-ink { color: var(--foreground); }
+  .text-body { color: var(--foreground); }
+  .text-muted { color: var(--muted-foreground); }
+  .text-faint { color: var(--muted-foreground); }
+  .text-accent { color: var(--primary); }
+  .text-danger { color: var(--destructive); }
 
   /* Text size: small is 12px, large 16px; the body is 14px. */
   .text-small { font-size: var(--text-xs); line-height: var(--leading-xs); }

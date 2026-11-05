@@ -8,8 +8,8 @@
     padding: var(--space-5);
 
     &:hover {
-      background-color: var(--gray-50);
-      border-color: var(--gray-300);
+      background-color: var(--muted);
+      border-color: var(--input);
     }
   }
 
@@ -22,34 +22,34 @@
 
   .docs-nav__link {
     border-radius: var(--radius-md);
-    color: var(--gray-600);
+    color: var(--muted-foreground);
     display: block;
     padding: var(--space-1-5) var(--space-2-5);
 
     &:hover {
-      background-color: var(--gray-50);
-      color: var(--gray-900);
+      background-color: var(--muted);
+      color: var(--foreground);
     }
 
     &[aria-current] {
-      background-color: var(--gray-100);
-      color: var(--gray-900);
+      background-color: var(--accent);
+      color: var(--foreground);
       font-weight: var(--weight-medium);
     }
   }
 
   .check-mark {
     align-items: center;
-    background-color: var(--gray-100);
+    background-color: var(--accent);
     block-size: var(--space-6);
     border-radius: var(--radius-full);
-    color: var(--gray-500);
+    color: var(--muted-foreground);
     display: flex;
     flex-shrink: 0;
     inline-size: var(--space-6);
     justify-content: center;
 
-    &[data-state="pass"] { background-color: var(--green-50); color: var(--green-700); }
-    &[data-state="fail"] { background-color: var(--red-50); color: var(--red-700); }
+    &[data-state="pass"] { background-color: color-mix(in oklch, var(--success) 8%, var(--background)); color: var(--success); }
+    &[data-state="fail"] { background-color: color-mix(in oklch, var(--destructive) 8%, var(--background)); color: var(--destructive); }
   }
 }

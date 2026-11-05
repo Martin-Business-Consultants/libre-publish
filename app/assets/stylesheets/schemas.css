@@ -4,8 +4,8 @@
    settings folded away. */
 @layer components {
   .schema-field {
-    background-color: var(--surface);
-    border: 1px solid var(--gray-200);
+    background-color: var(--background);
+    border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     display: flex;
     flex-direction: column;
@@ -42,7 +42,7 @@
   }
 
   .schema-field__label {
-    color: var(--gray-700);
+    color: var(--foreground);
     font-size: var(--text-xs);
     font-weight: var(--weight-medium);
     line-height: var(--leading-xs);
@@ -63,11 +63,11 @@
   }
 
   .schema-field__remove {
-    color: var(--gray-500);
+    color: var(--muted-foreground);
 
     &:hover:not(:disabled) {
-      background-color: var(--red-50);
-      color: var(--red-700);
+      background-color: color-mix(in oklch, var(--destructive) 8%, var(--background));
+      color: var(--destructive);
     }
   }
 
@@ -86,18 +86,18 @@
   }
 
   .schema-field__nested {
-    border-inline-start: 2px solid var(--gray-200);
+    border-inline-start: 2px solid var(--border);
     padding-inline-start: var(--space-4);
   }
 
   .schema-field__more {
-    color: var(--gray-500);
+    color: var(--muted-foreground);
     font-size: var(--text-xs);
     font-weight: var(--weight-medium);
     line-height: var(--leading-xs);
 
     &:hover {
-      color: var(--gray-900);
+      color: var(--foreground);
     }
   }
 

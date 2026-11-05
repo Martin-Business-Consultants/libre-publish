@@ -1,0 +1,38 @@
+/* The admin's own pieces drawn as shadcn/ui draws them, with the kit's tokens: what the kit
+/* (ui/button.css … ui/data-table.css, copied from Runwell UI as written) has no component for.
+/* In the `ui` layer, beside the kit. Each screen's own file is ui/app-*.css. */
+@layer ui {
+  /* Pagination under a data table (layouts/shared/_pagination): which rows these are on the
+  /* left, the pages on the right. */
+  .table-pagination {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: space-between;
+    margin-block-start: 1rem;
+  }
+
+  .table-pagination__summary {
+    color: var(--muted-foreground);
+    font-size: var(--text-normal);
+    margin: 0;
+  }
+
+  .table-pagination__pages {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .table-pagination__gap {
+    color: var(--muted-foreground);
+    display: inline-grid;
+    inline-size: 2rem;
+    place-items: center;
+  }
+}

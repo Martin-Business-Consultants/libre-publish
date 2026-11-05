@@ -20,6 +20,7 @@ RSpec.describe "Architecture: the admin's CSS classes" do
   # from a string.
   BUILT_ELSEWHERE = %w[
     turbo-progress-bar
+    field_with_errors
   ].freeze
 
   # Families of classes built the same way: icon_tag makes icon--<name>

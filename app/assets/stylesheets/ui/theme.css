@@ -1,0 +1,133 @@
+/* The theming tokens Runwell UI is built from (ui/tokens.css reads them), as Runwell defines
+/* them (its docs/theming.md): colours as OKLCH triples (`L% C H`, without oklch(), so a rule
+/* can add transparency), a type scale, corners and the layers things float on.
+/*
+/* Settings › Branding sets them (Branding#stylesheet, served as /branding.css after this):
+/* the primary colour is --lch-accent (and its dark-theme twin), the secondary colour tints the
+/* ink steps, the font is --font-sans, the corners --radius-scale and --radius-control, the
+/* shadow the --shadow-* steps. Nothing else reads these: components read the shadcn names in
+/* ui/tokens.css. Unlayered, so /branding.css and the dark theme below win. */
+:root {
+  --lch-black: 0% 0 0;
+  --lch-white: 100% 0 0;
+
+  --lch-canvas: var(--lch-white);
+  --lch-ink-inverted: var(--lch-white);
+
+  /* Ink: shadcn's zinc, from the text (darkest) to the faintest fill (lightest). */
+  --lch-ink-darkest: 14.1% 0.005 285.8;
+  --lch-ink-darker: 37% 0.013 285.8;
+  --lch-ink-dark: 55.2% 0.016 285.9;
+  --lch-ink-medium: 64% 0.015 286;
+  --lch-ink-light: 87.1% 0.006 286.3;
+  --lch-ink-lighter: 92% 0.004 286.3;
+  --lch-ink-lightest: 96.7% 0.001 286.4;
+
+  /* The accent: primary buttons, switches, links, focus, what's current. */
+  --lch-accent: 55% 0.16 277;
+  --lch-accent-light: 84% 0.06 277;
+  --lch-accent-lighter: 93% 0.025 277;
+  --lch-accent-lightest: 97% 0.012 277;
+
+  /* Status. */
+  --lch-red-dark: 59% 0.19 38;
+  --lch-red-medium: 66% 0.204 40;
+  --lch-yellow-dark: 58% 0.156 60;
+  --lch-green-dark: 55% 0.162 147;
+  --lch-blue-dark: 57.02% 0.1895 260.46;
+
+  --color-canvas: oklch(var(--lch-canvas));
+  --color-ink: oklch(var(--lch-ink-darkest));
+  --color-ink-darker: oklch(var(--lch-ink-darker));
+  --color-ink-dark: oklch(var(--lch-ink-dark));
+  --color-ink-medium: oklch(var(--lch-ink-medium));
+  --color-ink-light: oklch(var(--lch-ink-light));
+  --color-ink-lighter: oklch(var(--lch-ink-lighter));
+  --color-ink-lightest: oklch(var(--lch-ink-lightest));
+  --color-ink-inverted: oklch(var(--lch-ink-inverted));
+  --color-link: oklch(var(--lch-accent));
+  --color-negative: oklch(var(--lch-red-dark));
+  --color-positive: oklch(var(--lch-green-dark));
+
+  /* shadcn/ui's type steps: text-xs 12px, text-sm 14px (the body), text-base 16px, text-lg
+  /* 18px, text-xl 20px, text-2xl 24px, text-3xl 30px. */
+  --text-x-small: 0.75rem;
+  --text-normal: 0.875rem;
+  --text-medium: 1rem;
+  --text-large: 1.125rem;
+  --text-x-large: 1.25rem;
+  --text-xx-large: 1.5rem;
+  --text-xxx-large: 1.875rem;
+
+  /* Corners: containers multiply by --radius-scale, controls share --radius-control. */
+  --radius-scale: 1;
+  --radius-control: 0.5rem;
+  --radius-full: 9999px;
+
+  /* What floats over the page, in order. */
+  --z-popup: 10;
+  --z-nav: 20;
+  --z-flash: 30;
+  --z-tooltip: 40;
+
+  --custom-safe-inset-top: env(safe-area-inset-top, 0px);
+}
+
+html[data-theme="light"] {
+  color-scheme: light;
+}
+
+/* Dark: chosen with the theme toggle (data-theme), or the system's when nobody chose. */
+html[data-theme="dark"] {
+  color-scheme: dark;
+
+  --lch-canvas: 17% 0.005 285.9;
+  --lch-ink-inverted: var(--lch-black);
+
+  --lch-ink-darkest: 98.5% 0 0;
+  --lch-ink-darker: 87.1% 0.006 286.3;
+  --lch-ink-dark: 70.5% 0.015 286.1;
+  --lch-ink-medium: 55.2% 0.016 285.9;
+  --lch-ink-light: 37% 0.013 285.8;
+  --lch-ink-lighter: 27.4% 0.006 286;
+  --lch-ink-lightest: 21% 0.006 285.9;
+
+  --lch-accent: 70% 0.13 277;
+  --lch-accent-light: 42% 0.1 277;
+  --lch-accent-lighter: 30% 0.06 277;
+  --lch-accent-lightest: 24% 0.035 277;
+
+  --lch-red-dark: 73.95% 0.139 42;
+  --lch-red-medium: 62% 0.154 40;
+  --lch-yellow-dark: 74.06% 0.136 80;
+  --lch-green-dark: 73.99% 0.117 145;
+  --lch-blue-dark: 74% 0.1293 256;
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme]) {
+    color-scheme: dark;
+
+    --lch-canvas: 17% 0.005 285.9;
+    --lch-ink-inverted: var(--lch-black);
+
+    --lch-ink-darkest: 98.5% 0 0;
+    --lch-ink-darker: 87.1% 0.006 286.3;
+    --lch-ink-dark: 70.5% 0.015 286.1;
+    --lch-ink-medium: 55.2% 0.016 285.9;
+    --lch-ink-light: 37% 0.013 285.8;
+    --lch-ink-lighter: 27.4% 0.006 286;
+    --lch-ink-lightest: 21% 0.006 285.9;
+
+    --lch-accent: 70% 0.13 277;
+    --lch-accent-light: 42% 0.1 277;
+    --lch-accent-lighter: 30% 0.06 277;
+    --lch-accent-lightest: 24% 0.035 277;
+
+    --lch-red-dark: 73.95% 0.139 42;
+    --lch-red-medium: 62% 0.154 40;
+    --lch-yellow-dark: 74.06% 0.136 80;
+    --lch-green-dark: 73.99% 0.117 145;
+    --lch-blue-dark: 74% 0.1293 256;
+  }
+}

@@ -60,10 +60,10 @@
   /* The classic look's admin bar: the menu's gray, across the top. */
   .admin-bar {
     align-items: stretch;
-    background-color: var(--gray-50);
+    background-color: var(--muted);
     block-size: var(--admin-bar-height);
-    border-block-end: 1px solid var(--gray-200);
-    color: var(--gray-900);
+    border-block-end: 1px solid var(--border);
+    color: var(--foreground);
     display: flex;
     font-size: var(--text-sm);
     gap: var(--space-1);
@@ -73,6 +73,19 @@
     position: fixed;
     /* Above the admin menu, so the bar's dropdowns open over it. */
     z-index: calc(var(--z-nav) + 1);
+
+    /* Settings › Branding's dark top bar: the dark theme's tokens, on the bar alone. */
+    &.admin-bar--dark {
+      --background: oklch(17% 0.005 285.9);
+      --foreground: oklch(98.5% 0 0);
+      --muted: oklch(21% 0.006 285.9);
+      --accent: oklch(27.4% 0.006 286);
+      --muted-foreground: oklch(70.5% 0.015 286.1);
+      --border: oklch(100% 0 0 / 10%);
+      --input: oklch(100% 0 0 / 15%);
+
+      color-scheme: dark;
+    }
   }
 
   .admin-bar__item {
@@ -84,36 +97,36 @@
     white-space: nowrap;
 
     &:hover {
-      background-color: var(--gray-100);
+      background-color: var(--accent);
     }
   }
 
   .admin-bar__item--muted {
-    color: var(--gray-600);
+    color: var(--muted-foreground);
 
     &:hover {
-      color: var(--gray-900);
+      color: var(--foreground);
     }
   }
 
   .admin-bar__item--site {
-    color: var(--gray-900);
+    color: var(--foreground);
     font-weight: var(--weight-semibold);
   }
 
   /* A newer version of the CMS or a plugin. */
   .admin-bar__update {
-    color: var(--accent-600);
+    color: var(--primary);
     font-weight: var(--weight-medium);
   }
 
   /* The site's mark when Branding has no logo: a house on the accent. */
   .admin-bar__mark {
     align-items: center;
-    background-color: var(--accent-600);
+    background-color: var(--primary);
     block-size: 1.75rem;
     border-radius: var(--radius-md);
-    color: var(--on-accent);
+    color: var(--primary-foreground);
     display: flex;
     inline-size: 1.75rem;
     justify-content: center;
@@ -121,10 +134,10 @@
 
   .admin-bar__avatar {
     align-items: center;
-    background-color: var(--gray-100);
+    background-color: var(--accent);
     block-size: 1.75rem;
     border-radius: var(--radius-full);
-    color: var(--gray-600);
+    color: var(--muted-foreground);
     display: flex;
     inline-size: 1.75rem;
     justify-content: center;
@@ -133,7 +146,7 @@
   /* Plugins' items (plugin_slots :nav_actions). */
   .admin-bar__plugins {
     align-items: center;
-    color: var(--gray-500);
+    color: var(--muted-foreground);
     display: flex;
     gap: var(--space-2);
     padding-inline: var(--space-2);
@@ -154,8 +167,8 @@
 
   /* The signed-in person's email, atop their menu. */
   .admin-bar__account {
-    border-block-end: 1px solid var(--gray-100);
-    color: var(--gray-500);
+    border-block-end: 1px solid var(--accent);
+    color: var(--muted-foreground);
     font-size: var(--text-xs);
     line-height: var(--leading-xs);
     margin-block-end: var(--space-1);
@@ -214,8 +227,8 @@
      window, it scrolls on its own. The column behind it keeps its gray down
      the window. On a narrow screen it's a drawer (no fly-outs there). */
   .admin-menu {
-    background-color: var(--gray-50);
-    border-inline-end: 1px solid var(--gray-200);
+    background-color: var(--muted);
+    border-inline-end: 1px solid var(--border);
     display: flex;
     flex-direction: column;
     font-size: var(--text-sm);
@@ -249,7 +262,7 @@
       }
 
       :root[data-menu-open] & {
-        box-shadow: var(--shadow-overlay);
+        box-shadow: var(--shadow-lg);
         transform: none;
       }
     }
@@ -257,8 +270,8 @@
 
   @media (min-width: 783px) {
     #global-container:has(#admin-menu)::before {
-      background-color: var(--gray-50);
-      border-inline-end: 1px solid var(--gray-200);
+      background-color: var(--muted);
+      border-inline-end: 1px solid var(--border);
       content: "";
       inline-size: var(--admin-menu-width);
       inset: var(--admin-bar-height) auto 0 0;
@@ -283,7 +296,7 @@
   }
 
   .admin-menu__separator {
-    border-block-start: 1px solid var(--gray-200);
+    border-block-start: 1px solid var(--border);
     margin: var(--space-3) var(--space-2-5);
   }
 
@@ -294,25 +307,25 @@
   .admin-menu__link {
     align-items: center;
     border-radius: var(--radius-md);
-    color: var(--gray-600);
+    color: var(--muted-foreground);
     display: flex;
     font-weight: var(--weight-medium);
     gap: var(--space-3);
     padding: var(--space-2) var(--space-2-5);
 
     .admin-menu__item--current > & {
-      background-color: var(--accent-50);
-      color: var(--accent-700);
+      background-color: color-mix(in oklch, var(--primary) 6%, var(--background));
+      color: var(--primary);
     }
   }
 
   .admin-menu__icon {
     --icon-size: 1.25rem;
 
-    color: var(--gray-400);
+    color: var(--muted-foreground);
 
     .admin-menu__item--current > .admin-menu__link > & {
-      color: var(--accent-600);
+      color: var(--primary);
     }
   }
 
@@ -341,8 +354,8 @@
   /* An item keeps its hover look while the pointer is anywhere in it, its
      fly-out included, so it's clear which item the fly-out belongs to. */
   .admin-menu__item:not(.admin-menu__item--current):is(:hover, .admin-menu__item--open, :focus-within) > .admin-menu__link {
-    background-color: var(--gray-100);
-    color: var(--gray-900);
+    background-color: var(--accent);
+    color: var(--foreground);
   }
 
   @media (min-width: 783px) {
@@ -370,7 +383,7 @@
   }
 
   .admin-menu__submenu-head {
-    color: var(--gray-500);
+    color: var(--muted-foreground);
     display: none;
     font-size: var(--text-xs);
     font-weight: var(--weight-semibold);
@@ -383,18 +396,18 @@
   .admin-menu__submenu-link {
     align-items: center;
     border-radius: var(--radius-md);
-    color: var(--gray-500);
+    color: var(--muted-foreground);
     display: flex;
     gap: var(--space-2);
     padding: var(--space-1-5) var(--space-2-5) var(--space-1-5) 2.75rem;
 
     &:hover {
-      background-color: var(--gray-100);
-      color: var(--gray-900);
+      background-color: var(--accent);
+      color: var(--foreground);
     }
 
     &[aria-current] {
-      color: var(--accent-700);
+      color: var(--primary);
       font-weight: var(--weight-medium);
     }
   }
@@ -402,7 +415,7 @@
   .admin-menu__submenu-icon {
     --icon-size: 1rem;
 
-    color: var(--gray-400);
+    color: var(--muted-foreground);
   }
 
   .admin-menu__item--current > .admin-menu__submenu {
@@ -412,10 +425,10 @@
   @media (min-width: 783px) {
     .admin-menu__item:not(.admin-menu__item--current):is(.admin-menu__item--open, :focus-within) > .admin-menu__submenu,
     :root[data-menu="folded"] .admin-menu__item:is(.admin-menu__item--open, :focus-within) > .admin-menu__submenu {
-      background-color: var(--surface);
-      border: 1px solid var(--gray-200);
+      background-color: var(--background);
+      border: 1px solid var(--border);
       border-radius: var(--radius-xl);
-      box-shadow: var(--shadow-overlay);
+      box-shadow: var(--shadow-lg);
       display: block;
       /* Beside the menu, at the item's height (--flyout-top, set by
          admin_menu_controller, which also shifts it up to fit the window). */
@@ -455,8 +468,8 @@
 
   .admin-menu__collapse {
     align-items: center;
-    border-block-start: 1px solid var(--gray-200);
-    color: var(--gray-500);
+    border-block-start: 1px solid var(--border);
+    color: var(--muted-foreground);
     display: flex;
     gap: var(--space-3);
     margin-block-start: auto;
@@ -464,8 +477,8 @@
     text-align: start;
 
     &:hover {
-      background-color: var(--gray-100);
-      color: var(--gray-900);
+      background-color: var(--accent);
+      color: var(--foreground);
     }
 
     :root[data-menu="folded"] & {
@@ -516,7 +529,7 @@
   }
 
   .toast {
-    box-shadow: var(--shadow-overlay);
+    box-shadow: var(--shadow-lg);
     pointer-events: auto;
     transition: opacity 200ms ease-out, translate 200ms ease-out;
 
@@ -620,33 +633,6 @@
   }
 }
 
-/* Numbered pagination under a list table (layouts/shared/_pagination):
-   which rows these are, then the pages. A page number's button is at least
-   square; Previous and Next show but are off on the first and last pages. */
-@layer components {
-  .pagination {
-    align-items: center;
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-3);
-    justify-content: space-between;
-
-    [aria-disabled="true"] {
-      opacity: 0.5;
-      pointer-events: none;
-    }
-  }
-
-  .pagination__page {
-    min-inline-size: 1.75rem;
-  }
-
-  .pagination__gap {
-    color: var(--gray-500);
-    padding-inline: var(--space-1-5);
-  }
-}
-
 /* A Fizzy quick filter (layouts/shared/_quick_filter): a select-like button
    showing the current choice, and a menu of the others under it. */
 @layer components {
@@ -659,7 +645,7 @@
   }
 
   .quick-filter__title {
-    color: var(--gray-500);
+    color: var(--muted-foreground);
     font-size: var(--text-xs);
     font-weight: var(--weight-medium);
     line-height: var(--leading-xs);
@@ -680,7 +666,7 @@
    ruled off when there are facts above it. */
 @layer components {
   .save-box__lines {
-    color: var(--gray-700);
+    color: var(--foreground);
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
@@ -696,7 +682,7 @@
 
   .save-box__actions {
     align-items: center;
-    background-color: var(--gray-50);
+    background-color: var(--muted);
     border-end-end-radius: var(--radius-xl);
     border-end-start-radius: var(--radius-xl);
     display: flex;
@@ -706,7 +692,7 @@
   }
 
   .save-box__actions--ruled {
-    border-block-start: 1px solid var(--gray-200);
+    border-block-start: 1px solid var(--border);
   }
 }
 
@@ -714,10 +700,10 @@
    trigger_text: a row's Trash, a box's Move to Trash). library candidate */
 @layer components {
   .delete-link {
-    color: var(--red-600);
+    color: var(--destructive);
 
     &:hover {
-      color: var(--red-700);
+      color: var(--destructive);
       text-decoration: underline;
     }
   }
@@ -758,7 +744,7 @@
   }
 
   .screen-options__choices {
-    color: var(--gray-700);
+    color: var(--foreground);
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-2) var(--space-5);
@@ -779,9 +765,9 @@
 /* The editor's Preview tab: the website, framed, the height of the window. */
 @layer components {
   .website-preview__frame {
-    background-color: var(--surface);
+    background-color: var(--background);
     block-size: calc(100dvh - var(--admin-bar-height) - 10rem);
-    border: 1px solid var(--gray-200);
+    border: 1px solid var(--border);
     border-radius: var(--radius-xl);
     inline-size: 100%;
     min-block-size: 30rem;

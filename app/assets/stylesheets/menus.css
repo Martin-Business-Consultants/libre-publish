@@ -9,18 +9,18 @@
      nudges it by --orient-offset. */
 @layer components {
   .menu {
-    background-color: var(--surface);
-    border: 1px solid var(--gray-200);
+    background-color: var(--background);
+    border: 1px solid var(--border);
     border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-overlay);
-    color: var(--gray-900);
+    box-shadow: var(--shadow-lg);
+    color: var(--foreground);
     padding: var(--space-1);
   }
 
   .menu__item {
     align-items: center;
     border-radius: var(--radius-md);
-    color: var(--gray-700);
+    color: var(--foreground);
     display: flex;
     font-size: var(--text-sm);
     gap: var(--space-2);
@@ -32,8 +32,8 @@
     &:hover,
     &[aria-selected="true"],
     &[aria-current] {
-      background-color: var(--gray-100);
-      color: var(--gray-900);
+      background-color: var(--accent);
+      color: var(--foreground);
     }
 
     .icon {
