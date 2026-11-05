@@ -30,6 +30,11 @@
 class DeliverySchema
   JSON_SCHEMA = "https://json-schema.org/draft/2020-12/schema"
   HEADER = "X-CMS-Schema-Digest"
+  # Where the digest last announced is kept.
+  SETTING = "delivery_schema"
+  # How long writes settle before the digest is read again: a schema edited
+  # field by field announces once.
+  SETTLE = 2.seconds
 
   # The schema now: rebuilt only when what it's made of changes (#version).
   def self.current
@@ -41,12 +46,6 @@ class DeliverySchema
   end
 
   def self.digest = current.digest
-
-  # Where the digest last announced is kept.
-  SETTING = "delivery_schema"
-  # How long writes settle before the digest is read again: a schema edited
-  # field by field announces once.
-  SETTLE = 2.seconds
 
   # Something the schema is made of changed (SchemaSource): once writes
   # settle, read the digest again.
