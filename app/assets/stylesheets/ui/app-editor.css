@@ -1,0 +1,80 @@
+/* Edit screens' boxes, as the kit's cards: a postbox (content_form_helper#postbox) is a
+/* ui-card whose header is the summary that folds it, ruled off while open; the Save box
+/* (layouts/shared/_save_box) lists facts about the record, then its delete and its one primary
+/* button on the card's muted foot. */
+@layer ui {
+  .postbox__header {
+    align-items: center;
+    cursor: pointer;
+    display: flex;
+    gap: 0.5rem;
+    justify-content: space-between;
+    list-style: none;
+    padding-block: 1rem;
+    user-select: none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    .postbox[open] > & {
+      border-block-end: 1px solid var(--border);
+    }
+  }
+
+  .postbox__toggle {
+    --icon-size: 1rem;
+
+    color: var(--muted-foreground);
+    transition: rotate 100ms ease;
+
+    .postbox:not([open]) > .postbox__header & {
+      rotate: -90deg;
+    }
+  }
+
+  .postbox__body {
+    font-size: var(--text-normal);
+  }
+
+  .postbox__body--padded {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding-block: 1.25rem 1.5rem;
+  }
+
+  .save-box__lines {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+  }
+
+  .save-box__line {
+    --icon-size: 1rem;
+
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.5rem;
+
+    .icon {
+      color: var(--muted-foreground);
+    }
+  }
+
+  .save-box__actions {
+    align-items: center;
+    background-color: color-mix(in oklch, var(--muted) 50%, transparent);
+    border-end-end-radius: inherit;
+    border-end-start-radius: inherit;
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+  }
+
+  .save-box__actions--ruled {
+    border-block-start: 1px solid var(--border);
+  }
+}

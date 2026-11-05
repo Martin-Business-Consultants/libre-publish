@@ -1,43 +1,6 @@
 /* The content editors' boxes and tabs (content_form_helper#postbox,
    content_form/_publish_box, _editor_tabs): what their classes can't say. */
 @layer components {
-  /* A box (a .panel): its header a summary that collapses it, on a hairline
-     above the body while open, the caret turned to point at the title while
-     closed. The body is padded unless the box lays out its own rows. */
-  .postbox__header {
-    align-items: center;
-    display: flex;
-    gap: var(--space-2);
-    justify-content: space-between;
-    padding: var(--space-3-5) var(--space-5);
-    user-select: none;
-  }
-
-  .postbox[open] > .postbox__header {
-    border-block-end: 1px solid var(--border);
-  }
-
-  .postbox__body {
-    font-size: var(--text-sm);
-  }
-
-  .postbox__body--padded {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-5);
-    padding: var(--space-5);
-  }
-
-  .postbox__toggle {
-    --icon-size: 1rem;
-
-    color: var(--muted-foreground);
-    transition: rotate 100ms ease;
-
-    .postbox:not([open]) > .postbox__header & {
-      rotate: -90deg;
-    }
-  }
 
   /* An "Edit" that opens its field in place (the Publish box's status and
      schedule): the field joins the line's flow, and the Edit goes away. */

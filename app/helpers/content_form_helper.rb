@@ -163,14 +163,16 @@ module ContentFormHelper
   # (postbox_controller, applied before paint by content_form/postbox_state).
   # Its fields stay in the form when collapsed. flush: a body without padding,
   # for a box that lays out its own rows (the Publish box).
+  #
+  # Drawn as the kit's card (ui-card, its header the summary, ui/app-editor.css).
   def postbox(key, title, open: true, klass: nil, flush: false, &block)
-    tag.details(class: class_names("postbox panel", klass), open: open,
+    tag.details(class: class_names("postbox ui-card ui-card--flush", klass), open: open,
       data: {postbox: key, controller: "postbox", action: "toggle->postbox#remember"}) do
       safe_join([
-        tag.summary(class: "postbox__header") do
-          safe_join([tag.h2(title.is_a?(String) && !title.html_safe? ? tx(title) : title, class: "heading"), icon_tag("caret-down", class: "postbox__toggle")])
+        tag.summary(class: "ui-card__header postbox__header") do
+          safe_join([tag.h2(title.is_a?(String) && !title.html_safe? ? tx(title) : title, class: "ui-card__title"), icon_tag("caret-down", class: "postbox__toggle")])
         end,
-        tag.div(class: flush ? "postbox__body" : "postbox__body postbox__body--padded", &block)
+        tag.div(class: flush ? "postbox__body" : "ui-card__content postbox__body postbox__body--padded", &block)
       ])
     end
   end

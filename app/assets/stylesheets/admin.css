@@ -12,41 +12,6 @@
   }
 }
 
-/* An edit screen's first sidebar box (layouts/shared/_save_box): facts about
-   the record, then a gray strip with the delete and the primary button,
-   ruled off when there are facts above it. */
-@layer components {
-  .save-box__lines {
-    color: var(--foreground);
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3);
-    padding: var(--space-4) var(--space-5);
-  }
-
-  .save-box__line {
-    align-items: center;
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-1) var(--space-1-5);
-  }
-
-  .save-box__actions {
-    align-items: center;
-    background-color: var(--muted);
-    border-end-end-radius: var(--radius-xl);
-    border-end-start-radius: var(--radius-xl);
-    display: flex;
-    gap: var(--space-2);
-    justify-content: space-between;
-    padding: var(--space-3) var(--space-5);
-  }
-
-  .save-box__actions--ruled {
-    border-block-start: 1px solid var(--border);
-  }
-}
-
 /* A delete that reads as a red link (layouts/shared/_delete_dialog's
    trigger_text: a row's Trash, a box's Move to Trash). library candidate */
 @layer components {
