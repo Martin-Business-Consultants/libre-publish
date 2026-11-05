@@ -40,8 +40,13 @@ module Deploys::Change
       # and the site URL the sitemap's addresses start with.
       describe(event, "settings", subject, tags: ["site", "sitemap"])
     when nil
-      # robots.txt (the Sitemap screen) has a tag of its own.
-      {"event" => event, "tags" => event.to_s.start_with?("settings.robots") ? ["robots"] : []}
+      # robots.txt (the Sitemap screen) and the delivery schema
+      # (schema.changed) have tags of their own.
+      tags = if event.to_s.start_with?("settings.robots") then ["robots"]
+      elsif event.to_s == "schema.changed" then ["schema"]
+      else []
+      end
+      {"event" => event, "tags" => tags}
     else
       describe(event, subject.class.name.underscore.tr("/", "_"), subject, tags: [])
     end

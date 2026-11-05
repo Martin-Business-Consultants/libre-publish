@@ -3,9 +3,12 @@
 require "net/http"
 require "openssl"
 
-# Delivering an event to this webhook: POST the envelope, signed with
-# HMAC-SHA256 over the request body, and record the attempt in
-# `webhook_deliveries`. `deliver_later` queues it (Webhook::DeliveryJob);
+# Delivering an event to this webhook: POST the envelope, signed
+# (Webhook::Signature: HMAC-SHA256 over the body, and over the time and the
+# body), with the event's name (X-CMS-Event) and the delivery's id
+# (X-CMS-Delivery), and record the attempt in `webhook_deliveries`.
+# `deliver_later` queues it (Webhook::DeliveryJob), which sends it again
+# when it couldn't connect or was answered 408, 429 or 5xx (`retry?`);
 # `Webhook.deliver_later` queues it for every active webhook that wants the
 # event and whose filter the payload matches.
 module Webhook::Deliverable
@@ -14,6 +17,8 @@ module Webhook::Deliverable
   PAYLOAD_TRUNCATE  = 16_000
   OPEN_TIMEOUT      = 5
   READ_TIMEOUT      = 10
+  # Answers worth sending again: the receiver was busy or broken, not refusing.
+  RETRY_STATUSES = [408, 429, *500..599].freeze
 
   class_methods do
     def deliver_later(event, payload)
@@ -34,17 +39,27 @@ module Webhook::Deliverable
     track_event(:test_fired)
   end
 
-  def deliver_now(event, payload)
+  # `delivery_id` names the delivery, the same on each retry of it (the
+  # job's id); a delivery sent outside a job gets one of its own. Returns
+  # the attempt's WebhookDelivery.
+  def deliver_now(event, payload, delivery_id: SecureRandom.uuid)
     return unless active?
 
     body = JSON.generate(envelope(event, payload))
     started = monotonic_ms
-    response, error = post(body)
+    response, error = post(body, event:, delivery_id:)
     success = response.is_a?(Net::HTTPSuccess)
 
     record_delivery(event: event, body: body, response: response, error: error,
-      duration: monotonic_ms - started, success: success)
-    record_attempt!(success: success)
+      duration: monotonic_ms - started, success: success).tap do
+      record_attempt!(success: success)
+    end
+  end
+
+  # Whether an attempt is worth making again: it couldn't connect or timed
+  # out, or the receiver answered 408, 429 or 5xx. Any other answer is final.
+  def retry?(delivery)
+    !delivery.success && (delivery.response_status.nil? || RETRY_STATUSES.include?(delivery.response_status))
   end
 
   private
@@ -59,20 +74,16 @@ module Webhook::Deliverable
     }
   end
 
-  def signature_for(body)
-    "sha256=#{OpenSSL::HMAC.hexdigest("SHA256", secret, body)}"
-  end
-
   # To the address OutboundUrl checked; a URL that now resolves somewhere
   # private is a failed delivery, not a request.
-  def post(body)
+  def post(body, event:, delivery_id:)
     uri, http = OutboundUrl.connect(url, open_timeout: OPEN_TIMEOUT, read_timeout: READ_TIMEOUT)
 
     request = Net::HTTP::Post.new(uri.request_uri, {
-      "Content-Type"    => "application/json",
-      "User-Agent"      => "librepublish-webhooks/1",
-      "X-CMS-Signature" => signature_for(body)
-    }.merge((headers || {}).to_h.transform_keys(&:to_s)))
+      "Content-Type" => "application/json",
+      "User-Agent"   => "librepublish-webhooks/1",
+      "X-CMS-Event"  => event.to_s
+    }.merge(Webhook::Signature.headers(body, secret, delivery_id:)).merge((headers || {}).to_h.transform_keys(&:to_s)))
     request.body = body
 
     [http.request(request), nil]

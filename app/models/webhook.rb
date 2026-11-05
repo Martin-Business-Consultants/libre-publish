@@ -27,6 +27,7 @@ class Webhook < ApplicationRecord
     entry.unpublished
     entry.deleted
     global.updated
+    schema.changed
   ].freeze
 
   # The core's events and every installed plugin's, each where its plugin

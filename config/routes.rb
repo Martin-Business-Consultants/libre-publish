@@ -330,6 +330,11 @@ Rails.application.routes.draw do
         resources :entries, param: :slug, only: [:index, :show]
       end
       resources :pages, param: :path, only: [:index, :show], constraints: {path: %r{[^/]+(?:/[^/]+)*}}, format: false
+
+      # OPTIONS on a resource answers its JSON Schema (DeliverySchema::Resource).
+      match "pages(/*path)", to: "page_schemas#show", via: :options, format: false, as: nil
+      match "collections/:collection_slug/entries(/:slug)", to: "entry_schemas#show", via: :options, as: nil
+      match "globals/:slug", to: "global_schemas#show", via: :options, as: nil
     end
 
     # The guides, for the CLI and MCP (`cms docs`).

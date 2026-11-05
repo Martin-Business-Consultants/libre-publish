@@ -18,4 +18,4 @@ json.data do
   end
 end
 json.meta({cursor: @snapshot.cursor, full: @snapshot.full?, since: @snapshot.since&.utc&.iso8601(6)})
-json.partial! "api/v1/shared/included", assets: @assets
+json.partial! "api/v1/shared/included", assets: @assets, records: @pages + @entries + @globals

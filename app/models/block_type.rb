@@ -42,6 +42,7 @@ class BlockType < ApplicationRecord
   include Seedable
   include Removable
   include Tracked
+  include SchemaSource
 
   TYPES = Validator::TYPES
   LINK_KINDS = Validator::LINK_KINDS
@@ -100,8 +101,8 @@ class BlockType < ApplicationRecord
       Validator.searchable_text_in(fields, data)
     end
 
-    def json_schema_for(fields)
-      Validator.json_schema_for(fields)
+    def json_schema_for(fields, closed: false)
+      Validator.json_schema_for(fields, closed:)
     end
 
     def validate_fields_definition(fields, allowed_types: TYPES)

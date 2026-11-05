@@ -105,6 +105,18 @@ class Branding
     "https://fonts.googleapis.com/css2?family=#{ERB::Util.url_encode(font)}:wght@400;500;600;700&display=swap" if font
   end
 
+  # The visual identity as the delivery API gives a site (/api/v1/site's
+  # `branding`): only what's set and valid, the logo and favicon as assets
+  # (Asset::Delivery) when the media library has them.
+  def delivered
+    {
+      "logo" => MediaLibrary.find(@data["logo_id"])&.delivery,
+      "favicon" => MediaLibrary.find(@data["favicon_id"])&.delivery,
+      "primary_color" => primary_color, "secondary_color" => secondary_color,
+      "font" => font, "border_radius" => border_radius, "box_shadow" => box_shadow
+    }.compact
+  end
+
   def customized?
     [primary_color, secondary_color, font, border_radius, box_shadow].any?(&:present?)
   end

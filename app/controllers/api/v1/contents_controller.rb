@@ -28,6 +28,6 @@ class Api::V1::ContentsController < Api::V1::BaseController
     # never repeats; a reader holding an answer built from the same content
     # gets 304 and keeps its cursor, still good since nothing changed after it.
     fresh_when etag: [@version, @snapshot.since&.iso8601(6), @readable, Digest::SHA256.hexdigest(@assets.to_json),
-      request.headers["X-Agent-Envelope"]]
+      request.headers["X-Agent-Envelope"], params[:include], params[:fields]]
   end
 end

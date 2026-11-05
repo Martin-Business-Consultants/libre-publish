@@ -21,6 +21,7 @@ class Collection < ApplicationRecord
   include Notifying
   include Removable
   include Iconic
+  include SchemaSource
 
   has_many :entries,
            class_name:  "CollectionEntry",

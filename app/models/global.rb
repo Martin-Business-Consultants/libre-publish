@@ -34,6 +34,8 @@ class Global < ApplicationRecord
   has_many :versions, class_name: "GlobalVersion", dependent: :delete_all
   after_save :snapshot_version, if: -> { saved_change_to_data? || saved_change_to_name? }
   include Redactable
+  include SchemaSource
+  schema_source_of :slug, :name, :schema, :deleted_at
 
   FIELD_TYPES = BlockType::COLLECTION_FIELD_TYPES
 
@@ -56,6 +58,7 @@ class Global < ApplicationRecord
   # the moment it exists, so a site rebuilds on any change to one.
   def announce_update
     announce("global.updated", {
+      id:         id,
       slug:       slug,
       name:       name,
       updated_at: updated_at&.iso8601

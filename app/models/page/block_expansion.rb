@@ -68,8 +68,10 @@ class Page::BlockExpansion
     end
   end
 
+  # Live, only the details that are set: each one a string.
   def contact_info
-    {"contact" => Setting.get("general").slice(*CONTACT_KEYS)}
+    contact = Setting.get("general").slice(*CONTACT_KEYS)
+    {"contact" => @live ? contact.compact.transform_values(&:to_s) : contact}
   end
 
   def collection_list(data)
@@ -180,11 +182,19 @@ class Page::BlockExpansion
     }
   end
 
+  # Live (the delivery API's, and the website's), as delivery has a record:
+  # its SEO, and its frontmatter only what the collection declares
+  # (DeliverySchema::Declared).
   def entry_hash(entry)
-    entry.as_json(only: %i[id slug title status locale frontmatter body_markdown published_at updated_at])
+    hash = entry.as_json(only: %i[id slug title status locale frontmatter body_markdown published_at updated_at])
       .merge("collection" => entry.collection&.slug, "url" => entry.public_path,
         "category" => taxonomy_one(entry.category), "tags" => taxonomy_many(entry.tags))
+    return hash unless @live
+
+    hash.merge("frontmatter" => declared.data(entry.collection&.fields, entry.frontmatter), "seo" => SeoFields.delivered(entry.seo))
   end
+
+  def declared = @declared ||= DeliverySchema::Declared.new
 
   def taxonomy_one(entry)
     entry && {"id" => entry.id, "slug" => entry.slug, "title" => entry.title}

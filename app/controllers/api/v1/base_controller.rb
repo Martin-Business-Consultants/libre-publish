@@ -6,14 +6,22 @@
 #
 #   {"data": …, "meta": {…}, "included": {"assets": {id => asset}}}
 #
-# `meta` carries paging on lists ({page, per, total, next_page}) and the
-# cursor on /content; `included.assets` is every asset the records point at,
-# resolved (MediaLibrary), when there's a media library. Each answer also
-# names its cache tags (Cache-Tag), the ones a publish purges.
+# `meta` carries paging on lists ({page, per, total, next_page}, and the
+# same in X-Total-Count, X-Total-Pages and Link) and the cursor on /content;
+# `included.assets` is every asset the records point at, resolved
+# (MediaLibrary), when there's a media library (?include= and ?fields=:
+# Api::DeliveryShaping). Each answer also names its cache tags (Cache-Tag),
+# the ones a publish purges, and the schema it was answered under
+# (X-CMS-Schema-Digest, DeliverySchema): a build that sees it move stops.
 #
 # /api stays the admin's and the CLI's: writes, drafts, management.
 class Api::V1::BaseController < Api::BaseController
+  include Api::DeliveryShaping
+
   enforce_authorization
+
+  # Before anything else can answer, so every answer to a token carries it.
+  before_action { response.headers[DeliverySchema::HEADER] = DeliverySchema.digest }
 
   MAX_PER = 100
 
@@ -58,15 +66,25 @@ class Api::V1::BaseController < Api::BaseController
     @total = scope.count
     @meta = {page: @page_number, per: @per, total: @total,
              next_page: (@page_number + 1 if @page_number * @per < @total)}
+    paging_headers(@page_number, @per, @total)
     scope.offset((@page_number - 1) * @per).limit(@per)
   end
 
-  # {id => asset} for the records, merged; nil without a media library.
+  # {id => asset} for the records, merged; nil without a media library, or
+  # when the site asked for no assets (?include=).
   def included_assets(pages: [], entries: [], globals: [])
-    return unless MediaLibrary.available?
+    return unless MediaLibrary.available? && included?(:assets)
 
     [MediaLibrary.resolve(:pages, pages), MediaLibrary.resolve(:entries, entries), MediaLibrary.resolve(:globals, globals)]
       .compact.reduce({}, :merge)
+  end
+
+  # OPTIONS on a resource: what it takes, and its answer's JSON Schema
+  # (DeliverySchema::Resource).
+  def describe(resource)
+    @resource = resource
+    response.headers["Allow"] = "GET, OPTIONS"
+    render "api/v1/shared/resource_schema"
   end
 
   def cache_tags(*tags)

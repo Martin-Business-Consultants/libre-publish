@@ -9,5 +9,6 @@ class Api::V1::SiteHealthsController < Api::V1::BaseController
   def show
     @checks = SiteHealth.checks
     @summary = SiteHealth.summary(@checks)
+    cache_tags("site")
   end
 end
