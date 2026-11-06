@@ -1,9 +1,14 @@
+/* The content editors (pages/_form, collection_entries/_form, globals/_form and content_form/*),
+/* drawn from the kit's tokens as shadcn would draw them: the editor's two columns, its top bar
+/* and title, the boxes down the side (postbox, the Publish box, the Save box), the block editor
+/* and its fields, the pickers, the image editor, the schema editor and revisions. */
+
 /* Edit screens' boxes, as the kit's cards: a postbox (content_form_helper#postbox) is a
 /* ui-card whose header is the summary that folds it, ruled off while open; the Save box
 /* (layouts/shared/_save_box) lists facts about the record, then its delete and its one primary
 /* button on the card's muted foot. */
 @layer ui {
-  .postbox__header {
+  .postbox .postbox__header {
     align-items: center;
     cursor: pointer;
     display: flex;
@@ -16,10 +21,10 @@
     &::-webkit-details-marker {
       display: none;
     }
+  }
 
-    .postbox[open] > & {
-      border-block-end: 1px solid var(--border);
-    }
+  .postbox[open] .postbox__header {
+    border-block-end: 1px solid var(--border);
   }
 
   .postbox__toggle {
@@ -28,7 +33,7 @@
     color: var(--muted-foreground);
     transition: rotate 100ms ease;
 
-    .postbox:not([open]) > .postbox__header & {
+    .postbox:not([open]) & {
       rotate: -90deg;
     }
   }
@@ -76,5 +81,1336 @@
 
   .save-box__actions--ruled {
     border-block-start: 1px solid var(--border);
+  }
+}
+
+/* An editor, laid out like WordPress's: the title and the content in the main column, the
+/* Publish box and the record's other boxes in a 20rem sidebar beside it from 64rem, under it
+/* before. The form holds hidden fields too, so the two columns are named. */
+@layer ui {
+  .editor {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+
+    @media (width >= 64rem) {
+      align-items: flex-start;
+      flex-direction: row;
+    }
+  }
+
+  .editor__main {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 1.5rem;
+    min-inline-size: 0;
+  }
+
+  .editor__aside {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    gap: 1rem;
+    min-inline-size: 0;
+
+    @media (width >= 64rem) {
+      inline-size: 20rem;
+    }
+  }
+
+  /* The record's title (or a global's name): a large borderless input on a hairline that
+  /* takes the ring's colour while focused. */
+  .editor__title {
+    background-color: transparent;
+    border: 0;
+    border-block-end: 1px solid var(--border);
+    border-radius: 0;
+    color: var(--foreground);
+    font: inherit;
+    font-size: var(--text-xxx-large);
+    font-weight: 600;
+    inline-size: 100%;
+    letter-spacing: -0.025em;
+    line-height: 1.2;
+    outline: none;
+    padding: 0 0 0.75rem;
+    transition: border-color 150ms;
+
+    &::placeholder {
+      color: var(--muted-foreground);
+    }
+
+    &:focus-visible {
+      border-color: var(--ring);
+    }
+  }
+
+  /* A titled card of the main column (Blocks, Body): its status line at the foot. */
+  .editor__status {
+    color: var(--muted-foreground);
+    font-size: var(--text-x-small);
+  }
+
+  /* An editor's top bar (layouts/shared/editor_bar), in place of a page title: the tabs or a
+  /* label on the left, the CLI command and the page's actions on the right, all on the rule.
+  /* The rule is an inset shadow that the selected tab's underline paints over. */
+  .editor-bar {
+    align-items: flex-end;
+    box-shadow: inset 0 -1px var(--border);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    justify-content: space-between;
+    margin-block-end: 1.5rem;
+  }
+
+  .editor-bar__label {
+    color: var(--muted-foreground);
+    font-size: var(--text-normal);
+    font-weight: 500;
+    padding-block-end: 0.625rem;
+  }
+
+  .editor-bar__actions {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    margin-inline-start: auto;
+    padding-block-end: 0.5rem;
+  }
+
+  /* The editor's Edit, SEO, JSON and Preview tabs: the kit's line tabs, on the bar's rule
+  /* rather than a rule of their own, as wide as they are. */
+  .editor-bar .editor-tabs {
+    border-block-end: 0;
+    inline-size: auto;
+
+    .ui-tabs__trigger {
+      --icon-size: 1rem;
+
+      gap: 0.375rem;
+      padding-block: 0.375rem 0.625rem;
+    }
+  }
+
+  /* The preview tab's toolbar: what it is on the left, its buttons on the right. */
+  .editor-preview__bar {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1rem;
+    justify-content: space-between;
+  }
+
+  /* An "Edit" that opens its field in place (the Publish box's status and schedule): the
+  /* field joins the line's flow, and the Edit goes away. */
+  .inline-edit {
+    display: contents;
+
+    &[open] .inline-edit__toggle {
+      display: none;
+    }
+  }
+
+  .inline-edit__toggle {
+    color: var(--primary);
+    cursor: pointer;
+    display: inline;
+    font-weight: 500;
+    text-underline-offset: 4px;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  /* The Publish box (content_form/_publish_box): Save Draft, then a line each for the status,
+  /* the schedule and the revisions (an icon, the words, an Edit that opens a field under them),
+  /* then Move to Trash and the primary action on the card's muted foot. */
+  .publish-box__draft {
+    padding: 1rem 1.5rem 0;
+  }
+
+  .publish-box__lines {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+  }
+
+  .publish-box__line {
+    --icon-size: 1rem;
+
+    align-items: flex-start;
+    display: flex;
+    gap: 0.5rem;
+
+    .icon {
+      color: var(--muted-foreground);
+      flex-shrink: 0;
+      margin-block-start: 0.125rem;
+    }
+  }
+
+  .publish-box__words {
+    flex: 1 1 0%;
+    min-inline-size: 0;
+
+    strong {
+      color: var(--foreground);
+      font-weight: 600;
+    }
+  }
+
+  .publish-box__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-block-start: 0.5rem;
+  }
+
+  /* How the API and the cms CLI name a record (content_form/_reference): a muted strip, the
+  /* reference under its label, a copy button at its end. */
+  .reference {
+    align-items: center;
+    background-color: color-mix(in oklch, var(--muted) 50%, transparent);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.375rem 0.25rem 0.375rem 0.75rem;
+  }
+
+  .reference__text {
+    display: flex;
+    flex: 1 1 0%;
+    flex-direction: column;
+    font-size: var(--text-x-small);
+    min-inline-size: 0;
+
+    code {
+      color: var(--foreground);
+      font-family: var(--font-mono);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  .reference__label {
+    color: var(--muted-foreground);
+  }
+
+  /* The category and tags a record takes from its pools. */
+  .content-taxonomy__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+  }
+
+  /* The SEO panel (content_form/_seo): its checks, then its groups of fields, each under a
+  /* small heading and ruled off from the next. */
+  .seo-panel__checks {
+    display: flex;
+    flex-direction: column;
+    font-size: var(--text-normal);
+    gap: 0.25rem;
+    list-style: disc;
+    padding-inline-start: 1.25rem;
+  }
+
+  .seo-panel__check--problem {
+    color: var(--destructive);
+  }
+
+  .seo-panel__group {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    & + & {
+      border-block-start: 1px solid var(--border);
+      padding-block-start: 1.5rem;
+    }
+  }
+
+  .seo-panel__groups {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  /* A small muted heading over a group of fields or choices (SEO groups, the block picker's
+  /* categories). */
+  .editor-subheading {
+    color: var(--muted-foreground);
+    font-size: var(--text-x-small);
+    font-weight: 500;
+    margin: 0;
+  }
+
+  /* The JSON tab (content_form/_api_json): code in the mono face on a muted box, the fetch
+  /* examples spaced under their summary, the response scrolling within the window's height. */
+  .api-json__code {
+    background-color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--foreground);
+    display: block;
+    font-family: var(--font-mono);
+    font-size: var(--text-x-small);
+    line-height: 1.5;
+    min-inline-size: 0;
+    overflow-x: auto;
+    padding: 0.5rem 0.75rem;
+    white-space: pre;
+  }
+
+  .api-json__fetch {
+    margin-block-start: 0.5rem;
+  }
+
+  .api-json__body {
+    max-block-size: 100vh;
+    overflow: auto;
+    padding: 0.75rem 1rem;
+  }
+
+  .api-json__summary {
+    cursor: pointer;
+  }
+}
+
+/* The block editor (content_form/_blocks, _block, _repeater_item, _row_moves): a block or a
+/* repeater item is a bordered row whose header (the drag handle, the caret, its name and
+/* summary, its buttons) opens onto its fields. Open, the header sits on a hairline above the
+/* fields; closed, the caret turns to point at the name. --invalid edges it in red. */
+@layer ui {
+  .content-item {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xs);
+  }
+
+  .content-item--invalid {
+    border-color: color-mix(in oklch, var(--destructive) 50%, var(--border));
+  }
+
+  .content-row__header {
+    align-items: center;
+    cursor: pointer;
+    display: flex;
+    gap: 0.5rem;
+    list-style: none;
+    padding: 0.375rem 0.375rem 0.375rem 0.5rem;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+  }
+
+  .content-row[open] .content-row__header {
+    border-block-end: 1px solid var(--border);
+  }
+
+  /* A closed row inside an open one keeps its header unruled. */
+  .content-row:not([open]) .content-row__header {
+    border-block-end: 0;
+  }
+
+  .content-row__toggle {
+    --icon-size: 1rem;
+
+    color: var(--muted-foreground);
+    flex-shrink: 0;
+    transition: rotate 100ms ease;
+  }
+
+  .content-row:not([open]) .content-row__toggle {
+    rotate: -90deg;
+  }
+
+  .content-row__title {
+    display: flex;
+    flex: 1 1 0%;
+    flex-direction: column;
+    min-inline-size: 0;
+  }
+
+  .content-row__heading {
+    align-items: center;
+    display: flex;
+    gap: 0.5rem;
+    min-inline-size: 0;
+  }
+
+  .content-row__name {
+    color: var(--foreground);
+    flex: 0 1 auto;
+    font-size: var(--text-normal);
+    font-weight: 500;
+    min-inline-size: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .content-row__name--grow {
+    flex: 1 1 0%;
+  }
+
+  .content-row__placeholder {
+    color: var(--muted-foreground);
+  }
+
+  .content-row__summary {
+    color: var(--muted-foreground);
+    font-size: var(--text-x-small);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* A block's category beside its name: only where there's room. */
+  .content-row__category {
+    @media (width < 40rem) {
+      display: none;
+    }
+  }
+
+  .content-row__body {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  /* A block's validation messages, as a bulleted list in a destructive alert. */
+  .content-row__errors {
+    list-style: disc;
+    padding-inline-start: 1.25rem;
+  }
+
+  /* sortable_list_controller marks the row being dragged. */
+  .content-row--dragging {
+    opacity: 0.5;
+  }
+
+  /* The grip a sortable row is dragged by. */
+  .drag-handle {
+    color: var(--muted-foreground);
+    cursor: grab;
+    padding-inline: 0.25rem;
+    user-select: none;
+  }
+
+  /* A row's move, add, duplicate and remove buttons; add and duplicate only where there's
+  /* room, remove reddens on hover. */
+  .row-moves {
+    align-items: center;
+    display: flex;
+    flex-shrink: 0;
+  }
+
+  .row-moves__extra {
+    display: flex;
+
+    @media (width < 40rem) {
+      display: none;
+    }
+  }
+
+  .row-moves__down {
+    rotate: 180deg;
+  }
+
+  .row-moves__remove {
+    color: var(--muted-foreground);
+
+    &:hover {
+      background-color: color-mix(in oklch, var(--destructive) 10%, transparent);
+      color: var(--destructive);
+    }
+  }
+
+  /* A list of blocks: the rows, or a dashed "No blocks yet." */
+  .content-blocks__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .content-blocks__empty {
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-lg);
+    color: var(--muted-foreground);
+    font-size: var(--text-normal);
+    padding-block: 2rem;
+    text-align: center;
+  }
+
+  /* A repeater's items and a list field's rows (content_form/fields/_repeater, _list): an
+  /* input each, or an entry shown by its title over its slug. */
+  .content-list__items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+
+  .content-list__item {
+    align-items: center;
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .content-list__ref {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    display: flex;
+    flex: 1 1 0%;
+    flex-direction: column;
+    min-inline-size: 0;
+    padding: 0.375rem 0.75rem;
+  }
+
+  .content-list__title {
+    color: var(--foreground);
+    font-size: var(--text-normal);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .content-list__slug {
+    color: var(--muted-foreground);
+    font-family: var(--font-mono);
+    font-size: var(--text-x-small);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+/* The fields (content_form/_fields, _field, _label and fields/*). */
+@layer ui {
+  /* A required field's red asterisk after its label. */
+  .content-label__required {
+    color: var(--destructive);
+    margin-inline-start: 0.125rem;
+  }
+
+  /* A group field's sub-fields, boxed under its name. */
+  .content-group {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 0.5rem 1rem 1rem;
+  }
+
+  .content-group__legend {
+    padding-inline: 0.25rem;
+  }
+
+  /* A short or medium control in a field (a number, a date, a select), which otherwise
+  /* fills it. */
+  .content-input--short {
+    max-inline-size: 20rem;
+  }
+
+  .content-input--medium {
+    max-inline-size: 28rem;
+  }
+
+  /* A link field shows the control for the kind it's set to. */
+  .content-link {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+
+    .content-link__kind {
+      inline-size: auto;
+    }
+  }
+
+  .content-link__url,
+  .content-link__page,
+  .content-link__entry {
+    display: none;
+    flex: 1 1 16ch;
+  }
+
+  .content-link:has(.content-link__kind option[value="url"]:checked) .content-link__url,
+  .content-link:has(.content-link__kind option[value="page"]:checked) .content-link__page,
+  .content-link:has(.content-link__kind option[value="entry"]:checked) .content-link__entry {
+    display: block;
+  }
+
+  /* An asset field: its thumbnail, hidden until there's a picture in it (asset_field_controller
+  /* fills it), beside its name and buttons. */
+  .content-asset {
+    align-items: center;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    display: flex;
+    gap: 1rem;
+    padding: 0.75rem;
+  }
+
+  .content-asset__preview {
+    align-items: center;
+    background-color: var(--muted);
+    block-size: 4rem;
+    border-radius: var(--radius-md);
+    color: var(--muted-foreground);
+    display: flex;
+    flex-shrink: 0;
+    inline-size: 4rem;
+    justify-content: center;
+    overflow: hidden;
+
+    &:not(:has(*)) {
+      display: none;
+    }
+
+    img {
+      block-size: 100%;
+      inline-size: 100%;
+      object-fit: cover;
+    }
+  }
+
+  .content-asset__info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-inline-size: 0;
+  }
+
+  .content-asset__name {
+    color: var(--foreground);
+    font-size: var(--text-normal);
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .content-asset__actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  /* A code or JSON field's textarea, and the Markdown field's: the mono face. */
+  .content-code {
+    font-family: var(--font-mono);
+    font-size: var(--text-x-small);
+    line-height: 1.6;
+  }
+
+  /* A Markdown field's Write and Preview tabs (markdown_editor_controller), its textarea and
+  /* its rendered preview. */
+  .markdown-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .markdown-editor__output {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    min-block-size: 10rem;
+    padding: 0.75rem 1rem;
+  }
+}
+
+/* Pickers: the "Add block" dialog's choices, and the searchable picker of a reference or link
+/* field (picker_controller), its results a popover under the box chosen with the arrow keys as
+/* well as the pointer. */
+@layer ui {
+  .ui-dialog.content-picker {
+    align-content: start;
+    max-block-size: min(80dvh, 48rem);
+    max-inline-size: 48rem;
+  }
+
+  .content-picker__groups {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .content-picker__group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .content-picker__options {
+    display: grid;
+    gap: 0.5rem;
+
+    @media (width >= 40rem) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .content-picker__deprecated {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    summary {
+      cursor: pointer;
+    }
+  }
+
+  .content-picker__empty {
+    color: var(--muted-foreground);
+    font-size: var(--text-normal);
+    padding: 0.375rem 0.5rem;
+  }
+
+  /* One choice in a picker (a block type, a pattern): its name over what it's for, shaded
+  /* on hover. */
+  .picker-option {
+    align-items: flex-start;
+    background-color: transparent;
+    block-size: 100%;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--foreground);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    font: inherit;
+    gap: 0.125rem;
+    inline-size: 100%;
+    padding: 0.625rem 0.75rem;
+    text-align: start;
+    transition: background-color 150ms, border-color 150ms;
+
+    &:hover {
+      background-color: var(--accent);
+    }
+
+    &:focus-visible {
+      border-color: var(--ring);
+      box-shadow: var(--ring-focus);
+      outline: none;
+    }
+  }
+
+  .picker-option__name {
+    align-items: center;
+    display: flex;
+    font-size: var(--text-normal);
+    font-weight: 500;
+    gap: 0.5rem;
+  }
+
+  .picker-option__description {
+    color: var(--muted-foreground);
+    font-size: var(--text-x-small);
+  }
+
+  .picker {
+    position: relative;
+  }
+
+  .picker__results {
+    background-color: var(--popover);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    color: var(--foreground);
+    inset: 100% 0 auto;
+    margin-block-start: 0.25rem;
+    max-block-size: 18rem;
+    overflow-y: auto;
+    padding: 0.25rem;
+    position: absolute;
+    z-index: 50;
+  }
+
+  .picker__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+
+  .picker__choice:focus-visible {
+    background-color: var(--accent);
+    outline: none;
+  }
+
+  .picker__detail {
+    color: var(--muted-foreground);
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-x-small);
+    margin-inline-start: auto;
+  }
+
+  .picker__label {
+    flex: 1 1 0%;
+    min-inline-size: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+/* The asset picker (media/slots/_picker, asset_pickers/show, _tiles): a sheet half the window
+/* wide, a grid of square thumbnails two to four across, each with its name and size under it.
+/* .media-tile and .media-thumb stay on them as the hooks media--asset-picker reads. */
+@layer ui {
+  .asset-picker__grid {
+    display: grid;
+    gap: 1rem 0.75rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    @media (width >= 40rem) {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    @media (width >= 64rem) {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  .asset-picker__toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .asset-picker__search {
+    flex: 1 1 12rem;
+  }
+
+  .asset-picker__item {
+    min-inline-size: 0;
+  }
+
+  .asset-picker__tile {
+    background: none;
+    border: 0;
+    border-radius: var(--radius-lg);
+    color: inherit;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    font: inherit;
+    gap: 0.375rem;
+    inline-size: 100%;
+    outline: none;
+    padding: 0;
+    text-align: start;
+
+    &:hover .asset-picker__thumb {
+      border-color: var(--ring);
+    }
+
+    &:focus-visible .asset-picker__thumb {
+      border-color: var(--ring);
+      box-shadow: var(--ring-focus);
+    }
+  }
+
+  .asset-picker__thumb {
+    align-items: center;
+    aspect-ratio: 1 / 1;
+    background-color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    color: var(--muted-foreground);
+    display: flex;
+    inline-size: 100%;
+    justify-content: center;
+    overflow: hidden;
+
+    img {
+      block-size: 100%;
+      inline-size: 100%;
+      object-fit: cover;
+    }
+  }
+
+  .asset-picker__caption {
+    display: flex;
+    flex-direction: column;
+    font-size: var(--text-x-small);
+    min-inline-size: 0;
+    padding-inline: 0.125rem;
+
+    > * {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  .asset-picker__name {
+    color: var(--foreground);
+    font-weight: 500;
+  }
+
+  .asset-picker__meta {
+    color: var(--muted-foreground);
+  }
+
+  .asset-picker__more {
+    color: var(--muted-foreground);
+    grid-column: 1 / -1;
+    padding-block: 1rem;
+    text-align: center;
+  }
+
+  .asset-picker__uploads {
+    display: flex;
+    flex-direction: column;
+    font-size: var(--text-x-small);
+    gap: 0.25rem;
+    inline-size: 100%;
+  }
+}
+
+/* The preview's image editor (content_form/_image_editor): the image on a checkered stage, the
+/* crop a box over it that darkens what's cut away (white and black on a photo), and the tools
+/* beside it. */
+@layer ui {
+  .ui-dialog.image-editor {
+    max-inline-size: 72rem;
+  }
+
+  .image-editor__header {
+    align-items: center;
+    display: flex;
+    gap: 0.75rem;
+    justify-content: space-between;
+    min-inline-size: 0;
+
+    .ui-dialog__title {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  .image-editor__body {
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: minmax(0, 1fr) 15rem;
+
+    @media (width < 48rem) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  .image-editor__stage {
+    align-items: center;
+    background: repeating-conic-gradient(var(--muted) 0 25%, var(--background) 0 50%) 0 0 / 16px 16px;
+    block-size: min(65vh, 40rem);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    touch-action: none;
+    user-select: none;
+  }
+
+  .image-editor__canvas {
+    display: block;
+  }
+
+  .image-editor__crop {
+    border: 1px solid white;
+    box-shadow: 0 0 0 9999px color-mix(in oklch, black 55%, transparent);
+    cursor: move;
+    outline: 1px solid color-mix(in oklch, black 30%, transparent);
+    position: absolute;
+
+    &[hidden] {
+      display: none;
+    }
+  }
+
+  .image-editor__handle {
+    background: white;
+    block-size: 0.875rem;
+    border: 1px solid color-mix(in oklch, black 40%, transparent);
+    border-radius: 2px;
+    inline-size: 0.875rem;
+    position: absolute;
+
+    &[data-corner="nw"] { cursor: nwse-resize; inset: -0.4375rem auto auto -0.4375rem; }
+    &[data-corner="ne"] { cursor: nesw-resize; inset: -0.4375rem -0.4375rem auto auto; }
+    &[data-corner="sw"] { cursor: nesw-resize; inset: auto auto -0.4375rem -0.4375rem; }
+    &[data-corner="se"] { cursor: nwse-resize; inset: auto -0.4375rem -0.4375rem auto; }
+  }
+
+  .image-editor__loading {
+    color: var(--muted-foreground);
+    position: absolute;
+  }
+
+  .image-editor__tools {
+    display: flex;
+    flex-direction: column;
+    font-size: var(--text-normal);
+    gap: 1.25rem;
+  }
+
+  .image-editor__group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .image-editor__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+  }
+
+  .image-editor__slider {
+    accent-color: var(--primary);
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .image-editor__slider-label {
+    display: flex;
+    justify-content: space-between;
+
+    output {
+      color: var(--muted-foreground);
+      font-variant-numeric: tabular-nums;
+    }
+  }
+
+  .image-editor__footer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-block-start: auto;
+  }
+
+  .image-editor__actions {
+    display: flex;
+    gap: 0.5rem;
+
+    > :last-child {
+      flex: 1;
+    }
+  }
+}
+
+/* The schema editor (app/views/schemas): one row per field, a box with the field's name,
+/* label, type and tools across the top (a 2-column grid on a phone, a line from 48rem), its
+/* type's settings under them, and More settings folded away. schema_editor_controller reads
+/* .schema-list, .schema-list__fields and .schema-field. */
+@layer ui {
+  .schema-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .schema-list__fields {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .schema-field {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xs);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+
+  .schema-field__main {
+    align-items: end;
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    @media (width >= 48rem) {
+      display: flex;
+    }
+  }
+
+  .schema-field__control {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    min-inline-size: 0;
+  }
+
+  .schema-field__control--grow {
+    @media (width >= 48rem) {
+      flex: 1 1 0%;
+    }
+  }
+
+  .schema-field__label {
+    color: var(--foreground);
+    font-size: var(--text-x-small);
+    font-weight: 500;
+  }
+
+  /* As a fieldset's legend it stands outside the fieldset's layout, so the gap under it is
+  /* its own. */
+  legend.schema-field__label {
+    margin-block-end: 0.5rem;
+  }
+
+  .schema-field__required {
+    block-size: 2.25rem;
+    white-space: nowrap;
+  }
+
+  .schema-field__tools {
+    display: flex;
+    gap: 0.125rem;
+    justify-content: flex-end;
+  }
+
+  .schema-field__down {
+    rotate: 180deg;
+  }
+
+  .ui-button.schema-field__remove {
+    color: var(--muted-foreground);
+
+    &:hover:not(:disabled) {
+      background-color: color-mix(in oklch, var(--destructive) 10%, transparent);
+      color: var(--destructive);
+    }
+  }
+
+  /* A type's own settings: a column, which the rules below show. */
+  .schema-field__setting {
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+
+  .schema-field__collection {
+    max-inline-size: 28rem;
+  }
+
+  .schema-field__blocks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+  }
+
+  .schema-field__choice {
+    white-space: nowrap;
+  }
+
+  .schema-field__slug {
+    font-family: var(--font-mono);
+    font-size: var(--text-x-small);
+  }
+
+  .schema-field__nested {
+    border-inline-start: 2px solid var(--border);
+    padding-inline-start: 1rem;
+  }
+
+  .schema-field__more {
+    color: var(--muted-foreground);
+    cursor: pointer;
+    font-size: var(--text-x-small);
+    font-weight: 500;
+    inline-size: fit-content;
+
+    &:hover {
+      color: var(--foreground);
+    }
+  }
+
+  .schema-field__more-settings {
+    display: grid;
+    gap: 0.75rem;
+    padding-block-start: 0.75rem;
+
+    @media (width >= 40rem) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  /* A row's type decides which of its settings show, read straight off its own select. The
+  /* :not() keeps a nested row's type from deciding for its parent. */
+  .schema-field [data-for] {
+    display: none;
+  }
+
+  .schema-field:has(> .schema-field__main .schema-field__type option[value="select"]:checked) > [data-for="select"],
+  .schema-field:has(> .schema-field__main .schema-field__type :is(option[value="record_ref"], option[value="record_refs"]):checked) > [data-for="reference"],
+  .schema-field:has(> .schema-field__main .schema-field__type option[value="blocks"]:checked) > [data-for="blocks"],
+  .schema-field:has(> .schema-field__main .schema-field__type :is(option[value="repeater"], option[value="group"]):checked) > [data-for="nested"] {
+    display: flex;
+  }
+
+  /* The schema form's foot: Save under the rows. */
+  .schema-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+}
+
+/* A revision compared with the content now (versions/_comparison): each changed field under a
+/* rule, its before in red and its after in green (data-tone), side by side from 40rem; a
+/* text's lines as a diff, each tinted by its data-op; blocks as boxes tinted by what happened
+/* to them (data-op). */
+@layer ui {
+  .version-comparison {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .version-field {
+    border-block-start: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-block-start: 1.25rem;
+  }
+
+  .version-restore {
+    border-block-start: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    padding-block-start: 1.25rem;
+  }
+
+  .version-field__key {
+    font-family: var(--font-mono);
+    font-size: var(--text-normal);
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .version-entries {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .version-entry {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .version-note {
+    color: var(--muted-foreground);
+    font-size: var(--text-x-small);
+
+    code {
+      color: var(--foreground);
+      font-family: var(--font-mono);
+    }
+  }
+
+  .diff-pair {
+    display: grid;
+    gap: 0.5rem;
+
+    @media (width >= 40rem) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .diff-value {
+    background-color: var(--muted);
+    border-radius: var(--radius-md);
+    color: var(--foreground);
+    font-family: var(--font-mono);
+    font-size: var(--text-x-small);
+    line-height: 1.5;
+    margin: 0;
+    overflow-wrap: break-word;
+    padding: 0.75rem;
+    white-space: pre-wrap;
+  }
+
+  .diff-value[data-tone="add"],
+  .diff-lines__line[data-op="add"] {
+    background-color: color-mix(in oklch, var(--success) 10%, transparent);
+    color: color-mix(in oklch, var(--success) 80%, var(--foreground));
+  }
+
+  .diff-value[data-tone="del"],
+  .diff-lines__line[data-op="del"] {
+    background-color: color-mix(in oklch, var(--destructive) 10%, transparent);
+    color: color-mix(in oklch, var(--destructive) 80%, var(--foreground));
+  }
+
+  .diff-lines {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    font-family: var(--font-mono);
+    font-size: var(--text-x-small);
+    line-height: 1.5;
+    overflow: hidden;
+  }
+
+  .diff-lines__line {
+    color: var(--foreground);
+    overflow-wrap: break-word;
+    padding: 0.125rem 0.75rem;
+    white-space: pre-wrap;
+  }
+
+  .diff-lines__line[data-op="skip"] {
+    background-color: var(--muted);
+    color: var(--muted-foreground);
+  }
+
+  .diff-block {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem;
+  }
+
+  .diff-block__title {
+    font-size: var(--text-normal);
+
+    strong {
+      font-weight: 500;
+    }
+  }
+
+  .diff-block[data-op="added"] {
+    background-color: color-mix(in oklch, var(--success) 10%, transparent);
+    border-color: color-mix(in oklch, var(--success) 30%, var(--border));
+  }
+
+  .diff-block[data-op="removed"] {
+    background-color: color-mix(in oklch, var(--destructive) 10%, transparent);
+    border-color: color-mix(in oklch, var(--destructive) 30%, var(--border));
   }
 }

@@ -6,7 +6,7 @@
   <%# herb:key key %>
   <div class="ui-field">
     <label class="ui-label" for="<%= scope + "_" + key %>"><%= label %></label>
-    <%= datetime_local_field_tag scope + "[" + key + "]", content_datetime_input(record.public_send(key)), id: scope + "_" + key, step: 1, autocomplete: "off" %>
+    <%= datetime_local_field_tag scope + "[" + key + "]", content_datetime_input(record.public_send(key)), id: scope + "_" + key, step: 1, autocomplete: "off", class: "ui-input" %>
     <p class="ui-field__description"><%= help %> Times are <%= Time.zone.tzinfo.name %>.</p>
   </div>
 <% end %>

@@ -14,7 +14,7 @@
   <div class="editor__main">
     <div>
       <label class="visually-hidden" for="entry_title">Name</label>
-      <%= form.text_field :title, required: true, class: "title-input", placeholder: "Add title", data: { slug_target: "source", action: "slug#fill" }, autofocus: entry.new_record? %>
+      <%= form.text_field :title, required: true, class: "editor__title", placeholder: "Add title", data: { slug_target: "source", action: "slug#fill" }, autofocus: entry.new_record? %>
     </div>
 
     <%= tag.div class: "stack stack--lg", data: ({ tab: "edit", tabs_target: "panel" } if entry.persisted?) do %>
@@ -25,23 +25,31 @@
     <% end %>
 
     <% if collection.enable_blocks? %>
-      <section class="panel">
-        <h2 class="heading editor__section-title">Blocks</h2>
-        <div class="editor__section-body">
+      <section class="ui-card">
+        <header class="ui-card__header">
+          <h2 class="ui-card__title">Blocks</h2>
+        </header>
+        <div class="ui-card__content">
           <%= render "content_form/blocks", blocks: entry.blocks, scope: content_scope("entry")["blocks"], depth: 1, record: entry %>
         </div>
-        <p class="panel__footer"><%= editor_status_line(entry) %></p>
+        <footer class="ui-card__footer ui-card__footer--bordered">
+          <p class="editor__status"><%= editor_status_line(entry) %></p>
+        </footer>
       </section>
     <% end %>
 
-    <section class="panel">
-      <h2 class="heading editor__section-title">Body</h2>
-      <div class="editor__section-body">
+    <section class="ui-card">
+      <header class="ui-card__header">
+        <h2 class="ui-card__title">Body</h2>
+      </header>
+      <div class="ui-card__content">
         <%= render "content_form/fields/rich_text", field: { "name" => "body_markdown", "label" => "Body" }, value: entry.body_markdown,
               scope: content_scope("entry")["body_markdown"], markdown: true %>
       </div>
       <% unless collection.enable_blocks? %>
-        <p class="panel__footer"><%= editor_status_line(entry) %></p>
+        <footer class="ui-card__footer ui-card__footer--bordered">
+          <p class="editor__status"><%= editor_status_line(entry) %></p>
+        </footer>
       <% end %>
     </section>
     <% end %>

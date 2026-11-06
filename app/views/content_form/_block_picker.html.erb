@@ -1,35 +1,38 @@
 <%# locals: (allowed_types: nil) %>
 <%# The block types a list may add, grouped by category, with the "/"-style
     filter. Picking one asks the server for its row (sortable-list#insert). %>
-<dialog class="dialog content-picker" data-sortable-list-target="picker"
+<dialog class="ui-dialog content-picker" data-sortable-list-target="picker"
         aria-label="Add a block">
-  <header class="row row--between row--base">
-    <h2 class="heading heading--lg">Add a block</h2>
-    <button type="button" class="ui-button ui-button--outline ui-button--sm" data-action="sortable-list#closePicker">Close</button>
+  <button type="button" class="ui-button ui-button--ghost ui-button--icon-sm ui-dialog__close" data-action="sortable-list#closePicker" aria-label="Close">
+    <%= icon_tag "close" %>
+  </button>
+  <header class="ui-dialog__header">
+    <h2 class="ui-dialog__title">Add a block</h2>
+    <p class="ui-dialog__description">Pick a block type, or a pattern of blocks, to add to the list.</p>
   </header>
-  <input type="search" class="full-width" placeholder="Filter block types…" autocomplete="off" aria-label="Filter block types"
+  <input type="search" class="ui-input" placeholder="Filter block types…" autocomplete="off" aria-label="Filter block types"
          data-action="input->sortable-list#filterPicker">
   <div class="content-picker__groups">
     <% content_block_type_groups(allowed_types).each do |category, types| %>
       <%# herb:key category %>
-      <section class="stack stack--sm">
-        <h3 class="text-small text-medium text-muted"><%= category %></h3>
+      <section class="content-picker__group">
+        <h3 class="editor-subheading"><%= category %></h3>
         <%= render "content_form/picker_types", types: types %>
       </section>
     <% end %>
     <% patterns = allowed_types.nil? ? BlockPattern.ordered.to_a : [] %>
     <% if patterns.any? %>
-      <section class="stack stack--sm">
-        <h3 class="text-small text-medium text-muted">Patterns</h3>
-        <ul class="grid grid--2 grid--sm">
+      <section class="content-picker__group">
+        <h3 class="editor-subheading">Patterns</h3>
+        <ul class="content-picker__options">
           <% patterns.each do |pattern| %>
             <%# herb:key pattern.slug %>
             <li data-picker-text="<%= [ "pattern", pattern.slug, pattern.name, pattern.description ].compact.join(" ").downcase %>">
               <button type="button" class="picker-option"
                       data-type="pattern:<%= pattern.slug %>" data-action="sortable-list#insert">
-                <span class="picker-option__name"><%= pattern.name %><span class="label__note"><%= pattern.synced? ? "synced" : "copy" %></span></span>
+                <span class="picker-option__name"><%= pattern.name %> <span class="ui-badge ui-badge--outline"><%= pattern.synced? ? "synced" : "copy" %></span></span>
                 <% if pattern.description.present? %>
-                  <span class="text-small text-muted"><%= pattern.description %></span>
+                  <span class="picker-option__description"><%= pattern.description %></span>
                 <% end %>
               </button>
             </li>
@@ -39,8 +42,8 @@
     <% end %>
     <% deprecated = content_deprecated_block_types(allowed_types) %>
     <% if deprecated.any? %>
-      <details class="content-picker__deprecated stack stack--sm">
-        <summary class="text-small text-medium text-muted">Deprecated (<%= deprecated.size %>)</summary>
+      <details class="content-picker__deprecated content-picker__group">
+        <summary class="editor-subheading">Deprecated (<%= deprecated.size %>)</summary>
         <p class="ui-field__description">Kept for content that already uses them. They're still added like any other, but a newer type usually does the same job.</p>
         <%= render "content_form/picker_types", types: deprecated %>
       </details>

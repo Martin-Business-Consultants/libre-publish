@@ -12,7 +12,7 @@
       <span class="drag-handle" title="Drag to reorder" data-action="mousedown->sortable-list#grab touchstart->sortable-list#grab">⠿</span>
       <%= icon_tag "caret-down", class: "content-row__toggle" %>
       <span class="content-row__title">
-        <span class="row">
+        <span class="content-row__heading">
           <span class="content-row__name"><%= block_type ? (block_type.label.presence || block_type.slug) : "Unknown block type" %></span>
           <% if block_type&.category.present? %>
             <span class="ui-badge ui-badge--secondary content-row__category"><%= block_type.category %></span>
@@ -34,19 +34,25 @@
         <%= hidden_field_tag scope["type"].name, block["type"], id: nil %>
         <%= hidden_field_tag scope["version"].name, block["version"], id: nil %>
         <% if errors.any? %>
-          <ul class="ui-alert ui-alert--destructive content-row__errors">
-            <% errors.each do |message| %>
-              <%# herb:key message %>
-              <li><%= message %></li>
-            <% end %>
-          </ul>
+          <div class="ui-alert ui-alert--destructive" role="alert">
+            <%= icon_tag "close-circle", class: "ui-alert__icon" %>
+            <p class="ui-alert__title">This block needs attention</p>
+            <ul class="ui-alert__description content-row__errors">
+              <% errors.each do |message| %>
+                <%# herb:key message %>
+                <li><%= message %></li>
+              <% end %>
+            </ul>
+          </div>
         <% end %>
         <%= render "content_form/fields", fields: block_type.fields, values: block["data"], scope: scope["data"], depth: depth %>
       <% else %>
         <%= hidden_field_tag scope["_json"].name, block.to_json, id: nil %>
-        <p class="ui-alert ui-alert--destructive">
-          <span>This block’s type, <code><%= block["type"] %></code>, doesn’t exist any more. It’s kept as it is; remove it or add the block type back.</span>
-        </p>
+        <div class="ui-alert ui-alert--destructive" role="alert">
+          <%= icon_tag "close-circle", class: "ui-alert__icon" %>
+          <p class="ui-alert__title">Unknown block type</p>
+          <p class="ui-alert__description">This block’s type, <code><%= block["type"] %></code>, doesn’t exist any more. It’s kept as it is; remove it or add the block type back.</p>
+        </div>
       <% end %>
     </div>
   <% end %>

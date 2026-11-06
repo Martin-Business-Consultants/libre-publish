@@ -7,7 +7,7 @@
 <%= render "layouts/shared/page_header", title: @page_title %>
 
 <%= render "layouts/shared/errors", record: @global %>
-<%= form_with url: global_schema_path(@global.slug), method: :patch, class: "stack stack--lg" do %>
+<%= form_with url: global_schema_path(@global.slug), method: :patch, class: "schema-form" do %>
   <%= render "schemas/editor", fields: @global.fields, scope: "global", field_types: Global::FIELD_TYPES,
         collection_slugs: Collection.order(:slug).pluck(:slug) %>
   <div>

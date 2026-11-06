@@ -4,8 +4,10 @@
   <%= link_to "All revisions", global_versions_path(@global.slug), class: "ui-button ui-button--outline" %>
 <% end %>
 <%= render "layouts/shared/page_header", title: "Compare a revision of “" + @global.name + "”" %>
-<section class="panel panel--padded fields">
-  <%= render "versions/comparison", version: @version, restore_path: global_version_restoration_path(@global.slug, @version),
-        can_restore: Current.user.can?("globals:write") && Current.user.can?("globals:publish") &&
-          (@global.slug != Global::SCRIPTS_SLUG || Current.user.can?("globals:scripts")) %>
+<section class="ui-card">
+  <div class="ui-card__content version-comparison">
+    <%= render "versions/comparison", version: @version, restore_path: global_version_restoration_path(@global.slug, @version),
+          can_restore: Current.user.can?("globals:write") && Current.user.can?("globals:publish") &&
+            (@global.slug != Global::SCRIPTS_SLUG || Current.user.can?("globals:scripts")) %>
+  </div>
 </section>

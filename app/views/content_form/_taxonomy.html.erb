@@ -13,8 +13,8 @@
   </div>
 <% end %>
 <% if tag_pool %>
-  <fieldset class="stack stack--sm">
-    <legend class="ui-label content-taxonomy__legend">Tags</legend>
+  <fieldset class="ui-fieldset">
+    <legend class="ui-label">Tags</legend>
     <%= hidden_field_tag scope + "[tag_ids][]", "", id: nil %>
     <% chosen = record.tag_ids %>
     <div class="content-taxonomy__tags">

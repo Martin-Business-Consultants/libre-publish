@@ -17,20 +17,20 @@
       <%= select_tag name + "[type]", options_for_select(field_type_options(field_types), field["type"]),
             id: nil, class: "ui-select schema-field__type" %>
     </label>
-    <label class="ui-field ui-field--inline nowrap schema-field__required">
+    <label class="ui-field ui-field--inline schema-field__required">
       <%= check_box_tag name + "[required]", "1", field["required"] == true, id: nil, class: "ui-checkbox" %>
       <span>Required</span>
     </label>
-    <div class="row row--2xs row--end">
-      <button type="button" class="ui-button ui-button--ghost ui-button--icon" title="Move up" data-action="schema-editor#moveUp">
+    <div class="schema-field__tools">
+      <button type="button" class="ui-button ui-button--ghost ui-button--icon-sm" title="Move up" data-action="schema-editor#moveUp">
         <%= icon_tag "arrow-up" %>
         <span class="visually-hidden">Move up</span>
       </button>
-      <button type="button" class="ui-button ui-button--ghost ui-button--icon" title="Move down" data-action="schema-editor#moveDown">
+      <button type="button" class="ui-button ui-button--ghost ui-button--icon-sm" title="Move down" data-action="schema-editor#moveDown">
         <%= icon_tag "arrow-up", class: "schema-field__down" %>
         <span class="visually-hidden">Move down</span>
       </button>
-      <button type="button" class="ui-button ui-button--ghost ui-button--icon schema-field__remove" title="Remove this field" data-action="schema-editor#remove">
+      <button type="button" class="ui-button ui-button--ghost ui-button--icon-sm schema-field__remove" title="Remove this field" data-action="schema-editor#remove">
         <%= icon_tag "trash" %>
         <span class="visually-hidden">Remove this field</span>
       </button>
@@ -51,12 +51,12 @@
   <% if block_slugs %>
     <fieldset class="schema-field__setting" data-for="blocks">
       <legend class="schema-field__label">Allowed blocks (none ticked means any)</legend>
-      <div class="cluster cluster--base">
+      <div class="schema-field__blocks">
         <% block_slugs.each do |slug| %>
           <%# herb:key slug %>
-          <label class="ui-field ui-field--inline nowrap">
+          <label class="ui-field ui-field--inline schema-field__choice">
             <%= check_box_tag name + "[allowed_types][]", slug, Array(field["allowed_types"]).include?(slug), id: nil, class: "ui-checkbox" %>
-            <span class="text-mono text-small"><%= slug %></span>
+            <span class="schema-field__slug"><%= slug %></span>
           </label>
         <% end %>
       </div>
@@ -71,7 +71,7 @@
 
   <details>
     <summary class="schema-field__more">More settings</summary>
-    <div class="grid grid--2 grid--md schema-field__more-settings">
+    <div class="schema-field__more-settings">
       <label class="schema-field__control">
         <span class="schema-field__label">Help text</span>
         <%= text_field_tag name + "[help]", field["help"], id: nil, class: "ui-input" %>
@@ -80,7 +80,7 @@
         <span class="schema-field__label">Tab</span>
         <%= text_field_tag name + "[tab]", field["tab"], id: nil, placeholder: "Group fields under a tab", class: "ui-input" %>
       </label>
-      <label class="ui-field ui-field--inline nowrap">
+      <label class="ui-field ui-field--inline schema-field__choice">
         <%= check_box_tag name + "[sidebar]", "1", field["sidebar"] == true, id: nil, class: "ui-checkbox" %>
         <span>Show in the sidebar</span>
       </label>

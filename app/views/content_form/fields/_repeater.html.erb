@@ -5,7 +5,7 @@
 <%= render "content_form/label", field: field, for_id: nil %>
 <div class="stack stack--sm" data-controller="sortable-list" data-sortable-list-token-value="<%= token %>">
   <%= hidden_field_tag scope[ContentForm::LIST_MARKER].name, "1", id: nil %>
-  <ol class="stack stack--sm" data-sortable-list-target="list">
+  <ol class="content-blocks__list" data-sortable-list-target="list">
     <% Array(value).each_with_index do |item, index| %>
       <%# herb:key index %>
       <%= render "content_form/repeater_item", field: field, item: item, scope: scope[content_row_key], depth: depth, index: index %>

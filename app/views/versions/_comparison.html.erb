@@ -2,8 +2,8 @@
 <%# What restoring a version would change: the record as it is now, and what
     the version would bring back. %>
 <% diff = version.changes_from_current %>
-<p class="text-body">
-  Saved <%= site_time_tag version.created_at %><% if version.author %> by <strong class="text-semibold text-ink"><%= version.author.name.presence || version.author.email %></strong><% end %>.
+<p class="ui-card__description">
+  Saved <%= site_time_tag version.created_at %><% if version.author %> by <strong><%= version.author.name.presence || version.author.email %></strong><% end %>.
   <% if diff[:fields].empty? %>
     It matches the content as it is now.
   <% else %>

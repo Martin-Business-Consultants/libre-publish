@@ -16,7 +16,7 @@
 
   .attachment__caption {
     color: var(--muted-foreground);
-    font-size: var(--text-sm);
+    font-size: var(--text-normal);
 
     textarea {
       background-color: transparent;
@@ -51,8 +51,8 @@
     box-sizing: border-box;
     color: var(--attachment-icon-color);
     display: grid;
-    font-size: var(--text-sm);
-    font-weight: var(--weight-bold);
+    font-size: var(--text-normal);
+    font-weight: 700;
     inline-size: auto;
     padding-inline: 0.5ch;
     place-content: center;
@@ -103,7 +103,7 @@
 
     .attachment__name {
       color: var(--foreground);
-      font-weight: var(--weight-semibold);
+      font-weight: 600;
     }
 
     /* Video attachments don't have an identifiable class, but we need to

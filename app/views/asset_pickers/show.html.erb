@@ -6,10 +6,10 @@
     (media--asset-picker#pick, which copies its .media-thumb). %>
 <turbo-frame id="asset_picker">
   <div class="stack">
-    <div class="cluster">
-      <%= form_with url: asset_picker_path, method: :get, class: "input-with-icon grow" do %>
+    <div class="asset-picker__toolbar">
+      <%= form_with url: asset_picker_path, method: :get, class: "ui-input-group asset-picker__search" do %>
+        <span class="ui-input-group__addon"><%= icon_tag "search" %></span>
         <%= hidden_field_tag :folder, @folder, id: nil %>
-        <%= icon_tag "search", class: "input-with-icon__icon" %>
         <%= search_field_tag :q, @query, id: nil, placeholder: (@folder ? "Search #{@folder}…" : "Search every folder…"), autocomplete: "off",
               aria: { label: "Search files" }, class: "ui-input" %>
       <% end %>
@@ -29,17 +29,21 @@
           <%= form.file_field :files, multiple: true, direct_upload: true, hidden: true,
                 data: { action: "change->form#submit", media__direct_upload_target: "input" }, class: "ui-input" %>
         </label>
-        <ul class="stack stack--xs full-width text-small text-body" data-media--direct-upload-target="list" hidden></ul>
+        <ul class="asset-picker__uploads" data-media--direct-upload-target="list" hidden></ul>
       <% end %>
     <% end %>
 
     <% if @upload_errors.present? %>
-      <ul class="ui-alert ui-alert--destructive">
-        <% @upload_errors.each do |message| %>
-          <%# herb:key message %>
-          <li><%= message %></li>
-        <% end %>
-      </ul>
+      <div class="ui-alert ui-alert--destructive" role="alert">
+        <%= icon_tag "close-circle", class: "ui-alert__icon" %>
+        <p class="ui-alert__title">Some files weren’t uploaded</p>
+        <ul class="ui-alert__description">
+          <% @upload_errors.each do |message| %>
+            <%# herb:key message %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
     <% end %>
 
     <% if @assets.any? %>
@@ -48,15 +52,17 @@
         <%= render "tiles", assets: @assets, more: @more, page: @page, query: @query, folder: @folder %>
       </ul>
     <% else %>
-      <p class="empty-state asset-picker__empty">
-        <% if @query.present? then %>
-          Nothing matches “<%= @query %>”.
-        <% elsif @folder then %>
-          This folder is empty.
-        <% else %>
-          No files yet.
-        <% end %>
-      </p>
+      <div class="ui-empty">
+        <p class="ui-empty__description">
+          <% if @query.present? then %>
+            Nothing matches “<%= @query %>”.
+          <% elsif @folder then %>
+            This folder is empty.
+          <% else %>
+            No files yet.
+          <% end %>
+        </p>
+      </div>
     <% end %>
   </div>
 </turbo-frame>
