@@ -2,7 +2,7 @@
 
 # The admin menu down the left of every admin page, in the manner of
 # WordPress's: top-level items with an icon, in groups, each with a submenu,
-# and the admin bar's "+ New" menu. Enabled plugins add top-level items,
+# and the sidebar's "+ New" menu. Enabled plugins add top-level items,
 # submenu links and "+ New" entries through Cms::Plugins (menu, submenu,
 # new_item). Every link shows only when the role grants its capability.
 module NavigationHelper
@@ -74,7 +74,7 @@ module NavigationHelper
     ]
   }.freeze
 
-  # The admin bar's "+ New" menu: [label, path, capability].
+  # The sidebar's "+ New" menu: [label, path, capability].
   NEW_ITEMS = [
     ["Page", :new_page_path, "pages:write"],
     ["Collection", :new_collection_path, "collections:write"],

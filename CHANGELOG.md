@@ -8,6 +8,34 @@ out.
 
 ## Unreleased
 
+### Changed
+- **The admin is drawn with Runwell UI**, a no-build port of shadcn/ui in
+  plain CSS (`app/assets/stylesheets/ui`, the styleguide at `/cms/ui` in
+  development): shadcn's look on every screen. The layout is shadcn's
+  sidebar (the menu's groups with collapsible submenus, New, the signed-in
+  person's menu with light or dark) beside the page as an inset sheet under a
+  header with the breadcrumb and search; search everything is a command
+  dialog (⌘K). Lists are shadcn's data table (a checkbox column for bulk
+  actions, a Columns menu that hides columns per browser, a ⋯ menu of row
+  actions, numbered pages), Settings is shadcn's settings layout, and edit
+  screens, dialogs, sheets, menus, the file manager, the dashboard and the
+  sign-in pages are drawn with the kit's cards, fields, dialogs and menus.
+  The Screen Options tab gives way to each table's Columns menu.
+- **Settings › Branding feeds the kit's tokens** (`ui/theme.css`), as
+  Runwell's Appearance does: the primary color becomes the accent (OKLCH,
+  lifted for the dark theme), the secondary color tints the neutrals, the
+  font, corners (`--radius-scale`, `--radius-control`) and shadow
+  (`--shadow-xs…lg`) follow; the dark top bar darkens the sidebar.
+- **For plugins:** the kit is the styling contract (docs/plugins.md, STYLE.md):
+  `ui-card`, `ui-button`, `ui-field`, `ui-input`, `ui-badge`, `ui-menu`,
+  `ui-dialog`, `render "ui/data_table"`, and the kit's tokens (`--card`,
+  `--border`, `--primary`, `--muted-foreground`…). The admin's old token
+  families (`--gray-*`, `--accent-*`, `--red-*`, `--surface`…) are gone: a
+  plugin stylesheet that reads them must move to the kit's names. The old
+  component classes (`btn`, `panel`, `field`, `data-table`, `dialog`…) still
+  draw, in the kit's look, from `legacy.css`, so Forms 1.7 and other plugins
+  written for them keep working. The default Forms plugin is pinned to 1.7.2.
+
 ## 1.33.4
 
 ### Fixed

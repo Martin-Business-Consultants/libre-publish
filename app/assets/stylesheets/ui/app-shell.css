@@ -399,7 +399,11 @@
   }
 
   .app-sidebar__user-menu {
-    min-inline-size: 14rem;
+    min-inline-size: 15rem;
+
+    .ui-menu__label {
+      display: grid;
+    }
   }
 
   /* The drawer's backdrop, on a phone. */
@@ -593,10 +597,13 @@
       block-size: 3rem;
       border: 0;
       color: var(--foreground);
+      box-shadow: none;
       flex: 1;
       font: inherit;
       font-size: var(--text-normal);
+      min-block-size: 0;
       outline: none;
+      padding: 0;
 
       &::placeholder {
         color: var(--muted-foreground);
@@ -702,5 +709,52 @@
       .theme-toggle__sun { display: inline-block; }
       .theme-toggle__moon { display: none; }
     }
+  }
+}
+
+/* While an update runs (layouts/shared/_update_progress, update_progress_controller): a
+/* spinner beside the heading, and a bar per update that eases to where the poll says it is. */
+@layer ui {
+  .update-progress[open] {
+    inline-size: min(32rem, calc(100vw - 2rem));
+  }
+
+  .update-progress__spinner {
+    animation: update-progress-spin 0.8s linear infinite;
+    block-size: 1.25rem;
+    border: 2px solid var(--border);
+    border-block-start-color: var(--primary);
+    border-radius: 50%;
+    flex: none;
+    inline-size: 1.25rem;
+
+    .update-progress--finished & {
+      animation: none;
+      border-color: var(--border);
+    }
+  }
+
+  .update-progress__bar {
+    background-color: color-mix(in oklch, var(--primary) 20%, transparent);
+    block-size: 0.5rem;
+    border-radius: 99rem;
+    overflow: hidden;
+
+    span {
+      background-color: var(--primary);
+      block-size: 100%;
+      border-radius: inherit;
+      display: block;
+      inline-size: 0;
+      transition: inline-size 300ms ease-out;
+    }
+
+    .update-progress--failed & span {
+      background-color: var(--destructive);
+    }
+  }
+
+  @keyframes update-progress-spin {
+    to { transform: rotate(360deg); }
   }
 }

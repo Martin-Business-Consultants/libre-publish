@@ -23,13 +23,23 @@ RSpec.describe "Slugs from titles", type: :system do
     sleep 0.05 until page.evaluate_script(script) || Time.now > deadline
   end
 
+  # Types into a field and waits until what's typed has stuck and the slug shows it: now and
+  # then the sheet's first keystrokes land while the page is still settling and are lost, so
+  # it types again rather than failing on a race the person using it never sees.
+  def type_title(field, text, slug_field:, slug:)
+    page.document.synchronize do
+      fill_in field, with: text
+      raise Capybara::ExpectationNotMet, "#{slug_field} is #{find_field(slug_field).value.inspect}, #{field} is #{find_field(field).value.inspect}" unless find_field(slug_field).value == slug
+    end
+  end
+
   it "fills a new page's slug from its title, until someone types their own" do
     visit pages_path
     wait_for_controllers "dialog", "slug"
     click_on "New page"
 
     within "dialog[open]" do
-      fill_in "page[title]", with: "Our Café & Bar"
+      type_title "page[title]", "Our Café & Bar", slug_field: "page[slug]", slug: "our-cafe-bar"
       expect(page).to have_field("page[slug]", with: "our-cafe-bar")
 
       fill_in "page[slug]", with: "visit"
@@ -44,7 +54,7 @@ RSpec.describe "Slugs from titles", type: :system do
     click_on "New global"
 
     within "dialog[open]" do
-      fill_in "global[name]", with: "2026 Site Settings"
+      type_title "global[name]", "2026 Site Settings", slug_field: "global[slug]", slug: "site_settings"
       expect(page).to have_field("global[slug]", with: "site_settings")
     end
   end

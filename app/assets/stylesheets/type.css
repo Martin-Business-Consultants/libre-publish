@@ -1,15 +1,6 @@
-/* Type: titles and headings, and the text roles everything else is written
-   in. Body text is 14px gray-900 (base.css); these say when it's otherwise. */
+/* Type, as shadcn/ui's typography: titles and headings (semibold, tracked tight), links,
+   inline code and code blocks, prose. Body text is 14px in the foreground (base.css). */
 @layer components {
-
-  /* A title inside the screen: a record's name, an empty state's. */
-  .title {
-    color: var(--foreground);
-    font-size: var(--text-xl);
-    font-weight: var(--weight-semibold);
-    letter-spacing: -0.025em;
-    line-height: var(--leading-xl);
-  }
 
   /* A section's heading (a panel's, a dialog's): .heading--lg for one that
      leads a screen's section, .heading--sm for one inside a box. */
@@ -17,53 +8,30 @@
     color: var(--foreground);
     font-size: var(--text-base);
     font-weight: var(--weight-semibold);
+    letter-spacing: -0.01em;
     line-height: var(--leading-base);
-  }
-
-  .heading--lg {
-    font-size: var(--text-lg);
-    line-height: var(--leading-lg);
-  }
-
-  .heading--sm {
-    font-size: var(--text-sm);
-    line-height: var(--leading-sm);
   }
 
   /* A link in running text or beside a control. */
   .link {
     color: var(--primary);
     font-weight: var(--weight-medium);
-    text-decoration: underline;
-    text-decoration-color: color-mix(in oklch, currentColor 40%, transparent);
-    text-underline-offset: 2px;
-
-    &:hover {
-      color: var(--primary);
-      text-decoration-color: currentColor;
-    }
-  }
-
-  /* A record's name that opens it (a table's first column, a card's title):
-     ink, underlined on hover. */
-  .title-link {
-    color: var(--foreground);
-    font-weight: var(--weight-medium);
+    text-decoration: none;
+    text-underline-offset: 4px;
 
     &:hover {
       text-decoration: underline;
-      text-underline-offset: 2px;
     }
   }
 
   /* Code, a path or a key inline: a gray chip in the mono face. */
   .code {
-    background-color: var(--accent);
+    background-color: var(--muted);
     border-radius: var(--radius-sm);
     color: var(--foreground);
     font-family: var(--font-mono);
     font-size: 0.9em;
-    padding: var(--space-0-5) var(--space-1);
+    padding: 0.2rem 0.3rem;
   }
 
   /* A block of code, JSON, a command or a secret to read or copy;
@@ -71,7 +39,7 @@
   .code-block {
     background-color: var(--muted);
     border: 1px solid var(--border);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
     color: var(--foreground);
     display: block;
     font-family: var(--font-mono);

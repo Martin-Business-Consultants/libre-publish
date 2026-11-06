@@ -71,4 +71,103 @@
     inline-size: min(36rem, 100vw);
     max-inline-size: 100vw;
   }
+
+  /* A delete that reads as a red text button (layouts/shared/_delete_dialog's trigger_text: a
+  /* box's Move to trash). */
+  .delete-link {
+    background: none;
+    border: 0;
+    color: var(--destructive);
+    cursor: pointer;
+    font: inherit;
+    font-size: var(--text-normal);
+    font-weight: 500;
+    padding: 0;
+    text-underline-offset: 4px;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  /* A list with bullets (an alert's errors, a card's notes), as shadcn's typography lists. */
+  .bullet-list {
+    display: grid;
+    gap: 0.25rem;
+    list-style: disc;
+    margin: 0;
+    padding-inline-start: 1.25rem;
+  }
+
+  /* The site's logo (layouts/shared/_logo), the height of a button. */
+  .site-logo {
+    block-size: 2.25rem;
+    inline-size: auto;
+  }
+
+  /* A key, token or secret (ApplicationHelper#secret_field): the kit's input in the mono face
+  /* with the eye button inside its end; reveal_controller sets --shown, which swaps the eye's
+  /* two icons. */
+  .secret-field {
+    align-items: center;
+    display: flex;
+    position: relative;
+
+    input {
+      font-family: var(--font-mono);
+      inline-size: 100%;
+      padding-inline-end: 2.75rem;
+    }
+
+    .ui-button {
+      inset-inline-end: 0.25rem;
+      position: absolute;
+    }
+  }
+
+  .secret-field .secret-field__hide,
+  .secret-field--shown .secret-field__show {
+    display: none;
+  }
+
+  .secret-field--shown .secret-field__hide {
+    display: inline-block;
+  }
+
+  /* A block type's form (block_types/_form): no wider than 64rem, its basics four across
+  /* from 64rem. */
+  .block-type-form {
+    max-inline-size: 64rem;
+  }
+
+  .block-type-form__basics {
+    @media (width >= 64rem) {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  /* The editor's Preview tab: the website, framed, the height of the window. */
+  .website-preview__frame {
+    background-color: var(--background);
+    block-size: calc(100dvh - 14rem);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    inline-size: 100%;
+    min-block-size: 30rem;
+  }
+}
+
+/* The kit's warning and success alerts tint the card in oklch, where the card's white has no
+/* hue of its own and the mix swings toward pink; mixed in srgb they stay amber and green. A fix
+/* for Runwell UI's display.css, kept here so the kit's files stay as Runwell has them. */
+@layer ui {
+  .ui-alert.ui-alert--warning {
+    background-color: color-mix(in srgb, var(--warning) 8%, var(--card));
+    border-color: color-mix(in srgb, var(--warning) 35%, var(--border));
+  }
+
+  .ui-alert.ui-alert--success {
+    background-color: color-mix(in srgb, var(--success) 8%, var(--card));
+    border-color: color-mix(in srgb, var(--success) 35%, var(--border));
+  }
 }

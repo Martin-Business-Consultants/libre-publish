@@ -29,10 +29,10 @@
   --lch-accent-lighter: 93% 0.025 277;
   --lch-accent-lightest: 97% 0.012 277;
 
-  /* Status. */
+  /* Status (the warning is Tailwind's amber, which tints cream rather than pink). */
   --lch-red-dark: 59% 0.19 38;
   --lch-red-medium: 66% 0.204 40;
-  --lch-yellow-dark: 58% 0.156 60;
+  --lch-yellow-dark: 66.6% 0.179 58.3;
   --lch-green-dark: 55% 0.162 147;
   --lch-blue-dark: 57.02% 0.1895 260.46;
 
@@ -99,7 +99,7 @@ html[data-theme="dark"] {
 
   --lch-red-dark: 73.95% 0.139 42;
   --lch-red-medium: 62% 0.154 40;
-  --lch-yellow-dark: 74.06% 0.136 80;
+  --lch-yellow-dark: 76.9% 0.188 70.1;
   --lch-green-dark: 73.99% 0.117 145;
   --lch-blue-dark: 74% 0.1293 256;
 }
@@ -126,7 +126,7 @@ html[data-theme="dark"] {
 
     --lch-red-dark: 73.95% 0.139 42;
     --lch-red-medium: 62% 0.154 40;
-    --lch-yellow-dark: 74.06% 0.136 80;
+    --lch-yellow-dark: 76.9% 0.188 70.1;
     --lch-green-dark: 73.99% 0.117 145;
     --lch-blue-dark: 74% 0.1293 256;
   }

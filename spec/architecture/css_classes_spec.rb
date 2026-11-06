@@ -2,16 +2,18 @@
 
 require "rails_helper"
 
-# The admin is drawn with its own CSS (app/assets/stylesheets, STYLE.md):
-# components, layout pieces and a few helpers, named for what they are. A
-# class nothing defines silently does nothing, and a rule nothing uses is
-# weight every page carries, so both fail here.
+# The admin is drawn with Runwell UI, the kit in app/assets/stylesheets/ui,
+# and its own pieces and helpers (STYLE.md), named for what they are. A class
+# nothing defines silently does nothing, and a rule nothing uses is weight
+# every page carries, so both fail here. legacy.css keeps the classes from
+# before the kit for plugins outside this repository: they needn't be used.
 RSpec.describe "Architecture: the admin's CSS classes" do
   VIEWS = ["app/views/**/*.erb", "engines/*/app/views/**/*.erb", "plugins/*/app/views/**/*.erb"].freeze
   RUBY = ["app/helpers/**/*.rb", "engines/*/app/helpers/**/*.rb", "plugins/*/app/helpers/**/*.rb"].freeze
   SCRIPTS = ["app/javascript/**/*.js", "engines/*/app/javascript/**/*.js", "plugins/*/app/javascript/**/*.js"].freeze
   SPECS = ["spec/**/*.rb", "plugins/*/spec/**/*.rb"].freeze
   STYLESHEETS = ["app/assets/stylesheets/**/*.css", "engines/*/app/assets/stylesheets/**/*.css", "plugins/*/app/assets/stylesheets/**/*.css"].freeze
+  LEGACY = "app/assets/stylesheets/legacy.css"
 
   # Classes a stylesheet styles that the markup never writes, because
   # something else puts them in the DOM: Lexxy's editor, Turbo, the
@@ -64,9 +66,20 @@ RSpec.describe "Architecture: the admin's CSS classes" do
     MESSAGE
   end
 
+  it "writes none of legacy.css's classes in this repository: they're for plugins outside it" do
+    core = ["app/views/**/*.erb", "engines/*/app/views/**/*.erb", "app/helpers/**/*.rb", "engines/*/app/helpers/**/*.rb"]
+    offenders = used_classes.select { |name, file| legacy_classes.include?(name) && core.any? { File.fnmatch?(it, file, File::FNM_PATHNAME | File::FNM_EXTGLOB) } }
+
+    expect(offenders).to be_empty, <<~MESSAGE
+      Classes from before the kit, which only plugins outside this repository may use:
+      #{offenders.map { |name, file| "  #{name} (#{file})" }.join("\n")}
+      Draw it with the kit (STYLE.md).
+    MESSAGE
+  end
+
   it "defines no class that nothing uses" do
     used = used_classes.keys.to_set | hook_classes | BUILT_ELSEWHERE.to_set
-    unused = stylesheet_definitions.reject { |name, _| used.include?(name) || BUILT_ELSEWHERE_PATTERNS.any? { name.match?(it) } }
+    unused = stylesheet_definitions.reject { |name, _| used.include?(name) || legacy_classes.include?(name) || BUILT_ELSEWHERE_PATTERNS.any? { name.match?(it) } }
 
     expect(unused).to be_empty, <<~MESSAGE
       Classes a stylesheet defines that no view, helper, script or spec uses:
@@ -107,6 +120,12 @@ RSpec.describe "Architecture: the admin's CSS classes" do
 
   def stylesheet_classes
     stylesheet_definitions.keys.to_set
+  end
+
+  # The classes legacy.css draws for plugins written before the kit.
+  def legacy_classes
+    @legacy_classes ||= Rails.root.join(LEGACY).read.gsub(%r{/\*.*?\*/}m, "").scan(/([^{};]+)\{/).flatten
+      .reject { it.strip.start_with?("@") }.flat_map { it.scan(/\.(-?[a-zA-Z_][\w-]*)/).flatten }.to_set
   end
 
   # name => the stylesheet that defines it.

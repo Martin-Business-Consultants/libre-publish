@@ -41,18 +41,18 @@
     gap: var(--gap, var(--space-2));
     min-inline-size: 0;
   }
-
-  .stack--2xs, .row--2xs { --gap: var(--space-0-5); }
   .stack--xs, .cluster--xs, .row--xs { --gap: var(--space-1); }
-  .stack--sm, .cluster--sm, .grid--sm { --gap: var(--space-2); }
-  .stack--md, .cluster--md, .row--md, .grid--md { --gap: var(--space-3); }
-  .cluster--base, .row--base { --gap: var(--space-4); }
+  .stack--sm,
+  .grid--sm { --gap: var(--space-2); }
+  .stack--md,
+  .row--md,
+  .grid--md { --gap: var(--space-3); }
+  .row--base { --gap: var(--space-4); }
   .stack--lg { --gap: var(--space-6); }
 
   /* Where a row's or cluster's children sit along it, and across it. */
-  .cluster--between, .row--between { justify-content: space-between; }
-  .cluster--end, .row--end { justify-content: flex-end; }
-  .cluster--top, .row--top { align-items: flex-start; }
+  .row--between { justify-content: space-between; }
+  .cluster--top { align-items: flex-start; }
   .row--baseline { align-items: baseline; }
   .stack--start { align-items: flex-start; }
 
@@ -67,15 +67,9 @@
 
   @media (width >= 40rem) {
     .grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   }
 
   @media (width >= 48rem) {
-    .grid--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  }
-
-  .grid--tiles {
-    grid-template-columns: repeat(auto-fill, minmax(min(var(--tile-size, 10rem), 100%), 1fr));
   }
 
   /* A main column and a sidebar beside it from 64rem (an editor's boxes, a
@@ -118,22 +112,7 @@
       }
     }
   }
-
-  /* A screen's content held to a readable width: --sm for a single form
-     (sign in), --md a narrow settings form, --lg most settings pages, --xl a
-     wide one. */
-  .measure--sm { max-inline-size: 24rem; }
-  .measure--md { max-inline-size: 28rem; }
   .measure--lg { max-inline-size: 48rem; }
   .measure--xl { max-inline-size: 56rem; }
 
-  .measure--centered {
-    inline-size: 100%;
-    margin-inline: auto;
-  }
-
-  /* Hairlines between children: a list of rows. */
-  .divided > * + * {
-    border-block-start: 1px solid var(--accent);
-  }
 }

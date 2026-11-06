@@ -264,16 +264,20 @@ Reach for these before writing a class:
 **The admin's own pieces.** What the kit has no component for is drawn in
 `ui/app*.css` (the sidebar, the inset header, page headings, the settings
 layout, the editors' boxes…) as shadcn would draw it, from the kit's
-tokens, as a BEM block named for what it is. Layout is layout.css's:
+tokens, as a BEM block named for what it is: `ui/app.css` the shared ones
+(`fact-list`, `bullet-list`, `secret-field`, `delete-link`, `table-pagination`,
+`app-sheet--md|wide` for a sheet wider than the kit's), `ui/app-shell.css` the
+frame, and `ui/app-lists|settings|editor|media|dashboard|public|tools.css` a
+screen each. Layout is layout.css's:
 `stack` (a column), `row` (a line that doesn't wrap), `cluster` (a line that
-wraps), `grid` (`grid--2|3|4`, `grid--tiles`), each spaced 16px or 8px
+wraps), `grid` (`grid--2`), each spaced 16px or 8px
 apart unless a step says otherwise (`2xs|xs|sm|md|base|lg|xl`: 2, 4, 8, 12,
-16, 24, 32px; layout.css defines the steps in use), with `row--between|end|
-top|baseline`, `cluster--between|end|top`, `stack--start`, `with-sidebar`
-(main column + sidebar from 64rem), `measure--sm|md|lg|xl`. Helpers
+16, 24, 32px; layout.css defines the steps in use), with `row--between|
+baseline`, `cluster--top`, `stack--start`, `with-sidebar` (main column +
+sidebar from 64rem), `measure--lg|xl`. Helpers
 (helpers.css) adjust text inside a component that the component doesn't
-decide: `text-muted|faint|danger`, `text-small`, `text-medium`,
-`text-semibold`, `text-mono`, `text-center|end`, `text-tabular`,
+decide: `text-muted|danger`, `text-small`, `text-medium`,
+`text-semibold`, `text-mono`, `text-tabular`,
 `truncate`, `nowrap`, `grow`, `push-end`, `visually-hidden`…
 
 **Rules.**
@@ -304,7 +308,9 @@ decide: `text-muted|faint|danger`, `text-small`, `text-medium`,
   (`Branding#stylesheet`) sets and the dark theme re-points, so a rule
   written for the light theme reads in the dark one. No other color, no hex
   (except pure white or black on a photo). A tint is a `color-mix()` of a
-  token (`color-mix(in oklch, var(--primary) 10%, transparent)`).
+  token (`color-mix(in oklch, var(--primary) 10%, transparent)`); against
+  the card or the page mix in srgb, since their white has no hue and an
+  oklch mix swings toward pink.
 - **Don't give a display class to something a stylesheet shows and hides**:
   let the stylesheet set its display.
 - **Hooks**: keep a BEM class only while a stylesheet, JavaScript or a spec
@@ -312,13 +318,25 @@ decide: `text-muted|faint|danger`, `text-small`, `text-medium`,
 - **Plugins** use the same kit and ship their own stylesheet for what's
   theirs (docs/plugins.md). The admin's old classes (`btn`, `panel`,
   `field`, `data-table`…) are kept, drawn with the kit's tokens, only in
-  `legacy.css`, for plugins written before the kit; nothing in this
-  repository uses them once the redraw is done (until then, screens not yet
-  moved use them too, drawn with the kit's tokens).
+  `legacy.css`, for plugins written before the kit (its header lists them).
+  Nothing in this repository may write them: the classes spec fails on one
+  in `app/` or `engines/`, and doesn't ask that they be used.
 - Mailers keep their own inline styles: email clients don't load the admin's.
 
-Screens follow WordPress's admin conventions:
+Screens follow shadcn/ui's layouts, with WordPress's editing conventions:
 
+- The frame is shadcn's sidebar layout (`layouts/application`): the sidebar
+  (`layouts/shared/_sidebar`, NavigationHelper#admin_menu; plugins' items join it) and the
+  page as an inset sheet under its header (`_inset_header`: the toggle, the
+  breadcrumb from the menu item, `parent_page` and `@page_title`, search as a
+  command dialog). A screen opens with `layouts/shared/page_header`.
+- A list is the data table (`render "ui/data_table"`, pages/index the
+  reference): filters (`_status_links`, `_quick_filter`) in a
+  `list-filters` line, the toolbar (`_bulk_actions`: search on the left, bulk
+  actions on the right) and the table inside one `select-all` controller,
+  each row ending in `ui/row_actions`.
+- Settings is shadcn's settings layout (`layouts/settings`): its sections down
+  the left, the page's cards in the middle, the Save box beside them.
 - One primary action per screen, a filled `ui-button`; everything else is
   `--outline` (or `--ghost` in a row or a toolbar). A title row's "Add New"
   is outlined.
