@@ -1,0 +1,26 @@
+<%# locals: (collection:, can_write:, can_delete:, entry_counts:) %>
+<%# One collection in the collections data table (collections/index): its icon and name,
+    opening its entries, its slug, how many fields and entries, and its actions (Entries,
+    Build, Schema, Delete). %>
+<tr id="<%= dom_id(collection) %>" data-filter-target="item">
+  <% if can_delete %>
+    <%= ui_select_cell collection.slug, label: "Select #{collection.name}", form: "collections_bulk", name: "slugs[]" %>
+  <% end %>
+  <td data-column="name">
+    <span class="row">
+      <%= icon_tag collection.admin_icon, class: "icon--sm text-muted" %>
+      <%= link_to collection.name, collection_entries_path(collection.slug), class: "ui-table__row-link" %>
+    </span>
+  </td>
+  <td data-column="slug"><span class="text-mono text-small text-muted"><%= collection.slug %></span></td>
+  <td data-column="fields" class="ui-table__numeric"><%= collection.fields.size %></td>
+  <td data-column="entries" class="ui-table__numeric"><%= entry_counts.fetch(collection.id, 0) %></td>
+  <td class="ui-table__numeric">
+    <%= render "ui/row_actions", id: dom_id(collection), name: collection.name,
+          links: [ [ "Entries", collection_entries_path(collection.slug) ],
+                   ([ "Build", build_collection_entries_path(collection.slug) ] if collection.build_board?),
+                   ([ "Schema", collection_schema_path(collection.slug) ] if can_write) ].compact,
+          delete_path: (collection_path(collection.slug) if can_delete),
+          delete_message: "Its entries are deleted with it. This can’t be undone." %>
+  </td>
+</tr>

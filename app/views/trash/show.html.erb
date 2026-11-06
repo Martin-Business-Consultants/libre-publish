@@ -5,8 +5,10 @@
 
 <%# The details alone, at the item's own address; picked in the trash's
     list, the same frame loads into its sheet instead. %>
-<section class="panel panel--padded measure--lg">
-  <turbo-frame id="trash_item">
-    <%= render "trash/details", kind: @kind, record: @record, deletion: @deletion %>
-  </turbo-frame>
+<section class="ui-card measure--lg">
+  <div class="ui-card__content">
+    <turbo-frame id="trash_item">
+      <%= render "trash/details", kind: @kind, record: @record, deletion: @deletion %>
+    </turbo-frame>
+  </div>
 </section>

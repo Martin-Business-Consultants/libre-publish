@@ -9,16 +9,20 @@
     <span class="truncate">New page</span>
     <kbd class="wide-only">N</kbd>
   </button>
-  <dialog class="dialog dialog--sheet" data-dialog-target="dialog" aria-label="New page" closedby="any">
-    <h2 class="heading heading--lg">New page</h2>
+  <dialog class="ui-sheet app-sheet--md" data-dialog-target="dialog" aria-label="New page" closedby="any">
+    <button type="button" class="ui-button ui-button--ghost ui-button--icon-sm ui-dialog__close" aria-label="Close" data-action="dialog#close"><%= icon_tag "close" %></button>
+    <header class="ui-dialog__header">
+      <h2 class="ui-dialog__title">New page</h2>
+      <p class="ui-dialog__description">It starts as a draft. You can change everything in the editor after.</p>
+    </header>
     <%= render "layouts/shared/errors", record: page %>
-    <%= form_with model: page, url: pages_path, scope: :page, class: "fields", data: { controller: "slug" } do |form| %>
+    <%= form_with model: page, url: pages_path, scope: :page, class: "ui-fieldset", data: { controller: "slug" } do |form| %>
       <%= hidden_field_tag :from, "dialog", id: nil %>
       <%= form.hidden_field :status, value: "draft" %>
       <%= form.hidden_field :locale, value: page.locale.presence || "en" %>
       <label class="ui-field">
         <span class="ui-label">Title</span>
-        <%= form.text_field :title, placeholder: "About us", autocomplete: "off", data: { slug_target: "source", action: "slug#fill" }, class: "ui-input" %>
+        <%= form.text_field :title, placeholder: "About us", autocomplete: "off", autofocus: true, data: { slug_target: "source", action: "slug#fill" }, class: "ui-input" %>
       </label>
       <label class="ui-field">
         <span class="ui-label">Slug</span>
@@ -26,28 +30,28 @@
         <span class="ui-field__description">Made from the title as you type it; change it to choose your own.</span>
       </label>
       <% if templates.any? %>
-        <fieldset class="stack stack--sm">
+        <fieldset class="ui-fieldset">
           <legend class="ui-label">Start from</legend>
-          <label class="template-choice">
-            <%= radio_button_tag :template, "", params[:template].blank?, id: nil, class: "ui-radio" %>
-            <span>A blank page</span>
-          </label>
-          <% templates.each do |template| %>
-            <%# herb:key template["key"] %>
-            <label class="template-choice">
-              <%= radio_button_tag :template, template["key"], params[:template] == template["key"], id: nil, class: "ui-radio" %>
-              <span class="stack stack--2xs">
-                <strong class="text-medium text-ink"><%= template["title"] %></strong>
-                <span class="ui-field__description"><%= template["description"] %> · <%= pluralize(template["blocks"].size, "block") %></span>
-              </span>
+          <div class="ui-radio-group">
+            <label class="ui-field ui-field--inline ui-field--card">
+              <%= radio_button_tag :template, "", params[:template].blank?, id: nil, class: "ui-radio" %>
+              <span class="ui-label">A blank page</span>
             </label>
-          <% end %>
+            <% templates.each do |template| %>
+              <%# herb:key template["key"] %>
+              <label class="ui-field ui-field--inline ui-field--card">
+                <%= radio_button_tag :template, template["key"], params[:template] == template["key"], id: nil, class: "ui-radio" %>
+                <span class="ui-label"><%= template["title"] %></span>
+                <span class="ui-field__description"><%= template["description"] %> · <%= pluralize(template["blocks"].size, "block") %></span>
+              </label>
+            <% end %>
+          </div>
         </fieldset>
       <% end %>
-      <div class="dialog__actions">
+      <footer class="ui-dialog__footer">
         <button type="button" class="ui-button ui-button--outline" data-action="dialog#close">Cancel</button>
         <%= form.button "Create page", class: "ui-button" %>
-      </div>
+      </footer>
     <% end %>
   </dialog>
 </div>

@@ -3,11 +3,11 @@
     collection puts on them; the left only sorts. %>
 <article id="<%= dom_id(entry, :card) %>" class="<%= class_names("board-card", "board-card--movable" => can_move) %>"
   data-drag-and-drop-target="item" data-id="<%= entry.slug %>" data-filter-target="item" draggable="<%= can_move %>">
-  <div class="row row--top">
+  <div class="board-card__head">
     <% if can_move %>
       <span class="board-card__grip" aria-hidden="true">⠿</span>
     <% end %>
-    <%= link_to entry.title, edit_collection_entry_path(collection.slug, entry.slug), class: "title-link grow" %>
+    <%= link_to entry.title, edit_collection_entry_path(collection.slug, entry.slug), class: "board-card__title" %>
     <% if entry.status != "published" %>
       <%= status_tag entry.status %>
     <% end %>

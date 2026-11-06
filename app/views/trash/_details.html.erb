@@ -3,17 +3,17 @@
     back or deleting it for good (both leave the sheet: turbo_frame _top). %>
 <% can_write = Current.user.can?("trash:write") %>
 <% label = AuditLog.describe_target(record).to_s.presence || "Untitled " + kind %>
-<div class="stack stack--lg">
+<div class="sheet-body">
   <div class="stack stack--sm stack--start">
-    <%= status_tag Trash.labels.fetch(kind, kind.humanize).singularize %>
-    <strong class="heading heading--lg"><%= label %></strong>
+    <%= ui_badge Trash.labels.fetch(kind, kind.humanize).singularize, :outline %>
+    <h3 class="ui-card__title"><%= label %></h3>
   </div>
 
   <% if record.respond_to?(:image?) && record.image? %>
     <div class="trash-item__preview"><%= media_thumbnail record, size: 640 %></div>
   <% end %>
 
-  <dl class="details details--wide">
+  <dl class="fact-list">
     <% trash_facts(kind, record).each do |name, value| %>
       <%# herb:key name %>
       <dt><%= name %></dt><dd><%= value %></dd>
@@ -28,6 +28,12 @@
   </dl>
 
   <% if can_write %>
+    <% if Trash.publish_capability(record) && record.try(:status) == "published" && !Current.user.can?(Trash.publish_capability(record)) %>
+      <div class="ui-alert">
+        <%= icon_tag "help-circle", class: "ui-alert__icon" %>
+        <div class="ui-alert__description">It was live; restored by you, it comes back as a draft for someone who can publish.</div>
+      </div>
+    <% end %>
     <div class="cluster">
       <%= button_to trash_item_restoration_path(kind, record.id), class: "ui-button", form_class: "contents", data: { turbo_frame: "_top" } do %>
         <%= icon_tag "refresh" %>
@@ -36,8 +42,5 @@
       <%= render "layouts/shared/delete_dialog", name: label, path: trash_item_path(kind, record.id),
             message: "It’s deleted for good. This can’t be undone.", trigger_text: "Delete permanently" %>
     </div>
-    <% if Trash.publish_capability(record) && record.try(:status) == "published" && !Current.user.can?(Trash.publish_capability(record)) %>
-      <p class="ui-field__description">It was live; restored by you, it comes back as a draft for someone who can publish.</p>
-    <% end %>
   <% end %>
 </div>

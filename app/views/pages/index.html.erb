@@ -20,7 +20,7 @@
   <% end %>
 </div>
 
-<div class="stack stack--md" data-controller="select-all">
+<div class="stack stack--md" data-controller="<%= "select-all" if ticks && @pages.any? %>">
   <%= render "layouts/shared/bulk_actions", id: "pages_bulk", noun: "page",
         status_path: (pages_bulk_status_changes_path if can_publish), statuses: Page::STATUSES,
         deletion_path: (pages_bulk_deletions_path if can_delete) %>

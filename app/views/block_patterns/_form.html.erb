@@ -1,39 +1,60 @@
 <%# locals: (pattern:) %>
+<%# A pattern, laid out like the editors: its name as the title and its blocks in the wider
+    column; its slug, what it's for, whether it's placed synced, and saving (or deleting it)
+    in the narrower one. %>
+<% deletable = pattern.persisted? && Current.user.can?("pages:delete") %>
 <%= form_with model: pattern, url: (pattern.persisted? ? block_pattern_path(pattern) : block_patterns_path), scope: :block_pattern,
       id: "block_pattern_form", class: "with-sidebar" do |form| %>
-  <div>
+  <div class="stack">
     <%= render "layouts/shared/errors", record: pattern %>
     <div>
       <label class="visually-hidden" for="block_pattern_name">Name</label>
-      <%= form.text_field :name, required: true, class: "title-input", placeholder: "Pattern name", autofocus: pattern.new_record? %>
+      <%= form.text_field :name, required: true, class: "editor__title", placeholder: "Pattern name", autofocus: pattern.new_record? %>
     </div>
-    <section class="panel panel--padded">
-      <%= render "content_form/blocks", blocks: pattern.blocks, scope: content_scope("block_pattern")["blocks"], depth: 1,
-            allowed_types: BlockType.ordered.reject { |type| type.slug == "pattern" || type.deprecated }.map(&:slug) %>
+    <section class="ui-card">
+      <header class="ui-card__header">
+        <h2 class="ui-card__title">Blocks</h2>
+        <p class="ui-card__description">What the pattern adds to a page.</p>
+      </header>
+      <div class="ui-card__content">
+        <%= render "content_form/blocks", blocks: pattern.blocks, scope: content_scope("block_pattern")["blocks"], depth: 1,
+              allowed_types: BlockType.ordered.reject { |type| type.slug == "pattern" || type.deprecated }.map(&:slug) %>
+      </div>
     </section>
   </div>
   <aside>
-    <section class="panel panel--padded stack">
-      <%= settings_field "Slug", hint: "Lowercase letters, digits and dashes. A synced pattern is placed by it." do %>
-        <%= form.text_field :slug, required: true, pattern: "[a-z0-9][a-z0-9-]*", class: "ui-input" %>
-      <% end %>
-      <%= settings_field "Description", hint: "What it’s for, shown in the block picker." do %>
-        <%= form.text_area :description, rows: 3, class: "ui-textarea" %>
-      <% end %>
-      <label class="ui-field ui-field--inline text-ink">
-        <%= form.check_box :synced, class: "ui-checkbox" %>
-        <span>
-          Synced: placed as one block that always shows this pattern, so a change here changes every page using it.
-          Unsynced, it’s added as a copy to change freely.
-        </span>
-      </label>
-      <div class="row row--between">
-        <button type="submit" class="ui-button">Save</button>
+    <section class="ui-card">
+      <header class="ui-card__header">
+        <h2 class="ui-card__title"><%= pattern.new_record? ? "Add pattern" : "Save" %></h2>
+      </header>
+      <div class="ui-card__content">
+        <div class="ui-fieldset">
+          <%= settings_field "Slug", hint: "Lowercase letters, digits and dashes. A synced pattern is placed by it." do %>
+            <%= form.text_field :slug, required: true, pattern: "[a-z0-9][a-z0-9-]*", class: "ui-input" %>
+          <% end %>
+          <%= settings_field "Description", hint: "What it’s for, shown in the block picker." do %>
+            <%= form.text_area :description, rows: 3, class: "ui-textarea" %>
+          <% end %>
+          <label class="ui-field ui-field--inline ui-field--end ui-field--card">
+            <%= form.check_box :synced, class: "ui-switch", role: "switch" %>
+            <span class="ui-label">Synced</span>
+            <span class="ui-field__description">
+              Placed as one block that always shows this pattern, so a change here changes every page using it.
+              Unsynced, it’s added as a copy to change freely.
+            </span>
+          </label>
+        </div>
       </div>
+      <footer class="ui-card__footer ui-card__footer--bordered">
+        <% if deletable %>
+          <%= render "layouts/shared/delete_dialog", name: pattern.name_was.to_s, path: block_pattern_path(pattern), trigger_text: "Delete pattern",
+                form: "block_pattern_delete_form", message: "A page that placed it synced shows nothing in its place. Copies already added stay." %>
+        <% end %>
+        <button type="submit" class="ui-button push-end"><%= pattern.new_record? ? "Add pattern" : "Save" %></button>
+      </footer>
     </section>
-    <% if pattern.persisted? && Current.user.can?("pages:delete") %>
-      <%= render "layouts/shared/delete_dialog", name: pattern.name, path: block_pattern_path(pattern), trigger_text: "Delete pattern",
-            message: "A page that placed it synced shows nothing in its place. Copies already added stay." %>
-    <% end %>
   </aside>
+<% end %>
+<% if deletable %>
+  <%= render "layouts/shared/delete_form", id: "block_pattern_delete_form", path: block_pattern_path(pattern) %>
 <% end %>

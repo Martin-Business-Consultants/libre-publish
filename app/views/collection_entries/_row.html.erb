@@ -1,0 +1,25 @@
+<%# locals: (entry:, collection:, flag_fields:, ticks:, can_write:, can_delete:) %>
+<%# One entry in a collection's data table (collection_entries/index): its title, opening it,
+    its slug and status, a toggle per yes/no field the collection shows in the list, when it
+    changed, and its actions. %>
+<tr id="<%= dom_id(entry) %>" data-filter-target="item">
+  <% if ticks %>
+    <%= ui_select_cell entry.slug, label: "Select #{entry.title}", form: "entries_bulk", name: "slugs[]" %>
+  <% end %>
+  <td data-column="title">
+    <%= link_to entry.title, edit_collection_entry_path(collection.slug, entry.slug), class: "ui-table__row-link" %>
+  </td>
+  <td data-column="slug"><span class="text-mono text-small text-muted"><%= entry.slug %></span></td>
+  <td data-column="status"><%= status_tag entry.status %></td>
+  <% flag_fields.each do |field| %>
+    <%# herb:key field["name"] %>
+    <td data-column="flag_<%= field["name"] %>"><%= render "collection_entries/flag", collection: collection, entry: entry, field: field, can_write: can_write %></td>
+  <% end %>
+  <td data-column="updated"><span class="nowrap text-muted"><%= time_ago_tag entry.updated_at %></span></td>
+  <td class="ui-table__numeric">
+    <%= render "ui/row_actions", id: dom_id(entry), name: entry.title,
+          edit_path: (edit_collection_entry_path(collection.slug, entry.slug) if can_write),
+          delete_path: (collection_entry_path(collection.slug, entry.slug) if can_delete), delete_label: "Move to trash",
+          delete_message: "It goes to the trash, where it can be restored." %>
+  </td>
+</tr>

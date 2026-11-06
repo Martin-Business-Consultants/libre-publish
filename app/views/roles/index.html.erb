@@ -1,60 +1,23 @@
 <% @page_title = "Roles" %>
+<% can_write = Current.user.can?("roles:write") %>
+<% can_delete = Current.user.can?("roles:delete") %>
 
 <% content_for :page_actions do %>
-  <% if Current.user.can?("roles:write") %>
+  <% if can_write %>
     <%= render "layouts/shared/new_link", text: "New role", path: new_role_path %>
   <% end %>
 <% end %>
 <%= render "layouts/shared/page_header", title: @page_title %>
 
-<% can_delete = Current.user.can?("roles:delete") %>
-<% if can_delete %>
-  <%= render "layouts/shared/bulk_deletion", id: "roles_bulk_deletion", path: roles_bulk_deletions_path, noun: "role",
+<% selectable = can_delete && @roles.any? %>
+<div class="stack stack--md" data-controller="<%= "select-all" if selectable %>">
+  <%= render "layouts/shared/bulk_deletion", id: "roles_bulk_deletion", path: (roles_bulk_deletions_path if can_delete), noun: "role",
         message: "Users holding them are left with no role. System roles are never included." %>
-<% end %>
 
-<section class="panel panel--scroll" data-controller="select-all">
-  <table class="data-table">
-    <thead>
-      <tr>
-        <% if can_delete %>
-          <th class="data-table__check text-center"><input class="ui-checkbox" type="checkbox" aria-label="Select every row" data-select-all-target="all" data-action="select-all#toggle"></th>
-        <% end %>
-        <th>Name</th>
-        <th>Description</th>
-        <th class="ui-table__numeric">Capabilities</th>
-        <th class="ui-table__numeric">Users</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% @roles.each do |role| %>
-        <%# herb:key role.id %>
-        <tr id="<%= dom_id(role) %>" data-filter-target="item">
-          <% if can_delete %>
-            <td class="data-table__check text-center">
-              <% unless role.system? %>
-                <input class="ui-checkbox" type="checkbox" data-select-all-target="box" data-action="select-all#sync" name="ids[]" value="<%= role.id %>" form="roles_bulk_deletion" aria-label="Select <%= role.name %>">
-              <% end %>
-            </td>
-          <% end %>
-          <td>
-            <span class="row">
-              <%= link_to role.name, edit_role_path(role), class: "title-link" %>
-              <% if role.system? %>
-                <%= status_tag "System" %>
-              <% end %>
-            </span>
-            <%= render "layouts/shared/row_links", name: role.name,
-                  edit_path: edit_role_path(role),
-                  delete_path: (role_path(role) if can_delete && !role.system?),
-                  delete_message: "Users holding it are left with no role." %>
-          </td>
-          <td><span class="text-muted"><%= role.description %></span></td>
-          <td class="ui-table__numeric"><%= role.admin? ? "All" : role.permissions.size %></td>
-          <td class="ui-table__numeric"><%= role.users.size %></td>
-        </tr>
-      <% end %>
-    </tbody>
-  </table>
-</section>
-<%= pagination_nav @pagination %>
+  <%= render "ui/data_table", id: "roles",
+        columns: [ ui_column(:name, "Name", hideable: false), ui_column(:description, "Description"),
+                   ui_column(:capabilities, "Capabilities", align: :end), ui_column(:users, "Users", align: :end) ],
+        rows: @roles, row: "roles/row", as: :role, pagination: @pagination, selectable: selectable, actions: true,
+        row_locals: { can_delete: can_delete },
+        empty: search_term ? "No roles match." : "No roles yet.", empty_link: ([ "Show all", roles_path ] if search_term) %>
+</div>

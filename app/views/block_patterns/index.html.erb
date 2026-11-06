@@ -1,45 +1,33 @@
 <% @page_title = "Patterns" %>
+<% can_write = Current.user.can?("pages:write") %>
+<% can_delete = Current.user.can?("pages:delete") %>
 
 <% content_for :page_actions do %>
-  <% if Current.user.can?("pages:write") %>
-    <%= link_to "Add new", new_block_pattern_path, class: "ui-button ui-button--sm" %>
+  <% if can_write %>
+    <%= render "layouts/shared/new_link", text: "New pattern", path: new_block_pattern_path %>
   <% end %>
 <% end %>
 <%= render "layouts/shared/page_header", title: "Patterns",
       description: "Sets of blocks to use again. Add one to a page from the block picker’s Patterns section." %>
 
 <% if @patterns.any? %>
-  <section class="panel panel--scroll">
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Blocks</th>
-          <th>Kind</th>
-          <th>Updated</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% @patterns.each do |pattern| %>
-          <%# herb:key pattern.id %>
-          <tr>
-            <td>
-              <%= link_to pattern.name, edit_block_pattern_path(pattern), class: "title-link" %>
-              <% if pattern.description.present? %>
-                <div class="text-small text-muted"><%= pattern.description %></div>
-              <% end %>
-            </td>
-            <td><%= Array(pattern.blocks).size %></td>
-            <td><%= status_tag pattern.synced? ? "Synced" : "Copied" %></td>
-            <td class="text-muted"><%= time_ago_tag pattern.updated_at %></td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
-  </section>
+  <%= render "ui/data_table", id: "block_patterns",
+        columns: [ ui_column(:name, "Name", hideable: false), ui_column(:blocks, "Blocks", align: :end), ui_column(:kind, "Kind"),
+                   ui_column(:updated, "Updated") ],
+        rows: @patterns, row: "block_patterns/row", as: :pattern, pagination: @pagination, actions: true,
+        row_locals: { can_write: can_write, can_delete: can_delete } %>
 <% else %>
-  <div class="panel empty-state">
-    No patterns yet. A pattern is a set of blocks — a call to action, a pricing table, a team section — saved to add
-    to any page.
+  <div class="ui-empty">
+    <div class="ui-empty__media"><%= icon_tag "stack" %></div>
+    <p class="ui-empty__title">No patterns yet</p>
+    <p class="ui-empty__description">
+      A pattern is a set of blocks — a call to action, a pricing table, a team section — saved to add to any page.
+    </p>
+    <% if can_write %>
+      <%= link_to new_block_pattern_path, class: "ui-button ui-button--outline" do %>
+        <%= icon_tag "add" %>
+        <span>New pattern</span>
+      <% end %>
+    <% end %>
   </div>
 <% end %>

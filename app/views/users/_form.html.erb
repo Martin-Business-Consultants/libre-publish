@@ -13,15 +13,15 @@
   <div>
     <div>
       <label class="visually-hidden" for="user_name">Name</label>
-      <%= form.text_field :name, required: true, class: "title-input", autofocus: user.new_record?, autocomplete: "off", placeholder: "Full name" %>
+      <%= form.text_field :name, required: true, class: "editor__title", autofocus: user.new_record?, autocomplete: "off", placeholder: "Full name" %>
     </div>
 
     <%= postbox "user-account", "Signing in" do %>
-      <div class="fields">
+      <div class="ui-fieldset">
         <%= settings_field "Email", hint: "They sign in with it, and get the workspace's emails at it." do %>
           <%= form.email_field :email, required: true, autocomplete: "off", placeholder: "email@example.com", class: "ui-input" %>
         <% end %>
-        <div class="grid grid--2 fields-grid">
+        <div class="ui-field-row">
           <%= settings_field (user.new_record? ? "Password" : "New password") do %>
             <%= form.password_field :password, required: user.new_record?, autocomplete: "new-password",
                   placeholder: user.new_record? ? "At least 8 characters" : "Leave blank to keep it", class: "ui-input" %>
@@ -36,12 +36,9 @@
 
   <aside>
     <% settings = capture do %>
-      <div class="fields">
-        <%= settings_field "Role" do %>
+      <div class="ui-fieldset">
+        <%= settings_field "Role", hint: user.role&.description.presence do %>
           <%= form.select :role_id, Role.ordered.map { |role| [role.name, role.id] }, { include_blank: "No role" }, { class: "ui-select" } %>
-        <% end %>
-        <% if user.role&.description.present? %>
-          <p class="text-small text-muted"><%= user.role.description %></p>
         <% end %>
         <label class="ui-field ui-field--inline">
           <%= form.check_box :verified, class: "ui-checkbox" %>
