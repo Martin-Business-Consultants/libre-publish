@@ -1,0 +1,98 @@
+#!/usr/bin/env bash
+# Makes spec/fixtures/go_backups/site.tar.gz: a real backup from the Go core
+# (librepublishgo), of a small site with something of everything an import
+# has to carry (spec/models/go_import_spec.rb). Run it again after the Go
+# core's backup or schema changes:
+#
+#   script/go_backup_fixture [path/to/librepublishgo]
+#
+# It builds the Go binary into a temporary directory, runs a site there on a
+# free port, fills it through the Go core's API, and downloads its backup
+# (without the secret key: spec/fixtures/go_backups/secret.key is written
+# beside it, as an owner would keep the old data directory's). Needs go,
+# curl and python3.
+set -euo pipefail
+
+root="$(cd "$(dirname "$0")/.." && pwd)"
+go_repo="$(cd "${1:-$root/../librepublishgo}" && pwd)"
+out_dir="$root/spec/fixtures/go_backups"
+work="$(mktemp -d)"
+server=""
+cleanup() {
+  [ -n "$server" ] && kill "$server" 2>/dev/null || true
+  rm -rf "$work"
+}
+trap cleanup EXIT
+
+echo "Building the Go core from $go_repo"
+(cd "$go_repo" && go build -o "$work/librepublish" ./cmd/librepublish)
+bin="$work/librepublish"
+data="$work/data"
+mkdir -p "$data"
+
+"$bin" user create --data "$data" --email owner@example.test --name "Olive Owner" \
+  --password "correct horse battery staple" --role Administrator >/dev/null
+token="$("$bin" token create --data "$data" --name SCRIPT --role Administrator 2>/dev/null | tail -1)"
+
+port="$(python3 -I -c 'import socket; s = socket.socket(); s.bind(("127.0.0.1", 0)); print(s.getsockname()[1])')"
+url="http://127.0.0.1:$port"
+"$bin" serve --data "$data" --addr "127.0.0.1:$port" --url "$url" >"$work/serve.log" 2>&1 &
+server=$!
+for _ in $(seq 50); do curl -fs "$url/up" >/dev/null 2>&1 && break; sleep 0.1; done
+
+api() { # METHOD PATH [JSON]
+  curl -fsS -X "$1" -H "Authorization: Bearer $token" -H "Content-Type: application/json" "$url$2" ${3:+-d "$3"} >/dev/null
+}
+
+# A 4×4 orange PNG.
+python3 -I -c '
+import struct, sys, zlib
+def chunk(t, d): return struct.pack(">I", len(d)) + t + d + struct.pack(">I", zlib.crc32(t + d) & 0xffffffff)
+raw = b"".join(b"\x00" + b"\xff\x80\x00" * 4 for _ in range(4))
+sys.stdout.buffer.write(b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", 4, 4, 8, 2, 0, 0, 0)) + chunk(b"IDAT", zlib.compress(raw)) + chunk(b"IEND", b""))
+' >"$work/pixel.png"
+file_url="$(curl -fsS -H "Authorization: Bearer $token" "$url/api/assets" -F "file=@$work/pixel.png" -F "alt=An orange square" -F folder=/images |
+  python3 -I -c 'import json, sys; print(json.load(sys.stdin)["asset"]["url"])')"
+
+api POST /api/block_types '{"block_type":{"slug":"hero","label":"Hero","fields":[{"name":"heading","type":"string","required":true},{"name":"body","type":"richtext"},{"name":"image","type":"asset"}]}}'
+api POST /api/collections '{"collection":{"slug":"posts","name":"Posts","api_enabled":true,"schema":{"fields":[{"name":"summary","type":"text"},{"name":"content","type":"richtext"},{"name":"cover","type":"asset"}]}}}'
+
+doc='{"type":"doc","content":[
+  {"type":"heading","attrs":{"level":2},"content":[{"type":"text","text":"Welcome & hello"}]},
+  {"type":"paragraph","content":[{"type":"text","text":"We are "},{"type":"text","marks":[{"type":"bold"}],"text":"bold"},{"type":"text","text":" and "},
+    {"type":"text","marks":[{"type":"italic"},{"type":"link","attrs":{"href":"'"$file_url"'"}}],"text":"linked <safely>"},
+    {"type":"hardBreak"},{"type":"text","marks":[{"type":"code"}],"text":"x < y"}]},
+  {"type":"bulletList","content":[{"type":"listItem","content":[{"type":"paragraph","content":[{"type":"text","text":"one"}]}]},
+    {"type":"listItem","content":[{"type":"paragraph","content":[{"type":"text","marks":[{"type":"strike"}],"text":"two"}]}]}]},
+  {"type":"taskList","content":[{"type":"taskItem","attrs":{"checked":true},"content":[{"type":"paragraph","content":[{"type":"text","text":"done"}]}]}]},
+  {"type":"orderedList","attrs":{"start":3},"content":[{"type":"listItem","content":[{"type":"paragraph","content":[{"type":"text","text":"three"}]}]}]},
+  {"type":"blockquote","content":[{"type":"paragraph","content":[{"type":"text","text":"quoted"}]}]},
+  {"type":"codeBlock","attrs":{"language":"ruby"},"content":[{"type":"text","text":"puts 1 < 2"}]},
+  {"type":"horizontalRule"}]}'
+api POST /api/pages '{"page":{"slug":"home","title":"Home","status":"published","locale":"en","blocks":[{"type":"hero","data":{"heading":"Hello from Go","body":'"$doc"',"image":"1"}}]}}'
+api POST /api/pages '{"page":{"slug":"about","title":"About us","status":"draft","locale":"en","seo":{"title":"About","description":"Who we are"},"blocks":[{"type":"hero","data":{"heading":"About","body":{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Plain para"}]}]}}}]}}'
+api POST /api/collections/posts/entries '{"entry":{"slug":"first-post","title":"First post","status":"published","body_markdown":"Some **markdown** body.","frontmatter":{"summary":"A summary","content":{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Entry rich text"}]}]},"cover":"1"}}}'
+api POST /api/collections/posts/entries '{"entry":{"slug":"second-post","title":"Second post","status":"draft","frontmatter":{"summary":"Draft"}}}'
+api POST /api/globals '{"global":{"slug":"footer","name":"Footer","schema":{"fields":[{"name":"tagline","type":"string"},{"name":"blurb","type":"richtext"},{"name":"links","type":"repeater","of":[{"name":"label","type":"string"},{"name":"note","type":"richtext"}]}]},"data":{"tagline":"Made with care","blurb":{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Footer blurb"}]}]},"links":[{"label":"Home","note":{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","marks":[{"type":"bold"}],"text":"Nested"}]}]}}]}}}'
+
+api POST /api/webhooks '{"webhook":{"name":"Build hook","url":"https://hooks.example.test/build","events":["page.published","entry.published"],"secret":"whsec_go_fixture_secret_1234"}}'
+api POST /api/service_tokens '{"service_token":{"name":"PRODUCTION","role":"Production site"}}'
+api POST /api/roles '{"role":{"name":"Forms clerk","description":"Reads form submissions","permissions":["pages:read","forms:read","forms:write"]}}'
+api POST /api/users '{"user":{"email":"clerk@example.test","name":"Cleo Clerk","password":"another long password 42","role_id":6}}'
+api POST /api/redirects '{"redirect":{"source_path":"/old","destination_url":"/home","status_code":301}}'
+api PATCH /api/settings/general '{"setting":{"data":{"title":"Go Fixture Site","description":"A site made on the Go core"}}}'
+api PATCH /api/settings/email '{"setting":{"data":{"smtp_host":"smtp.example.test","smtp_port":587,"smtp_security":"starttls","smtp_username":"mailer","smtp_password":"smtp-pass-123","from_name":"Go Site","from_email":"hi@example.test"}}}'
+api PATCH "/api/settings/git""hub" '{"setting":{"data":{"frontend_github_repo":"acme/site","token":"ghp_fixture_token_9876"}}}'
+
+api POST /api/x/forms/form '{"form":{"name":"Contact","slug":"contact","status":"active","store_submissions":true,
+  "fields":[{"type":"text","name":"name","label":"Your name","required":true},{"type":"email","name":"email","label":"Email","required":true},
+    {"type":"textarea","name":"message","label":"Message"},{"type":"select","name":"topic","label":"Topic","options":["Sales","Support"]}],
+  "admin_enabled":true,"admin_to":["owner@example.test"],"admin_subject":"New {{ form_name }} submission","admin_message":"<p>From {{ name }}</p><p>{{ all_fields }}</p>",
+  "submit_label":"Send it","success_message":"Thanks!","honeypot":true,"min_seconds":0,"captcha":"none"}}'
+curl -fsS -H "Content-Type: application/json" "$url/api/x/forms/submit?form=contact" \
+  -d '{"name":"Ada Lovelace","email":"ada@example.test","message":"Hello there","topic":"Sales","_hp":""}' >/dev/null
+
+mkdir -p "$out_dir"
+curl -fsS -H "Authorization: Bearer $token" "$url/api/tools/backup" -o "$out_dir/site.tar.gz"
+cp "$data/secret.key" "$out_dir/secret.key"
+echo "Wrote $out_dir/site.tar.gz ($(wc -c <"$out_dir/site.tar.gz") bytes) and secret.key"

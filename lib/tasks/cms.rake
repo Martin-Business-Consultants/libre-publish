@@ -48,6 +48,23 @@ namespace :cms do
     puts JSON.pretty_generate(result.to_h)
   end
 
+  desc "Replace this install's site with a backup: the Go core's (Tools › Backup there; SECRET_KEY_FILE=its secret.key or " \
+       "GO_SECRET_KEY=its SECRET_KEY to carry its secrets) or the Rails core's (as cms:import_tenant). DRY_RUN=1 to look first, " \
+       "FORCE=1 to replace a site that has users. docs/import.md"
+  task :import, [:path] => :environment do |_, args|
+    abort "Usage: bin/rails \"cms:import[PATH]\"" if args[:path].blank?
+
+    if GoImport.backup?(args[:path])
+      keys = [ENV["SECRET_KEY_FILE"].presence && File.read(ENV["SECRET_KEY_FILE"]), ENV["GO_SECRET_KEY"]]
+      GoImport.new(args[:path], secret_keys: keys, dry_run: ENV["DRY_RUN"].present?, force: ENV["FORCE"].present?).call
+    else
+      TenantImport.new(args[:path], tenant: ENV["TENANT"], site_key: ENV["SITE_KEY"], files_dir: ENV["FILES"],
+        dry_run: ENV["DRY_RUN"].present?, force: ENV["FORCE"].present?).call
+    end
+  rescue GoImport::Error, TenantImport::Error, Errno::ENOENT => e
+    abort e.message
+  end
+
   desc "Move one site from the old shared deployment into this install. PATH is its backup archive (.tar.gz), or holds main.sqlite3, " \
        "optionally global.sqlite3 and files/ (the tenant's storage). DRY_RUN=1 to look first, FORCE=1 to replace " \
        "a database that has users; TENANT, SITE_KEY and FILES override what's detected. docs/install.md"
