@@ -1,4 +1,6 @@
 <%# locals: (plugin:) %>
+<%# One plugin in Settings › Plugins, as an item: its name (opening its page),
+    version, source and what it does, then its state and actions. %>
 <% enabled = Cms::Plugins.enabled?(plugin.key) %>
 <% switched_on = Cms::Plugins.switched_on?(plugin) %>
 <% missing = Cms::Plugins.missing_dependencies(plugin.key) %>
@@ -7,47 +9,45 @@
 <% source = InstalledPlugins.repo(plugin.key.to_s) unless absorbed %>
 <% newer = UpdateCheck::Plugins.latest_version(plugin.key) %>
 <% removable = InstalledPlugins.present.key?(plugin.key.to_s) %>
-<li id="plugin_<%= plugin.key %>" class="item">
-  <div class="item__row">
-    <div class="item__text">
-      <span class="item__name">
-        <%= link_to plugin.name, settings_plugin_path(plugin.key) %>
-        <span class="item__meta"><%= plugin.version %> · <%= plugin.bundled ? "bundled" : (source || "installed") %></span>
-        <% if newer %>
-          <span class="item__accent"><%= newer %> available</span>
-        <% end %>
-      </span>
-      <span class="item__description"><%= plugin.description %></span>
-    </div>
-    <div class="item__actions">
-      <%= status_tag enabled ? "Active" : (switched_on ? "Waiting" : "Off") %>
-      <% if enabled && settings_page %>
-        <%= link_to instance_exec(&settings_page.path), class: "ui-button ui-button--ghost ui-button--icon", title: plugin.name + " settings" do %>
-          <%= icon_tag "settings-outline" %>
-          <span class="visually-hidden"><%= plugin.name %> settings</span>
-        <% end %>
+<li id="plugin_<%= plugin.key %>" class="ui-item">
+  <div class="ui-item__content">
+    <p class="ui-item__title">
+      <%= link_to plugin.name, settings_plugin_path(plugin.key), class: "link" %>
+      <span class="text-small text-muted"><%= plugin.version %> · <%= plugin.bundled ? "bundled" : (source || "installed") %></span>
+      <% if newer %>
+        <%= ui_badge "#{newer} available", :outline %>
       <% end %>
-      <% if Current.user.can?("settings:write") %>
-        <% if switched_on %>
-          <%= button_to "Switch off", settings_plugin_activation_path(plugin.key), method: :delete, class: "ui-button ui-button--outline ui-button--sm" %>
-        <% elsif plugin.compatible? %>
-          <%= button_to "Switch on", settings_plugin_activation_path(plugin.key), class: "ui-button ui-button--outline ui-button--sm" %>
-        <% end %>
-      <% end %>
-      <% if source && Current.user.admin? %>
-        <%= button_to "Update", settings_plugin_upgrade_path(plugin.key), class: ui_button_classes(newer ? :default : :outline, size: :sm),
-              title: "Install " + source + "’s latest release in place of this one" %>
-      <% end %>
-      <% if removable && Current.user.admin? %>
-        <%= render "settings/plugins/remove_dialog", plugin: plugin,
-              tables: PluginChange.image_copy?(plugin.key) ? [] : Cms::Plugins.tables_of(plugin.key) %>
-      <% end %>
-    </div>
+    </p>
+    <p class="ui-item__description"><%= plugin.description %></p>
+    <% unless plugin.compatible? %>
+      <p class="ui-field__error">Needs CMS <%= plugin.requires %>; this is <%= cms_version %>.</p>
+    <% end %>
+    <% if missing.any? %>
+      <p class="ui-field__error">Needs <%= missing.map { |dependency| Cms::Plugins.manifests[dependency]&.name || dependency.to_s }.to_sentence %> switched on.</p>
+    <% end %>
   </div>
-  <% unless plugin.compatible? %>
-    <p class="ui-field__error">Needs CMS <%= plugin.requires %>; this is <%= cms_version %>.</p>
-  <% end %>
-  <% if missing.any? %>
-    <p class="ui-field__error">Needs <%= missing.map { |dependency| Cms::Plugins.manifests[dependency]&.name || dependency.to_s }.to_sentence %> switched on.</p>
-  <% end %>
+  <div class="ui-item__actions">
+    <%= status_tag enabled ? "Active" : (switched_on ? "Waiting" : "Off") %>
+    <% if enabled && settings_page %>
+      <%= link_to instance_exec(&settings_page.path), class: "ui-button ui-button--ghost ui-button--icon-sm", title: plugin.name + " settings" do %>
+        <%= icon_tag "settings-outline" %>
+        <span class="visually-hidden"><%= plugin.name %> settings</span>
+      <% end %>
+    <% end %>
+    <% if Current.user.can?("settings:write") %>
+      <% if switched_on %>
+        <%= button_to "Switch off", settings_plugin_activation_path(plugin.key), method: :delete, class: "ui-button ui-button--outline ui-button--sm" %>
+      <% elsif plugin.compatible? %>
+        <%= button_to "Switch on", settings_plugin_activation_path(plugin.key), class: "ui-button ui-button--outline ui-button--sm" %>
+      <% end %>
+    <% end %>
+    <% if source && Current.user.admin? %>
+      <%= button_to "Update", settings_plugin_upgrade_path(plugin.key), class: ui_button_classes(newer ? :default : :outline, size: :sm),
+            title: "Install " + source + "’s latest release in place of this one" %>
+    <% end %>
+    <% if removable && Current.user.admin? %>
+      <%= render "settings/plugins/remove_dialog", plugin: plugin,
+            tables: PluginChange.image_copy?(plugin.key) ? [] : Cms::Plugins.tables_of(plugin.key) %>
+    <% end %>
+  </div>
 </li>

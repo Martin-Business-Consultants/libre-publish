@@ -2,122 +2,165 @@
 <%# How things look and sound, on one page (Settings::BrandingScreen): this
     browser's appearance, then — for a role with settings:read — the
     workspace's identity, color, type and brand context. Each form saves on
-    its own; the sidebar links down the page. %>
+    its own; the side card links down the page. %>
 <% writable = Current.user.can?("settings:write") %>
 <% sections = [["Appearance", "appearance"]] %>
 <% sections += [["Identity", "identity"], ["Color", "color"], ["Type and surface", "type"], ["Brand context", "brand-context"]] if @workspace %>
 
-<% section_classes = "settings-section panel panel--padded fields" %>
-
 <%= render "layouts/shared/page_header", title: "Branding" %>
 <% content_for :settings_aside do %>
-  <%= postbox "branding-sections", "On this page" do %>
-    <nav aria-label="On this page">
-      <ul>
+  <section class="ui-card ui-card--sm">
+    <header class="ui-card__header">
+      <h2 class="ui-card__title">On this page</h2>
+    </header>
+    <nav class="ui-card__content" aria-label="On this page">
+      <ul class="settings-nav__list">
         <% sections.each do |label, anchor| %>
           <%# herb:key anchor %>
-          <li><a href="#<%= anchor %>" class="on-page-nav__link"><%= label %></a></li>
+          <li><a href="#<%= anchor %>" class="settings-nav__link"><%= label %></a></li>
         <% end %>
       </ul>
     </nav>
-  <% end %>
+  </section>
 <% end %>
 
-<section id="appearance" class="<%= section_classes %>">
-  <div class="stack stack--xs">
-    <h2 class="heading">Appearance</h2>
-    <p class="text-muted">Light, dark, or follow the system. Applies to this browser only.</p>
-  </div>
-  <div class="theme-switcher" data-controller="theme">
-    <label class="theme-switcher__btn">
-      <%= icon_tag "sun", class: "icon--md" %>
-      <span>Light</span>
-      <input type="radio" name="theme" value="light" class="visually-hidden" data-theme-target="lightButton" data-action="theme#setLight">
-    </label>
-    <label class="theme-switcher__btn">
-      <%= icon_tag "moon", class: "icon--md" %>
-      <span>Dark</span>
-      <input type="radio" name="theme" value="dark" class="visually-hidden" data-theme-target="darkButton" data-action="theme#setDark">
-    </label>
-    <label class="theme-switcher__btn">
-      <%= icon_tag "monitor", class: "icon--md" %>
-      <span>System</span>
-      <input type="radio" name="theme" value="auto" class="visually-hidden" data-theme-target="autoButton" data-action="theme#setAuto">
-    </label>
+<section id="appearance" class="ui-card settings-anchor">
+  <header class="ui-card__header">
+    <h2 class="ui-card__title">Appearance</h2>
+    <p class="ui-card__description">Light, dark, or follow the system. Applies to this browser only.</p>
+  </header>
+  <div class="ui-card__content">
+    <fieldset class="settings-choices" data-controller="theme">
+      <legend class="visually-hidden">Theme</legend>
+      <label class="ui-field ui-field--inline ui-field--end ui-field--card">
+        <input type="radio" name="theme" value="light" class="ui-radio" data-theme-target="lightButton" data-action="theme#setLight">
+        <span class="ui-label"><%= icon_tag "sun" %> Light</span>
+      </label>
+      <label class="ui-field ui-field--inline ui-field--end ui-field--card">
+        <input type="radio" name="theme" value="dark" class="ui-radio" data-theme-target="darkButton" data-action="theme#setDark">
+        <span class="ui-label"><%= icon_tag "moon" %> Dark</span>
+      </label>
+      <label class="ui-field ui-field--inline ui-field--end ui-field--card">
+        <input type="radio" name="theme" value="auto" class="ui-radio" data-theme-target="autoButton" data-action="theme#setAuto">
+        <span class="ui-label"><%= icon_tag "monitor" %> System</span>
+      </label>
+    </fieldset>
   </div>
 </section>
 
 <% if @workspace %>
   <%= form_with url: settings_branding_path, method: :patch, scope: :branding do |form| %>
     <%= tag.fieldset class: "stack stack--lg", disabled: !writable do %>
-      <section id="identity" class="<%= section_classes %>">
-        <div class="stack stack--xs">
-          <h2 class="heading">Identity</h2>
-          <p class="text-muted">The logo, color and type flow into the public site. The admin uses the color and font too.</p>
+      <section id="identity" class="ui-card settings-anchor">
+        <header class="ui-card__header">
+          <h2 class="ui-card__title">Identity</h2>
+          <p class="ui-card__description">The logo, color and type flow into the public site. The admin uses the color and font too.</p>
+        </header>
+        <div class="ui-card__content">
+          <% if MediaLibrary.available? %>
+            <div class="ui-field-row">
+              <%= render "settings/brandings/image_dropzone", form: form, kind: "logo", label: "Logo",
+                    hint: "SVG or PNG, saved to the media library.", asset: MediaLibrary.find(@branding[:logo_id]) %>
+              <%= render "settings/brandings/image_dropzone", form: form, kind: "favicon", label: "Favicon",
+                    hint: "Square works best; resized for browsers.", asset: MediaLibrary.find(@branding[:favicon_id]) %>
+            </div>
+          <% else %>
+            <div class="ui-empty">
+              <p class="ui-empty__description">A logo and favicon need a media library to keep them in: install the Media plugin.</p>
+            </div>
+          <% end %>
         </div>
-        <% if MediaLibrary.available? %>
-          <div class="grid grid--2 fields-grid">
-            <%= render "settings/brandings/image_dropzone", form: form, kind: "logo", label: "Logo",
-                  hint: "SVG or PNG, saved to the media library.", asset: MediaLibrary.find(@branding[:logo_id]) %>
-            <%= render "settings/brandings/image_dropzone", form: form, kind: "favicon", label: "Favicon",
-                  hint: "Square works best; resized for browsers.", asset: MediaLibrary.find(@branding[:favicon_id]) %>
+      </section>
+
+      <section id="color" class="ui-card settings-anchor">
+        <header class="ui-card__header">
+          <h2 class="ui-card__title">Color</h2>
+          <p class="ui-card__description">A hex color each, such as #b45309.</p>
+        </header>
+        <div class="ui-card__content">
+          <div class="ui-fieldset">
+            <div class="ui-field-row">
+              <%= settings_field "Primary color", hint: "Buttons, links, focus and what’s current. Black when blank." do %>
+                <%= form.text_field :primary_color, value: @branding[:primary_color], pattern: "#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})", placeholder: "#b45309", class: "ui-input text-mono" %>
+              <% end %>
+              <%= settings_field "Secondary color", hint: "Tints the grays: surfaces, lines and text. Neutral when blank." do %>
+                <%= form.text_field :secondary_color, value: @branding[:secondary_color], pattern: "#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})", placeholder: "#1c1917", class: "ui-input text-mono" %>
+              <% end %>
+            </div>
+            <%= settings_field "Top bar", hint: "Dark keeps the bar along the top dark in light mode too, for a logo drawn for a dark ground." do %>
+              <%= form.select :top_bar, Branding::TOP_BARS.invert.to_a, { selected: @branding[:top_bar].presence || "match" }, { class: "ui-select" } %>
+            <% end %>
           </div>
-        <% else %>
-          <p class="text-muted">A logo and favicon need a media library to keep them in: install the Media plugin.</p>
-        <% end %>
-      </section>
-
-      <section id="color" class="<%= section_classes %>">
-        <h2 class="heading">Color</h2>
-        <div class="grid grid--2 fields-grid">
-          <%= settings_field "Primary color", hint: "Buttons, links, focus and what’s current. Black when blank." do %>
-            <%= form.text_field :primary_color, value: @branding[:primary_color], pattern: "#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})", placeholder: "#b45309", class: "ui-input text-mono" %>
-          <% end %>
-          <%= settings_field "Secondary color", hint: "Tints the grays: surfaces, lines and text. Neutral when blank." do %>
-            <%= form.text_field :secondary_color, value: @branding[:secondary_color], pattern: "#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})", placeholder: "#1c1917", class: "ui-input text-mono" %>
-          <% end %>
-          <%= settings_field "Top bar", hint: "Dark keeps the bar along the top dark in light mode too, for a logo drawn for a dark ground." do %>
-            <%= form.select :top_bar, Branding::TOP_BARS.invert.to_a, { selected: @branding[:top_bar].presence || "match" }, { class: "ui-select" } %>
-          <% end %>
         </div>
       </section>
 
-      <section id="type" class="<%= section_classes %>">
-        <h2 class="heading">Type and surface</h2>
-        <div class="grid grid--3 fields-grid">
-          <%= settings_field "Font", hint: "Every word in the admin." do %>
-            <%= form.select :font, Branding::FONTS.invert.to_a, { include_blank: "Default", selected: @branding[:font] }, { class: "ui-select" } %>
-          <% end %>
-          <%= settings_field "Corners", hint: "Buttons, fields, panels and menus." do %>
-            <%= form.select :border_radius, Branding::RADII.map { |value| [value.humanize, value] }, { include_blank: "Default", selected: @branding[:border_radius] }, { class: "ui-select" } %>
-          <% end %>
-          <%= settings_field "Shadow", hint: "Under panels, and under what floats: menus, dialogs." do %>
-            <%= form.select :box_shadow, Branding::SHADOWS.map { |value| [value.humanize, value] }, { include_blank: "Default", selected: @branding[:box_shadow] }, { class: "ui-select" } %>
-          <% end %>
+      <section id="type" class="ui-card settings-anchor">
+        <header class="ui-card__header">
+          <h2 class="ui-card__title">Type and surface</h2>
+          <p class="ui-card__description">The admin’s font, and how round and raised its pieces are.</p>
+        </header>
+        <div class="ui-card__content">
+          <div class="ui-fieldset">
+            <%= settings_field "Font", hint: "Every word in the admin." do %>
+              <%= form.select :font, Branding::FONTS.invert.to_a, { include_blank: "Default", selected: @branding[:font] }, { class: "ui-select" } %>
+            <% end %>
+            <fieldset class="ui-fieldset">
+              <legend class="ui-label">Corners</legend>
+              <p class="ui-field__description">Buttons, fields, panels and menus.</p>
+              <div class="settings-choices">
+                <% [["", "Default"], *Branding::RADII.map { |value| [value, value.humanize] }].each do |value, label| %>
+                  <%# herb:key value %>
+                  <label class="ui-field ui-field--inline ui-field--end ui-field--card">
+                    <%= form.radio_button :border_radius, value, checked: @branding[:border_radius].to_s == value, class: "ui-radio" %>
+                    <span class="ui-label"><%= label %></span>
+                  </label>
+                <% end %>
+              </div>
+            </fieldset>
+            <fieldset class="ui-fieldset">
+              <legend class="ui-label">Shadow</legend>
+              <p class="ui-field__description">Under panels, and under what floats: menus, dialogs.</p>
+              <div class="settings-choices">
+                <% [["", "Default"], *Branding::SHADOWS.map { |value| [value, value.humanize] }].each do |value, label| %>
+                  <%# herb:key value %>
+                  <label class="ui-field ui-field--inline ui-field--end ui-field--card">
+                    <%= form.radio_button :box_shadow, value, checked: @branding[:box_shadow].to_s == value, class: "ui-radio" %>
+                    <span class="ui-label"><%= label %></span>
+                  </label>
+                <% end %>
+              </div>
+            </fieldset>
+          </div>
         </div>
-        <div><button type="submit" class="ui-button">Save branding</button></div>
+        <footer class="ui-card__footer ui-card__footer--bordered ui-card__footer--end">
+          <button type="submit" class="ui-button">Save branding</button>
+        </footer>
       </section>
     <% end %>
   <% end %>
 
-  <section id="brand-context" class="<%= section_classes %>">
-    <div class="stack stack--xs">
-      <h2 class="heading">Brand context</h2>
-      <p class="text-muted">A short brief describing how this workspace writes. Nothing in the CMS renders it — it’s published in <code>/api/manifest</code> so an agent working through the API or the <code>cms</code> CLI writes in your voice instead of a generic one. Leave a field blank to omit it.</p>
-    </div>
-    <% if @record %>
-      <%= render "layouts/shared/errors", record: @record %>
-    <% end %>
-    <%= form_with url: settings_brand_path, method: :patch, scope: :settings do |form| %>
-      <%= tag.fieldset class: "fields", disabled: !writable do %>
-        <% Settings::BrandsController::LABELS.each do |field, (field_label, hint)| %>
-          <%# herb:key field %>
-          <%= settings_field field_label, hint: hint do %>
-            <%= form.text_area field, value: @brand_context[field], rows: 4, class: "ui-textarea" %>
+  <section id="brand-context" class="ui-card settings-anchor">
+    <header class="ui-card__header">
+      <h2 class="ui-card__title">Brand context</h2>
+      <p class="ui-card__description">A short brief describing how this workspace writes. Nothing in the CMS renders it — it’s published in <code>/api/manifest</code> so an agent working through the API or the <code>cms</code> CLI writes in your voice instead of a generic one. Leave a field blank to omit it.</p>
+    </header>
+    <%= form_with url: settings_brand_path, method: :patch, scope: :settings, class: "contents" do |form| %>
+      <div class="ui-card__content">
+        <%= tag.fieldset class: "ui-fieldset", disabled: !writable do %>
+          <% if @record %>
+            <%= render "layouts/shared/errors", record: @record %>
+          <% end %>
+          <% Settings::BrandsController::LABELS.each do |field, (field_label, hint)| %>
+            <%# herb:key field %>
+            <%= settings_field field_label, hint: hint do %>
+              <%= form.text_area field, value: @brand_context[field], rows: 4, class: "ui-textarea" %>
+            <% end %>
           <% end %>
         <% end %>
-        <div><button type="submit" class="ui-button ui-button--outline">Save brand context</button></div>
-      <% end %>
+      </div>
+      <footer class="ui-card__footer ui-card__footer--bordered ui-card__footer--end">
+        <%= tag.button "Save brand context", type: "submit", class: "ui-button ui-button--outline", disabled: !writable %>
+      </footer>
     <% end %>
   </section>
 <% end %>

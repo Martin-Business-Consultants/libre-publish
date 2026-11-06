@@ -7,58 +7,63 @@
 
 <%= form_with url: settings_general_path, id: "settings_form", method: :patch, scope: :settings do |form| %>
   <%= tag.fieldset class: "stack stack--lg", disabled: !Current.user.can?("settings:write") do %>
-    <section class="panel panel--padded fields">
-      <div class="stack stack--xs">
-        <h2 class="heading">Identity</h2>
-        <p class="text-muted">Site title and description used as defaults across SEO, headers, and emails.</p>
-      </div>
-      <%= settings_field "Business name" do %>
-        <%= form.text_field :title, value: @settings["title"], class: "ui-input" %>
-      <% end %>
-      <%= settings_field "Tagline / description" do %>
-        <%= form.text_area :description, value: @settings["description"], rows: 2, class: "ui-textarea" %>
-      <% end %>
-      <div class="grid grid--2">
-        <%= settings_field "Default locale" do %>
-          <%= form.text_field :default_locale, value: @settings["default_locale"], placeholder: "en", class: "ui-input" %>
+    <section class="ui-card">
+      <header class="ui-card__header">
+        <h2 class="ui-card__title">Identity</h2>
+        <p class="ui-card__description">Site title and description used as defaults across SEO, headers, and emails.</p>
+      </header>
+      <div class="ui-card__content">
+        <div class="ui-fieldset">
+        <%= settings_field "Business name" do %>
+          <%= form.text_field :title, value: @settings["title"], class: "ui-input" %>
         <% end %>
+        <%= settings_field "Tagline / description" do %>
+          <%= form.text_area :description, value: @settings["description"], rows: 2, class: "ui-textarea" %>
+        <% end %>
+        <div class="ui-field-row">
+          <%= settings_field "Default locale" do %>
+            <%= form.text_field :default_locale, value: @settings["default_locale"], placeholder: "en", class: "ui-input" %>
+          <% end %>
+          <%= settings_field "Admin language", hint: "The admin's own words, for everyone who hasn't chosen theirs in Settings › Account. Not the content's: that's the locale." do %>
+            <%= form.select :admin_locale, AdminLocale::LANGUAGES.invert.to_a, { selected: @settings["admin_locale"] }, { class: "ui-select" } %>
+          <% end %>
+        </div>
         <%= settings_field "Time zone", hint: "The admin shows and reads every time in this zone: schedules, board cards, timestamps. Blank uses the server's (" + Site.server_time_zone.tzinfo.name + ")." do %>
           <%= form.select :timezone, options_for_select(site_time_zone_options(@settings["timezone"]), @settings["timezone"]), { include_blank: "Server's zone" }, { class: "ui-select" } %>
         <% end %>
-        <%= settings_field "Admin language", hint: "The admin's own words, for everyone who hasn't chosen theirs in Settings › Account. Not the content's: that's the locale above." do %>
-          <%= form.select :admin_locale, AdminLocale::LANGUAGES.invert.to_a, { selected: @settings["admin_locale"] }, { class: "ui-select" } %>
+        <%= settings_field "Site base URL", hint: "Canonical public-site origin (no trailing slash). Used for sitemap.xml and anywhere absolute URLs are needed. Falls back to this install's address (APP_HOST) when blank." do %>
+          <%= form.url_field :site_base_url, value: @settings["site_base_url"], placeholder: "https://www.example.com", class: "ui-input" %>
         <% end %>
+        <%= settings_field "Additional public origins", hint: "One origin per line. Used to allow CORS for form submissions from these domains (preview, www/apex, staging). The Site base URL above is always allowed." do %>
+          <%= form.text_area :public_origins_raw, value: @settings["public_origins"].join("\n"), rows: 3, placeholder: "https://www.example.com\nhttps://preview.example.com", class: "ui-textarea text-mono" %>
+        <% end %>
+        </div>
       </div>
-      <%= settings_field "Site base URL", hint: "Canonical public-site origin (no trailing slash). Used for sitemap.xml and anywhere absolute URLs are needed. Falls back to this install's address (APP_HOST) when blank." do %>
-        <%= form.url_field :site_base_url, value: @settings["site_base_url"], placeholder: "https://www.example.com", class: "ui-input" %>
-      <% end %>
-      <%= settings_field "Additional public origins", hint: "One origin per line. Used to allow CORS for form submissions from these domains (preview, www/apex, staging). The Site base URL above is always allowed." do %>
-        <%= form.text_area :public_origins_raw, value: @settings["public_origins"].join("\n"), rows: 3, placeholder: "https://www.example.com\nhttps://preview.example.com", class: "ui-textarea text-mono" %>
-      <% end %>
     </section>
 
-    <section class="panel panel--padded fields" id="serving">
-      <div class="stack stack--xs">
-        <h2 class="heading">How the site is served</h2>
-        <p class="text-muted">Most sites are the theme’s website alone. Serve content as JSON too only when something else reads it: an app, another site, a frontend built elsewhere.</p>
-      </div>
-      <div class="fields" data-controller="show-if">
-        <div class="stack stack--sm" data-field-name="serving">
+    <section class="ui-card" id="serving">
+      <header class="ui-card__header">
+        <h2 class="ui-card__title">How the site is served</h2>
+        <p class="ui-card__description">Most sites are the theme’s website alone. Serve content as JSON too only when something else reads it: an app, another site, a frontend built elsewhere.</p>
+      </header>
+      <div class="ui-card__content">
+        <div class="ui-fieldset" data-controller="show-if">
+        <div class="ui-field" data-field-name="serving">
           <%= settings_field "Served as" do %>
             <%= form.select :serving, Serving::MODES.invert.to_a, { selected: @settings["serving"] }, { class: "ui-select" } %>
           <% end %>
-          <ul class="stack stack--xs text-small text-muted">
-            <li><strong class="text-medium text-body">Website</strong>: the theme draws the site. The delivery API (/api/v1) is off.</li>
-            <li><strong class="text-medium text-body">Website + API</strong>: the theme draws the site, and what you choose below is served as JSON too.</li>
-            <li><strong class="text-medium text-body">API only</strong>: a frontend elsewhere draws the site from /api/v1; this address shows a blank page.</li>
+          <ul class="bullet-list ui-field__description">
+            <li><strong class="text-medium text-ink">Website</strong>: the theme draws the site. The delivery API (/api/v1) is off.</li>
+            <li><strong class="text-medium text-ink">Website + API</strong>: the theme draws the site, and what you choose below is served as JSON too.</li>
+            <li><strong class="text-medium text-ink">API only</strong>: a frontend elsewhere draws the site from /api/v1; this address shows a blank page.</li>
           </ul>
         </div>
-        <div class="stack stack--md" data-show-if='{"field":"serving","equals":"website_api"}'>
-          <p class="ui-label">Served over the API</p>
+        <fieldset class="ui-fieldset" data-show-if='{"field":"serving","equals":"website_api"}'>
+          <legend class="ui-label">Served over the API</legend>
           <label class="ui-field ui-field--inline">
             <%= hidden_field_tag "settings[api_pages]", "0", id: nil %>
             <%= check_box_tag "settings[api_pages]", "1", @settings["api_pages"], id: nil, class: "ui-checkbox" %>
-            <span>Pages, with the globals (navigation, footer)</span>
+            <span class="ui-label">Pages, with the globals (navigation, footer)</span>
           </label>
           <%= hidden_field_tag "settings[api_collections][]", "", id: nil %>
           <% @collections.each do |collection| %>
@@ -68,47 +73,56 @@
               <span class="ui-label"><%= collection.name %></span>
             </label>
           <% end %>
+        </fieldset>
+        <% if @tokens_reading.any? then %>
+          <div class="ui-alert ui-alert--warning" role="status">
+            <%= icon_tag "bell-alert", class: "ui-alert__icon" %>
+            <p class="ui-alert__title">These machine tokens read the site in the last 30 days</p>
+            <div class="ui-alert__description">
+              <p>Choosing <strong>Website</strong> turns the API off, and they’d get nothing:</p>
+              <ul class="bullet-list">
+                <% @tokens_reading.each do |token| %>
+                  <%# herb:key token.id %>
+                  <li><%= token.name %> (<%= token.role&.name %>), <%= time_ago_in_words(token.last_used_at) %> ago</li>
+                <% end %>
+              </ul>
+            </div>
+          </div>
+        <% end %>
         </div>
       </div>
-      <% if @tokens_reading.any? then %>
-        <div class="ui-alert ui-alert--warning">
-          <p>These machine tokens read the site in the last 30 days. Choosing <strong>Website</strong> turns the API off, and they’d get nothing:</p>
-          <ul class="bullets">
-            <% @tokens_reading.each do |token| %>
-              <%# herb:key token.id %>
-              <li><%= token.name %> (<%= token.role&.name %>), <%= time_ago_in_words(token.last_used_at) %> ago</li>
-            <% end %>
-          </ul>
-        </div>
-      <% end %>
     </section>
 
-    <section class="panel panel--padded fields">
-      <div class="stack stack--xs">
-        <h2 class="heading">Contact</h2>
-        <p class="text-muted">Surfaces on the public site footer, contact pages, and SEO structured data.</p>
-      </div>
-      <div class="grid grid--2">
-        <%= settings_field "Phone" do %>
-          <%= form.telephone_field :phone, value: @settings["phone"], placeholder: "(269) 555-1234", class: "ui-input" %>
+    <section class="ui-card">
+      <header class="ui-card__header">
+        <h2 class="ui-card__title">Contact</h2>
+        <p class="ui-card__description">Surfaces on the public site footer, contact pages, and SEO structured data.</p>
+      </header>
+      <div class="ui-card__content">
+        <div class="ui-fieldset">
+        <div class="ui-field-row">
+          <%= settings_field "Phone" do %>
+            <%= form.telephone_field :phone, value: @settings["phone"], placeholder: "(269) 555-1234", class: "ui-input" %>
+          <% end %>
+          <%= settings_field "Email" do %>
+            <%= form.email_field :email, value: @settings["email"], placeholder: "hello@example.com", class: "ui-input" %>
+          <% end %>
+        </div>
+        <%= settings_field "Address" do %>
+          <%= form.text_field :address_line1, value: @settings["address_line1"], placeholder: "717 E. Bridge Street", class: "ui-input" %>
         <% end %>
-        <%= settings_field "Email" do %>
-          <%= form.email_field :email, value: @settings["email"], placeholder: "hello@example.com", class: "ui-input" %>
-        <% end %>
-      </div>
-      <%= settings_field "Address" do %>
-        <%= form.text_field :address_line1, value: @settings["address_line1"], placeholder: "717 E. Bridge Street", class: "ui-input" %>
-      <% end %>
-      <div class="grid grid--3">
-        <%= settings_field "City" do %>
-          <%= form.text_field :city, value: @settings["city"], class: "ui-input" %>
-        <% end %>
-        <%= settings_field "State" do %>
-          <%= form.text_field :state, value: @settings["state"], class: "ui-input" %>
-        <% end %>
-        <%= settings_field "Zip" do %>
-          <%= form.text_field :zip, value: @settings["zip"], class: "ui-input" %>
-        <% end %>
+        <div class="ui-field-row">
+          <%= settings_field "City" do %>
+            <%= form.text_field :city, value: @settings["city"], class: "ui-input" %>
+          <% end %>
+          <%= settings_field "State" do %>
+            <%= form.text_field :state, value: @settings["state"], class: "ui-input" %>
+          <% end %>
+          <%= settings_field "Zip" do %>
+            <%= form.text_field :zip, value: @settings["zip"], class: "ui-input" %>
+          <% end %>
+        </div>
+        </div>
       </div>
     </section>
   <% end %>

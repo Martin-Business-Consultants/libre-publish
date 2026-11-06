@@ -3,60 +3,78 @@
 
 <%= render "layouts/shared/page_header", title: "Service tokens" %>
 
-<section class="panel panel--padded stack">
-  <p class="text-muted">Credentials for machines — a published site, a build, an agent. They belong to this workspace rather than to a person, so rotating your own token or changing your role can’t take production down.</p>
-
-  <div class="stack stack--sm text-body">
-    <strong class="text-semibold text-ink">Which token goes where</strong>
+<section class="ui-card">
+  <header class="ui-card__header">
+    <h2 class="ui-card__title">Which token goes where</h2>
+    <p class="ui-card__description">Credentials for machines — a published site, a build, an agent. They belong to this workspace rather than to a person, so rotating your own token or changing your role can’t take production down.</p>
+  </header>
+  <div class="ui-card__content stack">
     <ul class="bullet-list">
       <li>The published site — its <code>CMS_API_TOKEN</code>. Issue it against <strong>Production site</strong> (read-only): the site renders, it never edits, so a leaked secret reads only what the site already shows the world.</li>
       <li><code>USER_AGENT_TOKEN</code> — agents and scripts. Issue it against <strong>Agent</strong> (writes drafts, never publishes): changing live content or publishing is refused, and with the Approvals plugin every change waits for a person.</li>
     </ul>
+    <% unless can_manage %>
+      <div class="ui-alert" role="status">
+        <%= icon_tag "lock", class: "ui-alert__icon" %>
+        <p class="ui-alert__title">Read only</p>
+        <div class="ui-alert__description">Your role can see these tokens but not issue, reveal or change them (that needs settings:write).</div>
+      </div>
+    <% end %>
   </div>
-
-  <% unless can_manage %>
-    <p class="text-muted">Your role can see these tokens but not issue, reveal or change them (that needs settings:write).</p>
-  <% end %>
 </section>
 
 <% if can_manage %>
-  <section class="panel panel--padded fields">
-    <h2 class="heading">Issue a token</h2>
-    <%= form_with url: settings_service_tokens_path, class: "fields" do |form| %>
-      <div class="grid grid--2 fields-grid">
-        <%= settings_field "Name" do %>
-          <%= form.text_field :name, required: true, placeholder: "Production site", class: "ui-input" %>
-        <% end %>
-        <%= settings_field "Role" do %>
-          <%= form.select :role_id, @roles.map { |role| [role.name, role.id] }, { include_blank: "Pick a role" }, { required: true, class: "ui-select" } %>
+  <%= form_with url: settings_service_tokens_path, class: "ui-card" do |form| %>
+    <header class="ui-card__header">
+      <h2 class="ui-card__title">Issue a token</h2>
+    </header>
+    <div class="ui-card__content">
+      <div class="ui-fieldset">
+        <div class="ui-field-row">
+          <%= settings_field "Name" do %>
+            <%= form.text_field :name, required: true, placeholder: "Production site", class: "ui-input" %>
+          <% end %>
+          <%= settings_field "Role" do %>
+            <%= form.select :role_id, @roles.map { |role| [role.name, role.id] }, { include_blank: "Pick a role" }, { required: true, class: "ui-select" } %>
+          <% end %>
+        </div>
+        <%= settings_field "What it’s for (optional)" do %>
+          <%= form.text_field :description, placeholder: "Cloudflare — robinsonfirm.com", class: "ui-input" %>
         <% end %>
       </div>
-      <%= settings_field "What it’s for (optional)" do %>
-        <%= form.text_field :description, placeholder: "Cloudflare — robinsonfirm.com", class: "ui-input" %>
-      <% end %>
-      <div><button type="submit" class="ui-button">Issue token</button></div>
-    <% end %>
-  </section>
+    </div>
+    <footer class="ui-card__footer ui-card__footer--bordered ui-card__footer--end">
+      <button type="submit" class="ui-button">Issue token</button>
+    </footer>
+  <% end %>
 <% end %>
 
-<section class="panel panel--padded stack stack--sm">
-  <h2 class="heading">Live</h2>
+<%= tag.section class: class_names("ui-card", "ui-card--flush": @live.any?) do %>
+  <%= tag.header class: class_names("ui-card__header", "ui-card__header--bordered": @live.any?) do %>
+    <h2 class="ui-card__title">Live</h2>
+  <% end %>
   <% if @live.any? %>
-    <ul class="divided">
+    <ul class="ui-item-group">
       <% @live.each do |token| %>
         <%# herb:key token.id %>
         <%= render "settings/service_tokens/service_token", service_token: token, can_manage: can_manage %>
       <% end %>
     </ul>
   <% else %>
-    <p class="empty-state">No service tokens yet.</p>
+    <div class="ui-card__content">
+      <div class="ui-empty">
+        <p class="ui-empty__description">No service tokens yet.</p>
+      </div>
+    </div>
   <% end %>
-</section>
+<% end %>
 
 <% if @revoked.any? %>
-  <section class="panel panel--padded stack stack--sm">
-    <h2 class="heading">Revoked</h2>
-    <ul class="divided">
+  <section class="ui-card ui-card--flush">
+    <header class="ui-card__header ui-card__header--bordered">
+      <h2 class="ui-card__title">Revoked</h2>
+    </header>
+    <ul class="ui-item-group">
       <% @revoked.each do |token| %>
         <%# herb:key token.id %>
         <%= render "settings/service_tokens/service_token", service_token: token, can_manage: can_manage %>

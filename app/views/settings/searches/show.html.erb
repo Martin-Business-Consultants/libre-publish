@@ -3,9 +3,11 @@
 <%= render "layouts/shared/page_header", title: "Search",
       description: "How search engines and AI answer engines find, read and describe this site." %>
 
-<div class="measure--lg stack stack--lg">
-  <section class="panel panel--padded stack stack--md">
-    <h2 class="heading">What the site already does</h2>
+<section class="ui-card">
+  <header class="ui-card__header">
+    <h2 class="ui-card__title">What the site already does</h2>
+  </header>
+  <div class="ui-card__content">
     <ul class="bullet-list">
       <li>Every page has a canonical address, its title and description, Open Graph and Twitter tags, and its translations (hreflang).</li>
       <li>Structured data (schema.org) is made from the content: who you are, the site, each page or article, and its breadcrumbs.</li>
@@ -13,52 +15,69 @@
       <li><%= link_to "/llms.txt", "#{@base_url}/llms.txt", class: "link" %> and a Markdown copy of each page (add <code>.md</code> to its address) give AI readers the content without the design.</li>
       <li><%= link_to "/robots.txt", "#{@base_url}/robots.txt", class: "link" %> keeps the admin and the API out, and points to the sitemap.</li>
     </ul>
+  </div>
+</section>
+
+<%= form_with url: settings_search_path, method: :patch, scope: :search, class: "stack stack--lg" do |form| %>
+  <section class="ui-card">
+    <header class="ui-card__header">
+      <h2 class="ui-card__title">AI crawlers</h2>
+      <p class="ui-card__description">Search engines (Google, Bing) always crawl the site. These choose which AI services may read it, by what they do.</p>
+    </header>
+    <div class="ui-card__content">
+      <div class="ui-fieldset">
+        <%= settings_field "AI answer engines", hint: "ChatGPT search, Perplexity, Claude and others that answer questions by citing and linking to sites: " + SearchSettings::AI_SEARCH_BOTS.join(", ") + ". Blocking them keeps the site out of their answers." do %>
+          <%= form.select :ai_search, [["Allow (recommended)", "allow"], ["Block", "block"]], { selected: @search["ai_search"] }, { class: "ui-select" } %>
+        <% end %>
+        <%= settings_field "AI model training", hint: "Crawlers that gather text to train AI models: " + SearchSettings::AI_TRAINING_BOTS.join(", ") + ". Blocking them doesn't affect search or answer engines." do %>
+          <%= form.select :ai_training, [["Allow", "allow"], ["Block", "block"]], { selected: @search["ai_training"] }, { class: "ui-select" } %>
+        <% end %>
+      </div>
+    </div>
   </section>
 
-  <%= form_with url: settings_search_path, method: :patch, scope: :search, class: "stack stack--lg" do |form| %>
-    <section class="panel panel--padded fields">
-      <div class="stack stack--xs">
-        <h2 class="heading">AI crawlers</h2>
-        <p class="ui-field__description">
-          Search engines (Google, Bing) always crawl the site. These choose which AI services may read it, by what they do.
-        </p>
+  <section class="ui-card">
+    <header class="ui-card__header">
+      <h2 class="ui-card__title">Who the site is</h2>
+      <p class="ui-card__description">
+        Search engines and AI tie what they say about you to this. The name, description and contact details come from
+        Settings › General, the logo from Branding.
+      </p>
+    </header>
+    <div class="ui-card__content">
+      <div class="ui-fieldset">
+        <%= settings_field "The site is", hint: "A local business shows its address from Settings › General." do %>
+          <%= form.select :organization, [["An organization", "Organization"], ["A local business", "LocalBusiness"], ["A person", "Person"]], { selected: @search["organization"] }, { class: "ui-select" } %>
+        <% end %>
+        <%= settings_field "Profiles elsewhere", hint: "One address a line: LinkedIn, Instagram, Facebook, Google Business, Wikipedia…" do %>
+          <%= form.text_area :same_as, value: @search["same_as"].join("\n"), rows: 4, placeholder: "https://www.linkedin.com/company/…", class: "ui-textarea" %>
+        <% end %>
       </div>
-      <%= settings_field "AI answer engines", hint: "ChatGPT search, Perplexity, Claude and others that answer questions by citing and linking to sites: " + SearchSettings::AI_SEARCH_BOTS.join(", ") + ". Blocking them keeps the site out of their answers." do %>
-        <%= form.select :ai_search, [["Allow (recommended)", "allow"], ["Block", "block"]], { selected: @search["ai_search"] }, { class: "ui-select" } %>
-      <% end %>
-      <%= settings_field "AI model training", hint: "Crawlers that gather text to train AI models: " + SearchSettings::AI_TRAINING_BOTS.join(", ") + ". Blocking them doesn't affect search or answer engines." do %>
-        <%= form.select :ai_training, [["Allow", "allow"], ["Block", "block"]], { selected: @search["ai_training"] }, { class: "ui-select" } %>
-      <% end %>
-    </section>
+    </div>
+  </section>
 
-    <section class="panel panel--padded fields">
-      <div class="stack stack--xs">
-        <h2 class="heading">Who the site is</h2>
-        <p class="ui-field__description">
-          Search engines and AI tie what they say about you to this. The name, description and contact details come from
-          Settings › General, the logo from Branding.
-        </p>
+  <section class="ui-card">
+    <header class="ui-card__header">
+      <h2 class="ui-card__title">Crawling</h2>
+      <p class="ui-card__description">How crawlers hear about changes, and what robots.txt adds.</p>
+    </header>
+    <div class="ui-card__content">
+      <div class="ui-fieldset">
+        <label class="ui-field ui-field--inline ui-field--end ui-field--card">
+          <%= form.check_box :indexnow, { checked: @search["indexnow"] != false, class: "ui-switch", role: "switch" }, "1", "0" %>
+          <span class="ui-label">Tell search engines the moment a page changes</span>
+          <span class="ui-field__description">
+            When a page is published, changed or taken down (IndexNow: Bing, which ChatGPT search draws on, Yandex and
+            others), instead of waiting to be crawled.
+          </span>
+        </label>
+        <%= settings_field "More for robots.txt", hint: "Added as written, for a crawler or a path the choices above don’t cover." do %>
+          <%= form.text_area :robots_extra, value: @search["robots_extra"], rows: 4, class: "ui-textarea text-mono text-small", placeholder: "User-agent: SomeBot\nDisallow: /" %>
+        <% end %>
       </div>
-      <%= settings_field "The site is", hint: "A local business shows its address from Settings › General." do %>
-        <%= form.select :organization, [["An organization", "Organization"], ["A local business", "LocalBusiness"], ["A person", "Person"]], { selected: @search["organization"] }, { class: "ui-select" } %>
-      <% end %>
-      <%= settings_field "Profiles elsewhere", hint: "One address a line: LinkedIn, Instagram, Facebook, Google Business, Wikipedia…" do %>
-        <%= form.text_area :same_as, value: @search["same_as"].join("\n"), rows: 4, placeholder: "https://www.linkedin.com/company/…", class: "ui-textarea" %>
-      <% end %>
-    </section>
-
-    <section class="panel panel--padded fields">
-      <label class="ui-field ui-field--inline text-ink">
-        <%= form.check_box :indexnow, { checked: @search["indexnow"] != false, class: "ui-checkbox" }, "1", "0" %>
-        <span>
-          Tell search engines the moment a page is published, changed or taken down (IndexNow: Bing, which ChatGPT
-          search draws on, Yandex and others), instead of waiting to be crawled.
-        </span>
-      </label>
-      <%= settings_field "More for robots.txt", hint: "Added as written, for a crawler or a path the choices above don’t cover." do %>
-        <%= form.text_area :robots_extra, value: @search["robots_extra"], rows: 4, class: "ui-textarea text-mono text-small", placeholder: "User-agent: SomeBot\nDisallow: /" %>
-      <% end %>
-      <div><button type="submit" class="ui-button">Save</button></div>
-    </section>
-  <% end %>
-</div>
+    </div>
+    <footer class="ui-card__footer ui-card__footer--bordered ui-card__footer--end">
+      <button type="submit" class="ui-button">Save</button>
+    </footer>
+  </section>
+<% end %>

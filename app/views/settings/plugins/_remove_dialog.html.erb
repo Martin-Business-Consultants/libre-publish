@@ -3,27 +3,27 @@
     the plugin's data too: its tables, named here. %>
 <% title = "Remove " + plugin.name + "?" %>
 <div class="contents" data-controller="dialog" data-dialog-modal-value="true" data-action="keydown.esc->dialog#close:stop">
-  <button type="button" class="ui-button ui-button--destructive ui-button--icon" title="<%= title %>" data-action="dialog#open">
+  <button type="button" class="ui-button ui-button--ghost ui-button--icon-sm" title="<%= title %>" data-action="dialog#open">
     <%= icon_tag "trash" %>
     <span class="visually-hidden"><%= title %></span>
   </button>
-  <dialog class="dialog dialog--action" data-dialog-target="dialog">
-    <h3 class="heading heading--lg"><%= title %></h3>
-    <%= form_with url: settings_plugin_path(plugin.key), method: :delete, class: "stack stack--md", data: { turbo_frame: "_top" } do |form| %>
-      <p class="text-body">Its code comes off this server and the CMS restarts. Its tables and data stay, so installing it again brings them back.</p>
+  <dialog class="ui-dialog" data-dialog-target="dialog" aria-label="<%= title %>">
+    <%= form_with url: settings_plugin_path(plugin.key), method: :delete, class: "contents", data: { turbo_frame: "_top" } do |form| %>
+      <header class="ui-dialog__header">
+        <h2 class="ui-dialog__title"><%= title %></h2>
+        <p class="ui-dialog__description">Its code comes off this server and the CMS restarts. Its tables and data stay, so installing it again brings them back.</p>
+      </header>
       <% if tables.any? %>
         <label class="ui-field ui-field--inline">
           <%= form.check_box :purge_data, class: "ui-checkbox" %>
-          <span class="ui-label">Delete its data too: <%= safe_join(tables.map { |table| tag.code(table) }, ", ") %>. This can’t be undone.</span>
+          <span class="ui-label">Delete its data too</span>
+          <span class="ui-field__description"><%= safe_join(tables.map { |table| tag.code(table) }, ", ") %>. This can’t be undone.</span>
         </label>
       <% end %>
-      <div class="dialog__actions">
+      <footer class="ui-dialog__footer">
         <button type="button" class="ui-button ui-button--outline" data-action="dialog#close">Cancel</button>
-        <button type="submit" class="ui-button ui-button--destructive">
-          <%= icon_tag "trash" %>
-          <span>Remove</span>
-        </button>
-      </div>
+        <button type="submit" class="ui-button ui-button--destructive">Remove</button>
+      </footer>
     <% end %>
   </dialog>
 </div>

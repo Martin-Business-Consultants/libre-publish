@@ -9,100 +9,119 @@
 <% end %>
 
 <% if suggested %>
-  <section class="panel panel--padded stack stack--sm">
-    <h2 class="heading">Your scripts need these</h2>
-    <p class="text-small text-muted">What the Scripts global loads that the website's policy doesn't allow yet. Without them, an enforced policy would stop those scripts.</p>
-    <ul class="stack stack--xs text-small">
-      <% @suggestions[:presets].each do |key| %>
-        <%# herb:key key %>
-        <li><%= presets.dig(key, :label) %></li>
+  <div class="ui-alert ui-alert--warning" role="status">
+    <%= icon_tag "bell-alert", class: "ui-alert__icon" %>
+    <p class="ui-alert__title">Your scripts need these</p>
+    <div class="ui-alert__description stack stack--sm stack--start">
+      <p>What the Scripts global loads that the website's policy doesn't allow yet. Without them, an enforced policy would stop those scripts.</p>
+      <ul class="bullet-list">
+        <% @suggestions[:presets].each do |key| %>
+          <%# herb:key key %>
+          <li><%= presets.dig(key, :label) %></li>
+        <% end %>
+        <% @suggestions[:hosts].each do |directive, list| %>
+          <%# herb:key directive %>
+          <li><span class="text-mono"><%= directive %></span>: <span class="text-mono"><%= list.join(" ") %></span></li>
+        <% end %>
+      </ul>
+      <% if can_write %>
+        <%= button_to "Allow them", settings_security_policy_path, method: :patch, class: "ui-button ui-button--outline ui-button--sm", form_class: "contents",
+              params: {security_policy: {presets: @policy["presets"] | @suggestions[:presets],
+                                         sources: SecurityPolicy::DIRECTIVES.to_h { |directive| [directive, (Array(@policy["sources"][directive]) | Array(@suggestions[:hosts][directive])).join("\n")] }}} %>
       <% end %>
-      <% @suggestions[:hosts].each do |directive, list| %>
-        <%# herb:key directive %>
-        <li><span class="text-mono"><%= directive %></span>: <span class="text-mono"><%= list.join(" ") %></span></li>
-      <% end %>
-    </ul>
-    <% if can_write %>
-      <%= button_to "Allow them", settings_security_policy_path, method: :patch, class: "ui-button ui-button--outline ui-button--sm", form_class: "contents",
-            params: {security_policy: {presets: @policy["presets"] | @suggestions[:presets],
-                                       sources: SecurityPolicy::DIRECTIVES.to_h { |directive| [directive, (Array(@policy["sources"][directive]) | Array(@suggestions[:hosts][directive])).join("\n")] }}} %>
-    <% end %>
-  </section>
+    </div>
+  </div>
 <% end %>
 
 <%= form_with url: settings_security_policy_path, id: "security_policy_form", method: :patch, scope: :security_policy do |form| %>
   <%= tag.fieldset class: "stack stack--lg", disabled: !can_write do %>
-    <section class="panel panel--padded fields">
-      <div class="stack stack--xs">
-        <h2 class="heading">The website's policy</h2>
-        <p class="text-muted">A Content-Security-Policy tells visitors' browsers what the site may load and run, so a script slipped into a page can't. Test it with <strong>Report only</strong>: nothing is blocked, and what it would block shows below. Enforce it once that list is clean.</p>
-      </div>
-      <%= settings_field "Policy", hint: "Off sends none (as before)." do %>
-        <%= form.select :mode, SecurityPolicy::MODES.invert.to_a, { selected: @policy["mode"] }, { class: "ui-select" } %>
-      <% end %>
-      <label class="ui-field ui-field--inline">
-        <%= form.check_box :strict, { checked: @policy["strict"], class: "ui-checkbox" }, "1", "0" %>
-        <span class="ui-label">Strict inline scripts <span class="text-small text-muted">Only inline scripts the CMS prints (the theme's, the Scripts global's, plugins') run, each carrying a fresh nonce. A script added any other way is stopped. Test with Report only first.</span></span>
-      </label>
-    </section>
-
-    <section class="panel panel--padded fields">
-      <div class="stack stack--xs">
-        <h2 class="heading">Services the site uses</h2>
-        <p class="text-muted">Each allows what that service loads.</p>
-      </div>
-      <%= hidden_field_tag "security_policy[presets_sent]", "1", id: nil %>
-      <%= hidden_field_tag "security_policy[presets][]", "", id: nil %>
-      <% presets.each do |key, preset| %>
-        <%# herb:key key %>
-        <label class="ui-field ui-field--inline">
-          <%= check_box_tag "security_policy[presets][]", key, @policy["presets"].include?(key), id: "security_policy_preset_#{key}", class: "ui-checkbox" %>
-          <span class="ui-label"><%= preset[:label] %><%= tag.span(" · found in your scripts", class: "text-small text-muted") if @suggestions[:presets].include?(key) %></span>
-        </label>
-      <% end %>
-    </section>
-
-    <section class="panel panel--padded fields">
-      <div class="stack stack--xs">
-        <h2 class="heading">More sources</h2>
-        <p class="text-muted">Anything else, one a line, by directive: <span class="text-mono">https://example.com</span>, <span class="text-mono">https://*.example.com</span>. The site itself is always allowed.</p>
-      </div>
-      <div class="grid grid--2 fields-grid">
-        <% SecurityPolicy::DIRECTIVES.each do |directive| %>
-          <%# herb:key directive %>
-          <%= settings_field directive do %>
-            <%= text_area_tag "security_policy[sources][#{directive}]", Array(@policy["sources"][directive]).join("\n"), rows: 3, class: "ui-textarea text-mono text-small", id: "security_policy_sources_#{directive}", spellcheck: false %>
+    <section class="ui-card">
+      <header class="ui-card__header">
+        <h2 class="ui-card__title">The website's policy</h2>
+        <p class="ui-card__description">A Content-Security-Policy tells visitors' browsers what the site may load and run, so a script slipped into a page can't. Test it with <strong>Report only</strong>: nothing is blocked, and what it would block shows below. Enforce it once that list is clean.</p>
+      </header>
+      <div class="ui-card__content">
+        <div class="ui-fieldset">
+          <%= settings_field "Policy", hint: "Off sends none (as before)." do %>
+            <%= form.select :mode, SecurityPolicy::MODES.invert.to_a, { selected: @policy["mode"] }, { class: "ui-select" } %>
           <% end %>
-        <% end %>
+          <label class="ui-field ui-field--inline ui-field--end ui-field--card">
+            <%= form.check_box :strict, { checked: @policy["strict"], class: "ui-switch", role: "switch" }, "1", "0" %>
+            <span class="ui-label">Strict inline scripts</span>
+            <span class="ui-field__description">Only inline scripts the CMS prints (the theme's, the Scripts global's, plugins') run, each carrying a fresh nonce. A script added any other way is stopped. Test with Report only first.</span>
+          </label>
+        </div>
       </div>
     </section>
 
-    <section class="panel panel--padded fields">
-      <div class="stack stack--xs">
-        <h2 class="heading">The admin's policy</h2>
-        <p class="text-muted">The admin's is always on, and strict: it guards everyone signed in. Add a source only for something an admin page needs, such as a sign-in a form goes on to (<span class="text-mono">form-action</span>).</p>
-      </div>
-      <div class="grid grid--2 fields-grid">
-        <% SecurityPolicy::ADMIN_DIRECTIVES.each do |directive| %>
-          <%# herb:key directive %>
-          <%= settings_field directive do %>
-            <%= text_area_tag "security_policy[admin_sources][#{directive}]", Array(@policy["admin_sources"][directive]).join("\n"), rows: 2, class: "ui-textarea text-mono text-small", id: "security_policy_admin_#{directive}", spellcheck: false %>
+    <section class="ui-card">
+      <header class="ui-card__header">
+        <h2 class="ui-card__title">Services the site uses</h2>
+        <p class="ui-card__description">Each allows what that service loads.</p>
+      </header>
+      <div class="ui-card__content">
+        <%= hidden_field_tag "security_policy[presets_sent]", "1", id: nil %>
+        <%= hidden_field_tag "security_policy[presets][]", "", id: nil %>
+        <div class="ui-fieldset">
+          <% presets.each do |key, preset| %>
+            <%# herb:key key %>
+            <label class="ui-field ui-field--inline">
+              <%= check_box_tag "security_policy[presets][]", key, @policy["presets"].include?(key), id: "security_policy_preset_#{key}", class: "ui-checkbox" %>
+              <span class="ui-label"><%= preset[:label] %></span>
+              <% if @suggestions[:presets].include?(key) %>
+                <span class="ui-field__description">Found in your scripts</span>
+              <% end %>
+            </label>
           <% end %>
-        <% end %>
+        </div>
+      </div>
+    </section>
+
+    <section class="ui-card">
+      <header class="ui-card__header">
+        <h2 class="ui-card__title">More sources</h2>
+        <p class="ui-card__description">Anything else, one a line, by directive: <span class="text-mono">https://example.com</span>, <span class="text-mono">https://*.example.com</span>. The site itself is always allowed.</p>
+      </header>
+      <div class="ui-card__content">
+        <div class="ui-field-row">
+          <% SecurityPolicy::DIRECTIVES.each do |directive| %>
+            <%# herb:key directive %>
+            <%= settings_field directive do %>
+              <%= text_area_tag "security_policy[sources][#{directive}]", Array(@policy["sources"][directive]).join("\n"), rows: 3, class: "ui-textarea text-mono text-small", id: "security_policy_sources_#{directive}", spellcheck: false %>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    </section>
+
+    <section class="ui-card">
+      <header class="ui-card__header">
+        <h2 class="ui-card__title">The admin's policy</h2>
+        <p class="ui-card__description">The admin's is always on, and strict: it guards everyone signed in. Add a source only for something an admin page needs, such as a sign-in a form goes on to (<span class="text-mono">form-action</span>).</p>
+      </header>
+      <div class="ui-card__content">
+        <div class="ui-field-row">
+          <% SecurityPolicy::ADMIN_DIRECTIVES.each do |directive| %>
+            <%# herb:key directive %>
+            <%= settings_field directive do %>
+              <%= text_area_tag "security_policy[admin_sources][#{directive}]", Array(@policy["admin_sources"][directive]).join("\n"), rows: 2, class: "ui-textarea text-mono text-small", id: "security_policy_admin_#{directive}", spellcheck: false %>
+            <% end %>
+          <% end %>
+        </div>
       </div>
     </section>
   <% end %>
 <% end %>
 
-<section class="panel panel--padded stack stack--sm" id="reports">
-  <div class="row row--between">
-    <h2 class="heading">What browsers reported</h2>
-    <span class="text-small text-muted">The last 30 days</span>
-  </div>
+<%= tag.section class: class_names("ui-card", "ui-card--flush": @reports.any?), id: "reports" do %>
+  <%= tag.header class: class_names("ui-card__header", "ui-card__header--bordered": @reports.any?) do %>
+    <h2 class="ui-card__title">What browsers reported</h2>
+    <p class="ui-card__description">The last 30 days</p>
+  <% end %>
   <% if @reports.any? %>
-    <div class="panel--scroll">
-      <table class="data-table">
-        <thead><tr><th>Blocked</th><th>Where</th><th class="ui-table__numeric">Times</th><th>Last</th><th></th></tr></thead>
+    <div class="ui-table-container">
+      <table class="ui-table">
+        <thead><tr><th>Blocked</th><th>Where</th><th class="ui-table__numeric">Times</th><th>Last</th><th><span class="visually-hidden">Actions</span></th></tr></thead>
         <tbody>
           <% @reports.each do |report| %>
             <%# herb:key report.id %>
@@ -111,10 +130,10 @@
                 <span class="text-mono text-small"><%= report.blocked %></span>
                 <div class="text-small text-muted"><span class="text-mono"><%= report.directive %></span><%= " · on #{report.page}" if report.page.present? %></div>
               </td>
-              <td class="text-small"><%= report.surface.capitalize %></td>
+              <td><%= report.surface.capitalize %></td>
               <td class="ui-table__numeric"><%= number_with_delimiter report.count %></td>
-              <td class="text-small nowrap"><%= time_ago_tag report.last_seen_at %></td>
-              <td class="nowrap">
+              <td class="nowrap text-muted"><%= time_ago_tag report.last_seen_at %></td>
+              <td class="ui-table__numeric nowrap">
                 <% if can_write %>
                   <%= button_to "Allow", allow_settings_security_policy_path(report), class: "ui-button ui-button--outline ui-button--sm", form_class: "contents" %>
                   <%= button_to "Dismiss", dismiss_settings_security_policy_path(report), method: :delete, class: "ui-button ui-button--ghost ui-button--sm", form_class: "contents" %>
@@ -126,14 +145,27 @@
       </table>
     </div>
   <% else %>
-    <p class="text-small text-muted">Nothing blocked. With the website's policy on Report only, what it would block shows here.</p>
+    <div class="ui-card__content">
+      <div class="ui-empty">
+        <p class="ui-empty__description">Nothing blocked. With the website's policy on Report only, what it would block shows here.</p>
+      </div>
+    </div>
   <% end %>
-</section>
+<% end %>
 
-<section class="panel panel--padded stack stack--sm">
-  <h2 class="heading">As sent</h2>
-  <p class="text-small text-muted">The website's <%= (@policy["mode"] == "off") ? "(off: not sent)" : ((@policy["mode"] == "report") ? "(report only)" : "(enforced)") %></p>
-  <pre class="code-block code-block--wrap text-small"><%= @website_header %></pre>
-  <p class="text-small text-muted">The admin's</p>
-  <pre class="code-block code-block--wrap text-small"><%= @admin_header %></pre>
+<section class="ui-card">
+  <header class="ui-card__header">
+    <h2 class="ui-card__title">As sent</h2>
+    <p class="ui-card__description">The headers the site and the admin send now.</p>
+  </header>
+  <div class="ui-card__content stack stack--md">
+    <div class="ui-field">
+      <p class="ui-label">The website's <%= (@policy["mode"] == "off") ? "(off: not sent)" : ((@policy["mode"] == "report") ? "(report only)" : "(enforced)") %></p>
+      <pre class="<%= settings_code_classes %>"><%= @website_header %></pre>
+    </div>
+    <div class="ui-field">
+      <p class="ui-label">The admin's</p>
+      <pre class="<%= settings_code_classes %>"><%= @admin_header %></pre>
+    </div>
+  </div>
 </section>

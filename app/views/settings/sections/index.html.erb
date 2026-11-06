@@ -2,28 +2,38 @@
 
 <%= render "layouts/shared/page_header", title: "Settings" %>
 
-<p class="text-muted">
-  CMS <%= cms_version %>
-  <% if UpdateCheck.update_available? %>
-    · <strong class="text-semibold text-ink"><%= tx("Version %{version} is available.", version: UpdateCheck.latest_version) %></strong>
-    <%= link_to tx("What’s new"), UpdateCheck.release_url || UpdateCheck.changelog_url, class: "link", rel: "noopener" %>
-    <% if Current.user.can?("settings:read") %>
-      · <%= link_to tx("Update in Settings › Updates"), settings_updates_path, class: "link" %>
-    <% end %>
-  <% end %>
-</p>
+<% if UpdateCheck.update_available? %>
+  <div class="ui-alert" role="status">
+    <%= icon_tag "bell-alert", class: "ui-alert__icon" %>
+    <p class="ui-alert__title"><%= tx("Version %{version} is available.", version: UpdateCheck.latest_version) %></p>
+    <div class="ui-alert__description">
+      <p>
+        CMS <%= cms_version %> ·
+        <%= link_to tx("What’s new"), UpdateCheck.release_url || UpdateCheck.changelog_url, class: "link", rel: "noopener" %>
+        <% if Current.user.can?("settings:read") %>
+          · <%= link_to tx("Update in Settings › Updates"), settings_updates_path, class: "link" %>
+        <% end %>
+      </p>
+    </div>
+  </div>
+<% else %>
+  <p class="text-muted">CMS <%= cms_version %></p>
+<% end %>
 
 <% settings_sections.each do |group, links| %>
   <%# herb:key group %>
   <section class="stack stack--md">
     <h2 class="heading"><%= tx(group) %></h2>
-    <ul class="grid grid--2">
+    <ul class="settings-grid">
       <% links.each do |text, path, description| %>
         <%# herb:key path %>
         <li>
-          <%= link_to path, class: "panel settings-card" do %>
-            <span class="settings-card__name"><%= tx(text) %></span>
-            <span class="settings-card__description"><%= tx(description.to_s) %></span>
+          <%= link_to path, class: "ui-item ui-item--outline" do %>
+            <div class="ui-item__content">
+              <p class="ui-item__title"><%= tx(text) %></p>
+              <p class="ui-item__description"><%= tx(description.to_s) %></p>
+            </div>
+            <%= icon_tag "arrow-right", class: "settings-grid__arrow" %>
           <% end %>
         </li>
       <% end %>

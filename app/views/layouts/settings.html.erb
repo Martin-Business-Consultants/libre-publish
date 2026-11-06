@@ -1,18 +1,25 @@
-<%# Settings pages, laid out like the editors: the page's title across the
-    top (page_header puts it in :settings_header), the page in two thirds, and
-    a sidebar in the other third — the page's Save box (settings/save_box, in
-    :settings_aside) when it has one, then the Settings sections. %>
+<%# Settings pages, as shadcn/ui's settings layout: the page's title across the
+    top (page_header puts it in :settings_header) over a rule, then the
+    Settings sections down the left (settings/sections_box), the page in the
+    middle, and its side cards on the right (:settings_aside: the page's Save
+    box, settings/save_box, or "On this page") when it has any. ui/app-settings.css
+    lays it out. %>
 <% content_for :content do %>
   <div class="settings-screen">
-    <div class="stack"><%= content_for(:settings_header) %></div>
-    <div class="settings-columns">
-      <div class="settings-columns__main">
+    <div class="settings-screen__header"><%= content_for(:settings_header) %></div>
+    <hr class="ui-separator">
+    <div class="settings-screen__body">
+      <div class="settings-screen__nav">
+        <%= render "settings/sections_box" %>
+      </div>
+      <div class="settings-screen__main">
         <%= yield %>
       </div>
-      <aside class="settings-aside">
-        <%= content_for(:settings_aside) %>
-        <%= render "settings/sections_box" %>
-      </aside>
+      <% if content_for?(:settings_aside) %>
+        <aside class="settings-screen__aside">
+          <%= content_for(:settings_aside) %>
+        </aside>
+      <% end %>
     </div>
   </div>
 <% end %>
