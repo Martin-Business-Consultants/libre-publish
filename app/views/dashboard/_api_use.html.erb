@@ -2,28 +2,38 @@
     is mostly driven by the CLI, MCP and the site's build; this admin is for
     doing things by hand. %>
 <% uses = Frontend.recent_api_use %>
-<section class="panel dashboard__box">
-  <header class="row row--between row--base">
-    <h2 class="heading row"><%= icon_tag "ai", class: "icon--sm text-faint" %> Working through the API</h2>
-    <%= link_to "Developers", developers_path, class: "ui-button ui-button--outline ui-button--sm" %>
+<section class="ui-card" aria-labelledby="dashboard_api">
+  <header class="ui-card__header">
+    <h2 id="dashboard_api" class="ui-card__title">Working through the API</h2>
+    <p class="ui-card__description">The tokens that used it this past week.</p>
+    <div class="ui-card__action">
+      <%= link_to "Developers", developers_path, class: "ui-button ui-button--outline ui-button--sm" %>
+    </div>
   </header>
-  <% if uses.any? %>
-    <ul class="divided">
-      <% uses.each do |use| %>
-        <%# herb:key use[:kind] + use[:name] %>
-        <li class="dashboard__row">
-          <span class="row grow">
-            <span class="truncate text-medium text-ink"><%= use[:name] %></span>
-            <span class="text-small text-muted"><%= use[:kind] == "service" ? "service token" : "CLI, MCP or API" %></span>
-          </span>
-          <span class="nowrap text-small text-muted"><%= time_ago_tag use[:last_used_at] %></span>
-        </li>
-      <% end %>
-    </ul>
-  <% else %>
-    <p class="text-muted">No token has used the API this week.</p>
-  <% end %>
-  <p class="ui-field__description">
-    Drive this CMS from an agent: <code class="code">curl -fsSL <%= request.base_url %>/agent/install.sh | sh</code>, then <code class="code">cms connect</code> to use it from Claude, Codex or another AI app.
-  </p>
+  <div class="ui-card__content">
+    <% if uses.any? %>
+      <ul class="ui-item-group">
+        <% uses.each do |use| %>
+          <%# herb:key use[:kind] + use[:name] %>
+          <li class="ui-item ui-item--sm">
+            <div class="ui-item__media"><%= ui_avatar use[:name] %></div>
+            <div class="ui-item__content">
+              <p class="ui-item__title"><%= use[:name] %></p>
+              <p class="ui-item__description"><%= use[:kind] == "service" ? "service token" : "CLI, MCP or API" %></p>
+            </div>
+            <div class="ui-item__actions"><span class="nowrap text-muted"><%= time_ago_tag use[:last_used_at] %></span></div>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <div class="ui-empty dashboard__empty">
+        <p class="ui-empty__description">No token has used the API this week.</p>
+      </div>
+    <% end %>
+  </div>
+  <footer class="ui-card__footer">
+    <p class="ui-field__description">
+      Drive this CMS from an agent: <code class="code">curl -fsSL <%= request.base_url %>/agent/install.sh | sh</code>, then <code class="code">cms connect</code> to use it from Claude, Codex or another AI app.
+    </p>
+  </footer>
 </section>

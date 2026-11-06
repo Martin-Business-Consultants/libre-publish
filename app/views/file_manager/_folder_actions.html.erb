@@ -1,31 +1,42 @@
 <%# locals: (folder:, can_delete:) %>
-<%# Making a folder inside this one; renaming or deleting this one. An open
-    form takes the row's whole width (.file-manager__inline-form). %>
-<div class="cluster">
-  <details class="file-manager__inline-form">
-    <summary class="ui-button ui-button--outline">
+<%# Making a folder inside this one; renaming or deleting this one. Each form opens in a
+    popover under its button. %>
+<div class="media-folder-actions">
+  <div data-controller="ui--popover">
+    <button type="button" class="ui-button ui-button--outline ui-button--sm" popovertarget="new_folder_popover">
       <%= icon_tag "add" %>
       <span>New folder</span>
-    </summary>
-    <%= form_with url: file_manager_folder_path, class: "row", namespace: "new_folder" do |form| %>
-      <%= form.hidden_field :parent, value: folder %>
-      <%= form.text_field :name, required: true, placeholder: "e.g. Logos", autocomplete: "off", aria: { label: "Folder name" }, class: "ui-input" %>
-      <button type="submit" class="ui-button ui-button--outline">Create</button>
-    <% end %>
-  </details>
+    </button>
+    <div class="ui-popover" id="new_folder_popover" popover data-ui--popover-target="popover">
+      <%= form_with url: file_manager_folder_path, class: "ui-fieldset", namespace: "new_folder" do |form| %>
+        <%= form.hidden_field :parent, value: folder %>
+        <div class="ui-field">
+          <%= form.label :name, "New folder", class: "ui-label" %>
+          <%= form.text_field :name, required: true, placeholder: "e.g. Logos", autocomplete: "off", class: "ui-input" %>
+          <p class="ui-field__description">Inside <%= folder == "/" ? "the top level" : folder %>.</p>
+        </div>
+        <button type="submit" class="ui-button ui-button--sm">Create</button>
+      <% end %>
+    </div>
+  </div>
 
   <% if folder != "/" %>
-    <details class="file-manager__inline-form">
-      <summary class="ui-button ui-button--outline">
+    <div data-controller="ui--popover">
+      <button type="button" class="ui-button ui-button--outline ui-button--sm" popovertarget="rename_folder_popover">
         <%= icon_tag "pencil" %>
         <span>Rename folder</span>
-      </summary>
-      <%= form_with url: file_manager_folder_path, method: :patch, class: "row", namespace: "rename_folder" do |form| %>
-        <%= form.hidden_field :path, value: folder %>
-        <%= form.text_field :name, value: AssetFolders.name(folder), required: true, autocomplete: "off", aria: { label: "New name" }, class: "ui-input" %>
-        <button type="submit" class="ui-button ui-button--outline">Rename</button>
-      <% end %>
-    </details>
+      </button>
+      <div class="ui-popover" id="rename_folder_popover" popover data-ui--popover-target="popover">
+        <%= form_with url: file_manager_folder_path, method: :patch, class: "ui-fieldset", namespace: "rename_folder" do |form| %>
+          <%= form.hidden_field :path, value: folder %>
+          <div class="ui-field">
+            <%= form.label :name, "New name", class: "ui-label" %>
+            <%= form.text_field :name, value: AssetFolders.name(folder), required: true, autocomplete: "off", class: "ui-input" %>
+          </div>
+          <button type="submit" class="ui-button ui-button--sm">Rename</button>
+        <% end %>
+      </div>
+    </div>
     <% if can_delete %>
       <%= render "layouts/shared/delete_dialog", name: "folder " + AssetFolders.name(folder),
             path: file_manager_folder_path(path: folder),

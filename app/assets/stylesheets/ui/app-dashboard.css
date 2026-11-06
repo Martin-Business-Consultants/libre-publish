@@ -1,0 +1,89 @@
+/* The dashboard (dashboard/index), as shadcn's dashboard block lays it out: a row of stat
+/* cards (what the CMS holds), then cards side by side (who's working through the API, the
+/* frontend), then the recent activity as a table in a card, then plugins' cards. */
+@layer ui {
+  .dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .dashboard__stats {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(14rem, 100%), 1fr));
+  }
+
+  .dashboard__columns {
+    align-items: start;
+    display: grid;
+    gap: 1.5rem;
+
+    @media (width >= 64rem) {
+      grid-auto-columns: minmax(0, 1fr);
+      grid-auto-flow: column;
+    }
+  }
+
+  .dashboard__empty {
+    padding: 1.5rem;
+  }
+
+  .dashboard__activity-empty {
+    padding-block: 1.5rem;
+  }
+
+  .dashboard__target {
+    display: block;
+    max-inline-size: 28rem;
+  }
+
+  /* A stat card: what it counts, the number large, its icon at the corner; the whole card
+  /* opens the list. */
+  .stat-card {
+    color: inherit;
+    gap: 1rem;
+    text-decoration: none;
+    transition: background-color 150ms, border-color 150ms;
+
+    &:hover {
+      background-color: color-mix(in oklch, var(--muted) 50%, var(--card));
+    }
+
+    &:focus-visible {
+      box-shadow: var(--ring-focus);
+      outline: none;
+    }
+  }
+
+  .stat-card__value {
+    font-size: var(--text-xx-large);
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    line-height: 1.1;
+  }
+
+  .stat-card__icon {
+    align-items: center;
+    background-color: var(--muted);
+    block-size: 2rem;
+    border-radius: var(--radius-md);
+    color: var(--muted-foreground);
+    inline-size: 2rem;
+    justify-content: center;
+
+    .icon {
+      --icon-size: 1rem;
+    }
+  }
+
+  .stat-card__footer {
+    color: var(--muted-foreground);
+    font-size: var(--text-normal);
+    justify-content: space-between;
+
+    .icon {
+      --icon-size: 1rem;
+    }
+  }
+}

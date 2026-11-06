@@ -1,28 +1,34 @@
 <%# locals: (checks:, groups:, key:) %>
-<%# A checklist's checks (Checklist::Check), a box per group: each one's mark
+<%# A checklist's checks (Checklist::Check), a card per group: each one's mark
 (passes, to do, or ? — yours to judge), what it's about, where to fix it
 and its cms command, for Site health. %>
 <% groups.each do |group| %>
   <%# herb:key group %>
   <% in_group = checks.select { it.group == group } %>
   <% next if in_group.empty? %>
-  <%= postbox key + "-" + group.parameterize, group do %>
-    <ul class="stack">
+  <%= postbox key + "-" + group.parameterize, group, flush: true do %>
+    <ul class="ui-item-group">
       <% in_group.each do |check| %>
         <%# herb:key check.key %>
         <% state = check.ok.nil? ? "unknown" : (check.ok ? "pass" : "fail") %>
-        <li class="row row--md row--top" id="check_<%= check.key %>">
-          <span class="check-mark" data-state="<%= state %>" aria-label="<%= check.ok.nil? ? "Check yourself" : (check.ok ? "Passes" : "To do") %>">
-            <%= icon_tag(check.ok ? "check" : (check.ok.nil? ? "help-circle" : "close"), class: "icon--xs") %>
-          </span>
-          <span class="stack stack--2xs grow">
-            <strong class="text-medium text-ink"><%= check.title %></strong>
-            <span class="text-small text-muted"><%= check.detail %></span>
-            <span class="cluster text-small">
-              <% if check.href %><%= link_to (check.ok ? "Open" : "Fix it"), check.href, class: "link" %><% end %>
-              <% if check.cli %><code class="code"><%= check.cli %></code><% end %>
+        <li class="ui-item" id="check_<%= check.key %>">
+          <div class="ui-item__media">
+            <span class="check-mark" data-state="<%= state %>" aria-label="<%= check.ok.nil? ? "Check yourself" : (check.ok ? "Passes" : "To do") %>">
+              <%= icon_tag(check.ok ? "check" : (check.ok.nil? ? "help-circle" : "close")) %>
             </span>
-          </span>
+          </div>
+          <div class="ui-item__content">
+            <p class="ui-item__title"><%= check.title %></p>
+            <p class="ui-item__description"><%= check.detail %></p>
+            <% if check.cli %>
+              <p class="ui-item__description"><code class="code"><%= check.cli %></code></p>
+            <% end %>
+          </div>
+          <% if check.href %>
+            <div class="ui-item__actions">
+              <%= link_to (check.ok ? "Open" : "Fix it"), check.href, class: (check.ok ? "ui-button ui-button--ghost ui-button--sm" : "ui-button ui-button--outline ui-button--sm") %>
+            </div>
+          <% end %>
         </li>
       <% end %>
     </ul>

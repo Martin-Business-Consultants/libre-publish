@@ -3,51 +3,73 @@
 <%= render "layouts/shared/page_header", title: "Search and replace",
       description: "Find a word or phrase across every page, entry and global, then change it everywhere at once." %>
 
-<div class="stack stack--lg measure--xl">
-  <%= form_with url: tools_search_replace_path, method: :get do |form| %>
-    <section class="panel panel--padded stack">
-      <div class="grid grid--2">
-        <%= settings_field "Find" do %>
+<div class="tools-page measure--xl">
+  <%= form_with url: tools_search_replace_path, method: :get, class: "ui-card" do |form| %>
+    <header class="ui-card__header">
+      <h2 class="ui-card__title">Find and replace</h2>
+      <p class="ui-card__description">Across every page, entry and global. Nothing changes until you replace.</p>
+    </header>
+    <div class="ui-card__content">
+    <div class="ui-fieldset">
+      <div class="ui-field-row">
+        <div class="ui-field">
+          <%= form.label :term, "Find", class: "ui-label" %>
           <%= form.text_field :term, value: params[:term], required: true, minlength: SearchReplace::MIN_LENGTH, autocomplete: "off", class: "ui-input" %>
-        <% end %>
-        <%= settings_field "Replace with" do %>
+        </div>
+        <div class="ui-field">
+          <%= form.label :replacement, "Replace with", class: "ui-label" %>
           <%= form.text_field :replacement, value: params[:replacement], autocomplete: "off", class: "ui-input" %>
-        <% end %>
+        </div>
       </div>
-      <label class="ui-field ui-field--inline text-ink">
+      <label class="ui-field ui-field--inline">
         <%= form.check_box :case_sensitive, { checked: params[:case_sensitive] == "1", class: "ui-checkbox" }, "1", nil %>
-        <span>Match case</span>
+        <span class="ui-label">Match case</span>
       </label>
-      <div><button type="submit" class="ui-button ui-button--outline">Find</button></div>
-    </section>
+    </div>
+    </div>
+    <footer class="ui-card__footer">
+      <button type="submit" class="ui-button ui-button--outline"><%= icon_tag "search" %> Find</button>
+    </footer>
   <% end %>
 
   <% if @search.valid? %>
-    <section class="panel panel--padded stack">
-      <h2 class="heading">
-        <%= pluralize(@matches.sum(&:count), "match") %> in <%= pluralize(@matches.size, "record") %>
-      </h2>
+    <section class="ui-card ui-card--flush" aria-labelledby="search_replace_matches">
+      <header class="ui-card__header ui-card__header--bordered">
+        <h2 class="ui-card__title" id="search_replace_matches">
+          <%= pluralize(@matches.sum(&:count), "match") %> in <%= pluralize(@matches.size, "record") %>
+        </h2>
+        <p class="ui-card__description">Of “<%= @search.term %>”.</p>
+      </header>
       <% if @matches.any? %>
-        <ul class="result-list">
-          <% @matches.each do |match| %>
-            <%# herb:key match.record.class.name + match.record.id.to_s %>
-            <li class="row row--between row--md">
-              <span class="grow truncate">
-                <span class="text-small text-muted"><%= match.record.model_name.human %></span>
-                <span class="text-medium text-ink"><%= match.record.try(:title).presence || match.record.try(:name) %></span>
-              </span>
-              <span class="no-shrink text-muted"><%= pluralize(match.count, "match") %></span>
-            </li>
-          <% end %>
-        </ul>
+        <div class="ui-table-container">
+          <table class="ui-table">
+            <thead>
+              <tr>
+                <th>Record</th>
+                <th>Kind</th>
+                <th class="ui-table__numeric">Matches</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @matches.each do |match| %>
+                <%# herb:key match.record.class.name + match.record.id.to_s %>
+                <tr>
+                  <td><span class="text-medium"><%= match.record.try(:title).presence || match.record.try(:name) %></span></td>
+                  <td><span class="text-muted"><%= match.record.model_name.human %></span></td>
+                  <td class="ui-table__numeric"><%= pluralize(match.count, "match") %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
         <% if Current.user.can?("pages:write") %>
-          <%= form_with url: tools_search_replace_path, method: :post, class: "cluster cluster--md search-replace__confirm",
+          <%= form_with url: tools_search_replace_path, method: :post, class: "ui-card__footer ui-card__footer--bordered tools-confirm",
                 data: { turbo_confirm: "Replace every match? Each record is saved, and its previous version is kept in its history." } do |form| %>
             <%= form.hidden_field :term, value: @search.term %>
             <%= form.hidden_field :replacement, value: @search.replacement %>
             <%= form.hidden_field :case_sensitive, value: params[:case_sensitive] %>
             <button type="submit" class="ui-button">Replace all with “<%= @search.replacement %>”</button>
-            <span class="text-small text-muted">Each record keeps its previous version in its history.</span>
+            <span class="ui-field__description">Each record keeps its previous version in its history.</span>
           <% end %>
         <% end %>
       <% end %>

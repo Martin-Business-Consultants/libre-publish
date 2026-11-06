@@ -1,7 +1,7 @@
 <%# locals: () %>
-<%# What the CMS holds, as Payload's dashboard shows it: a card for pages, one
-    per collection with its entries, and one for globals, each opening its
-    list. Only what the role can read. %>
+<%# What the CMS holds, as shadcn's dashboard draws its section cards: a stat card for pages,
+    one per collection with its entries, and one for globals, each opening its list. Only what
+    the role can read. %>
 <% cards = [] %>
 <% if Current.user.can?("pages:read") %>
   <% cards << [ "Pages", "document", pages_path, Page.count, "page" ] %>
@@ -15,16 +15,20 @@
   <% cards << [ "Globals", "world", globals_path, Global.count, "global" ] %>
 <% end %>
 <% if cards.any? %>
-  <section class="stack stack--md" aria-labelledby="dashboard_content">
-    <h2 id="dashboard_content" class="heading">Content</h2>
-    <div class="dashboard__cards">
+  <section aria-labelledby="dashboard_content">
+    <h2 id="dashboard_content" class="visually-hidden">Content</h2>
+    <div class="dashboard__stats">
       <% cards.each do |title, icon, path, count, noun| %>
         <%# herb:key path %>
-        <%= link_to path, class: "panel content-card" do %>
-          <span class="content-card__icon"><%= icon_tag icon, class: "icon--sm" %></span>
-          <span class="stack stack--2xs grow">
-            <span class="truncate text-medium text-ink"><%= title %></span>
-            <span class="text-small text-muted"><%= pluralize(number_with_delimiter(count), noun) %></span>
+        <%= link_to path, class: "ui-card stat-card" do %>
+          <span class="ui-card__header">
+            <span class="ui-card__description"><%= title %></span>
+            <span class="stat-card__value"><%= number_with_delimiter(count) %></span>
+            <span class="ui-card__action stat-card__icon"><%= icon_tag icon %></span>
+          </span>
+          <span class="ui-card__footer stat-card__footer">
+            <span>View all <%= noun.pluralize %></span>
+            <%= icon_tag "arrow-right" %>
           </span>
         <% end %>
       <% end %>

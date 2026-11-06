@@ -1,46 +1,60 @@
 <%# The browser half of `cms login`. Short, because someone is reading it with a
     terminal open beside them. %>
 <% @page_title = "Connect a machine" %>
-<div class="measure--md measure--centered stack stack--lg">
-  <div class="panel panel--padded stack">
-    <h1 class="title"><%= @page_title %></h1>
-
-    <% if @authorization&.pending? %>
-      <% if @authorization.site? %>
-        <p class="text-muted">
-          The Astro site <strong class="text-semibold text-ink"><%= @authorization.label.presence || "a site" %></strong>
-          (on <%= @authorization.hostname.presence || "a machine" %>) is asking for a read-only token of its own,
-          to build from this CMS's content. It gets the Production site role, and a service token you can revoke under Settings › Service tokens.
-        </p>
-        <% unless @authorization.approvable_by?(Current.user) %>
-          <p class="text-danger">Your role can't issue service tokens. Ask someone who manages settings to approve it.</p>
+<div class="auth-panel">
+  <section class="ui-card">
+    <header class="ui-card__header auth-panel__header">
+      <h1 class="ui-card__title auth-panel__title"><%= @page_title %></h1>
+      <% if @authorization&.pending? %>
+        <% if @authorization.site? %>
+          <p class="ui-card__description">
+            The Astro site <strong><%= @authorization.label.presence || "a site" %></strong>
+            (on <%= @authorization.hostname.presence || "a machine" %>) is asking for a read-only token of its own,
+            to build from this CMS's content. It gets the Production site role, and a service token you can revoke under Settings › Service tokens.
+          </p>
+        <% else %>
+          <p class="ui-card__description">
+            <%= @authorization.hostname.presence || "A machine" %> is asking to act as you in this CMS.
+            It will be able to do whatever your role allows — no more.
+          </p>
         <% end %>
       <% else %>
-        <p class="text-muted">
-          <%= @authorization.hostname.presence || "A machine" %> is asking to act as you in this CMS.
-          It will be able to do whatever your role allows — no more.
-        </p>
+        <p class="ui-card__description">Enter the code your terminal is showing.</p>
       <% end %>
+    </header>
 
-      <%= form_with url: connect_path, method: :post, class: "row" do %>
-        <%= hidden_field_tag :code, @authorization.user_code, id: nil %>
-        <button name="decision" value="approve" class="ui-button">Approve</button>
-        <button name="decision" value="deny" class="ui-button ui-button--outline">Deny</button>
-      <% end %>
-    <% else %>
-      <p class="text-muted">Enter the code your terminal is showing.</p>
+    <div class="ui-card__content auth-panel__body">
+      <% if @authorization&.pending? %>
+        <% unless @authorization.approvable_by?(Current.user) %>
+          <div class="ui-alert ui-alert--destructive" role="alert">
+            <%= icon_tag "close-circle", class: "ui-alert__icon" %>
+            <p class="ui-alert__title">Your role can't issue service tokens.</p>
+            <div class="ui-alert__description">Ask someone who manages settings to approve it.</div>
+          </div>
+        <% end %>
 
-      <%= form_with url: connect_path, method: :get, class: "row" do %>
-        <%= text_field_tag :code, @code, placeholder: "ABCD-EFGH", autocomplete: "off", class: "ui-input grow text-mono device-code", autofocus: true,
-              aria: { label: "Code" } %>
-        <button type="submit" class="ui-button">Continue</button>
-      <% end %>
+        <%= form_with url: connect_path, method: :post, class: "auth-panel__actions" do %>
+          <%= hidden_field_tag :code, @authorization.user_code, id: nil %>
+          <button name="decision" value="deny" class="ui-button ui-button--outline">Deny</button>
+          <button name="decision" value="approve" class="ui-button">Approve</button>
+        <% end %>
+      <% else %>
+        <% if @code.present? %>
+          <div class="ui-alert ui-alert--destructive" role="alert">
+            <%= icon_tag "close-circle", class: "ui-alert__icon" %>
+            <p class="ui-alert__title">That code has expired or doesn’t exist.</p>
+            <div class="ui-alert__description">Run <code>cms login</code> again.</div>
+          </div>
+        <% end %>
 
-      <% if @code.present? %>
-        <p class="text-danger">
-          That code has expired or doesn’t exist. Run <code>cms login</code> again.
-        </p>
+        <%= form_with url: connect_path, method: :get, class: "ui-fieldset" do %>
+          <div class="ui-field">
+            <label class="ui-label" for="code">Code</label>
+            <%= text_field_tag :code, @code, placeholder: "ABCD-EFGH", autocomplete: "off", class: "ui-input device-code", autofocus: true %>
+          </div>
+          <button type="submit" class="ui-button ui-button--block">Continue</button>
+        <% end %>
       <% end %>
-    <% end %>
-  </div>
+    </div>
+  </section>
 </div>

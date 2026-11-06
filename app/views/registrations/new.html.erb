@@ -1,43 +1,42 @@
 <% @page_title = "Set up this CMS" %>
 
-<div class="measure--sm measure--centered stack stack--lg">
-  <div class="panel panel--padded stack stack--lg">
-    <div class="stack stack--xs">
-      <h1 class="title">Create the owner account</h1>
-      <p class="text-muted">The first account runs this CMS. Everyone after it is added from Access › Users.</p>
+<div class="auth-panel">
+  <section class="ui-card">
+    <header class="ui-card__header auth-panel__header">
+      <h1 class="ui-card__title auth-panel__title">Create the owner account</h1>
+      <p class="ui-card__description">The first account runs this CMS. Everyone after it is added from Access › Users.</p>
+    </header>
+
+    <div class="ui-card__content auth-panel__body">
+      <%= render "layouts/shared/errors", record: @user %>
+
+      <%= form_with url: sign_up_path, class: "ui-fieldset", data: { controller: "form" } do |form| %>
+        <div class="ui-field">
+          <%= form.label :name, "Name", class: "ui-label" %>
+          <%= form.text_field :name, required: true, autofocus: true, autocomplete: "name", placeholder: "Full name", value: @user.name, class: "ui-input" %>
+        </div>
+
+        <div class="ui-field">
+          <%= form.label :email, "Email address", class: "ui-label" %>
+          <%= form.email_field :email, required: true, autocomplete: "email", placeholder: "email@example.com", value: @user.email, class: "ui-input" %>
+        </div>
+
+        <div class="ui-field">
+          <%= form.label :password, "Password", class: "ui-label" %>
+          <%= form.password_field :password, required: true, autocomplete: "new-password", class: "ui-input" %>
+        </div>
+
+        <div class="ui-field">
+          <%= form.label :password_confirmation, "Confirm password", class: "ui-label" %>
+          <%= form.password_field :password_confirmation, required: true, autocomplete: "new-password", class: "ui-input" %>
+        </div>
+
+        <button type="submit" class="ui-button ui-button--block" data-form-target="submit">Create account</button>
+      <% end %>
     </div>
+  </section>
 
-    <%= render "layouts/shared/errors", record: @user %>
-
-    <%= form_with url: sign_up_path, class: "fields", data: { controller: "form" } do |form| %>
-      <label class="ui-field">
-        <span class="ui-label">Name</span>
-        <%= form.text_field :name, required: true, autofocus: true, autocomplete: "name", placeholder: "Full name", value: @user.name, class: "ui-input" %>
-      </label>
-
-      <label class="ui-field">
-        <span class="ui-label">Email address</span>
-        <%= form.email_field :email, required: true, autocomplete: "email", placeholder: "email@example.com", value: @user.email, class: "ui-input" %>
-      </label>
-
-      <label class="ui-field">
-        <span class="ui-label">Password</span>
-        <%= form.password_field :password, required: true, autocomplete: "new-password", placeholder: "Password", class: "ui-input" %>
-      </label>
-
-      <label class="ui-field">
-        <span class="ui-label">Confirm password</span>
-        <%= form.password_field :password_confirmation, required: true, autocomplete: "new-password", placeholder: "Confirm password", class: "ui-input" %>
-      </label>
-
-      <button type="submit" class="ui-button ui-button--block" data-form-target="submit">
-        <span>Create account</span>
-        <%= icon_tag "arrow-right", class: "icon--sm" %>
-      </button>
-    <% end %>
-  </div>
-
-  <p class="text-center text-muted">
-    Already have an account? <%= link_to "Log in", sign_in_path, class: "link" %>
+  <p class="auth-panel__note">
+    Already have an account? <%= link_to "Log in", sign_in_path, class: "auth-panel__link" %>
   </p>
 </div>

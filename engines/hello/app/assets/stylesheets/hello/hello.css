@@ -1,18 +1,58 @@
-/* A plugin stylesheet: linked on the admin pages that show something of
-   Hello's (Cms::Plugins.stylesheet). Hello's screens are drawn with the
-   admin's own components and layout classes (STYLE.md, Styling: panel,
-   fields, btn, stack, row…); what's Hello's alone gets a class of its own,
-   named for the plugin, drawn here with the admin's tokens (--gray-*,
-   --space-*, --text-*), so it follows Settings › Branding and the dark
-   theme. */
-@layer components {
-  /* A greeting in the list: its words, and when, at the far end. */
+/* A plugin stylesheet: linked on the admin pages that show something of Hello's
+   (Cms::Plugins.stylesheet :hello, "hello/hello").
+
+   Hello's screens are drawn with the admin's kit, Runwell UI (a port of
+   shadcn/ui; STYLE.md, "Styling: Runwell UI"; the styleguide at /cms/ui):
+   ui-card, ui-field, ui-label, ui-input, ui-button, ui-empty… Reach for those
+   first. What's Hello's alone gets a class of its own, named for the plugin
+   (hello-*), drawn here only with the kit's tokens (--foreground,
+   --muted-foreground, --border, --radius-*, --text-*…), so it follows
+   Settings › Branding and the dark theme without a line of its own. It sits
+   in the `ui` layer, beside the kit. */
+@layer ui {
+  /* The form: the field takes the room, the button sits at its end. */
+  .hello-form {
+    align-items: start;
+    display: flex;
+    gap: 0.5rem;
+
+    .ui-field {
+      flex: 1;
+    }
+  }
+
+  /* The greetings: rows ruled apart, each its words and, at the far end, when. */
+  .hello-greetings {
+    display: flex;
+    flex-direction: column;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
   .hello-greeting {
     align-items: baseline;
-    color: var(--foreground);
     display: flex;
-    gap: var(--space-4);
+    gap: 1rem;
     justify-content: space-between;
-    padding-block: var(--space-2-5);
+    padding-block: 0.75rem;
+
+    & + & {
+      border-block-start: 1px solid var(--border);
+    }
+  }
+
+  .hello-greeting__message {
+    color: var(--foreground);
+    font-size: var(--text-normal);
+    margin: 0;
+    min-inline-size: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .hello-greeting__time {
+    color: var(--muted-foreground);
+    flex-shrink: 0;
+    font-size: var(--text-x-small);
   }
 }

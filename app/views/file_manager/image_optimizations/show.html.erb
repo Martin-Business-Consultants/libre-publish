@@ -3,42 +3,51 @@
 
 <%= render "layouts/shared/page_header", title: "Image Optimizer" %>
 
-<%= tag.section class: "panel panel--padded measure--lg stack",
+<%= tag.section class: "ui-card measure--lg",
       data: ({ controller: "refresh", refresh_interval_value: 2 } unless @optimization.finished?) do %>
-  <p class="cluster text-body">
-    <%= status_tag @optimization.status.humanize %>
-    <span>
+  <header class="ui-card__header">
+    <h2 class="ui-card__title">Making large images lighter</h2>
+    <p class="ui-card__description">
       <%= @optimization.processed %> of <%= @optimization.total.positive? ? @optimization.total : "…" %> images looked at ·
       <%= @optimization.optimized %> made lighter · <%= @optimization.skipped %> already small enough · <%= @optimization.failed %> failed
-    </span>
-  </p>
-  <progress class="full-width" max="100" value="<%= @optimization.progress %>"><%= @optimization.progress %>%</progress>
-
-  <% if @optimization.optimized.positive? %>
-    <p class="text-ink">
-      Saved <strong class="text-semibold"><%= number_to_human_size(@optimization.bytes_saved) %></strong>:
-      <%= number_to_human_size(@optimization.bytes_before) %> down to <%= number_to_human_size(@optimization.bytes_after) %>.
     </p>
-  <% end %>
+    <div class="ui-card__action"><%= status_tag @optimization.status.humanize %></div>
+  </header>
 
-  <% if @optimization.errors_log.present? %>
-    <section class="media-section">
-      <h2 class="heading">Couldn’t optimize</h2>
-      <ul class="stack stack--xs text-body">
-        <% @optimization.errors_log.each_with_index do |failure, index| %>
-          <%# herb:key index %>
-          <li><span class="text-mono text-small"><%= failure["filename"] %></span> — <%= failure["message"] %></li>
-        <% end %>
-      </ul>
-    </section>
-  <% end %>
+  <div class="ui-card__content media-job">
+    <progress class="ui-progress" max="100" value="<%= @optimization.progress %>"><%= @optimization.progress %>%</progress>
 
-  <% if @optimization.finished? %>
-    <%= link_to file_manager_path, class: "ui-button" do %>
-      <span>Back to the library</span>
-      <%= icon_tag "arrow-right" %>
+    <% if @optimization.optimized.positive? %>
+      <p>
+        Saved <strong><%= number_to_human_size(@optimization.bytes_saved) %></strong>:
+        <%= number_to_human_size(@optimization.bytes_before) %> down to <%= number_to_human_size(@optimization.bytes_after) %>.
+      </p>
     <% end %>
-  <% else %>
-    <p class="ui-field__description">This page updates itself. You can leave it; the optimizer carries on.</p>
-  <% end %>
+
+    <% if @optimization.errors_log.present? %>
+      <div class="ui-alert ui-alert--destructive" role="alert">
+        <%= icon_tag "close-circle", class: "ui-alert__icon" %>
+        <p class="ui-alert__title">Couldn’t optimize</p>
+        <div class="ui-alert__description">
+          <ul class="media-job__failures">
+            <% @optimization.errors_log.each_with_index do |failure, index| %>
+              <%# herb:key index %>
+              <li><span class="text-mono"><%= failure["filename"] %></span> — <%= failure["message"] %></li>
+            <% end %>
+          </ul>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <footer class="ui-card__footer">
+    <% if @optimization.finished? %>
+      <%= link_to file_manager_path, class: "ui-button" do %>
+        <span>Back to the library</span>
+        <%= icon_tag "arrow-right" %>
+      <% end %>
+    <% else %>
+      <p class="ui-field__description">This page updates itself. You can leave it; the optimizer carries on.</p>
+    <% end %>
+  </footer>
 <% end %>
