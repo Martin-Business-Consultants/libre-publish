@@ -11,27 +11,29 @@
   <% if trigger_text %>
     <button type="button" class="<%= class_names("delete-link", trigger_class) %>" title="<%= title %>" data-action="dialog#open"><%= trigger_text %></button>
   <% else %>
-    <button type="button" class="<%= class_names("btn btn--danger btn--icon", trigger_class) %>" title="<%= title %>" data-keys="<%= keys %>" data-action="dialog#open">
-      <%= icon_tag "trash", class: "icon--sm" %>
+    <button type="button" class="<%= class_names("ui-button ui-button--ghost ui-button--icon-sm", trigger_class) %>" title="<%= title %>" data-keys="<%= keys %>" data-action="dialog#open">
+      <%= icon_tag "trash" %>
       <span class="visually-hidden"><%= title %></span>
     </button>
   <% end %>
-  <dialog class="dialog dialog--action" data-dialog-target="dialog">
-    <h3 class="heading heading--lg"><%= title %></h3>
-    <p class="text-body"><%= message || "This can’t be undone." %></p>
-    <div class="dialog__actions">
-      <button type="button" class="btn" data-action="dialog#close">Cancel</button>
+  <dialog class="ui-dialog" data-dialog-target="dialog" aria-label="<%= title %>">
+    <header class="ui-dialog__header">
+      <h2 class="ui-dialog__title"><%= title %></h2>
+      <p class="ui-dialog__description"><%= message || "This can’t be undone." %></p>
+    </header>
+    <footer class="ui-dialog__footer">
+      <button type="button" class="ui-button ui-button--outline" data-action="dialog#close">Cancel</button>
       <% if form %>
-        <button type="submit" form="<%= form %>" class="btn btn--destructive">
-          <%= icon_tag "trash", class: "icon--sm" %>
+        <button type="submit" form="<%= form %>" class="ui-button ui-button--destructive">
+          <%= icon_tag "trash" %>
           <span>Delete</span>
         </button>
       <% else %>
-        <%= button_to path, method: :delete, class: "btn btn--destructive", data: { turbo_frame: "_top" } do %>
-          <%= icon_tag "trash", class: "icon--sm" %>
+        <%= button_to path, method: :delete, class: "ui-button ui-button--destructive", data: { turbo_frame: "_top" } do %>
+          <%= icon_tag "trash" %>
           <span>Delete</span>
         <% end %>
       <% end %>
-    </div>
+    </footer>
   </dialog>
 </div>

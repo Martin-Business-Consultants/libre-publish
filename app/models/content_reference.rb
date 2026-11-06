@@ -25,6 +25,22 @@ class ContentReference < ApplicationRecord
     [owned, total]
   end
 
+  # The live entries and pages that records (pages, entries, globals) point
+  # at through their fields and blocks, for the delivery API's
+  # `?include=entries,pages`: [entries, pages], at most 500 references read.
+  def self.live_referenced_by(records)
+    records = Array(records)
+    return [[], []] if records.empty?
+
+    refs = records.group_by { it.class.base_class.name }.map { |type, owners| where(owner_type: type, owner_id: owners.map(&:id)) }.reduce(:or)
+      .where(kind: %w[record page]).distinct.limit(500).pluck(:kind, :ref_type, :ref_id)
+    pages = Page.live.where(path: refs.filter_map { |kind, _, id| id if kind == "page" }).order(:id).to_a
+    entries = refs.select { |kind, _, _| kind == "record" }.group_by { it[1] }.flat_map { |collection, rows|
+      CollectionEntry.live.joins(:collection).where(collections: {slug: collection}, slug: rows.map(&:last)).order(:id).to_a
+    }
+    [entries, pages]
+  end
+
   def self.owned_by(owners)
     return none if owners.empty?
 

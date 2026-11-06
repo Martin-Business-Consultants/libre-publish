@@ -18,10 +18,10 @@
       <header class="board-column__header">
         <% on_column = column == "on" %>
         <span class="<%= class_names("board-dot", "board-dot--on" => on_column) %>" aria-hidden="true"></span>
-        <h2 class="heading heading--sm"><%= label %></h2>
-        <span class="badge text-tabular" data-drag-and-drop-counter><%= cards.size %></span>
+        <h2 class="board-column__title"><%= label %></h2>
+        <span class="ui-badge ui-badge--secondary board-column__count" data-drag-and-drop-counter><%= cards.size %></span>
       </header>
-      <div class="stack stack--sm" data-drag-drop-item-container>
+      <div class="board-column__cards" data-drag-drop-item-container>
         <% cards.each do |entry| %>
           <%# herb:key entry.id %>
           <%= render "collections/boards/card", collection: collection, entry: entry, column: column, can_move: can_move %>

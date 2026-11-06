@@ -8,6 +8,118 @@ out.
 
 ## Unreleased
 
+### Added
+- **Move a site from the Go core.** `bin/rails "cms:import[PATH]"` takes the
+  Go core's backup (Tools › Backup there, `GET /api/tools/backup`), unpacked
+  or not, or its data directory, and replaces this install's site with it:
+  pages, entries, globals, block types, media and files, people and their
+  passwords, roles, tokens, webhooks, redirects, settings and the audit log,
+  ids kept. Rich text fields become this core's rich text, with their
+  documents drawn as HTML; links to Go-served files point at the same files
+  here; the Go Forms plugin's forms and submissions become the Forms
+  plugin's; the secrets the Go core sealed are opened with its key
+  (`SECRET_KEY_FILE`, or the backup's own `secret.key`) and kept as this
+  core keeps them, or cleared and reported without it. `DRY_RUN=1` reports
+  what it would carry, what's missing or damaged and what doesn't round-trip;
+  `FORCE=1` replaces a site that has people, keeping its database beside the
+  new one. The same task still imports the shared deployment's backups
+  (`cms:import_tenant` stays). docs/import.md.
+- **The delivery API answers the Go core's contract**, which
+  [@librepublish/astro](https://github.com/Martin-Business-Consultants/librepublish-astro)
+  0.8 holds every site to, and a spec holds it there:
+  `spec/fixtures/contracts/go` is the Go core's recorded contract (copied by
+  `bin/contracts-sync ../librepublishgo`, pinned in `go.sha256`), and
+  `spec/contracts/delivery_contract_spec.rb` seeds the same site, makes each
+  request and fails on any key, type or header the Go core gives and this
+  CMS doesn't, and on any key this CMS gives that isn't listed as its own.
+  Everything is added beside what was there (docs/compatibility.md):
+  - `/api/v1/schema` in the Go core's shape — `blocks`, `collections`,
+    `globals`, `pages` and `seo`, each a closed JSON Schema (groups and
+    repeater items too), synced patterns expanded out — and its digest in
+    `meta.schema_digest`: canonical JSON hashed byte for byte as the Go core
+    does (`CanonicalJson`).
+  - `X-CMS-Schema-Digest` on every `/api/v1` answer, so a build sees the
+    schema move under it.
+  - `/site`'s `api_version`, `image_widths` and `branding`; its contact
+    details' business name (`title`). `/sitemap`'s `loc`, `type` and each
+    alternate's `hreflang` and `href`. `/site_health`'s `message` (and cache
+    tag `site`). `/robots`' `meta`.
+  - `X-Total-Count`, `X-Total-Pages` and `Link` on lists; `?fields=` (only
+    those keys of each record) and `?include=` (assets, entries, pages or
+    none); `OPTIONS` on a resource answers its JSON Schema.
+  - An entry's blocks are expanded as a page's are (patterns, collection
+    lists, contact details), and a collection_list's entries carry their SEO.
+  - Asset URLs at `/files/<key>/<name>` and `/files/<key>/w<width>/<name>`,
+    as the Go core serves them: @librepublish/astro allows them as remote
+    images and copies them into a site's build. The Active Storage URLs keep
+    working.
+- **Webhooks and purges are signed as the Go core signs them**:
+  `X-CMS-Signature-V2` over the timestamp and the body, `X-CMS-Timestamp`,
+  `X-CMS-Delivery` (the same on every retry) and `X-CMS-Event`; a receiver
+  can refuse a replayed post. `X-CMS-Signature` is still sent.
+- **Webhook retries**: a delivery that can't connect, or is answered 408, 429
+  or 5xx, is sent again after 30s, 2m, 5m, 15m and 40m.
+- **`schema.changed`**, a webhook event (and a rebuild or purge, tag
+  `schema`) when `/api/v1/schema`'s digest moves, debounced. `global.updated`
+  carries the global's `id`.
+- **A build's launch checklist**: `POST /api/frontend/builds` keeps the
+  `checks`, `checks_url` and `schema_digest` @librepublish/astro reports, and
+  Settings › Deploy shows them, and says when the CMS's schema has moved
+  since the build. It answers `ok` and `approval_pending` too.
+- SEO's **Leave out of the sitemap** (`exclude_from_sitemap`), honoured by the
+  sitemap.
+
+### Changed
+- **The admin is drawn with Runwell UI**, a no-build port of shadcn/ui in
+  plain CSS (`app/assets/stylesheets/ui`, the styleguide at `/cms/ui` in
+  development): shadcn's look on every screen. The layout is shadcn's
+  sidebar (the menu's groups with collapsible submenus, New, the signed-in
+  person's menu with light or dark) beside the page as an inset sheet under a
+  header with the breadcrumb and search; search everything is a command
+  dialog (⌘K). Lists are shadcn's data table (a checkbox column for bulk
+  actions, a Columns menu that hides columns per browser, a ⋯ menu of row
+  actions, numbered pages), Settings is shadcn's settings layout, and edit
+  screens, dialogs, sheets, menus, the file manager, the dashboard and the
+  sign-in pages are drawn with the kit's cards, fields, dialogs and menus.
+  The Screen Options tab gives way to each table's Columns menu.
+- **Settings › Branding feeds the kit's tokens** (`ui/theme.css`), as
+  Runwell's Appearance does: the primary color becomes the accent (OKLCH,
+  lifted for the dark theme), the secondary color tints the neutrals, the
+  font, corners (`--radius-scale`, `--radius-control`) and shadow
+  (`--shadow-xs…lg`) follow; the dark top bar darkens the sidebar.
+- **For plugins:** the kit is the styling contract (docs/plugins.md, STYLE.md):
+  `ui-card`, `ui-button`, `ui-field`, `ui-input`, `ui-badge`, `ui-menu`,
+  `ui-dialog`, `render "ui/data_table"`, and the kit's tokens (`--card`,
+  `--border`, `--primary`, `--muted-foreground`…). The admin's old token
+  families (`--gray-*`, `--accent-*`, `--red-*`, `--surface`…) are gone: a
+  plugin stylesheet that reads them must move to the kit's names. The old
+  component classes (`btn`, `panel`, `field`, `data-table`, `dialog`…) still
+  draw, in the kit's look, from `legacy.css`, so Forms 1.7 and other plugins
+  written for them keep working. The default Forms plugin is pinned to 1.7.2.
+- **The delivery API sends only what `/api/v1/schema` declares**: a record's
+  frontmatter, its blocks' data, a global's data and its SEO lose keys no
+  field declares (a field since removed, a key an API client stored), as the
+  schema has always said (`additionalProperties: false`). They stay in the
+  record and in `/api`. A record's old `canonical` is given as
+  `canonical_url` too.
+- The Astro installer (`/frontend/install.sh`), the Developers screen and the
+  docs point at
+  [librepublish-astro](https://github.com/Martin-Business-Consultants/librepublish-astro)
+  (0.8), in place of libre-cms-astro. The installer writes the CMS's section
+  of the site's `AGENTS.md` (`/frontend/AGENTS.md`, between markers), which
+  now says what the integration enforces: the schema lock
+  (`npx librepublish-astro sync`, `cms.lock.json`), strict records, a
+  component for every block type, redirects only in the CMS, `<Form>` only on
+  pages rendered on demand, Site health and the launch checklist.
+
+### Deprecated
+- `/api/v1/schema`'s shape before this release, going in 2.0: `block_types`,
+  and inside each collection `enable_blocks` and `frontmatter`, each global
+  `data`, and each page `title` and `frontmatter`. Read `blocks` and the
+  parts themselves. A page's `title` being part of the schema until then,
+  retitling a page that has fields of its own moves the digest.
+- SEO's `canonical`: read `canonical_url`.
+
 ## 1.33.4
 
 ### Fixed

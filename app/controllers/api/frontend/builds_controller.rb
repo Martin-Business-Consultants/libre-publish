@@ -4,7 +4,9 @@
 # (@librepublish/astro's cms() integration): the integration's and Astro's versions, how
 # many pages it built, how it renders (`render`: static, server or hybrid),
 # where it takes cache purges (`webhook_url`), and the content it was built
-# from (`content_cursor`, opaque). The CMS keeps the latest (Frontend): the
+# from (`content_cursor`, opaque), the schema it was checked against
+# (`schema_digest`) and its launch checklist (`checks`, and `checks_url`,
+# where the live site answers the rest). The CMS keeps the latest (Frontend): the
 # Developers screen and the dashboard say which frontend it serves, and
 # Deploys rebuilds a static site but purges one rendered on demand. Any token
 # the site builds with (pages:read) may send it.
@@ -20,7 +22,8 @@ class Api::Frontend::BuildsController < Api::BaseController
 
   def create
     @build = Frontend.record_build(params.permit(:integration, :integration_version, :framework, :framework_version,
-      :pages, :site_url, :duration_ms, :render, :webhook_url, :content_cursor).to_h)
+      :pages, :site_url, :duration_ms, :render, :webhook_url, :content_cursor, :schema_digest, :checks_url,
+      checks: %i[key group title state evidence launch manual fix fix_label]).to_h)
     Frontend.approve_delivery! if granted?("settings:write")
     @pending = Frontend.pending_delivery
   end

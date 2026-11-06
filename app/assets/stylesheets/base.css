@@ -1,5 +1,6 @@
 /* Element defaults on top of the reset (reset.css): the page's type and
-   color, native form controls drawn as the admin's fields without a class,
+   color (shadcn's: 14px text in the foreground), native form controls without a class
+   drawn as the kit's fields,
    focus rings, links in running text. Components and helpers beat all of it
    (later layers). */
 @layer base {
@@ -9,16 +10,17 @@
   }
 
   body {
-    background-color: var(--surface);
-    color: var(--gray-900);
+    background-color: var(--background);
+    color: var(--foreground);
     -moz-osx-font-smoothing: grayscale;
     -webkit-font-smoothing: antialiased;
     -webkit-text-size-adjust: none;
     /* Inter's single-storey a and open digits, where it's installed. */
     font-feature-settings: "cv11", "ss01";
-    font-size: var(--text-sm);
+    font-family: var(--font-sans);
+    font-size: var(--text-normal);
     interpolate-size: allow-keywords;
-    line-height: var(--leading-sm);
+    line-height: 1.5;
     min-block-size: 100dvh;
   }
 
@@ -32,7 +34,7 @@
   }
 
   a:not([class]) {
-    color: var(--accent-600);
+    color: var(--primary);
     text-decoration: underline;
     text-decoration-color: color-mix(in oklch, currentColor 40%, transparent);
     text-underline-offset: 2px;
@@ -58,8 +60,8 @@
   }
 
   :is(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
-    outline: var(--focus-ring);
-    outline-offset: 2px;
+    outline: 2px solid color-mix(in oklch, var(--ring) 60%, transparent);
+    outline-offset: 1px;
   }
 
   :is(button, input, select, textarea):disabled {
@@ -73,79 +75,78 @@
     touch-action: manipulation;
   }
 
-  /* Text-like controls, selects and textareas: the forms plugin's look. */
-  :where(input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"], [type="hidden"], [type="submit"], [type="button"], [type="reset"], [type="image"])),
-  :where(select),
-  :where(textarea) {
-    background-color: var(--surface);
-    border: 1px solid var(--gray-300);
+/* A form control without the kit's class (a plugin's, written before the kit) is drawn as
+   the kit draws ui-input, ui-select and ui-textarea (ui/forms.css). */
+:where(input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"], [type="hidden"], [type="submit"], [type="button"], [type="reset"], [type="image"])),
+:where(select),
+:where(textarea) {
+  background-color: transparent;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xs);
+  color: var(--foreground);
+  font-size: var(--text-normal);
+  max-inline-size: 100%;
+  min-block-size: 2.25rem;
+  padding: 0.25rem 0.75rem;
+
+  &::placeholder {
+    color: var(--muted-foreground);
+    opacity: 1;
+  }
+
+  &:focus-visible {
+    border-color: var(--ring);
+    box-shadow: var(--shadow-xs), var(--ring-focus);
+    outline: none;
+  }
+
+  &[aria-invalid="true"] {
+    border-color: var(--destructive);
+  }
+}
+
+:where(select:not([multiple], [size])) {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-position: right 0.625rem center;
+  background-repeat: no-repeat;
+  background-size: 1rem;
+  padding-inline-end: 2.25rem;
+}
+
+:where(textarea) {
+  field-sizing: content;
+  min-block-size: 4rem;
+  padding-block: 0.5rem;
+}
+
+:where(input[type="checkbox"], input[type="radio"], progress, input[type="range"]) {
+  accent-color: var(--primary);
+}
+
+:where(input[type="checkbox"], input[type="radio"]) {
+  block-size: 1rem;
+  flex-shrink: 0;
+  inline-size: 1rem;
+  margin: 0;
+}
+
+:where(input[type="file"]) {
+  font-size: var(--text-normal);
+
+  &::file-selector-button {
+    background: transparent;
+    border: 1px solid var(--input);
     border-radius: var(--radius-md);
-    color: var(--gray-900);
-    font-size: var(--text-sm);
-    line-height: var(--leading-sm);
-    max-inline-size: 100%;
-    min-block-size: var(--space-8);
-    padding: 0.3125rem var(--space-2-5);
-
-    &::placeholder {
-      color: var(--gray-400);
-      opacity: 1;
-    }
-
-    &:hover:not(:focus, :disabled) {
-      border-color: var(--gray-400);
-    }
-
-    /* Payload's field focus: the border darkens, no ring. */
-    &:focus {
-      border-color: var(--gray-900);
-      outline: none;
-    }
-
-    &[aria-invalid="true"] {
-      border-color: var(--red-500);
-    }
+    color: var(--foreground);
+    cursor: pointer;
+    font: inherit;
+    font-weight: 500;
+    margin-inline-end: 0.75rem;
+    padding: 0.25rem 0.75rem;
   }
-
-  :where(select:not([multiple], [size])) {
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-    background-position: right var(--space-2) center;
-    background-repeat: no-repeat;
-    background-size: 1.25em 1.25em;
-    padding-inline-end: 2.25rem;
-  }
-
-  :where(textarea) {
-    field-sizing: content;
-    min-block-size: 5lh;
-  }
-
-  :where(input[type="checkbox"], input[type="radio"], progress, input[type="range"]) {
-    accent-color: var(--accent-600);
-  }
-
-  :where(input[type="checkbox"], input[type="radio"]) {
-    block-size: 1rem;
-    flex-shrink: 0;
-    inline-size: 1rem;
-    margin: 0;
-  }
-
-  :where(input[type="file"]) {
-    font-size: var(--text-sm);
-
-    &::file-selector-button {
-      background: var(--surface);
-      border: 1px solid var(--gray-300);
-      border-radius: var(--radius-md);
-      color: var(--gray-900);
-      cursor: pointer;
-      font-weight: var(--weight-medium);
-      margin-inline-end: var(--space-3);
-      padding: var(--space-1) var(--space-3);
-    }
-  }
+}
 
   :where(fieldset) {
     border: 0;
@@ -154,16 +155,15 @@
     padding: 0;
   }
 
+  /* A key, as the kit's ui-kbd draws one. */
   kbd {
-    background: var(--gray-50);
-    border: 1px solid var(--gray-300);
-    border-block-end-width: 2px;
+    background: var(--muted);
     border-radius: var(--radius-sm);
-    color: var(--gray-600);
-    font-family: var(--font-mono);
-    font-size: 0.75em;
-    font-weight: var(--weight-medium);
-    padding: 0 0.35em;
+    color: var(--muted-foreground);
+    font-family: var(--font-sans);
+    font-size: var(--text-x-small);
+    font-weight: 500;
+    padding: 0.0625rem 0.3rem;
     white-space: nowrap;
   }
 
@@ -177,7 +177,7 @@
   }
 
   ::selection {
-    background-color: var(--accent-200);
+    background-color: color-mix(in oklch, var(--primary) 25%, var(--background));
   }
 
   :where(ul, ol):where([role="list"]) {
@@ -220,7 +220,7 @@
 
   @media screen and (-webkit-min-device-pixel-ratio: 0) and (min-resolution: 0.001dpcm) {
     * {
-      scrollbar-color: var(--gray-300) transparent;
+      scrollbar-color: var(--input) transparent;
       scrollbar-width: thin;
     }
   }

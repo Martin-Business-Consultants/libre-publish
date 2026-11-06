@@ -1,0 +1,8 @@
+<%# locals: (version:) %>
+<%# One saved version of a setting in Settings › History: when (opening its
+    comparison), which setting, and who saved it. %>
+<tr id="<%= dom_id(version) %>">
+  <td data-column="saved"><%= link_to site_time_tag(version.created_at), settings_history_path(version), class: "ui-table__row-link" %></td>
+  <td data-column="setting"><%= version.label %></td>
+  <td data-column="author"><span class="text-muted"><%= version.author&.name.presence || version.author&.email || "—" %></span></td>
+</tr>

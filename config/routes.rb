@@ -20,6 +20,11 @@ Rails.application.routes.draw do
   # Where browsers report what a Content-Security-Policy blocked (Settings › Security policy).
   post "csp-reports", to: "csp_reports#create", as: :csp_reports
 
+  # A media library file, and an image's renditions, at the address the
+  # delivery API gives sites (FilesController, Asset::Delivery).
+  get "files/:key(/:rendition)/:filename", to: "files#show", as: :delivered_file, format: false,
+    constraints: {key: /[a-z0-9]{20,64}/, rendition: /w\d{2,4}/, filename: %r{[^/]+}}
+
   # Public sitemap for search engines.
   get "sitemap.xml", to: "sitemaps#xml", as: :sitemap_xml, defaults: {format: :xml}
 
@@ -88,6 +93,9 @@ Rails.application.routes.draw do
     end
 
     get :dashboard, to: "dashboard#index"
+
+    # Runwell UI's styleguide (app/views/ui), for whoever draws a screen or a plugin.
+    resource :ui, only: :show, controller: "ui" if Rails.env.development?
 
     get :sitemap,       to: "sitemaps#index", as: :sitemap, constraints: {format: /html|/}
     get "sitemap/robots",   to: "robots#edit", as: :sitemap_robots
@@ -330,6 +338,11 @@ Rails.application.routes.draw do
         resources :entries, param: :slug, only: [:index, :show]
       end
       resources :pages, param: :path, only: [:index, :show], constraints: {path: %r{[^/]+(?:/[^/]+)*}}, format: false
+
+      # OPTIONS on a resource answers its JSON Schema (DeliverySchema::Resource).
+      match "pages(/*path)", to: "page_schemas#show", via: :options, format: false, as: nil
+      match "collections/:collection_slug/entries(/:slug)", to: "entry_schemas#show", via: :options, as: nil
+      match "globals/:slug", to: "global_schemas#show", via: :options, as: nil
     end
 
     # The guides, for the CLI and MCP (`cms docs`).

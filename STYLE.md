@@ -200,123 +200,146 @@ ERB with Herb/ReActionView, Stimulus and Turbo, no build step.
 `bundle exec herb lint app/views engines` must pass. Every partial declares
 strict locals; no ERB output in attribute names; no inline styles.
 
-### Styling: the admin's own CSS
+### Styling: Runwell UI
 
-The admin is drawn with its own small CSS library, written for this CMS:
-`app/assets/stylesheets`, served as written (no build, no framework). The
-markup names what a thing *is* (`panel`, `btn btn--primary`, `field`,
-`data-table`); the stylesheets say how it looks. The look is the admin's
-classic one (Fizzy's): ink grays, a gray menu and admin bar, hairlines, 3px
-corners, semibold controls, the accent in blue until the branding sets a
-primary color.
+The admin is drawn with **Runwell UI**, a no-build port of
+[shadcn/ui](https://ui.shadcn.com) in plain CSS, copied as written from
+Runwell (`app/assets/stylesheets/ui/{tokens,button,badge,card,forms,overlays,display,data-table,styleguide}.css`,
+`app/javascript/controllers/ui/*`, `app/helpers/ui_helper.rb`,
+`app/views/ui/_data_table*`). Served as written: no build, no framework.
+The styleguide at `/cms/ui` (development) shows every component; open it
+before drawing a screen. The look is shadcn's, not the admin's old one: build
+new markup from the kit, and move markup you touch onto it.
 
 Layers, in the order they win (`_global.css`): `reset` (reset.css), `base`
-(element defaults, base.css: body type, native form controls, focus rings),
-`components` (everything else), `helpers` (helpers.css).
+(element defaults: body type, native controls, focus rings), `components`
+(the admin's own pieces the kit has nothing for: layout.css, the editors,
+the file manager, Lexxy), `ui` (the kit, and the admin's chrome drawn with
+it, `ui/app*.css`), `helpers` (helpers.css).
 
-**The vocabulary.** Reach for these before writing a new class; each file's
-header comment has the details.
+**The kit.** Components are `ui-` classes under shadcn's names and variants.
+Reach for these before writing a class:
 
-- *Layout* (layout.css): `stack` (a column), `row` (a line that doesn't
-  wrap), `cluster` (a line that wraps), `grid` with `grid--2|3|4` (columns
-  from a breakpoint) or `grid--tiles`. A stack and a grid space their
-  children 16px apart, a row and a cluster 8px; a modifier picks another
-  step of the scale (`2xs|xs|sm|md|base|lg|xl`: 2, 4, 8, 12, 16, 24, 32px).
-  layout.css defines the steps in use (`stack--2xs|xs|sm|md|lg`,
-  `row--2xs|xs|md|base`, `cluster--xs|sm|md|base`, `grid--sm|md`): add a
-  step to its line when a screen needs one. Alignment:
-  `row--between|end|top|baseline`, `cluster--between|end|top`,
-  `stack--start`.
-  `with-sidebar` (main column + 20rem sidebar from 64rem; its first child
-  is the main column, its last the sidebar; `with-sidebar--sticky`),
-  `measure--sm|md|lg|xl` (max width; `measure--centered`), `divided`
-  (hairlines between children).
-- *Type* (type.css): `page-title`, `title`, `heading` (`heading--lg`,
-  `heading--sm`), `eyebrow` (small caps over a group), `link`,
-  `title-link` (a record's name that opens it), `code` (inline),
-  `code-block` (`code-block--wrap`), `prose`.
-- *Buttons* (buttons.css): `btn` (outlined), `btn--primary`, `btn--danger`
-  (outlined red), `btn--destructive` (filled red, confirms a delete),
-  `btn--plain`, `btn--sm`, `btn--icon`, `btn--block`.
-- *Boxes* (panels.css): `panel` (`panel--padded`, `panel--scroll`,
-  `panel__header`, `panel__footer`; a `<details class="panel panel--padded">`
-  stands its summary off its contents), `well`, `empty-state`, `details` (a `<dl>` of
-  labels and values; `details--wide`).
-- *Status* (badges.css): `badge` and `notice`, toned `--success`,
-  `--danger`, `--warning`, `--info` (a badge without a tone is neutral).
-  `status_tag` picks a badge's tone from its words.
-- *Tables* (tables.css): `data-table` styles its own `<th>` and `<td>`;
-  `data-table__check`, `data-table__num`, `data-table__empty`,
-  `row-actions`.
-- *Forms* (forms.css): `fields` (a form's fields, 20px apart), `field`
-  (label, control, help; a text control in it fills its width), `label`
-  (`label__required`, `label__note`), `help`, `field-error`, `choice` (a
-  checkbox and its words; `choice--top`), `form-actions`, a `<legend
-  class="label">` (spaced off its fieldset's contents),
-  `input-with-icon` (`input-with-icon__icon`), `title-input`,
-  `switch-field`/`switch`, `secret-field`. `settings_field` and
-  `settings_switch` write fields for you.
-- *Menus and dialogs* (menus.css, dialog.css): `menu`, `menu__item`,
-  `popup` in a `popup-anchor`; `dialog` (`dialog--action`, `dialog--sheet`, `dialog--sheet-half`,
-  `dialog__header`, `dialog__actions`).
-- *Icons* (icons.css): `icon_tag "name"`, 1em unless sized
-  `icon--xs|sm|md|lg|xl` (12, 16, 20, 24, 40px).
-- *Helpers* (helpers.css), for text inside a component that the component
-  doesn't decide: `text-ink|body|muted|faint|accent|danger`,
-  `text-small` (12px), `text-large` (16px), `text-medium`,
-  `text-semibold`, `text-mono`, `text-center|end`, `text-tabular`,
-  `truncate`, `nowrap`, `break-all`, `grow`, `no-shrink`, `push-end`,
-  `full-width`, `visually-hidden`, `contents`, `wide-only`.
+- `ui-button` (`--secondary`, `--outline`, `--ghost`, `--link`,
+  `--destructive`; `--sm`, `--lg`, `--icon`, `--icon-sm`, `--icon-lg`,
+  `--block`), `ui-button-group`; `ui-badge` (`--secondary`, `--outline`,
+  `--destructive`, the status tones `--positive|warning|info|negative|neutral`,
+  `--count`).
+- `ui-card` (`__header`, `__title`, `__description`, `__action`,
+  `__content`, `__footer`; `--flush` for a table edge to edge, `--sm`).
+- Forms: `ui-field` (`--inline` for a checkbox, radio or switch beside its
+  words, `--end`, `--card`), `ui-label`, `ui-input` (`--sm`), `ui-select`,
+  `ui-textarea`, `ui-checkbox`, `ui-radio` in a `ui-radio-group`,
+  `ui-switch` (a checkbox with `role="switch"`), `ui-field__description`,
+  `ui-field__error`, `ui-fieldset`, `ui-field-row`, `ui-input-group`
+  (`__addon`).
+- Overlays, on native elements: `<dialog class="ui-dialog">` (`--sm`,
+  `--lg`; `__header`, `__title`, `__description`, `__footer`, `__close`),
+  `<dialog class="ui-sheet">` (`--left`), a `popover` `ui-menu`
+  (`__item`, `__item--destructive`, `__label`, `__separator`, `__shortcut`)
+  or `ui-popover` placed by the `ui--popover` controller, `ui-tooltip`,
+  `ui-toaster`/`ui-toast`.
+- Display: `ui-table` (`__numeric`, `__row-link`) in a
+  `ui-table-container`, `ui-tabs` (links with `aria-current`, or state with
+  `aria-pressed`; `--line`, `--icons`), `ui-alert` (`--destructive`,
+  `--warning`, `--success`), `ui-avatar`, `ui-separator`, `ui-skeleton`,
+  `ui-kbd`, `ui-progress`, `ui-breadcrumb`, `ui-empty`, `ui-item` in a
+  `ui-item-group`.
+- `UiHelper` spells the common ones: `ui_button`, `ui_link_button`,
+  `ui_button_classes` (for `link_to`, `button_to`, `form.submit`),
+  `ui_badge`, `ui_status_badge` (a status in its tone), `ui_kbd`,
+  `ui_avatar`.
+- Index tables are the **data table**: `render "ui/data_table", id:,
+  columns:, rows:, row:, as:, pagination:, selectable:, actions:, empty:`,
+  the columns described with `ui_column(key, label, align:, hideable:)`.
+  The row partial renders `ui_select_cell` first when selectable, a
+  `<td data-column="key">` per column, then `ui/row_actions` when actions.
+  It brings the checkbox column for bulk actions, a Columns menu that hides
+  columns (per browser) and the pages underneath.
+- Native elements over JavaScript: `<dialog>`, the `popover` attribute,
+  `<details>`, real checkboxes and radios. A component's CSS uses
+  descendant or class selectors, not child ones: in development
+  ReActionView wraps every ERB output in a `display: contents` span.
+
+**The admin's own pieces.** What the kit has no component for is drawn in
+`ui/app*.css` (the sidebar, the inset header, page headings, the settings
+layout, the editors' boxes…) as shadcn would draw it, from the kit's
+tokens, as a BEM block named for what it is: `ui/app.css` the shared ones
+(`fact-list`, `bullet-list`, `secret-field`, `delete-link`, `table-pagination`,
+`app-sheet--md|wide` for a sheet wider than the kit's), `ui/app-shell.css` the
+frame, and `ui/app-lists|settings|editor|media|dashboard|public|tools.css` a
+screen each. Layout is layout.css's:
+`stack` (a column), `row` (a line that doesn't wrap), `cluster` (a line that
+wraps), `grid` (`grid--2`), each spaced 16px or 8px
+apart unless a step says otherwise (`2xs|xs|sm|md|base|lg|xl`: 2, 4, 8, 12,
+16, 24, 32px; layout.css defines the steps in use), with `row--between|
+baseline`, `cluster--top`, `stack--start`, `with-sidebar` (main column +
+sidebar from 64rem), `measure--lg|xl`. Helpers
+(helpers.css) adjust text inside a component that the component doesn't
+decide: `text-muted|danger`, `text-small`, `text-medium`,
+`text-semibold`, `text-mono`, `text-tabular`,
+`truncate`, `nowrap`, `grow`, `push-end`, `visually-hidden`…
 
 **Rules.**
 
-- **A look that repeats is a component.** When a screen needs something
-  the vocabulary doesn't have, add a class for it (a BEM block named for
-  what it is: `media-tile`, `media-tile__name`) to the stylesheet for that
-  screen or, when it's general, to the library's file for its kind, and
-  write it there in full. Don't stack helpers to draw it: helpers adjust a
-  component, they don't build one.
-- **No variant classes.** States and breakpoints (`:hover`, `:focus-within`,
-  `[open]`, `@media (width >= 40rem)`) live in the component's rule, not
-  the markup.
+- **A look that repeats is a component.** Use the kit's; when a screen
+  needs something it doesn't have, add a class to `ui/app-<area>.css`,
+  written in full from the kit's tokens. Don't stack helpers to draw it, and
+  don't edit the kit's own files: they stay as Runwell has them.
+- **No variant classes.** States and breakpoints live in the component's
+  rule, not the markup.
 - **Only classes that exist.** `spec/architecture/css_classes_spec.rb`
   fails on a class nothing defines, on a variant class, and on a rule
   nothing uses (unless something else puts the class in the DOM:
-  `BUILT_ELSEWHERE`, or `BUILT_ELSEWHERE_PATTERNS` for a family, like
-  `icon--*` and Lexxy's). Class lists kept in a constant or variable are named
-  `*_CLASSES`/`*_classes` so the spec reads them.
-- **Everything respects Settings › Branding's color, type and surface.**
-  Rules draw only with the tokens (`_global.css`), which the branding sets
-  (`Branding#stylesheet`) and the dark theme re-points, so a rule written
-  for the light theme reads in the dark one:
-  - *Color*: `--gray-50…900` is the neutral, mixed from `--neutral-tint`
-    (the secondary color tints it, faintly); `--surface` is the canvas.
-    `--accent-50…900` is the primary color (blue until one is set), for
-    primary buttons, links, focus, selection and what's current; words on
-    an accent fill are `--on-accent`. `--red-*`, `--green-*` and
-    `--yellow-*` are for status. No other color, no hex (except pure white
-    or black on a photo).
-  - *Type*: `--font-sans` (the branding's font) and `--font-mono`; sizes
-    `--text-xs…3xl` with `--leading-*`, weights `--weight-*`.
-  - *Space*: `--space-*` (`--space-4` is 16px; `--space-1-5` 6px).
-  - *Surface*: corners `--radius-sm|md|lg|xl` (which the branding's
-    corners set): `md` for controls, `lg` for notices and wells, `xl` for
-    panels, menus and dialogs, `sm` for badges, `--radius-full` only for
-    true circles. Shadows `--shadow-surface` (panels) and
-    `--shadow-overlay` (menus, dialogs, sheets, toasts).
-- **Don't give a display class to something a stylesheet shows and hides**
-  (a `stack` on an element a rule sets `display: none`): let the
-  stylesheet set its display.
+  `BUILT_ELSEWHERE`, or `BUILT_ELSEWHERE_PATTERNS` for a family). Class
+  lists kept in a constant or variable are named `*_CLASSES`/`*_classes` so
+  the spec reads them; `UiHelper::BUILT_CLASSES` lists the variants its
+  builders write.
+- **Everything is drawn from the kit's tokens**, which Settings › Branding
+  reaches: shadcn's names (`ui/tokens.css`) — `--background`,
+  `--foreground`, `--card`, `--popover`, `--primary`,
+  `--primary-foreground`, `--secondary`, `--muted`, `--muted-foreground`,
+  `--accent`, `--destructive`, `--success`, `--warning`, `--info`,
+  `--border`, `--input`, `--ring`, `--sidebar*`, `--radius-sm|md|lg|xl`,
+  `--shadow-xs|sm|md|lg`, `--ring-focus` — and the type steps
+  `--text-x-small|normal|medium|large…`. They're built from the theming
+  tokens in `ui/theme.css` (`--lch-*` OKLCH triples, `--radius-scale`,
+  `--radius-control`, `--font-sans`), which `/branding.css`
+  (`Branding#stylesheet`) sets and the dark theme re-points, so a rule
+  written for the light theme reads in the dark one. No other color, no hex
+  (except pure white or black on a photo). A tint is a `color-mix()` of a
+  token (`color-mix(in oklch, var(--primary) 10%, transparent)`); against
+  the card or the page mix in srgb, since their white has no hue and an
+  oklch mix swings toward pink.
+- **Don't give a display class to something a stylesheet shows and hides**:
+  let the stylesheet set its display.
 - **Hooks**: keep a BEM class only while a stylesheet, JavaScript or a spec
-  reads it; the classes spec reports one nothing reads.
-- **Plugins** use the same vocabulary, and ship their own stylesheet for
-  what's theirs (docs/plugins.md).
+  reads it.
+- **Plugins** use the same kit and ship their own stylesheet for what's
+  theirs (docs/plugins.md). The admin's old classes (`btn`, `panel`,
+  `field`, `data-table`…) are kept, drawn with the kit's tokens, only in
+  `legacy.css`, for plugins written before the kit (its header lists them).
+  Nothing in this repository may write them: the classes spec fails on one
+  in `app/` or `engines/`, and doesn't ask that they be used.
 - Mailers keep their own inline styles: email clients don't load the admin's.
 
-Screens follow WordPress's admin conventions:
+Screens follow shadcn/ui's layouts, with WordPress's editing conventions:
 
-- One primary action per screen, `btn btn--primary`; everything else is a
-  secondary, outlined `btn`. A title row's "Add New" is secondary.
+- The frame is shadcn's sidebar layout (`layouts/application`): the sidebar
+  (`layouts/shared/_sidebar`, NavigationHelper#admin_menu; plugins' items join it) and the
+  page as an inset sheet under its header (`_inset_header`: the toggle, the
+  breadcrumb from the menu item, `parent_page` and `@page_title`, search as a
+  command dialog). A screen opens with `layouts/shared/page_header`.
+- A list is the data table (`render "ui/data_table"`, pages/index the
+  reference): filters (`_status_links`, `_quick_filter`) in a
+  `list-filters` line, the toolbar (`_bulk_actions`: search on the left, bulk
+  actions on the right) and the table inside one `select-all` controller,
+  each row ending in `ui/row_actions`.
+- Settings is shadcn's settings layout (`layouts/settings`): its sections down
+  the left, the page's cards in the middle, the Save box beside them.
+- One primary action per screen, a filled `ui-button`; everything else is
+  `--outline` (or `--ghost` in a row or a toolbar). A title row's "Add New"
+  is outlined.
 - Editors (pages, entries, globals) put the title and permalink first and
   the content in the main column, with a sidebar of boxes
   (`content_form_helper#postbox`) led by the Publish box

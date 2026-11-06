@@ -1,6 +1,6 @@
 <%# locals: (text:, tone: nil) %>
 <% if text.blank? %>
-  <span class="text-small text-muted">(empty)</span>
+  <span class="version-note">(empty)</span>
 <% else %>
   <pre class="diff-value" data-tone="<%= tone %>"><%= text %></pre>
 <% end %>

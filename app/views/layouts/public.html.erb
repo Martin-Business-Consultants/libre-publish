@@ -1,29 +1,32 @@
 <!DOCTYPE html>
-<%# Signed-out pages: sign in, sign up, password reset. No navigation, just the site's logo. %>
+<%# Signed-out pages: sign in, sign up, password reset, as shadcn's login blocks draw them: the
+    site's logo or name over a centred card (ui-card), on the muted page. No navigation. %>
 <html lang="<%= I18n.locale %>">
   <%= render "layouts/shared/head" %>
 
   <body class="public">
-    <div id="global-container">
+    <div id="global-container" class="public__frame">
       <header class="public__header" id="header">
-        <a href="#main" class="btn admin__skip-link" data-turbo="false">Skip to main content</a>
-        <nav class="public__brand">
-          <span class="public__logo"><%= render "layouts/shared/logo" %></span>
-          <%= render "layouts/shared/theme_toggle" %>
-        </nav>
-
+        <a href="#main" class="ui-button app-skip-link" data-turbo="false">Skip to main content</a>
+        <%= render "layouts/shared/theme_toggle" %>
         <%= yield :header %>
       </header>
 
       <%= render "layouts/shared/flash" %>
 
       <main id="main" class="public__main">
+        <div class="public__brand">
+          <% if current_branding[:logo_url].blank? %>
+            <span class="public__mark"><%= icon_tag "home" %></span>
+          <% end %>
+          <span class="public__logo"><%= render "layouts/shared/logo" %></span>
+        </div>
         <%= yield %>
       </main>
-    </div>
 
-    <footer id="footer">
-      <%= yield :footer %>
-    </footer>
+      <footer id="footer" class="public__footer">
+        <%= yield :footer %>
+      </footer>
+    </div>
   </body>
 </html>

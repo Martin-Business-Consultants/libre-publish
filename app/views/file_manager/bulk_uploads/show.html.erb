@@ -4,35 +4,44 @@
 
 <%= render "layouts/shared/page_header", title: "Unpacking into " + @bulk_upload.folder %>
 
-<%= tag.section class: "panel panel--padded measure--lg stack",
+<%= tag.section class: "ui-card measure--lg",
       data: ({ controller: "refresh", refresh_interval_value: 2 } unless @bulk_upload.finished?) do %>
-  <p class="cluster text-body">
-    <%= status_tag @bulk_upload.status.humanize %>
-    <span>
+  <header class="ui-card__header">
+    <h2 class="ui-card__title">Unpacking a zip</h2>
+    <p class="ui-card__description">
       <%= @bulk_upload.processed %> of <%= @bulk_upload.total.positive? ? @bulk_upload.total : "…" %> files looked at ·
       <%= @bulk_upload.succeeded %> added · <%= @bulk_upload.skipped %> skipped · <%= @bulk_upload.failed %> failed
-    </span>
-  </p>
-  <progress class="full-width" max="100" value="<%= @bulk_upload.progress %>"><%= @bulk_upload.progress %>%</progress>
+    </p>
+    <div class="ui-card__action"><%= status_tag @bulk_upload.status.humanize %></div>
+  </header>
 
-  <% if @bulk_upload.errors_log.present? %>
-    <section class="media-section">
-      <h2 class="heading">Couldn’t add</h2>
-      <ul class="stack stack--xs text-body">
-        <% @bulk_upload.errors_log.each_with_index do |failure, index| %>
-          <%# herb:key index %>
-          <li><span class="text-mono text-small"><%= failure["filename"] %></span> — <%= failure["message"] %></li>
-        <% end %>
-      </ul>
-    </section>
-  <% end %>
+  <div class="ui-card__content media-job">
+    <progress class="ui-progress" max="100" value="<%= @bulk_upload.progress %>"><%= @bulk_upload.progress %>%</progress>
 
-  <% if @bulk_upload.finished? %>
-    <%= link_to folder_path, class: "btn btn--primary" do %>
-      <span>See the folder</span>
-      <%= icon_tag "arrow-right" %>
+    <% if @bulk_upload.errors_log.present? %>
+      <div class="ui-alert ui-alert--destructive" role="alert">
+        <%= icon_tag "close-circle", class: "ui-alert__icon" %>
+        <p class="ui-alert__title">Couldn’t add</p>
+        <div class="ui-alert__description">
+          <ul class="media-job__failures">
+            <% @bulk_upload.errors_log.each_with_index do |failure, index| %>
+              <%# herb:key index %>
+              <li><span class="text-mono"><%= failure["filename"] %></span> — <%= failure["message"] %></li>
+            <% end %>
+          </ul>
+        </div>
+      </div>
     <% end %>
-  <% else %>
-    <p class="help">This page updates itself. You can leave it; the unpacking carries on.</p>
-  <% end %>
+  </div>
+
+  <footer class="ui-card__footer">
+    <% if @bulk_upload.finished? %>
+      <%= link_to folder_path, class: "ui-button" do %>
+        <span>See the folder</span>
+        <%= icon_tag "arrow-right" %>
+      <% end %>
+    <% else %>
+      <p class="ui-field__description">This page updates itself. You can leave it; the unpacking carries on.</p>
+    <% end %>
+  </footer>
 <% end %>

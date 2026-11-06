@@ -5,34 +5,36 @@
 #
 # Run it in an Astro project (its root, or its src/ directory). It:
 #
-#   package.json   adds @librepublish/astro — Forms and Media, the CMS's default
-#                  plugins, are part of it, and Commerce's <QuoteRequest> (npm,
-#                  pnpm, yarn or bun: whichever the project uses)
+#   package.json   adds @librepublish/astro (npm, pnpm, yarn or bun:
+#                  whichever the project uses)
 #   .env           CMS_BASE_URL and CMS_API_TOKEN (kept out of git)
+#   AGENTS.md      how this site works with the CMS, and what the integration
+#                  enforces, between markers (the rest of the file is yours)
 #
 # and prints what to add to astro.config if cms() isn't there yet. The
-# integration lives at github.com/Martin-Business-Consultants/libre-cms-astro
+# integration lives at github.com/Martin-Business-Consultants/librepublish-astro
 # and installs from there (LIBREPUBLISH_ASTRO=… installs another source, e.g.
-# a tag: github:Martin-Business-Consultants/libre-cms-astro#v0.1.1).
+# a tag or commit: github:Martin-Business-Consultants/librepublish-astro#v0.8.2).
 #
 # The token is the site's own read-only service token, approved in your
 # browser — nobody copies one out of a settings page. For CI, pass one
 # instead: CMS_API_TOKEN=lps_… sh -c "$(curl -fsSL __CMS_URL__/frontend/install.sh)"
 #
-# Then `npx astro dev` writes AGENTS.md (how this site works with the CMS,
-# and the Site health checks it's held to). Re-running is safe: it updates
-# the packages and .env and leaves everything else alone.
+# Then `npx librepublish-astro sync` pins the CMS's schema (cms.lock.json:
+# commit it) and `npx astro check` holds the site to it. Re-running is safe:
+# it updates the package, .env and AGENTS.md's section and leaves everything
+# else alone.
 set -eu
 
 CMS_URL="${CMS_URL:-__CMS_URL__}"
 CMS_URL="${CMS_URL%/}"
 SITE="__SITE__"
 
-ASTRO="${LIBREPUBLISH_ASTRO:-github:Martin-Business-Consultants/libre-cms-astro}"
+ASTRO="${LIBREPUBLISH_ASTRO:-github:Martin-Business-Consultants/librepublish-astro}"
 
 for arg in "$@"; do
   case "$arg" in
-    # Commerce is part of @librepublish/astro now; kept so old commands still run.
+    # Options of earlier installers, kept so old commands still run.
     --commerce|--no-commerce|--forms|--no-forms) ;;
     *) printf 'install: unknown option %s\n' "$arg" >&2; exit 1 ;;
   esac
@@ -151,15 +153,37 @@ else
   say ""
   say '      export default defineConfig({ integrations: [cms()] });'
   say ""
-  say "  Forms, Media and Commerce come with it: <Form slug>, <Image> and"
-  say '  <QuoteRequest items> from "@librepublish/astro/components/*.astro".'
+  say "  Blocks, images, rich text, SEO, branding and forms come with it:"
+  say '  <Blocks>, <Image>, <RichText>, <Seo>, <BrandStyles>, <Form> from'
+  say '  "@librepublish/astro/components/*.astro".'
   say ""
   say "  On Cloudflare, with pages rendered on demand, add the adapter too:"
   say '      import cloudflare from "@astrojs/cloudflare";'
   say '      adapter: cloudflare({ prerenderEnvironment: "node" }),'
 fi
 
-# ── 5. Done ─────────────────────────────────────────────────────────────────
+# ── 5. AGENTS.md ────────────────────────────────────────────────────────────
+# The CMS's section, between markers: how the site works with this CMS and
+# what the integration enforces. The rest of the file is the site's own.
+step "AGENTS.md"
+section="$(curl -fsS "$CMS_URL/frontend/AGENTS.md")" || die "couldn't fetch $CMS_URL/frontend/AGENTS.md"
+start="<!-- librepublish:start -->"
+end="<!-- librepublish:end -->"
+agents="$ROOT/AGENTS.md"
+touch "$agents"
+printf '%s\n' "$section" > "$agents.section"
+awk -v start="$start" -v end="$end" -v file="$agents.section" '
+  BEGIN { while ((getline line < file) > 0) body = body line "\n" }
+  $0 == start { print start; printf "%s", body; skip = 1; done = 1; next }
+  $0 == end { skip = 0 }
+  !skip { print }
+  END { if (!done) { print ""; print start; printf "%s", body; print end } }
+' "$agents" > "$agents.tmp"
+mv "$agents.tmp" "$agents"
+rm -f "$agents.section"
+say "  ✓ AGENTS.md (the CMS's section) — commit it"
+
+# ── 6. Done ─────────────────────────────────────────────────────────────────
 step "Done"
 cat <<EOF
   Set the same two variables where the site builds and runs (Cloudflare's
@@ -175,8 +199,13 @@ cat <<EOF
         assets: defineCollection({ loader: cmsAssets() }),
       };
 
-  npx astro dev     writes AGENTS.md (how this site works with the CMS, and
-                    the Site health checks it's held to) — commit it
-  npx astro build   writes _redirects, adds sitemap.xml and robots.txt,
+  npx librepublish-astro sync   pins the CMS's schema in cms.lock.json —
+                                commit it; run it again whenever the CMS's
+                                block types, collections or globals change
+  npx astro check   the generated types follow the schema: every block type
+                    needs a component, every field its right type
+  npx astro build   fails when the schema moved since the lock, a record
+                    doesn't fit it, or a block type has no component; writes
+                    _redirects (the CMS's only), sitemap.xml and robots.txt,
                     checks Site health, and reports the build to the CMS
 EOF

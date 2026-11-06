@@ -30,7 +30,9 @@ module SeoFields
     {"name" => "canonical_url", "label" => "Canonical URL", "type" => "url"},
     {"name" => "focus_keyword", "label" => "Focus keyword", "type" => "string"},
     {"name" => "noindex", "label" => "Hide from search engines", "type" => "boolean"},
-    {"name" => "nofollow", "label" => "Ask search engines not to follow links", "type" => "boolean"}
+    {"name" => "nofollow", "label" => "Ask search engines not to follow links", "type" => "boolean"},
+    {"name" => "exclude_from_sitemap", "label" => "Leave out of the sitemap", "type" => "boolean",
+     "help" => "Search engines can still find it through links; to hide it from them too, use the switch above."}
   ].freeze
 
   SOCIAL = [
@@ -48,4 +50,37 @@ module SeoFields
   ].freeze
 
   ALL = (SEARCH + SOCIAL + STRUCTURED).freeze
+
+  # What the delivery API sends of a record's `seo`, and its JSON Schema
+  # (/api/v1/schema's `seo`): the panel's fields, as the Go core declares
+  # them, and the keys this CMS keeps there besides — the sitemap's priority
+  # and change frequency (the Sitemap screen), a Twitter image, and the
+  # `canonical` older records hold (deprecated: read canonical_url, which a
+  # record with only `canonical` is delivered with too). Anything else stored
+  # in `seo` stays in the record and in /api, but isn't delivered.
+  DELIVERED = [
+    *ALL.map { it.slice("name", "label").merge("type" => {"plain_text" => "text", "select" => "string", "json" => "json"}.fetch(it["type"], it["type"])) },
+    {"name" => "twitter_image_id", "label" => "Twitter image", "type" => "asset"},
+    {"name" => "canonical", "label" => "Canonical URL (deprecated: canonical_url)", "type" => "url"}
+  ].freeze
+
+  def self.json_schema = @json_schema ||= build_json_schema.freeze
+
+  def self.build_json_schema
+    schema = BlockType.json_schema_for(DELIVERED.reject { it["type"] == "json" }, closed: true)
+    schema["properties"]["sitemap_priority"] = {"title" => "Sitemap priority", "x-cms-type" => "number", "type" => "number", "minimum" => 0, "maximum" => 1}
+    schema["properties"]["sitemap_changefreq"] = {"title" => "Sitemap change frequency", "x-cms-type" => "select", "type" => "string", "enum" => Sitemap::CHANGEFREQS}
+    # JSON-LD isn't a field type: one node or a list of them, each an object.
+    schema["properties"]["json_ld"] = {"x-cms-type" => "json", "title" => "JSON-LD", "description" => "One node or a list of nodes, each with an @type.",
+                                       "oneOf" => [{"type" => "object"}, {"type" => "array", "items" => {"type" => "object"}}]}
+    schema
+  end
+
+  # A record's `seo` as delivered: only what json_schema declares, with an
+  # older record's `canonical` given as canonical_url too.
+  def self.delivered(seo)
+    seo = seo.is_a?(Hash) ? seo.stringify_keys : {}
+    seo = seo.merge("canonical_url" => seo["canonical"]) if seo["canonical_url"].to_s.strip.empty? && seo["canonical"].to_s.strip.present?
+    seo.slice(*json_schema["properties"].keys)
+  end
 end

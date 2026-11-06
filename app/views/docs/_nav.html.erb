@@ -1,16 +1,15 @@
 <%# locals: (guides:, current:) %>
-<%# The guides and site health, down the Docs sidebar. %>
+<%# The guides and site health, down the Docs layout's side, as a docs site's sidebar. %>
 <% items = [ [ "All docs", docs_path, :index ] ] + guides.map { [ it.title, doc_path(it.slug), it.slug ] } + [ [ "Site health", site_health_docs_path, :site_health ] ] %>
-<%= postbox "docs-nav", "Docs" do %>
-  <nav aria-label="Docs">
-    <ul class="docs-nav">
-      <% items.each do |title, path, key| %>
-        <%# herb:key path %>
-        <li>
-          <%= link_to title, path, class: "docs-nav__link", aria: { current: ("page" if current == key) } %>
-        </li>
-      <% end %>
-    </ul>
-  </nav>
-  <p class="help">From the CLI or MCP: <code class="text-mono text-body">cms docs</code>, <code class="text-mono text-body">cms site-health</code>.</p>
-<% end %>
+<nav class="docs-nav" aria-label="Docs">
+  <p class="docs-nav__heading">Docs</p>
+  <ul class="docs-nav__list">
+    <% items.each do |title, path, key| %>
+      <%# herb:key path %>
+      <li>
+        <%= link_to title, path, class: "docs-nav__link", aria: { current: ("page" if current == key) } %>
+      </li>
+    <% end %>
+  </ul>
+  <p class="docs-nav__note">From the CLI or MCP: <code class="code">cms docs</code>, <code class="code">cms site-health</code>.</p>
+</nav>

@@ -1,36 +1,35 @@
 <% @page_title = "Log in" %>
 
-<div class="measure--sm measure--centered stack stack--lg">
-  <div class="panel panel--padded stack stack--lg">
-    <div class="stack stack--xs">
-      <h1 class="title"><%= tx("Log in to your account") %></h1>
-      <p class="text-muted"><%= tx("Enter your email and password below to log in.") %></p>
+<div class="auth-panel">
+  <section class="ui-card">
+    <header class="ui-card__header auth-panel__header">
+      <h1 class="ui-card__title auth-panel__title"><%= tx("Log in to your account") %></h1>
+      <p class="ui-card__description"><%= tx("Enter your email and password below to log in.") %></p>
+    </header>
+
+    <div class="ui-card__content">
+      <%= form_with url: sign_in_path, class: "ui-fieldset", data: { controller: "form" } do |form| %>
+        <div class="ui-field">
+          <%= form.label :email, tx("Email address"), class: "ui-label" %>
+          <%= form.email_field :email, required: true, autofocus: true, autocomplete: "email", placeholder: "email@example.com", value: params[:email], class: "ui-input" %>
+        </div>
+
+        <div class="ui-field">
+          <div class="auth-panel__label-row">
+            <%= form.label :password, tx("Password"), class: "ui-label" %>
+            <%= link_to tx("Forgot password?"), new_identity_password_reset_path, class: "auth-panel__link" %>
+          </div>
+          <%= form.password_field :password, required: true, autocomplete: "current-password", class: "ui-input" %>
+        </div>
+
+        <button type="submit" class="ui-button ui-button--block" data-form-target="submit"><%= tx("Log in") %></button>
+      <% end %>
     </div>
-
-    <%= form_with url: sign_in_path, class: "fields", data: { controller: "form" } do |form| %>
-      <label class="field">
-        <span class="label"><%= tx("Email address") %></span>
-        <%= form.email_field :email, required: true, autofocus: true, autocomplete: "email", placeholder: "email@example.com", value: params[:email] %>
-      </label>
-
-      <label class="field">
-        <span class="row row--between row--md">
-          <span class="label"><%= tx("Password") %></span>
-          <%= link_to tx("Forgot password?"), new_identity_password_reset_path, class: "link text-small" %>
-        </span>
-        <%= form.password_field :password, required: true, autocomplete: "current-password", placeholder: tx("Password") %>
-      </label>
-
-      <button type="submit" class="btn btn--primary btn--block" data-form-target="submit">
-        <span><%= tx("Log in") %></span>
-        <%= icon_tag "arrow-right", class: "icon--sm" %>
-      </button>
-    <% end %>
-  </div>
+  </section>
 
   <% unless User.exists? %>
-    <p class="text-center text-muted">
-      <%= tx("New install?") %> <%= link_to tx("Create the owner account"), sign_up_path, class: "link" %>
+    <p class="auth-panel__note">
+      <%= tx("New install?") %> <%= link_to tx("Create the owner account"), sign_up_path, class: "auth-panel__link" %>
     </p>
   <% end %>
 </div>

@@ -11,8 +11,8 @@
       <% Array(lines).each do |icon, label, value| %>
         <%# herb:key label %>
         <div class="save-box__line">
-          <%= icon_tag icon, class: "icon--sm text-faint" %>
-          <span><%= label %>: <strong class="text-semibold text-ink"><%= value %></strong></span>
+          <%= icon_tag icon %>
+          <span><%= label %>: <strong class="text-semibold"><%= value %></strong></span>
         </div>
       <% end %>
       <% if extra %>
@@ -27,7 +27,7 @@
               message: trash_message %>
       <% end %>
       <% if button %>
-        <button type="submit" class="btn btn--primary push-end"><%= button %></button>
+        <button type="submit" class="ui-button push-end"><%= button %></button>
       <% end %>
     </div>
   <% end %>

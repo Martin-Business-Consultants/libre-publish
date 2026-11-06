@@ -1,32 +1,37 @@
 <%# locals: (folders:, can_write:, can_delete:) %>
 <%# Moving or deleting the ticked files. The tiles' and rows' checkboxes join
     this form with form="assets_bulk". In the grid it shows only in Bulk
-    select (.media-bulk-actions, media/file-manager.css, which sets its display). %>
+    select (.media-bulk-actions, ui/app-media.css, which sets its display). %>
 <%= form_with url: can_write ? file_manager_moves_path : file_manager_bulk_deletions_path, id: "assets_bulk",
       class: "media-bulk-actions" do %>
   <% if can_write %>
-    <label class="cluster">
-      <span class="text-body">Move the ticked files to</span>
-      <%= select_tag :to, options_for_select([["All files (top level)", "/"]] + folders.map { [it, it] }), id: nil %>
+    <label class="media-bulk-actions__move">
+      <span>Move the ticked files to</span>
+      <%= select_tag :to, options_for_select([["All files (top level)", "/"]] + folders.map { [it, it] }), id: nil, class: "ui-select ui-select--sm" %>
     </label>
-    <button type="submit" class="btn btn--sm" formaction="<%= file_manager_moves_path %>">Move</button>
+    <button type="submit" class="ui-button ui-button--outline ui-button--sm" formaction="<%= file_manager_moves_path %>">
+      <%= icon_tag "move" %>
+      <span>Move</span>
+    </button>
   <% end %>
   <% if can_delete %>
     <div class="contents" data-controller="dialog" data-dialog-modal-value="true" data-action="keydown.esc->dialog#close:stop">
-      <button type="button" class="btn btn--danger btn--sm push-end" data-action="dialog#open">
+      <button type="button" class="ui-button ui-button--destructive ui-button--sm push-end" data-action="dialog#open">
         <%= icon_tag "trash" %>
         <span>Delete ticked</span>
       </button>
-      <dialog class="dialog dialog--action" data-dialog-target="dialog">
-        <h3 class="heading heading--lg">Delete the ticked files?</h3>
-        <p class="text-body">They go to the trash, where they can be restored.</p>
-        <div class="dialog__actions">
-          <button type="button" class="btn" data-action="dialog#close">Cancel</button>
-          <button type="submit" class="btn btn--destructive" formaction="<%= file_manager_bulk_deletions_path %>">
+      <dialog class="ui-dialog" data-dialog-target="dialog" aria-label="Delete the ticked files?">
+        <header class="ui-dialog__header">
+          <h2 class="ui-dialog__title">Delete the ticked files?</h2>
+          <p class="ui-dialog__description">They go to the trash, where they can be restored.</p>
+        </header>
+        <footer class="ui-dialog__footer">
+          <button type="button" class="ui-button ui-button--outline" data-action="dialog#close">Cancel</button>
+          <button type="submit" class="ui-button ui-button--destructive" formaction="<%= file_manager_bulk_deletions_path %>">
             <%= icon_tag "trash" %>
             <span>Delete</span>
           </button>
-        </div>
+        </footer>
       </dialog>
     </div>
   <% end %>

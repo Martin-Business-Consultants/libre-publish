@@ -3,7 +3,8 @@
 require "rails_helper"
 
 # An asset as the API hands it to a site: absolute URLs on the CMS's own host
-# (APP_HOST, "example.com" in test), size, and renditions.
+# (APP_HOST, "example.com" in test), at /files (FilesController), size, and
+# renditions.
 RSpec.describe Asset::Delivery do
   def upload(path, type)
     Asset.upload!(Rack::Test::UploadedFile.new(Rails.root.join(path), type), folder: "/")
@@ -13,7 +14,7 @@ RSpec.describe Asset::Delivery do
     Setting.set("general", site_base_url: "https://www.acme.test")
     delivery = upload("public/icon.png", "image/png").reload.delivery
 
-    expect(delivery["url"]).to start_with("http://example.com/rails/active_storage/blobs/")
+    expect(delivery["url"]).to start_with("http://example.com/files/").and end_with("/icon.png")
     expect(delivery["original"]).to eq(delivery["url"])
     expect(delivery).to include("filename" => "icon.png", "content_type" => "image/png")
     expect(delivery["width"]).to be_a(Integer).and be_positive
@@ -23,7 +24,8 @@ RSpec.describe Asset::Delivery do
 
     if ApplicationHelper.variants_supported?
       expect(delivery["variants"].keys).to eq(%w[w640 w1280 w1920])
-      expect(delivery["variants"].values).to all(start_with("http://example.com/rails/active_storage/representations/"))
+      expect(delivery["variants"].values).to all(start_with("http://example.com/files/"))
+      expect(delivery["variants"]["w640"]).to end_with("/w640/icon.png")
     else
       expect(delivery["variants"]).to eq({})
     end

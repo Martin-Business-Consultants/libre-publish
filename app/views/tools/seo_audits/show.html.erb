@@ -3,31 +3,40 @@
 <%= render "layouts/shared/page_header", title: "SEO audit",
       description: "What stands between the site and search engines and AI answers, most important first." %>
 
-<div class="stack stack--lg measure--xl">
+<div class="tools-page measure--xl">
   <% if @issues.empty? %>
-    <section class="panel empty-state">
-      Nothing to fix: every page has its title and description, links lead somewhere, and the site says who it is.
-    </section>
+    <div class="ui-empty">
+      <div class="ui-empty__media"><%= icon_tag "check-circle" %></div>
+      <div>
+        <h2 class="ui-empty__title">Nothing to fix</h2>
+        <p class="ui-empty__description">Every page has its title and description, links lead somewhere, and the site says who it is.</p>
+      </div>
+    </div>
   <% else %>
-    <% { problem: "Fix these", warning: "Worth fixing", tip: "Tips" }.each do |severity, heading| %>
+    <% { problem: [ "Fix these", :destructive ], warning: [ "Worth fixing", :warning ], tip: [ "Tips", :secondary ] }.each do |severity, (heading, tone)| %>
       <%# herb:key severity %>
       <% found = @issues.select { |issue| issue.severity == severity } %>
       <% next if found.empty? %>
-      <section class="panel panel--padded stack stack--md">
-        <h2 class="heading"><%= heading %> (<%= found.size %>)</h2>
-        <ul class="result-list">
+      <section class="ui-card ui-card--flush" aria-labelledby="seo_audit_<%= severity %>">
+        <header class="ui-card__header ui-card__header--bordered">
+          <h2 class="ui-card__title" id="seo_audit_<%= severity %>"><%= heading %></h2>
+          <div class="ui-card__action"><%= ui_badge found.size.to_s, tone %></div>
+        </header>
+        <ul class="ui-item-group">
           <% found.each_with_index do |issue, index| %>
             <%# herb:key index %>
-            <li class="stack stack--2xs">
-              <% if issue.record %>
-                <%= render "tools/seo_audits/issue_link", record: issue.record %>
-              <% end %>
-              <span class="text-body"><%= issue.message %></span>
+            <li class="ui-item">
+              <div class="ui-item__content">
+                <% if issue.record %>
+                  <p class="ui-item__title"><%= render "tools/seo_audits/issue_link", record: issue.record %></p>
+                <% end %>
+                <p class="ui-item__description"><%= issue.message %></p>
+              </div>
             </li>
           <% end %>
         </ul>
       </section>
     <% end %>
   <% end %>
-  <p class="text-small text-muted">See Settings › Search for AI crawlers and who the site is, and docs/seo.md for what the CMS does for search.</p>
+  <p class="ui-field__description">See Settings › Search for AI crawlers and who the site is, and docs/seo.md for what the CMS does for search.</p>
 </div>

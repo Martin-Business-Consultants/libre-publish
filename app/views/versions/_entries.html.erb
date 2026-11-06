@@ -1,12 +1,12 @@
 <%# locals: (entries:) %>
 <% if entries.empty? %>
-  <span class="text-small text-muted">No keys changed.</span>
+  <span class="version-note">No keys changed.</span>
 <% else %>
-  <div class="stack stack--md">
+  <div class="version-entries">
     <% entries.each do |entry| %>
       <%# herb:key entry[:key] %>
-      <div class="stack stack--xs">
-        <span class="text-small text-body"><code><%= entry[:key] %></code> <span class="text-muted"><%= entry[:op] %></span></span>
+      <div class="version-entry">
+        <span class="version-note"><code><%= entry[:key] %></code> <%= entry[:op] %></span>
         <% if entry[:op] == "added" %>
           <%= render "versions/value", text: entry[:after], tone: "add" %>
         <% elsif entry[:op] == "removed" %>

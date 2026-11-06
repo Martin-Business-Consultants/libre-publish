@@ -1,0 +1,47 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Copies the Go core's API contract (librepublishgo/contracts) into
+# spec/fixtures/contracts/go/ and pins it in spec/fixtures/contracts/go.sha256,
+# the way @librepublish/astro keeps its copy (its test/contracts.sha256).
+# spec/contracts/delivery_contract_spec.rb holds this CMS's delivery API,
+# webhooks and purges to those files, and fails when the copy differs from
+# the pin, so the contract changes only on purpose:
+#
+#   bin/contracts-sync ../librepublishgo     # copy, pin, then run the spec and follow it
+#
+# The plugins API (contracts/plugins) is the Go core's own and isn't copied;
+# forms/ is, for the Forms plugin's half (docs/delivery-api.md).
+require "digest"
+require "fileutils"
+require "pathname"
+
+ROOT = Pathname(File.expand_path("..", __dir__))
+TARGET = ROOT.join("spec/fixtures/contracts/go")
+PIN = ROOT.join("spec/fixtures/contracts/go.sha256")
+COPIED = %w[README.md index.json webhook_contract.json delivery webhooks forms].freeze
+
+source_repo = Pathname(File.expand_path(ARGV.fetch(0, "../librepublishgo"), Dir.pwd))
+source = source_repo.join("contracts")
+abort "No contracts/ in #{source_repo}: pass the librepublishgo checkout." unless source.join("index.json").file?
+
+FileUtils.rm_rf(TARGET)
+COPIED.each do |name|
+  from = source.join(name)
+  next unless from.exist?
+
+  FileUtils.mkdir_p(TARGET.join(name).dirname)
+  FileUtils.cp_r(from, TARGET.join(name))
+end
+
+# Which commit it came from, when the checkout says.
+head = source_repo.join(".git/HEAD")
+if head.file?
+  ref = head.read.strip
+  commit = ref.start_with?("ref: ") ? source_repo.join(".git", ref.delete_prefix("ref: ")).then { it.file? ? it.read.strip : nil } : ref
+  TARGET.join("COMMIT").write("#{commit}\n") if commit
+end
+
+files = Dir.glob("**/*", base: TARGET.to_s).select { TARGET.join(it).file? }.reject { %w[README.md COMMIT].include?(it) }.sort
+PIN.write(files.map { "#{Digest::SHA256.file(TARGET.join(it)).hexdigest}  #{it}" }.join("\n") + "\n")
+puts "Copied #{files.size} contract files from #{source} and pinned them in #{PIN.relative_path_from(ROOT)}."

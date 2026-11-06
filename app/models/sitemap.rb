@@ -10,6 +10,7 @@
 # Per-record overrides live in the existing `seo` JSON column:
 #
 #   seo["noindex"]            — true to exclude from public XML/JSON
+#   seo["exclude_from_sitemap"] — true to leave it out of the sitemap only
 #   seo["canonical_url"]      — URL to use instead of the derived path (what the
 #                               admin SEO panel saves). `seo["canonical"]` is
 #                               still honored as a fallback for older records.
@@ -41,10 +42,11 @@ class Sitemap
     :alternates,    # [{locale, loc}, …] — sibling translations
     :collection_slug, # nil for pages
     :slug,
+    :excluded,      # bool — seo["exclude_from_sitemap"]: out of the sitemap, still indexable
     keyword_init: true
   ) do
     def included?
-      status == "published" && !noindex
+      status == "published" && !noindex && !excluded
     end
   end
 
@@ -112,6 +114,7 @@ class Sitemap
       priority:         priority_from(seo, default: page.path == "home" ? 1.0 : DEFAULT_PAGE_PRIORITY),
       status:           page.status,
       noindex:          truthy?(seo["noindex"]),
+      excluded:         truthy?(seo["exclude_from_sitemap"]),
       nofollow:         truthy?(seo["nofollow"]),
       collection_slug:  nil,
       slug:             page.slug
@@ -134,6 +137,7 @@ class Sitemap
       priority:         priority_from(seo, default: DEFAULT_ENTRY_PRIORITY),
       status:           entry.status,
       noindex:          truthy?(seo["noindex"]),
+      excluded:         truthy?(seo["exclude_from_sitemap"]),
       nofollow:         truthy?(seo["nofollow"]),
       collection_slug:  entry.collection.slug,
       slug:             entry.slug

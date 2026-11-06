@@ -1,0 +1,62 @@
+<%# locals: (id:, columns:, rows:, row:, as:, row_locals: nil, pagination: nil, selectable: nil, actions: nil, empty: nil, empty_link: nil) %>
+<%# Runwell UI's data table (shadcn/ui's data-table, on the server): a checkbox column for bulk
+    actions, a Columns menu that hides columns (remembered per browser), and pages underneath.
+
+      columns = [ ui_column(:title, "Title", hideable: false), ui_column(:status, "Status") ]
+      render "ui/data_table", id: "pages", columns:, rows: @pages, row: "pages/row", as: :page,
+        pagination: @pagination, selectable: true, actions: true, empty: "No pages yet."
+
+    row is a partial rendering one <tr data-filter-target="item">: ui_select_cell first when
+    selectable, then a <td data-column="key"> per column in order, then ui/row_actions when
+    actions. row_locals go to every row (what all rows share, so it's read once). The bulk
+    actions' form (layouts/shared/bulk_actions) sits above the table; the select-all
+    controller is here, around both. %>
+<% hideable = columns.select(&:hideable) %>
+<% span = columns.size + (selectable ? 1 : 0) + (actions ? 1 : 0) %>
+<div class="ui-data-table" data-controller="ui--data-table" data-ui--data-table-key-value="<%= id %>">
+  <% if hideable.size > 1 && !actions %>
+    <div class="ui-data-table__toolbar">
+      <%= render "ui/data_table_columns", id: id, columns: hideable %>
+    </div>
+  <% end %>
+
+  <div class="ui-data-table__container">
+    <table class="ui-table ui-data-table__table" id="<%= id %>_table" data-ui--data-table-target="table">
+      <thead>
+        <tr>
+          <% if selectable %>
+            <%= ui_select_all_header %>
+          <% end %>
+          <% columns.each do |column| %>
+            <%# herb:key column.key %>
+            <%= ui_data_table_th column %>
+          <% end %>
+          <% if actions %>
+            <th class="ui-data-table__actions-header">
+              <% if hideable.size > 1 %>
+                <%= render "ui/data_table_columns", id: id, columns: hideable, icon: true %>
+              <% else %>
+                <span class="visually-hidden"><%= tx("Actions") %></span>
+              <% end %>
+            </th>
+          <% end %>
+        </tr>
+      </thead>
+      <tbody id="<%= id %>_rows">
+        <%= render partial: row, collection: rows, as: as, locals: row_locals || {} %>
+        <% if rows.none? %>
+          <tr class="ui-data-table__empty">
+            <td colspan="<%= span %>">
+              <%= tx(empty || "No results.") %>
+              <% if empty_link %>
+                <%= link_to tx(empty_link.first), empty_link.last, class: "link" %>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <%= pagination_nav pagination %>
+</div>

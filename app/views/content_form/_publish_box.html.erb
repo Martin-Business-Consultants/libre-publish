@@ -15,7 +15,7 @@
   <div data-controller="publish-box">
     <% if statusful && status == "draft" %>
       <div class="publish-box__draft">
-        <button type="submit" class="btn btn--sm" data-action="publish-box#submit" data-publish-box-status-param="draft"><%= tx("Save Draft") %></button>
+        <button type="submit" class="ui-button ui-button--outline ui-button--sm" data-action="publish-box#submit" data-publish-box-status-param="draft"><%= tx("Save Draft") %></button>
       </div>
     <% end %>
 
@@ -23,33 +23,33 @@
       <div class="publish-box__lines">
         <% if statusful %>
           <div class="publish-box__line">
-            <%= icon_tag "pinned", class: "publish-box__icon" %>
-            <div class="grow">
-              <span><%= tx("Status:") %> <strong class="text-semibold text-ink"><%= tx(status.humanize) %></strong></span>
+            <%= icon_tag "pinned" %>
+            <div class="publish-box__words">
+              <span><%= tx("Status:") %> <strong><%= tx(status.humanize) %></strong></span>
               <details class="inline-edit">
-                <summary class="link"><%= tx("Edit") %></summary>
+                <summary class="inline-edit__toggle"><%= tx("Edit") %></summary>
                 <label class="publish-box__field">
                   <span class="visually-hidden"><%= tx("Status") %></span>
-                  <%= form.select :status, statuses.map { [tx(it), it] }, {}, class: "full-width", data: { publish_box_target: "status" } %>
+                  <%= form.select :status, statuses.map { [tx(it), it] }, {}, class: "ui-select", data: { publish_box_target: "status" } %>
                 </label>
               </details>
             </div>
           </div>
 
           <div class="publish-box__line">
-            <%= icon_tag "history", class: "publish-box__icon" %>
-            <div class="grow">
+            <%= icon_tag "history" %>
+            <div class="publish-box__words">
               <span>
                 <% if record.publish_at.present? && record.publish_at > Time.current && status != "published" %>
-                  <%= tx("Scheduled for") %> <strong class="text-semibold text-ink"><%= site_time_tag(record.publish_at) %></strong>
+                  <%= tx("Scheduled for") %> <strong><%= site_time_tag(record.publish_at) %></strong>
                 <% elsif status == "published" && record.respond_to?(:published_at) && record.published_at.present? %>
-                  <%= tx("Published on") %> <strong class="text-semibold text-ink"><%= site_time_tag(record.published_at) %></strong>
+                  <%= tx("Published on") %> <strong><%= site_time_tag(record.published_at) %></strong>
                 <% else %>
-                  <%= tx("Publish") %> <strong class="text-semibold text-ink"><%= tx("immediately") %></strong>
+                  <%= tx("Publish") %> <strong><%= tx("immediately") %></strong>
                 <% end %>
               </span>
               <details class="inline-edit">
-                <summary class="link"><%= tx("Edit") %></summary>
+                <summary class="inline-edit__toggle"><%= tx("Edit") %></summary>
                 <div class="publish-box__field">
                   <%= render "content_form/schedule", record: record, scope: scope %>
                 </div>
@@ -57,42 +57,48 @@
             </div>
           </div>
           <% if record.unpublish_at.present? && record.unpublish_at > Time.current && status == "published" %>
-            <p class="notice notice--warning"><span><%= tx("Will unpublish") %> <%= site_time_tag(record.unpublish_at) %>.</span></p>
+            <div class="ui-alert ui-alert--warning">
+              <%= icon_tag "history", class: "ui-alert__icon" %>
+              <p class="ui-alert__description"><%= tx("Will unpublish") %> <%= site_time_tag(record.unpublish_at) %>.</p>
+            </div>
           <% end %>
         <% end %>
 
         <% if revisions.positive? %>
           <div class="publish-box__line">
-            <%= icon_tag "refresh", class: "publish-box__icon" %>
-            <div class="grow">
-              <span><%= tx("Revisions:") %> <strong class="text-semibold text-ink"><%= revisions %></strong></span>
+            <%= icon_tag "refresh" %>
+            <div class="publish-box__words">
+              <span><%= tx("Revisions:") %> <strong><%= revisions %></strong></span>
               <% if (browse = versions_path_for(record)) %>
-                <%= link_to tx("Browse"), browse, class: "link" %>
+                <%= link_to tx("Browse"), browse, class: "inline-edit__toggle" %>
               <% end %>
             </div>
           </div>
         <% end %>
 
         <% unless can_publish %>
-          <p class="notice notice--warning">
-            <% if statusful && status == "draft" %>
-              <%= tx("Your role can't publish. Save it as a draft, and someone who can publishes it.") %>
-            <% elsif record.persisted? %>
-              This <%= record.model_name.human.downcase %> is live, and your role can't publish, so it can't be changed here.
-            <% end %>
-          </p>
+          <div class="ui-alert ui-alert--warning">
+            <%= icon_tag "lock", class: "ui-alert__icon" %>
+            <p class="ui-alert__description">
+              <% if statusful && status == "draft" %>
+                <%= tx("Your role can't publish. Save it as a draft, and someone who can publishes it.") %>
+              <% elsif record.persisted? %>
+                This <%= record.model_name.human.downcase %> is live, and your role can't publish, so it can't be changed here.
+              <% end %>
+            </p>
+          </div>
         <% end %>
       </div>
     <% end %>
 
     <% if trash_path || label %>
-      <div class="publish-box__actions">
+      <div class="<%= class_names("save-box__actions", "save-box__actions--ruled": lines) %>">
         <% if trash_path %>
           <%= render "layouts/shared/delete_dialog", name: trash_name, path: trash_path, trigger_text: tx("Move to Trash"), form: trash_form,
                 message: tx("It goes to the trash, where it can be restored.") %>
         <% end %>
         <% if label %>
-          <button type="submit" class="btn btn--primary push-end" data-action="publish-box#submit" data-publish-box-status-param="<%= sets_status %>"><%= tx(label) %></button>
+          <button type="submit" class="ui-button push-end" data-action="publish-box#submit" data-publish-box-status-param="<%= sets_status %>"><%= tx(label) %></button>
         <% end %>
       </div>
     <% end %>

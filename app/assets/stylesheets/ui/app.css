@@ -1,0 +1,173 @@
+/* The admin's own pieces drawn as shadcn/ui draws them, with the kit's tokens: what the kit
+/* (ui/button.css … ui/data-table.css, copied from Runwell UI as written) has no component for.
+/* In the `ui` layer, beside the kit. Each screen's own file is ui/app-*.css. */
+@layer ui {
+  /* Pagination under a data table (layouts/shared/_pagination): which rows these are on the
+  /* left, the pages on the right. */
+  .table-pagination {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: space-between;
+    margin-block-start: 1rem;
+  }
+
+  .table-pagination__summary {
+    color: var(--muted-foreground);
+    font-size: var(--text-normal);
+    margin: 0;
+  }
+
+  .table-pagination__pages {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .table-pagination__gap {
+    color: var(--muted-foreground);
+    display: inline-grid;
+    inline-size: 2rem;
+    place-items: center;
+  }
+
+  /* A record's facts, labels beside values (<dl class="fact-list">): the labels muted, the
+  /* values in the text's colour. --wide for longer labels. */
+  .fact-list {
+    display: grid;
+    font-size: var(--text-normal);
+    gap: 0.5rem 1rem;
+    grid-template-columns: 6rem minmax(0, 1fr);
+    margin: 0;
+
+    dt {
+      color: var(--muted-foreground);
+    }
+
+    dd {
+      margin: 0;
+      min-inline-size: 0;
+      overflow-wrap: anywhere;
+    }
+  }
+
+  .fact-list--wide {
+    grid-template-columns: 10rem minmax(0, 1fr);
+  }
+
+  /* A sheet that takes half the window (an editor's sheet: a redirect, a webhook). The kit's
+  /* sheet is 24rem at most; this one is half the window, at least 36rem where there's room. */
+  .ui-sheet.app-sheet--wide {
+    inline-size: max(50vw, min(36rem, 100vw));
+    max-inline-size: 100vw;
+  }
+
+  .ui-sheet.app-sheet--md {
+    inline-size: min(36rem, 100vw);
+    max-inline-size: 100vw;
+  }
+
+  /* A delete that reads as a red text button (layouts/shared/_delete_dialog's trigger_text: a
+  /* box's Move to trash). */
+  .delete-link {
+    background: none;
+    border: 0;
+    color: var(--destructive);
+    cursor: pointer;
+    font: inherit;
+    font-size: var(--text-normal);
+    font-weight: 500;
+    padding: 0;
+    text-underline-offset: 4px;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  /* A list with bullets (an alert's errors, a card's notes), as shadcn's typography lists. */
+  .bullet-list {
+    display: grid;
+    gap: 0.25rem;
+    list-style: disc;
+    margin: 0;
+    padding-inline-start: 1.25rem;
+  }
+
+  /* The site's logo (layouts/shared/_logo), the height of a button. */
+  .site-logo {
+    block-size: 2.25rem;
+    inline-size: auto;
+  }
+
+  /* A key, token or secret (ApplicationHelper#secret_field): the kit's input in the mono face
+  /* with the eye button inside its end; reveal_controller sets --shown, which swaps the eye's
+  /* two icons. */
+  .secret-field {
+    align-items: center;
+    display: flex;
+    position: relative;
+
+    input {
+      font-family: var(--font-mono);
+      inline-size: 100%;
+      padding-inline-end: 2.75rem;
+    }
+
+    .ui-button {
+      inset-inline-end: 0.25rem;
+      position: absolute;
+    }
+  }
+
+  .secret-field .secret-field__hide,
+  .secret-field--shown .secret-field__show {
+    display: none;
+  }
+
+  .secret-field--shown .secret-field__hide {
+    display: inline-block;
+  }
+
+  /* A block type's form (block_types/_form): no wider than 64rem, its basics four across
+  /* from 64rem. */
+  .block-type-form {
+    max-inline-size: 64rem;
+  }
+
+  .block-type-form__basics {
+    @media (width >= 64rem) {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  /* The editor's Preview tab: the website, framed, the height of the window. */
+  .website-preview__frame {
+    background-color: var(--background);
+    block-size: calc(100dvh - 14rem);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    inline-size: 100%;
+    min-block-size: 30rem;
+  }
+}
+
+/* The kit's warning and success alerts tint the card in oklch, where the card's white has no
+/* hue of its own and the mix swings toward pink; mixed in srgb they stay amber and green. A fix
+/* for Runwell UI's display.css, kept here so the kit's files stay as Runwell has them. */
+@layer ui {
+  .ui-alert.ui-alert--warning {
+    background-color: color-mix(in srgb, var(--warning) 8%, var(--card));
+    border-color: color-mix(in srgb, var(--warning) 35%, var(--border));
+  }
+
+  .ui-alert.ui-alert--success {
+    background-color: color-mix(in srgb, var(--success) 8%, var(--card));
+    border-color: color-mix(in srgb, var(--success) 35%, var(--border));
+  }
+}

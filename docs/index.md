@@ -20,6 +20,7 @@ surface that AI agents use as well as people do.
 | If you want to… | Read |
 | --- | --- |
 | Run your own | [Install](install.md) |
+| Move a site here from the Go core, or another install | [Importing a site](import.md) |
 | Build a website's design | [Themes](themes.md) |
 | Work on a site locally, with its real content | [Local development](local-development.md) |
 | Be found by search engines and AI | [Search and AI](seo.md) |

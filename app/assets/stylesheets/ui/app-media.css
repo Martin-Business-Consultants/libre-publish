@@ -1,0 +1,493 @@
+/* The media library (file_manager/*), drawn as shadcn/ui would, with the kit's tokens: the
+/* drop zone, the toolbar, folders, the grid of tiles (which the asset picker's grid shares:
+/* media-tile, media-thumb), the bulk actions, the details sheet and the upload panels. */
+@layer ui {
+  /* The library: its toolbar, folders, files and the bulk actions, 16px apart. */
+  .media-library {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .media-library__count {
+    color: var(--muted-foreground);
+    font-size: var(--text-normal);
+    margin: 0;
+    text-align: center;
+  }
+
+  /* One line: the search, the filters, then Bulk select and the view switch at the end. The
+  /* search takes its own line on a phone. */
+  .media-toolbar {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .media-toolbar__search {
+    inline-size: 100%;
+
+    @media (width >= 40rem) {
+      inline-size: auto;
+      max-inline-size: 20rem;
+      min-inline-size: 14rem;
+    }
+  }
+
+  .media-toolbar__filters {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+
+    .ui-select {
+      inline-size: auto;
+    }
+  }
+
+  .media-toolbar__end {
+    align-items: center;
+    display: flex;
+    gap: 0.5rem;
+    margin-inline-start: auto;
+  }
+
+  /* Bulk select: a checkbox dressed as a button. Ticked, it reads Cancel, shows the bulk
+  /* actions, and each tile, above its link, becomes its own tick. In the list (no Bulk
+  /* select) the bulk actions always show. */
+  .media-toolbar__bulk-off {
+    display: none;
+  }
+
+  .media-library:has([data-media-bulk]:checked) {
+    .media-toolbar__bulk-on {
+      display: none;
+    }
+
+    .media-toolbar__bulk-off {
+      display: inline;
+    }
+
+    .media-tile__select {
+      display: block;
+    }
+  }
+
+  .media-library:has([data-media-bulk]:not(:checked)) .media-bulk-actions {
+    display: none;
+  }
+
+  /* The drop zone, always there above the library: a dashed box, its icon, words and button
+  /* in a line. */
+  .media-upload-zone {
+    align-items: center;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+  }
+
+  .media-upload-zone__icon {
+    align-items: center;
+    background-color: var(--muted);
+    block-size: 2.5rem;
+    border-radius: var(--radius-lg);
+    color: var(--foreground);
+    display: flex;
+    flex-shrink: 0;
+    inline-size: 2.5rem;
+    justify-content: center;
+  }
+
+  .media-upload-zone__text {
+    display: grid;
+    flex: 1;
+    gap: 0.125rem;
+    min-inline-size: 12rem;
+  }
+
+  .media-upload-zone__title {
+    font-size: var(--text-normal);
+    font-weight: 500;
+    margin: 0;
+  }
+
+  .media-upload-zone__description {
+    color: var(--muted-foreground);
+    font-size: var(--text-normal);
+    margin: 0;
+  }
+
+  /* Upload's progress, and the zip's form, open under their buttons as popovers do. */
+  .media-upload {
+    position: relative;
+
+    > summary {
+      list-style: none;
+
+      &::-webkit-details-marker {
+        display: none;
+      }
+    }
+  }
+
+  .media-upload__panel {
+    background-color: var(--popover);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    color: var(--popover-foreground);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    inline-size: 18rem;
+    inset: calc(100% + 0.25rem) 0 auto auto;
+    margin: 0;
+    max-inline-size: calc(100vw - 2rem);
+    padding: 0.75rem;
+    position: absolute;
+    text-align: start;
+    z-index: 20;
+
+    &[hidden] {
+      display: none;
+    }
+  }
+
+  .media-upload__panel--zip {
+    align-items: start;
+    gap: 1rem;
+    inline-size: 22rem;
+    padding: 1rem;
+  }
+
+  /* A file's progress as it uploads (media--direct-upload builds the rows, here and in the
+  /* asset picker). */
+  .upload-list {
+    display: flex;
+    flex-direction: column;
+    font-size: var(--text-x-small);
+    gap: 0.375rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .upload-list__item {
+    align-items: center;
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .upload-list__item--failed {
+    color: var(--destructive);
+  }
+
+  .upload-list__name {
+    flex: 1;
+    min-inline-size: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .upload-list__bar {
+    accent-color: var(--primary);
+    flex-shrink: 0;
+    inline-size: 6rem;
+  }
+
+  /* New folder, Rename folder, Delete folder: a line of small buttons. */
+  .media-folder-actions {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  /* The folders in this one: outlined tiles with an icon and a name. */
+  .media-folders {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(12rem, 100%), 1fr));
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .media-folder {
+    align-items: center;
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xs);
+    color: var(--foreground);
+    display: flex;
+    font-size: var(--text-normal);
+    font-weight: 500;
+    gap: 0.5rem;
+    padding: 0.625rem 0.75rem;
+    text-decoration: none;
+    transition: background-color 150ms;
+
+    &:hover {
+      background-color: var(--accent);
+    }
+
+    &:focus-visible {
+      box-shadow: var(--ring-focus);
+      outline: none;
+    }
+
+    .icon {
+      --icon-size: 1rem;
+
+      color: var(--muted-foreground);
+    }
+  }
+
+  /* A thumbnail's box: the picture fills it (asset_thumbnail draws a bare <img>), or a file's
+  /* icon sits in its middle. --square for a tile's, --row for a list row's 40px one. */
+  .media-thumb {
+    align-items: center;
+    background-color: var(--muted);
+    border: 1px solid var(--border);
+    color: var(--muted-foreground);
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
+
+    img {
+      block-size: 100%;
+      inline-size: 100%;
+      object-fit: cover;
+    }
+  }
+
+  .media-thumb--square {
+    aspect-ratio: 1 / 1;
+    border-radius: var(--radius-lg);
+    inline-size: 100%;
+  }
+
+  .media-thumb--row {
+    block-size: 2.5rem;
+    border-radius: var(--radius-md);
+    flex-shrink: 0;
+    inline-size: 2.5rem;
+  }
+
+  /* The grid of files: as many 10rem tiles as fit. The pagination frames it loads into lay
+  /* their tiles out in it. */
+  .media-grid {
+    display: grid;
+    gap: 1.25rem 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(10rem, 100%), 1fr));
+
+    turbo-frame {
+      display: contents;
+    }
+  }
+
+  /* One file in the grid: its square, its name and what it is. */
+  .media-tile {
+    min-inline-size: 0;
+    position: relative;
+  }
+
+  .media-tile__link {
+    border-radius: var(--radius-lg);
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    outline: none;
+    text-align: start;
+    text-decoration: none;
+  }
+
+  .media-tile__text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    min-inline-size: 0;
+    padding-inline: 0.125rem;
+  }
+
+  .media-tile__name {
+    color: var(--foreground);
+    font-size: var(--text-normal);
+    font-weight: 500;
+  }
+
+  .media-tile__meta {
+    color: var(--muted-foreground);
+    font-size: var(--text-x-small);
+  }
+
+  .media-tile__select {
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    display: none;
+    inset: 0;
+    position: absolute;
+    z-index: 10;
+
+    .ui-checkbox {
+      inset: 0.5rem 0.5rem auto auto;
+      position: absolute;
+    }
+  }
+
+  /* A tile (in the grid, or the picker's) rings its square while it's pointed at, focused
+  /* or, in Bulk select, ticked. */
+  .media-tile:hover .media-thumb,
+  .media-tile:focus-visible .media-thumb,
+  .media-tile:has(:focus-visible) .media-thumb,
+  .media-library:has([data-media-bulk]:checked) .media-tile:has(:checked) .media-thumb {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  /* The list: a row's thumbnail beside its name; the checkbox column narrow. */
+  .media-row {
+    align-items: center;
+    display: flex;
+    gap: 0.75rem;
+    min-inline-size: 0;
+  }
+
+  .media-table__check {
+    inline-size: 2.5rem;
+  }
+
+  /* The ticked files' actions: a muted bar over the grid or the list. */
+  .media-bulk-actions {
+    align-items: center;
+    background-color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-wrap: wrap;
+    font-size: var(--text-normal);
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .media-bulk-actions__move {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+
+    .ui-select {
+      inline-size: auto;
+    }
+  }
+
+  /* The details sheet: its body scrolls under the header. */
+  .media-details-sheet {
+    align-content: start;
+    overflow-y: auto;
+  }
+
+  /* A file's details: the picture, its facts, its actions, the form and where it's used. */
+  .media-details {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .media-details__preview {
+    align-items: center;
+    background-color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    color: var(--muted-foreground);
+    display: flex;
+    justify-content: center;
+    min-block-size: 10rem;
+    padding: 0.75rem;
+
+    img {
+      max-block-size: 50dvh;
+      max-inline-size: 100%;
+      object-fit: contain;
+    }
+  }
+
+  .media-details__actions {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .media-details__usages {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  /* A background job's page (the Image Optimizer, a zip unpacking): its progress, savings and
+  /* failures. */
+  .media-job {
+    display: flex;
+    flex-direction: column;
+    font-size: var(--text-normal);
+    gap: 1rem;
+
+    p {
+      margin: 0;
+    }
+  }
+
+  .media-job__failures {
+    display: grid;
+    gap: 0.25rem;
+    margin: 0;
+    padding-inline-start: 1rem;
+  }
+
+  /* Files dragged over the library (media--file-drop): the overlay shows (it toggles
+  /* [hidden]) over a faint wash of the primary, and the folder they'd land in is ringed. */
+  .file-drop {
+    position: relative;
+  }
+
+  .file-drop__overlay {
+    align-items: center;
+    background-color: color-mix(in oklch, var(--primary) 8%, transparent);
+    border: 2px dashed var(--primary);
+    border-radius: var(--radius-xl);
+    display: flex;
+    inset: 0;
+    justify-content: center;
+    pointer-events: none;
+    position: absolute;
+    z-index: 30;
+
+    &[hidden] {
+      display: none;
+    }
+  }
+
+  .file-drop__message {
+    background-color: var(--popover);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    color: var(--popover-foreground);
+    font-size: var(--text-normal);
+    margin: 0;
+    padding: 0.75rem 1rem;
+  }
+
+  .file-drop__folder--over {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+}

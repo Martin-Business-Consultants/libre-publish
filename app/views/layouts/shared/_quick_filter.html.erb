@@ -1,28 +1,23 @@
 <%# locals: (title:, param:, options:, current:) %>
-<%# A Fizzy quick filter: a select-like button showing the current choice,
-    opening a menu of the others (.popup, menus.css, under the button). Each
-    choice is a link that swaps one query param, so filters are bookmarkable. %>
-<div class="popup-anchor" data-controller="dialog" data-action="keydown.esc->dialog#close click@document->dialog#closeOnClickOutside">
-  <button type="button" class="btn quick-filter__button" title="<%= title %>" aria-haspopup="true" data-action="click->dialog#toggle:stop">
+<%# A quick filter, as shadcn's data table filters it: an outlined button showing the current
+    choice, opening a menu of the choices with the current one checked. Each choice is a link
+    that swaps one query param, so filters are bookmarkable. %>
+<% menu_id = "quick_filter_#{param}" %>
+<div class="quick-filter" data-controller="ui--popover">
+  <button type="button" class="ui-button ui-button--outline ui-button--sm" popovertarget="<%= menu_id %>" title="<%= title %>">
+    <%= icon_tag "filter" %>
     <span class="truncate"><%= options.to_h.invert.fetch(current, options.first.first) %></span>
-    <%= icon_tag "caret-down", class: "icon--xs text-faint" %>
+    <%= icon_tag "caret-down" %>
   </button>
-
-  <dialog class="menu popup quick-filter__menu" aria-label="<%= title %>" data-dialog-target="dialog">
-    <p class="quick-filter__title"><%= title %></p>
-    <ul class="stack stack--2xs" role="listbox">
-      <% options.each do |text, value| %>
-        <%# herb:key value %>
-        <% chosen = value == current %>
-        <li role="option" aria-selected="<%= chosen %>">
-          <%= link_to url_for(request.query_parameters.merge(param.to_s => value)), class: class_names("menu__item quick-filter__option", "quick-filter__option--chosen": chosen), data: { turbo_action: "replace" } do %>
-            <span class="truncate"><%= text %></span>
-            <% if chosen %>
-              <%= icon_tag "check", class: "text-accent" %>
-            <% end %>
-          <% end %>
-        </li>
+  <div class="ui-menu" id="<%= menu_id %>" popover role="menu" aria-label="<%= title %>" data-ui--popover-target="popover">
+    <div class="ui-menu__label"><%= title %></div>
+    <hr class="ui-menu__separator">
+    <% options.each do |text, value| %>
+      <%# herb:key value %>
+      <%= link_to url_for(request.query_parameters.merge(param.to_s => value)), class: "ui-menu__item", role: "menuitemradio",
+            aria: { checked: value == current }, data: { turbo_action: "replace" } do %>
+        <span class="truncate"><%= text %></span>
       <% end %>
-    </ul>
-  </dialog>
+    <% end %>
+  </div>
 </div>

@@ -11,8 +11,8 @@
         <%= asset_thumbnail asset, size: 240 %>
       </span>
       <span class="asset-picker__caption">
-        <span class="truncate text-small text-medium text-ink"><%= asset.title %></span>
-        <span class="truncate text-small text-muted"><%= asset_meta(asset) %></span>
+        <span class="asset-picker__name"><%= asset.title %></span>
+        <span class="asset-picker__meta"><%= asset_meta(asset) %></span>
       </span>
     </button>
   </li>

@@ -1,0 +1,652 @@
+/* Display components (shadcn/ui table, tabs, alert, avatar, separator, skeleton, kbd, progress,
+/* breadcrumb, empty, item).
+/*
+/*   <div class="ui-table-container"><table class="ui-table">…</table></div>
+/*
+/*   Tabs: links (one page per tab, aria-current="page") or ReActionView state
+/*   (aria-selected) — no JavaScript of their own:
+/*   <nav class="ui-tabs">
+/*     <a class="ui-tabs__trigger" aria-current="page" href="…">Account</a>
+/*     <a class="ui-tabs__trigger" href="…">Password</a>
+/*   </nav>
+/*   ui-tabs--line draws them as underlined tabs instead of a segmented control.
+/*
+/*   <div class="ui-alert ui-alert--destructive" role="alert">
+/*     <span class="icon icon--alert"></span>
+/*     <p class="ui-alert__title">Unable to save</p>
+/*     <div class="ui-alert__description">…</div>
+/*   </div> */
+@layer ui {
+  /* Table */
+
+  .ui-table-container {
+    inline-size: 100%;
+    overflow-x: auto;
+    position: relative;
+  }
+
+  .ui-table {
+    border-collapse: collapse;
+    caption-side: bottom;
+    font-size: var(--text-normal);
+    inline-size: 100%;
+    text-align: start;
+
+    caption {
+      color: var(--muted-foreground);
+      margin-block-start: 1rem;
+    }
+
+    tr {
+      border-block-end: 1px solid var(--border);
+      transition: background-color 150ms;
+    }
+
+    tbody tr:last-child {
+      border-block-end: 0;
+    }
+
+    tbody tr:hover,
+    tr[aria-selected="true"] {
+      background-color: color-mix(in oklch, var(--muted) 50%, transparent);
+    }
+
+    tr[aria-selected="true"] {
+      background-color: var(--muted);
+    }
+
+    tfoot {
+      background-color: color-mix(in oklch, var(--muted) 50%, transparent);
+      border-block-start: 1px solid var(--border);
+      font-weight: 500;
+    }
+
+    th {
+      block-size: 2.5rem;
+      color: var(--foreground);
+      font-weight: 500;
+      padding-inline: 0.5rem;
+      text-align: start;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 0.5rem;
+      vertical-align: middle;
+    }
+
+    :is(th, td):has(.ui-checkbox) {
+      inline-size: 1px;
+      padding-inline-end: 0;
+    }
+
+    .ui-table__numeric {
+      font-variant-numeric: tabular-nums;
+      text-align: end;
+    }
+
+    /* The row's main link fills the row, so the whole row is a target. */
+    .ui-table__row-link {
+      color: inherit;
+      font-weight: 500;
+      text-decoration: none;
+
+      &::after {
+        content: "";
+        inset: 0;
+        position: absolute;
+      }
+    }
+
+    tr:has(.ui-table__row-link) {
+      position: relative;
+
+      :is(a, button, input, select, label):not(.ui-table__row-link) {
+        position: relative;
+        z-index: 1;
+      }
+    }
+  }
+
+  /* Tabs */
+
+  .ui-tabs {
+    align-items: center;
+    background-color: var(--muted);
+    block-size: 2.25rem;
+    border-radius: var(--radius-lg);
+    color: var(--muted-foreground);
+    display: inline-flex;
+    inline-size: fit-content;
+    max-inline-size: 100%;
+    overflow-x: auto;
+    padding: 3px;
+    scrollbar-width: none;
+  }
+
+  .ui-tabs__trigger {
+    align-items: center;
+    background: none;
+    block-size: 100%;
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    color: var(--foreground);
+    cursor: pointer;
+    display: inline-flex;
+    flex: 1;
+    font: inherit;
+    font-size: var(--text-normal);
+    font-weight: 500;
+    gap: 0.375rem;
+    justify-content: center;
+    outline: none;
+    padding: 0.25rem 0.5rem;
+    text-decoration: none;
+    transition: color 150ms, box-shadow 150ms, background-color 150ms;
+    white-space: nowrap;
+
+    &:focus-visible {
+      border-color: var(--ring);
+      box-shadow: var(--ring-focus);
+    }
+
+    &:is([aria-current="page"], [aria-selected="true"], [aria-pressed="true"], :has(input:checked)) {
+      background-color: var(--background);
+      box-shadow: var(--shadow-sm);
+    }
+
+    &:has(input:is([type="radio"], [type="checkbox"])) {
+      position: relative;
+
+      input {
+        appearance: none;
+        cursor: pointer;
+        inset: 0;
+        margin: 0;
+        position: absolute;
+      }
+    }
+
+    .ui-badge--count {
+      --ui-badge-bg: transparent;
+
+      padding: 0;
+    }
+  }
+
+  html[data-theme="dark"] .ui-tabs__trigger {
+    color: var(--muted-foreground);
+
+    &:is([aria-current="page"], [aria-selected="true"], [aria-pressed="true"], :has(input:checked)) {
+      background-color: color-mix(in oklch, var(--input) 30%, transparent);
+      border-color: var(--input);
+      color: var(--foreground);
+    }
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html:not([data-theme]) .ui-tabs__trigger {
+      color: var(--muted-foreground);
+
+      &:is([aria-current="page"], [aria-selected="true"], [aria-pressed="true"], :has(input:checked)) {
+        background-color: color-mix(in oklch, var(--input) 30%, transparent);
+        border-color: var(--input);
+        color: var(--foreground);
+      }
+    }
+  }
+
+  /* Underlined tabs across a card or page. */
+  .ui-tabs--line {
+    background: none;
+    block-size: auto;
+    border-block-end: 1px solid var(--border);
+    border-radius: 0;
+    gap: 1rem;
+    inline-size: 100%;
+    justify-content: flex-start;
+    padding: 0;
+
+    .ui-tabs__trigger {
+      border: 0;
+      border-block-end: 2px solid transparent;
+      border-radius: 0;
+      color: var(--muted-foreground);
+      flex: none;
+      margin-block-end: -1px;
+      padding: 0.5rem 0.125rem;
+
+      &:hover {
+        color: var(--foreground);
+      }
+
+      &:is([aria-current="page"], [aria-selected="true"], [aria-pressed="true"], :has(input:checked)) {
+        background: none;
+        border-block-end-color: var(--foreground);
+        border-color: transparent transparent var(--foreground);
+        box-shadow: none;
+        color: var(--foreground);
+      }
+    }
+  }
+
+  /* Icon-only tabs (an index's Cards / Table / Board). */
+  .ui-tabs--icons .ui-tabs__trigger {
+    --icon-size: 1rem;
+
+    aspect-ratio: 1;
+    padding: 0;
+  }
+
+  /* Dark: the segmented trigger's fill and border are for the track, not for line tabs. */
+  html[data-theme="dark"] .ui-tabs--line .ui-tabs__trigger:is([aria-current="page"], [aria-selected="true"], [aria-pressed="true"], :has(input:checked)) {
+    background: none;
+    border-color: transparent transparent var(--foreground);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html:not([data-theme]) .ui-tabs--line .ui-tabs__trigger:is([aria-current="page"], [aria-selected="true"], [aria-pressed="true"], :has(input:checked)) {
+      background: none;
+      border-color: transparent transparent var(--foreground);
+    }
+  }
+
+  .ui-tabs__content {
+    flex: 1;
+    outline: none;
+  }
+
+  /* Alert */
+
+  .ui-alert {
+    align-items: start;
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    color: var(--card-foreground);
+    column-gap: 0.75rem;
+    display: grid;
+    font-size: var(--text-normal);
+    grid-template-columns: 1fr;
+    padding: 0.75rem 1rem;
+    position: relative;
+    row-gap: 0.125rem;
+    text-align: start;
+    inline-size: 100%;
+
+    &:has(.ui-alert__icon) {
+      grid-template-columns: 1rem 1fr;
+
+      .ui-alert__title,
+      .ui-alert__description {
+        grid-column: 2;
+      }
+    }
+
+    .ui-alert__icon {
+      --icon-size: 1rem;
+
+      block-size: 1rem;
+      color: currentColor;
+      grid-column: 1;
+      grid-row: 1 / span 2;
+      inline-size: 1rem;
+      translate: 0 0.125rem;
+    }
+  }
+
+  .ui-alert__title {
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    margin: 0;
+    min-block-size: 1rem;
+  }
+
+  .ui-alert__description {
+    color: var(--muted-foreground);
+    display: grid;
+    font-size: var(--text-normal);
+    gap: 0.25rem;
+    justify-items: start;
+
+    p {
+      margin: 0;
+    }
+  }
+
+  .ui-alert--destructive {
+    color: var(--destructive);
+
+    .ui-alert__description {
+      color: color-mix(in oklch, var(--destructive) 90%, transparent);
+    }
+  }
+
+  .ui-alert--warning {
+    background-color: color-mix(in oklch, var(--warning) 8%, var(--card));
+    border-color: color-mix(in oklch, var(--warning) 35%, var(--border));
+  }
+
+  .ui-alert--success {
+    background-color: color-mix(in oklch, var(--success) 8%, var(--card));
+    border-color: color-mix(in oklch, var(--success) 35%, var(--border));
+  }
+
+  /* Avatar */
+
+  .ui-avatar {
+    align-items: center;
+    background-color: var(--muted);
+    block-size: var(--ui-avatar-size, 2rem);
+    border-radius: 50%;
+    color: var(--muted-foreground);
+    display: inline-flex;
+    flex-shrink: 0;
+    font-size: calc(var(--ui-avatar-size, 2rem) * 0.4);
+    font-weight: 500;
+    inline-size: var(--ui-avatar-size, 2rem);
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    user-select: none;
+
+    img {
+      aspect-ratio: 1;
+      block-size: 100%;
+      inline-size: 100%;
+      object-fit: cover;
+    }
+  }
+
+  .ui-avatar--sm { --ui-avatar-size: 1.5rem; }
+  .ui-avatar--lg { --ui-avatar-size: 2.5rem; }
+
+  .ui-avatar-group {
+    display: flex;
+
+    .ui-avatar {
+      box-shadow: 0 0 0 2px var(--background);
+      margin-inline-start: -0.5rem;
+    }
+
+    .ui-avatar:first-of-type {
+      margin-inline-start: 0;
+    }
+  }
+
+  /* Separator */
+
+  .ui-separator {
+    background-color: var(--border);
+    block-size: 1px;
+    border: 0;
+    flex-shrink: 0;
+    inline-size: 100%;
+    margin: 0;
+  }
+
+  .ui-separator--vertical {
+    align-self: stretch;
+    block-size: auto;
+    inline-size: 1px;
+  }
+
+  /* A separator with a label in the middle ("or continue with"). */
+  .ui-separator--label {
+    align-items: center;
+    background: none;
+    block-size: auto;
+    color: var(--muted-foreground);
+    display: flex;
+    font-size: var(--text-normal);
+    gap: 0.5rem;
+
+    &::before,
+    &::after {
+      background-color: var(--border);
+      block-size: 1px;
+      content: "";
+      flex: 1;
+    }
+  }
+
+  /* Skeleton */
+
+  .ui-skeleton {
+    animation: ui-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    background-color: var(--accent);
+    border-radius: var(--radius-md);
+  }
+
+  @keyframes ui-pulse {
+    50% { opacity: 0.5; }
+  }
+
+  /* Kbd */
+
+  .ui-kbd {
+    align-items: center;
+    background-color: var(--muted);
+    block-size: 1.25rem;
+    border-radius: var(--radius-sm);
+    color: var(--muted-foreground);
+    display: inline-flex;
+    font-family: var(--font-sans);
+    font-size: var(--text-x-small);
+    font-weight: 500;
+    gap: 0.25rem;
+    justify-content: center;
+    min-inline-size: 1.25rem;
+    padding-inline: 0.25rem;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .ui-kbd-group {
+    align-items: center;
+    display: inline-flex;
+    gap: 0.25rem;
+  }
+
+  /* Progress: a native <progress class="ui-progress">. */
+  .ui-progress {
+    -webkit-appearance: none;
+    appearance: none;
+    background-color: color-mix(in oklch, var(--primary) 20%, transparent);
+    block-size: 0.5rem;
+    border: 0;
+    border-radius: 99rem;
+    inline-size: 100%;
+    overflow: hidden;
+
+    &::-webkit-progress-bar {
+      background: transparent;
+    }
+
+    &::-webkit-progress-value {
+      background-color: var(--primary);
+      transition: inline-size 200ms;
+    }
+
+    &::-moz-progress-bar {
+      background-color: var(--primary);
+    }
+  }
+
+  /* Breadcrumb */
+
+  .ui-breadcrumb {
+    align-items: center;
+    color: var(--muted-foreground);
+    display: flex;
+    flex-wrap: wrap;
+    font-size: var(--text-normal);
+    gap: 0.375rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    word-break: break-word;
+
+    @media (min-width: 640px) {
+      gap: 0.625rem;
+    }
+
+    li {
+      align-items: center;
+      display: inline-flex;
+      gap: 0.375rem;
+    }
+
+    li + li::before {
+      content: "›";
+      color: var(--muted-foreground);
+      font-size: 1.1em;
+      margin-inline-end: 0.25rem;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+      transition: color 150ms;
+
+      &:hover {
+        color: var(--foreground);
+      }
+    }
+
+    [aria-current="page"] {
+      color: var(--foreground);
+      font-weight: 400;
+    }
+  }
+
+  /* Empty: nothing here yet. */
+  .ui-empty {
+    align-items: center;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    justify-content: center;
+    padding: 3rem 1.5rem;
+    text-align: center;
+  }
+
+  .ui-empty__media {
+    align-items: center;
+    background-color: var(--muted);
+    block-size: 2.5rem;
+    border-radius: var(--radius-lg);
+    color: var(--foreground);
+    display: flex;
+    inline-size: 2.5rem;
+    justify-content: center;
+
+    .icon {
+      --icon-size: 1.5rem;
+    }
+  }
+
+  .ui-empty__title {
+    font-size: var(--text-medium);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+
+  .ui-empty__description {
+    color: var(--muted-foreground);
+    font-size: var(--text-normal);
+    margin: 0;
+    max-inline-size: 24rem;
+  }
+
+  /* Item: a row with media, a title and description, and actions (shadcn's Item). Lists of
+  /* records, settings rows, notifications. */
+  .ui-item-group {
+    display: flex;
+    flex-direction: column;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    .ui-item + .ui-item,
+    > li + li {
+      border-block-start: 1px solid var(--border);
+    }
+  }
+
+  .ui-item {
+    align-items: center;
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    color: inherit;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 1rem;
+    text-align: start;
+    text-decoration: none;
+    transition: background-color 100ms;
+
+    &:is(a):hover {
+      background-color: color-mix(in oklch, var(--accent) 50%, transparent);
+    }
+
+    .ui-item-group & {
+      border-radius: 0;
+    }
+  }
+
+  .ui-item--outline {
+    border-color: var(--border);
+  }
+
+  .ui-item--sm {
+    gap: 0.625rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .ui-item__media {
+    align-items: center;
+    display: flex;
+    flex-shrink: 0;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+
+  .ui-item__content {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-inline-size: 0;
+  }
+
+  .ui-item__title {
+    align-items: center;
+    display: flex;
+    font-size: var(--text-normal);
+    font-weight: 500;
+    gap: 0.5rem;
+    line-height: 1.25;
+    margin: 0;
+  }
+
+  .ui-item__description {
+    color: var(--muted-foreground);
+    font-size: var(--text-normal);
+    line-height: 1.4;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .ui-item__actions {
+    align-items: center;
+    display: flex;
+    gap: 0.5rem;
+  }
+}

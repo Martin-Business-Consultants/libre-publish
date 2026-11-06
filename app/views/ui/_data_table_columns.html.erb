@@ -1,0 +1,25 @@
+<%# locals: (id:, columns:, icon: nil) %>
+<%# A data table's Columns menu (ui/_data_table): a checkbox per column that can be hidden. %>
+<div class="ui-data-table__columns" data-controller="ui--popover" data-ui--popover-align-value="end">
+  <% if icon %>
+    <button type="button" class="ui-button ui-button--ghost ui-button--icon-sm" popovertarget="<%= id %>_columns" title="<%= tx("Columns") %>" aria-label="<%= tx("Columns") %>">
+      <%= icon_tag "sliders" %>
+    </button>
+  <% else %>
+    <button type="button" class="ui-button ui-button--outline ui-button--sm" popovertarget="<%= id %>_columns">
+      <%= icon_tag "sliders" %>
+      <span><%= tx("Columns") %></span>
+    </button>
+  <% end %>
+  <div class="ui-menu" id="<%= id %>_columns" popover data-ui--popover-target="popover">
+    <div class="ui-menu__label"><%= tx("Show columns") %></div>
+    <hr class="ui-menu__separator">
+    <% columns.each do |column| %>
+      <%# herb:key column.key %>
+      <label class="ui-menu__item">
+        <input type="checkbox" value="<%= column.key %>" checked data-ui--data-table-target="toggle" data-action="ui--data-table#toggle">
+        <span><%= tx(column.label) %></span>
+      </label>
+    <% end %>
+  </div>
+</div>

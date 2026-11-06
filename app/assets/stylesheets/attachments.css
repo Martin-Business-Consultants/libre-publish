@@ -15,8 +15,8 @@
   }
 
   .attachment__caption {
-    color: var(--gray-600);
-    font-size: var(--text-sm);
+    color: var(--muted-foreground);
+    font-size: var(--text-normal);
 
     textarea {
       background-color: transparent;
@@ -51,8 +51,8 @@
     box-sizing: border-box;
     color: var(--attachment-icon-color);
     display: grid;
-    font-size: var(--text-sm);
-    font-weight: var(--weight-bold);
+    font-size: var(--text-normal);
+    font-weight: 700;
     inline-size: auto;
     padding-inline: 0.5ch;
     place-content: center;
@@ -86,7 +86,7 @@
   }
 
   .attachment--file {
-    --attachment-icon-color: var(--gray-500);
+    --attachment-icon-color: var(--muted-foreground);
 
     align-items: center;
     display: flex;
@@ -102,8 +102,8 @@
     }
 
     .attachment__name {
-      color: var(--gray-900);
-      font-weight: var(--weight-semibold);
+      color: var(--foreground);
+      font-weight: 600;
     }
 
     /* Video attachments don't have an identifiable class, but we need to
@@ -125,7 +125,7 @@
   .attachment--svg,
   .attachment--ppt,
   .attachment--pptx {
-    --attachment-icon-color: var(--red-500);
+    --attachment-icon-color: var(--destructive);
   }
 
   .attachment--css,
@@ -138,7 +138,7 @@
   .attachment--erb,
   .attachment--ts,
   .attachment--js {
-    --attachment-icon-color: var(--accent-700);
+    --attachment-icon-color: var(--primary);
   }
 
   .attachment--txt,
@@ -147,18 +147,18 @@
   .attachment--md,
   .attachment--doc,
   .attachment--docx {
-    --attachment-icon-color: var(--accent-500);
+    --attachment-icon-color: var(--ring);
   }
 
   .attachment--csv,
   .attachment--numbers,
   .attachment--xls,
   .attachment--xlsx {
-    --attachment-icon-color: var(--green-600);
+    --attachment-icon-color: var(--success);
   }
 
   .attachment__link {
-    color: var(--accent-600);
+    color: var(--primary);
     text-decoration: underline;
   }
 
@@ -194,8 +194,8 @@
     }
 
     &.node--selected {
-      --attachment-bg-color: var(--accent-600);
-      --attachment-text-color: var(--on-accent);
+      --attachment-bg-color: var(--primary);
+      --attachment-text-color: var(--primary-foreground);
     }
   }
 

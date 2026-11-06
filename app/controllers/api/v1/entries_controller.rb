@@ -13,12 +13,12 @@ class Api::V1::EntriesController < Api::V1::BaseController
     scope = scope.where(locale: params[:locale]) if params[:locale].present?
     @entries = paginate(scope).to_a
     @assets = included_assets(entries: @entries)
-    cache_tags("collection:#{@collection.slug}", @entries.map { "entry:#{@collection.slug}/#{it.slug}" })
+    cache_tags("collection:#{@collection.slug}", @entries.map { "entry:#{@collection.slug}/#{it.slug}" }, @entries.flat_map { Page::BlockExpansion.cache_tags(it.blocks) })
   end
 
   def show
     @entry = @collection.entries.live.find_by!(slug: params[:slug])
     @assets = included_assets(entries: [@entry])
-    cache_tags("entry:#{@collection.slug}/#{@entry.slug}")
+    cache_tags("entry:#{@collection.slug}/#{@entry.slug}", Page::BlockExpansion.cache_tags(@entry.blocks))
   end
 end

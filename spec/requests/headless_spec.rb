@@ -63,13 +63,15 @@ RSpec.describe "Headless", type: :request do
     expect(response).to have_http_status(:ok)
     expect(response.media_type).to eq("text/markdown")
     expect(response.body).to start_with("# This site is the frontend of a headless CMS")
-    expect(response.body).to include("http://www.example.com/api/v1/content", "@librepublish/astro/loaders", "Site health")
+    expect(response.body).to include("http://www.example.com/api/v1/content", "@librepublish/astro/loaders", "Site health",
+      "cms.lock.json", "satisfies BlockComponents", "Redirects live in the CMS")
     expect(response.body).not_to include("__CMS_URL__", "librepublish:cms-frontend")
   end
 
   it "serves the Astro installer, which installs the integration rather than copying files" do
     get "/frontend/install.sh"
-    expect(response.body).to include("http://www.example.com", "@librepublish/astro", "github:Martin-Business-Consultants/libre-cms-astro", "purpose=site", "/api/v1/site")
+    expect(response.body).to include("http://www.example.com", "@librepublish/astro", "github:Martin-Business-Consultants/librepublish-astro", "purpose=site", "/api/v1/site",
+      "/frontend/AGENTS.md", "librepublish-astro sync")
     expect(response.body).not_to include("__CMS_URL__", "/frontend/files/")
 
     get "/frontend/files/integration.ts"

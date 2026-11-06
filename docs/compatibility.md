@@ -26,6 +26,7 @@ update backs up the data directory before it migrates (docs/install.md).
 | `Cms.version`, `Cms.data_dir`, `Cms::PATH` | `lib/cms.rb` | `spec/contracts/public_api_spec.rb` |
 | The REST API: every core route under `/api/` | docs/delivery-api.md, docs/agent-interface.md | `spec/contracts/public_api_spec.rb` (routes), request specs (payloads) |
 | Webhooks: events, envelope, signature, payload keys | docs/webhooks.md | `spec/contracts/webhook_contract_spec.rb` |
+| The delivery API's answers, headers and schema digest, and webhooks' and purges' signatures, as the Go core's contract has them (what @librepublish/astro holds a site to) | docs/delivery-api.md, `spec/fixtures/contracts/go` | `spec/contracts/delivery_contract_spec.rb` |
 | Content events: `<event>.cms` notifications | docs/plugins.md | plugin specs |
 | The admin's URLs under `/cms` | | redirects kept for moved ones (`/admin` → `/cms`) |
 
@@ -66,6 +67,33 @@ client ignores keys it doesn't know.
    plugin's own suite shows them. The CHANGELOG lists every deprecation.
 2. Remove it in the next major release, never sooner, and never less than
    six months after the deprecation shipped.
+
+### The delivery API and the Go core's contract
+
+The delivery API (`/api/v1`) answers the Go core's contract as well as its
+own: what the contract has and this CMS didn't is added beside what it had,
+never in its place. Where the two named the same key differently, both are
+sent (`/sitemap`'s `loc` and `url`, an alternate's `hreflang`/`href` and
+`locale`/`url`, SEO's `canonical_url` and `canonical`), and where they shaped
+the same key differently, the old shape's keys stay inside the new one
+(`/api/v1/schema`'s parts are JSON Schemas carrying the old `title`,
+`enable_blocks`, `frontmatter` and `data` as annotations, beside the old
+`block_types`). Those old keys are deprecated in 1.34 and go in 2.0
+(docs/delivery-api.md lists them).
+
+`spec/contracts/delivery_contract_spec.rb` checks it, against the copy of the
+Go core's recorded answers in `spec/fixtures/contracts/go`: a key the
+contract has that this CMS doesn't send fails, and so does a key this CMS
+sends that the contract doesn't, unless the spec lists it as this CMS's own
+(`RAILS_ONLY`) — @librepublish/astro refuses keys it doesn't know. When the Go
+core's contract moves, `bin/contracts-sync ../librepublishgo` copies and pins
+it, and the spec says what to follow.
+
+Data isn't a key: the delivery API sends a record's frontmatter, block data,
+global data and SEO with only what `/api/v1/schema` declares (as that schema
+always said, `additionalProperties: false`), so a value stored under a
+field since removed stops being delivered. It stays in the record and in
+`/api`.
 
 ## Plugins and newer or older cores
 

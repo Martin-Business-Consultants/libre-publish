@@ -2,13 +2,13 @@
 /* like focus; a list row is tinted with the selection's color too. */
 @layer components {
   [data-keyboard-current] {
-    outline: var(--focus-ring);
+    outline: 2px solid var(--ring);
     outline-offset: 2px;
   }
 
   tr[data-keyboard-current],
   li[data-keyboard-current] {
-    background-color: var(--accent-50);
+    background-color: color-mix(in oklch, var(--primary) 6%, var(--background));
     outline-offset: -2px;
   }
 }

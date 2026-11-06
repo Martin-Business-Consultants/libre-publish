@@ -1,16 +1,16 @@
 <%# locals: (field:, for_id:) %>
 <% if for_id %>
-  <label class="label" for="<%= for_id %>">
+  <label class="ui-label" for="<%= for_id %>">
     <%= content_field_label(field) %>
     <% if field["required"] %>
-      <span class="label__required" title="Required">*</span>
+      <span class="content-label__required" title="Required">*</span>
     <% end %>
   </label>
 <% else %>
-  <span class="label">
+  <span class="ui-label">
     <%= content_field_label(field) %>
     <% if field["required"] %>
-      <span class="label__required" title="Required">*</span>
+      <span class="content-label__required" title="Required">*</span>
     <% end %>
   </span>
 <% end %>

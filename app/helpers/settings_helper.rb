@@ -82,40 +82,35 @@ module SettingsHelper
     ["code-block code-block--wrap", extra].compact.join(" ")
   end
 
-  # A labelled field: its name, the control from the block, and a hint.
+  # A labelled field, as the kit's Field: its name, the control from the
+  # block (a ui-input, ui-select or ui-textarea), and a hint.
   def settings_field(label, hint: nil, &block)
-    tag.label class: "field" do
+    tag.label class: "ui-field" do
       safe_join([
-        tag.span(label, class: "label"),
+        tag.span(label, class: "ui-label"),
         capture(&block),
-        (tag.span(hint, class: "help") if hint)
+        (tag.span(hint, class: "ui-field__description") if hint)
       ].compact)
     end
   end
 
-  # A labelled on/off switch for a boolean field. The switch's look is
-  # forms.css's (switch, switch__input, switch__btn): it follows the
-  # checkbox's :checked and :disabled.
+  # A labelled on/off switch for a boolean field, as shadcn's switch in a
+  # bordered row: the words on the left, the switch (a checkbox with
+  # role="switch", ui-switch) on the right.
   def settings_switch(form, method, label, hint: nil, checked: nil)
-    tag.label class: "switch-field" do
+    tag.label class: "ui-field ui-field--inline ui-field--end ui-field--card" do
       safe_join([
-        tag.span(class: "switch") do
-          safe_join([
-            form.check_box(method, {class: "switch__input", checked: checked}.compact),
-            tag.span(class: "switch__btn")
-          ])
-        end,
-        tag.span(class: "stack stack--2xs") do
-          safe_join([tag.span(label, class: "label"), (tag.span(hint, class: "help") if hint)].compact)
-        end
-      ])
+        form.check_box(method, {class: "ui-switch", role: "switch", checked: checked}.compact),
+        tag.span(label, class: "ui-label"),
+        (tag.span(hint, class: "ui-field__description") if hint)
+      ].compact)
     end
   end
 
   # A button that copies text (a secret, a command) to the clipboard.
   def copy_button(content, label: "Copy")
-    tag.button label, type: "button", class: "btn btn--sm no-shrink",
+    tag.button label, type: "button", class: "ui-button ui-button--outline ui-button--sm no-shrink",
       data: {controller: "copy-to-clipboard", copy_to_clipboard_content_value: content,
-             copy_to_clipboard_success_class: "btn--success", action: "copy-to-clipboard#copy"}
+             copy_to_clipboard_success_class: "ui-button--secondary", action: "copy-to-clipboard#copy"}
   end
 end

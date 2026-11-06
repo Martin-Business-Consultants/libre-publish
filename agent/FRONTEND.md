@@ -12,15 +12,20 @@ integration. Keep that split:
 - **Structure and presentation happen here**: layouts, components, styling,
   routing, build config.
 
-This section of AGENTS.md is written by the integration (`cms()` in
-`astro.config`) on every `astro dev` and `astro build`, between its markers.
-Edit outside them; inside, your changes are replaced.
+This section of AGENTS.md is written by the CMS's installer
+(`curl -fsSL __CMS_URL__/frontend/install.sh | sh`), between its markers;
+running it again refreshes it. Edit outside them; inside, your changes are
+replaced.
 
 ## The integration
 
-| Package | What it gives the site |
-|---|---|
-| `@librepublish/astro` | The `cms()` integration; content loaders (`/loaders`); live loaders and `cacheHint` (`/live`); a typed client, `linkHref`, `routeParam` and the types (`/client`); forms — `getForm`/`getForms` and the form email helpers (`/forms`); quotes — `commerceEnabled` (`/commerce`); `<Blocks>`, `<Image>`, `<Seo>`, `<Form>`, `<QuoteRequest>` (`/components/*.astro`). Forms and Media, the CMS's default plugins, are part of it, and Commerce for a site that sells by quote. Source: github.com/Martin-Business-Consultants/libre-cms-astro. |
+`@librepublish/astro` (github.com/Martin-Business-Consultants/librepublish-astro)
+is the whole integration: `cms()` in `astro.config`; content loaders
+(`/loaders`) and live loaders (`/live`); a typed client, `linkHref` and
+`routeParam` (`/client`); `renderRichText` (`/rich-text`); and the components
+`<Blocks>`, `<Image>`, `<RichText>`, `<BrandStyles>`, `<Seo>`, `<Form>` and
+`<StaticForm>` (`/components/*.astro`). Its README is the reference: read it
+before reaching for anything else.
 
 Env: `CMS_BASE_URL` (the CMS's origin) and `CMS_API_TOKEN` (the site's
 read-only *service token*, Settings › Service tokens). Never commit either.
@@ -28,9 +33,52 @@ A site rendered on demand also needs `CMS_WEBHOOK_SECRET` (Settings ›
 Deploy), and, to purge Cloudflare's cache, `CLOUDFLARE_ZONE_ID` and
 `CLOUDFLARE_API_TOKEN`.
 
+## What's enforced
+
+The integration holds the site to the CMS, and a build fails rather than
+ship something that doesn't fit. Work with it, never around it:
+
+- **The schema lock.** `cms.lock.json` pins the CMS schema the site was
+  written against (`/api/v1/schema`'s `meta.schema_digest`). When someone
+  changes a block type, collection, global or a page's fields in the CMS,
+  `astro build` and `astro check` stop and list what changed. Then:
+  `npx librepublish-astro sync`, `npx astro check`, fix what it names, and
+  commit the lock with the fixes. Never hand-edit the lock, and don't set
+  `LIBREPUBLISH_ACCEPT_SCHEMA=1` to get a build through: that's for CI that
+  opens a pull request with the new lock (subscribe it to the CMS's
+  `schema.changed` webhook).
+- **Every record matches the schema.** The loaders bring the CMS's schema as
+  Zod: frontmatter, block data, global data and SEO take only the fields the
+  CMS declares, a required field must hold a value, and the records around
+  them are strict too. A failure names the record and the field. The fix is
+  in the CMS (the content, or its fields), or in the site's code after a
+  sync — never a `schema` of the site's own on a CMS collection.
+- **The build runs on one schema.** Every `/api/v1` answer carries
+  `X-CMS-Schema-Digest`; one that differs from the lock mid-build stops it.
+  Build again.
+- **Every block type has a component.** The components map is
+  `satisfies BlockComponents` (from `librepublish:types`): leaving a block
+  type out, or keeping one the CMS dropped, is a type error, and content
+  using a type with no component stops the build. Synced patterns arrive
+  expanded, so there's nothing to write for them.
+- **Redirects live in the CMS** (Tools › Redirects, or `cms redirect add`),
+  and only there: `_redirects` is written from it, and a `redirects` map in
+  `astro.config` or rules in `public/_redirects` stop the build.
+- **Forms can't go stale.** `<Form slug>` draws a form from its live
+  definition and renders on demand only: on a prerendered page it stops the
+  build. A static site uses `<StaticForm>` (a client island) instead.
+- **Site health and the launch checklist.** Each build reads the CMS's Site
+  health checks and its own (no secrets in the build, only the routes meant
+  to render on demand do, the site serves its own images, sitemap,
+  robots.txt and a 404 page, redirects from the CMS, forms), warns about
+  each that fails, and reports them with the build to the CMS (Settings ›
+  Deploy shows them). `cms({ siteHealth: "error" })` makes a failing check
+  fatal.
+
 ## Content: the loaders
 
-Read content through content collections, in `src/content.config.ts`:
+Read content through content collections, in `src/content.config.ts` — with
+no `schema` of your own: each loader brings the CMS's.
 
 ```ts
 import { defineCollection } from "astro:content";
@@ -48,21 +96,23 @@ They read the CMS's delivery API (`GET __CMS_URL__/api/v1/content`), and
 only what changed since the last build. Ids: a page's path, an entry's slug,
 a global's slug, an asset's id. Only published content ever reaches the site.
 
-The content model is typed: `import type { Block, Collections, Globals } from
-"librepublish:types"` — generated from the CMS's schema on every build. Read
-the generated `.astro/integrations/librepublish/cms.d.ts` before writing a
-component for CMS data; don't guess a field name.
+The content model is typed from the same schema: `import type { Page,
+Entries, Globals, Block, BlockProps, BlockComponents, AssetId, Link } from
+"librepublish:types"`, regenerated on every `astro dev`, `astro sync` and
+`astro build`. Read the generated `.astro/integrations/librepublish/cms.d.ts`
+before writing a component for CMS data; don't guess a field name.
 
 ## Pages, entries, globals
 
 **A page** has `path`, `title`, `locale`, `url`, `blocks`, `frontmatter` (its
 own fields), `seo`, `category`, `tags` and `translations`. **An entry** has the
-same plus `collection` and `body_markdown`. **A global** has `slug`, `name` and
-`data` (navigation, footer, contact details).
+same plus `collection`, `body_markdown` and `blocks` (when its collection has
+them). **A global** has `slug`, `name` and `data` (navigation, footer…).
 
-**`url` is where a record is served.** Route by it, never by `path`: the home
-page's `url` is `/`, an entry's is `/<collection>/<slug>`, and anything in a
-locale other than the default is under that locale's prefix (`/fr/…`).
+**`url` is where a record is served.** Route by it with `routeParam`, never
+by `path`: the home page's `url` is `/`, an entry's is `/<collection>/<slug>`,
+anything in a locale other than the default is under that locale's prefix
+(`/fr/…`), and an SEO canonical can be absolute.
 
 ```astro
 ---
@@ -70,11 +120,9 @@ locale other than the default is under that locale's prefix (`/fr/…`).
 import { getCollection } from "astro:content";
 import { routeParam } from "@librepublish/astro/client";
 export async function getStaticPaths() {
-  return (await getCollection("pages")).map(({ data }) => ({
-    // routeParam (@librepublish/astro/client): the url as a [...path] param,
-    // and an absolute SEO canonical back to the path it's served at.
-    params: { path: routeParam(data, { site: import.meta.env.SITE }) },
-    props: { page: data },
+  return (await getCollection("pages")).map(({ data: page }) => ({
+    params: { path: routeParam(page, { site: import.meta.env.SITE }) },
+    props: { page },
   }));
 }
 ---
@@ -82,68 +130,56 @@ export async function getStaticPaths() {
 
 ## Rendering
 
-- **Blocks** — `<Blocks blocks={page.blocks} components={{ hero: Hero, text: Text }} assets={assets} />`.
-  Each component gets the block's data as props, plus `block` and `assets`.
-  A type without a component is skipped (editors can add a block type before
-  the site has one); add a component for every type the CMS uses.
-- **Images** — `<Image asset={assets[id]} sizes="…" />`: served from the CMS,
-  with its renditions as a srcset, its size and alt text. Asset fields hold an
-  id; look it up in the `assets` collection.
-- **SEO** — `<Seo record={page} assets={assets} siteName="…" />` in `<head>`:
-  title, description, canonical, robots, Open Graph and Twitter cards, hreflang
-  links to its translations, JSON-LD.
+- **Blocks** — `<Blocks blocks={page.blocks} components={components} assets={assets} />`,
+  with `components` in one file, `satisfies BlockComponents`. Each component
+  is typed `BlockProps<"hero">`: the block's data as props, plus `block`,
+  `assets` and `resolved` (a `collection_list`'s entries, `contact_info`'s
+  contact details).
+- **Images** — `<Image asset={assets[id]} sizes="…" />`: the CMS's renditions
+  as a srcset, its size, alt text and focal point. Asset fields hold an id;
+  look it up in the `assets` collection. The build copies the CMS's files
+  into the site (`cms-files/`), so the live site serves its own.
+- **Rich text** — `markdown` fields and an entry's `body_markdown` are the
+  CMS's Markdown: draw them with `<RichText value={…} />`, which escapes HTML
+  and keeps links safe. Never `set:html` CMS content. `string` and `text`
+  fields are plain text.
+- **SEO** — `<Seo record={page} assets={assets} siteName="…" />` in `<head>`.
+- **Branding** — `<BrandStyles site={site} />` puts Settings › Branding into
+  `--brand-*` custom properties; style with them rather than hard-coding the
+  brand's colors and font.
 - **Links** — link fields are `{ kind: "url" | "page" | "entry", value }`;
-  `linkHref(link)` from `@librepublish/astro/client` makes the href.
-- **Field values** — `text` fields are HTML (`set:html`), `markdown` fields
-  Markdown, and an entry's `body_markdown` is HTML when written in the
-  rich-text editor (a Markdown renderer passes HTML through).
+  `linkHref(link)` makes the href.
 
 ## What the integration does for the site
 
-- `/sitemap.xml` (every URL, with lastmod and hreflang) and `/robots.txt`.
+- `/sitemap.xml` (every URL, with lastmod and hreflang) and `/robots.txt`,
+  from the CMS.
 - `_redirects` for Cloudflare, from the CMS's redirect rules.
 - The site's URL (`site`), its locales (Astro i18n, the default unprefixed)
-  and the CMS's images as remote images, from the CMS.
-- **Static or on demand.** Builds are static by default: fetch in
-  `getStaticPaths` and frontmatter, not in the browser; publishing in the CMS
-  rebuilds the site. With the Cloudflare adapter —
-  `cloudflare({ prerenderEnvironment: "node" })` — pages can render on demand
-  (`export const prerender = false`), reading through `Astro.locals.cms` or
-  the live loaders (`@librepublish/astro/live`); the integration adds
-  `/_cms/webhook`, where the CMS sends signed cache purges, and tags each
-  response with what it read. Each build tells the CMS which way the site
-  renders.
-
-## Forms and quotes
-
-- **Forms** (the Forms plugin, on by default) — `<Form slug="contact" />`
-  (`@librepublish/astro/components/Form.astro`) renders a
-  form's fields, a honeypot and Cloudflare Turnstile (when the CMS has it set
-  up), and the browser posts straight to the CMS. Never proxy submissions
-  through the site.
-- **Form emails** — a route at `src/pages/emails/[form]/[kind].astro`
-  (helpers from `@librepublish/astro/forms`: `emailTemplatePaths`,
-  `digestMeta`, `answersRow`) gives each form's emails the site's design;
-  `cms()` sends the templates here after each build, and the CMS sends the
-  emails.
-- **Quotes** (with the Commerce plugin) — `<QuoteRequest items={[…]} />` on
-  a product page posts a quote request straight to the CMS.
+  and the CMS's files as remote images at the CMS's widths.
+- **Static or on demand.** Builds are static by default: publishing in the
+  CMS rebuilds the site. With an adapter, pages can render on demand
+  (`export const prerender = false`); name the routes meant to in
+  `cms({ onDemand: [...] })`. The integration adds `/_cms/webhook`, where the
+  CMS sends signed cache purges, and tags each response with what it read.
+  Each build tells the CMS which way the site renders.
 
 ## Site health
 
 The CMS checks the site against Site health (Docs › Site health): the
 business's details, the pages a site needs (contact, privacy, terms…), meta
 descriptions, a sharing image, structured data, alt text, spam protection on
-forms. **Build the site so every one of those checks passes** — the
-checklist below is the current state, and `astro build` warns about each
-that fails. Where a check needs content (a privacy page, a meta
-description), the content goes in the CMS; where it needs the site (a
-contact page that shows the address and a form, `<Seo>` in every layout),
-it goes here.
+forms. **Build the site so every one of those checks passes** — `astro
+build` warns about each that fails. Where a check needs content (a privacy
+page, a meta description), the content goes in the CMS; where it needs the
+site (a contact page that shows the address and a form, `<Seo>` in every
+layout), it goes here.
 
 ## Changing the CMS itself
 
 Content, fields, collections, block types and settings are changed in the CMS
 (its admin, or the `cms` CLI: `curl -fsSL __CMS_URL__/agent/install.sh | sh`),
-not from this repo. The only things this repo writes to the CMS are what its
-build produced: form email templates and a build report.
+not from this repo. After a change to fields or block types: `npx
+librepublish-astro sync`, `npx astro check`, and commit `cms.lock.json` with
+the site's fixes. The only things this repo writes to the CMS are build
+reports.

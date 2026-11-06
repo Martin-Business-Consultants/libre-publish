@@ -1,18 +1,21 @@
-<%# While a CMS update or a plugin or theme change runs (UpdateProgress), a
-    modal over every admin page: a spinner and each one's progress, polled
-    (update-progress controller) until it's done, through the restart. %>
-<dialog class="dialog update-progress"
-        aria-label="Updating" data-controller="update-progress" data-update-progress-url-value="<%= update_progress_path %>"
+<%# locals: () %>
+<%# While a CMS update or a plugin or theme change runs (UpdateProgress), a modal over every
+    admin page: a spinner and each one's progress, polled (update-progress controller) until
+    it's done, through the restart. %>
+<dialog class="ui-dialog update-progress"
+        aria-label="<%= tx("Updating") %>" data-controller="update-progress" data-update-progress-url-value="<%= update_progress_path %>"
         data-update-progress-running-value="<%= UpdateProgress.running? %>" data-action="cancel->update-progress#cancel">
-  <div class="row row--md">
-    <span class="update-progress__spinner" aria-hidden="true" data-update-progress-target="spinner"></span>
-    <h2 class="heading heading--lg" data-update-progress-target="heading">Updating…</h2>
-  </div>
+  <header class="ui-dialog__header">
+    <div class="row row--md">
+      <span class="update-progress__spinner" aria-hidden="true" data-update-progress-target="spinner"></span>
+      <h2 class="ui-dialog__title" data-update-progress-target="heading"><%= tx("Updating…") %></h2>
+    </div>
+    <p class="ui-dialog__description" data-update-progress-target="note"><%= tx("The CMS restarts to load what’s new. This page carries on when it’s back.") %></p>
+  </header>
   <div class="stack" data-update-progress-target="items"></div>
-  <p class="text-small text-muted" data-update-progress-target="note">The CMS restarts to load what’s new. This page carries on when it’s back.</p>
-  <div class="dialog__actions" hidden data-update-progress-target="actions">
-    <button type="button" class="btn" data-action="update-progress#close">Close</button>
-  </div>
+  <footer class="ui-dialog__footer" hidden data-update-progress-target="actions">
+    <button type="button" class="ui-button ui-button--outline" data-action="update-progress#close"><%= tx("Close") %></button>
+  </footer>
   <template data-update-progress-target="template">
     <div class="stack stack--xs">
       <div class="row row--baseline row--between row--md">

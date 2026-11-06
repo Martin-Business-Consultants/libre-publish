@@ -13,6 +13,11 @@
     padding: 0;
   }
 
+  /* A modal dialog keeps the browser's centring (a sheet sets its own edge). */
+  dialog {
+    margin: auto;
+  }
+
   html {
     -webkit-tap-highlight-color: transparent;
     -webkit-text-size-adjust: 100%;

@@ -4,12 +4,16 @@
 # absolute URLs on the CMS's own host — Site.url_options, from APP_HOST and
 # APP_PROTOCOL, never the public site's address — so a site on another
 # domain (an Astro build, a Worker) can fetch them as remote images, plus an
-# image's width and height and a few width-limited renditions.
+# image's width and height and a few width-limited renditions. The URLs are
+# the Go core's, /files/<key>/<name> and /files/<key>/w<width>/<name>
+# (FilesController), which @librepublish/astro allows as remote images and
+# copies into a site's build; the Active Storage URLs they lead to keep
+# working.
 #
 #   asset.delivery
-#   # => {"url" => "https://cms.acme.com/rails/active_storage/blobs/…/logo.png",
+#   # => {"url" => "https://cms.acme.com/files/<key>/logo.png",
 #   #     "original" => (the same), "width" => 1200, "height" => 630,
-#   #     "variants" => {"w640" => "https://…", "w1280" => "https://…", "w1920" => "https://…"}, …}
+#   #     "variants" => {"w640" => "https://cms.acme.com/files/<key>/w640/logo.png", …}, …}
 #
 # The admin's own pages keep using #url and #thumb_url, which are paths.
 module Asset::Delivery
@@ -17,9 +21,13 @@ module Asset::Delivery
 
   # The renditions every image offers, by width; height follows the image.
   DELIVERY_WIDTHS = [640, 1280, 1920].freeze
+  THUMB_WIDTH = 256
+  # Every width /files/<key>/w<width>/<name> makes: the renditions, the
+  # thumbnail and the srcset's.
+  RENDITION_WIDTHS = (DELIVERY_WIDTHS + [THUMB_WIDTH] + Asset::Renditions::RESPONSIVE_WIDTHS).uniq.sort.freeze
 
   def absolute_url
-    blob_url(file) if file.attached?
+    file_url if file.attached?
   end
 
   # From the blob's analysis, made the first time they're asked for if Active
@@ -34,7 +42,7 @@ module Asset::Delivery
   def variants
     return {} unless variantable? && ApplicationHelper.variants_supported?
 
-    DELIVERY_WIDTHS.to_h { |w| ["w#{w}", representation_url(file.variant(resize_to_limit: [w, nil]))] }
+    DELIVERY_WIDTHS.to_h { |w| ["w#{w}", file_url(w)] }
   end
 
   def delivery
@@ -46,8 +54,8 @@ module Asset::Delivery
       next unless image?
 
       summary["variants"] = variants
-      summary["thumb_url"] = variantable? && ApplicationHelper.variants_supported? ? representation_url(file.variant(resize_to_limit: [256, 256])) : absolute_url
-      summary["srcset"] = srcset.map { it.merge(url: absolute(it[:url])) }
+      summary["thumb_url"] = variantable? && ApplicationHelper.variants_supported? ? file_url(THUMB_WIDTH) : absolute_url
+      summary["srcset"] = srcset.map { it.merge(url: file_url(it[:width])) }
       summary["focal_x"] = focal_x
       summary["focal_y"] = focal_y
     end
@@ -67,12 +75,9 @@ module Asset::Delivery
     end
   end
 
-  def blob_url(attachment) = Rails.application.routes.url_helpers.rails_blob_url(attachment, **Site.url_options)
-
-  def representation_url(variant) = Rails.application.routes.url_helpers.rails_representation_url(variant, **Site.url_options)
-
-  def absolute(path)
-    options = Site.url_options
-    "#{options[:protocol]}://#{options[:host]}#{":#{options[:port]}" if options[:port]}#{path}"
+  # /files/<key>/<name>, or a rendition at a width: /files/<key>/w<width>/<name>.
+  def file_url(width = nil)
+    Rails.application.routes.url_helpers.delivered_file_url(key: file.blob.key, rendition: ("w#{width}" if width),
+      filename: file.filename.to_s, **Site.url_options)
   end
 end

@@ -11,7 +11,7 @@ RSpec.describe "The admin layout", type: :request do
     sign_in_as create(:user, admin: false, role: create(:role, permissions: capabilities))
   end
 
-  def item(label) = response.body[%r{<li class="admin-menu__item[^"]*"[^>]*>\s*<a [^>]*class="admin-menu__link[ "][^>]*>(?:(?!</li>).)*?#{Regexp.escape(label)}</span>}m]
+  def item(label) = menu_item(label).to_html
 
   it "lists the menu in its groups, Pages first and Settings last" do
     sign_in_as admin
@@ -62,10 +62,12 @@ RSpec.describe "The admin layout", type: :request do
 
     get new_page_path
 
-    expect(item("Pages")).to include("admin-menu__item--current")
-    expect(item("Collections")).not_to include("admin-menu__item--current")
-    expect(response.body).to match(%r{<a class="admin-menu__submenu-link[ "][^>]*aria-current="page" href="/cms/pages/new">Add new</a>})
-    expect(response.body).not_to match(%r{aria-current="page" href="/cms/pages">All pages})
+    expect(item("Pages")).to include("app-sidebar__item--current")
+    expect(menu_item("Pages").at_css("details")["open"]).not_to be_nil
+    expect(item("Collections")).not_to include("app-sidebar__item--current")
+    expect(menu_item("Collections").at_css("details")["open"]).to be_nil
+    expect(menu_item("Pages").at_css(%(.app-sidebar__sub-link[aria-current="page"]))["href"]).to eq("/cms/pages/new")
+    expect(menu_item("Pages").at_css(%(.app-sidebar__sub-link[href="/cms/pages"]))["aria-current"]).to be_nil
   end
 
   it "adds a plugin's top-level item, submenu links and New entry only while it's on" do
@@ -85,14 +87,14 @@ RSpec.describe "The admin layout", type: :request do
     expect(response.body).to include(">Greeting</a>")
   end
 
-  it "has the admin bar: the site, New, and the person signed in" do
+  it "has the sidebar: the site, New, and the person signed in, with View site in their menu" do
     Setting.set("general", {"site_base_url" => "https://www.example.org"})
     sign_in_as admin
 
     get dashboard_path
 
-    bar = response.body[%r{<header class="admin-bar[ "].*?</header>}m]
-    expect(bar).to include("View site", "https://www.example.org", ">Page</a>", ">User</a>", "Howdy", "Sign out")
+    sidebar = admin_menu_node.to_html
+    expect(sidebar).to include("View site", "https://www.example.org", ">Page</a>", ">User</a>", admin.email, "Sign out")
   end
 
   it "shows a notice as a dismissible toast, outside the page" do
@@ -103,7 +105,7 @@ RSpec.describe "The admin layout", type: :request do
     follow_redirect!
 
     main_end = response.body.index("</main>")
-    toast = response.body.index("notice toast notice--success")
+    toast = response.body.index(%(class="ui-toast"))
     expect(toast).to be > main_end
     expect(response.body).to include("Redirect deleted", "Dismiss this notice", "animationend-&gt;element-removal#remove")
   end

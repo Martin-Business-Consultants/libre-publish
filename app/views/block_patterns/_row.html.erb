@@ -1,0 +1,20 @@
+<%# locals: (pattern:, can_write:, can_delete:) %>
+<%# One pattern in the patterns data table (block_patterns/index): its name and what it's for,
+    how many blocks, whether it's placed synced or copied, when it changed, and its actions. %>
+<tr id="<%= dom_id(pattern) %>" data-filter-target="item">
+  <td data-column="name">
+    <%= link_to pattern.name, edit_block_pattern_path(pattern), class: "ui-table__row-link" %>
+    <% if pattern.description.present? %>
+      <div class="text-small text-muted"><%= pattern.description %></div>
+    <% end %>
+  </td>
+  <td data-column="blocks" class="ui-table__numeric"><%= Array(pattern.blocks).size %></td>
+  <td data-column="kind"><%= status_tag pattern.synced? ? "Synced" : "Copied" %></td>
+  <td data-column="updated"><span class="nowrap text-muted"><%= time_ago_tag pattern.updated_at %></span></td>
+  <td class="ui-table__numeric">
+    <%= render "ui/row_actions", id: dom_id(pattern), name: pattern.name,
+          edit_path: (edit_block_pattern_path(pattern) if can_write),
+          delete_path: (block_pattern_path(pattern) if can_delete),
+          delete_message: "A page that placed it synced shows nothing in its place. Copies already added stay." %>
+  </td>
+</tr>

@@ -1,12 +1,12 @@
 <turbo-frame id="<%= @frame %>">
   <% if @choices.any? %>
-    <ul class="stack stack--2xs" role="listbox">
+    <ul class="picker__list" role="listbox">
       <% @choices.each do |label, value, detail| %>
         <%# herb:key value %>
         <li role="option">
-          <button type="button" class="menu__item picker__choice" data-value="<%= value %>" data-label="<%= label %>" data-action="picker#choose">
-            <span class="grow truncate"><%= label %></span>
-            <span class="no-shrink text-mono text-small text-muted"><%= detail %></span>
+          <button type="button" class="ui-menu__item picker__choice" data-value="<%= value %>" data-label="<%= label %>" data-action="picker#choose">
+            <span class="picker__label"><%= label %></span>
+            <span class="picker__detail"><%= detail %></span>
           </button>
         </li>
       <% end %>

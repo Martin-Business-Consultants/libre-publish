@@ -1,20 +1,17 @@
 <%# locals: (param:, current:, options:) %>
-<%# A list's status filter as WordPress shows it: "All (12) | Published (8) |
-    Draft (4)", drawn as quiet tabs, the current one filled. options:
-    [[label, value, count], …], the first usually All with value nil. Each
+<%# A list's status filter as the kit's tabs: "All 12 · Published 8 · Draft 4", the current one
+    raised. options: [[label, value, count], …], the first usually All with value nil. Each
     link swaps one query param, so filters are bookmarkable. %>
-<ul class="status-links" role="list">
+<nav class="ui-tabs" aria-label="<%= tx("Filter by status") %>">
   <% options.each do |label, value, count| %>
     <%# herb:key label %>
     <% chosen = value.to_s == current.to_s %>
-    <li>
-      <%= link_to url_for(request.query_parameters.except("page").merge(param.to_s => value.presence).compact),
-            class: "status-links__link", aria: { current: ("page" if chosen) } do %>
-        <%= label %>
-        <% if count %>
-          <span class="status-links__count"><%= count %></span>
-        <% end %>
+    <%= link_to url_for(request.query_parameters.except("page").merge(param.to_s => value.presence).compact),
+          class: "ui-tabs__trigger", aria: { current: ("page" if chosen) } do %>
+      <%= tx(label.to_s) %>
+      <% if count %>
+        <span class="ui-badge ui-badge--count"><%= count %></span>
       <% end %>
-    </li>
+    <% end %>
   <% end %>
-</ul>
+</nav>

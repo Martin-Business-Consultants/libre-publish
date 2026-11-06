@@ -1,0 +1,23 @@
+<%# locals: (webhook:, can_write:, can_delete:) %>
+<%# One webhook in the webhooks data table (webhooks/index): its name, opening it in the
+    sheet (or its deliveries, for a role that can't edit it), where it sends, how many events,
+    how it's doing, when it last sent, and its actions. %>
+<tr id="<%= dom_id(webhook) %>" data-filter-target="item">
+  <td data-column="name">
+    <% if can_write %>
+      <%= link_to webhook.name, edit_webhook_path(webhook), class: "ui-table__row-link", data: { turbo_frame: "webhook_sheet", action: "dialog#open" } %>
+    <% else %>
+      <%= link_to webhook.name, webhook_path(webhook), class: "ui-table__row-link" %>
+    <% end %>
+  </td>
+  <td data-column="url"><span class="webhooks__url truncate text-mono text-small text-muted"><%= webhook.url %></span></td>
+  <td data-column="events" class="ui-table__numeric" title="<%= Array(webhook.events).join(", ") %>"><%= Array(webhook.events).size %></td>
+  <td data-column="health"><%= webhook_health(webhook) %></td>
+  <td data-column="last_delivery"><span class="nowrap text-muted"><%= time_ago_tag webhook.last_delivery_at %></span></td>
+  <td class="ui-table__numeric">
+    <%= render "ui/row_actions", id: dom_id(webhook), name: webhook.name,
+          edit_path: (edit_webhook_path(webhook) if can_write), links: [ [ "Deliveries", webhook_path(webhook) ] ],
+          delete_path: (webhook_path(webhook) if can_delete),
+          delete_message: "Its receiver stops hearing about changes. Its delivery log goes too." %>
+  </td>
+</tr>

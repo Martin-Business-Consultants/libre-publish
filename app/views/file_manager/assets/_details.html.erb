@@ -5,9 +5,12 @@
     and on the file's own page. %>
 <% can_write = Current.user.can?("assets:write") %>
 <% usages = asset.referencing_records %>
-<div class="stack stack--lg">
+<div class="media-details">
   <% if flash[:notice].present? && turbo_frame_request? %>
-    <p class="notice notice--success"><%= flash[:notice] %></p>
+    <div class="ui-alert ui-alert--success" role="status">
+      <%= icon_tag "check-circle", class: "ui-alert__icon" %>
+      <p class="ui-alert__title"><%= flash[:notice] %></p>
+    </div>
   <% end %>
 
   <div class="media-details__preview">
@@ -18,7 +21,7 @@
     <% end %>
   </div>
 
-  <dl class="details">
+  <dl class="fact-list">
     <dt>Uploaded</dt><dd><%= time_ago_tag asset.created_at %></dd>
     <dt>File name</dt><dd class="text-mono text-small"><%= asset.filename %></dd>
     <dt>File type</dt><dd><%= asset.content_type %></dd>
@@ -28,17 +31,17 @@
     <% end %>
   </dl>
 
-  <div class="cluster">
-    <button type="button" class="btn btn--sm" data-controller="copy-to-clipboard" data-copy-to-clipboard-content-value="<%= asset.url %>"
-      data-copy-to-clipboard-success-class="btn--success" data-action="copy-to-clipboard#copy">
+  <div class="media-details__actions">
+    <button type="button" class="ui-button ui-button--outline ui-button--sm" data-controller="copy-to-clipboard" data-copy-to-clipboard-content-value="<%= asset.url %>"
+      data-copy-to-clipboard-success-class="ui-button--secondary" data-action="copy-to-clipboard#copy">
       <%= icon_tag "copy-paste" %>
       <span>Copy URL</span>
     </button>
-    <%= link_to rails_blob_path(asset.file, disposition: "attachment"), class: "btn btn--sm", data: { turbo: false } do %>
+    <%= link_to rails_blob_path(asset.file, disposition: "attachment"), class: "ui-button ui-button--outline ui-button--sm", data: { turbo: false } do %>
       <span>Download</span>
     <% end %>
     <% if can_write && asset.optimized? %>
-      <%= button_to "Restore original", file_manager_asset_restoration_path(asset), class: "btn btn--sm",
+      <%= button_to "Restore original", file_manager_asset_restoration_path(asset), class: "ui-button ui-button--outline ui-button--sm",
             title: "Put back the " + asset.original_file.filename.to_s + " (" + number_to_human_size(asset.original_file.byte_size) + ") the Image Optimizer replaced",
             form: { data: { turbo_confirm: "Put the original " + asset.original_file.filename.to_s + " back in place of this WebP?" } } %>
     <% end %>
@@ -48,53 +51,59 @@
     <% end %>
   </div>
 
+  <hr class="ui-separator">
+
   <%= render "layouts/shared/errors", record: asset %>
   <%= form_with model: asset, url: file_manager_asset_path(asset), scope: :asset do |form| %>
-    <%= tag.fieldset class: "fields", disabled: !can_write do %>
-      <label class="field">
-        <span class="label">Alternative text</span>
-        <%= form.text_area :alt, rows: 2, placeholder: "What the image shows, for people who can’t see it." %>
-        <span class="help">Read aloud by screen readers, and shown when the image can’t load. Leave it empty if the image is purely decorative.</span>
-      </label>
-      <label class="field">
-        <span class="label">Title</span>
-        <%= form.text_field :name, placeholder: asset.filename, autocomplete: "off" %>
-      </label>
-      <label class="field">
-        <span class="label">Caption</span>
-        <%= form.text_area :caption, rows: 2 %>
-        <span class="help">Shown with it on the site, where the site shows captions.</span>
-      </label>
-      <label class="field">
-        <span class="label">Description</span>
-        <%= form.text_area :description, rows: 3 %>
-      </label>
-      <label class="field">
-        <span class="label">Folder</span>
-        <%= form.select :folder, options_for_select([["Top level", "/"]] + folders.map { [it, it] }, asset.folder) %>
-      </label>
+    <%= tag.fieldset class: "ui-fieldset", disabled: !can_write do %>
+      <div class="ui-field">
+        <%= form.label :alt, "Alternative text", class: "ui-label" %>
+        <%= form.text_area :alt, rows: 2, placeholder: "What the image shows, for people who can’t see it.", class: "ui-textarea" %>
+        <p class="ui-field__description">Read aloud by screen readers, and shown when the image can’t load. Leave it empty if the image is purely decorative.</p>
+      </div>
+      <div class="ui-field">
+        <%= form.label :name, "Title", class: "ui-label" %>
+        <%= form.text_field :name, placeholder: asset.filename, autocomplete: "off", class: "ui-input" %>
+      </div>
+      <div class="ui-field">
+        <%= form.label :caption, "Caption", class: "ui-label" %>
+        <%= form.text_area :caption, rows: 2, class: "ui-textarea" %>
+        <p class="ui-field__description">Shown with it on the site, where the site shows captions.</p>
+      </div>
+      <div class="ui-field">
+        <%= form.label :description, "Description", class: "ui-label" %>
+        <%= form.text_area :description, rows: 3, class: "ui-textarea" %>
+      </div>
+      <div class="ui-field">
+        <%= form.label :folder, "Folder", class: "ui-label" %>
+        <%= form.select :folder, options_for_select([["Top level", "/"]] + folders.map { [it, it] }, asset.folder), {}, { class: "ui-select" } %>
+      </div>
       <% if can_write %>
         <div>
-          <%= form.button "Save", class: "btn btn--primary" %>
+          <%= form.button "Save", class: "ui-button" %>
         </div>
       <% end %>
     <% end %>
   <% end %>
 
-  <section class="media-section">
-    <h3 class="heading">Used in</h3>
+  <hr class="ui-separator">
+
+  <section class="media-details__usages">
+    <h3 class="ui-card__title">Used in</h3>
     <% if usages.any? %>
-      <ul class="stack stack--xs">
+      <ul class="ui-item-group">
         <% usages.each do |record| %>
           <%# herb:key record.class.name + record.id.to_s %>
-          <li>
-            <%= link_to record.try(:title).presence || record.try(:slug) || record.class.name, admin_record_path(record), class: "link", data: { turbo_frame: "_top" } %>
-            <span class="text-muted"><%= record.class.model_name.human %></span>
+          <li class="ui-item ui-item--sm">
+            <div class="ui-item__content">
+              <p class="ui-item__title"><%= link_to record.try(:title).presence || record.try(:slug) || record.class.name, admin_record_path(record), class: "link", data: { turbo_frame: "_top" } %></p>
+              <p class="ui-item__description"><%= record.class.model_name.human %></p>
+            </div>
           </li>
         <% end %>
       </ul>
     <% else %>
-      <p class="text-muted">Nothing on the site uses it yet.</p>
+      <p class="ui-card__description">Nothing on the site uses it yet.</p>
     <% end %>
   </section>
 </div>

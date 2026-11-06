@@ -28,7 +28,7 @@ module ApplicationHelper
   # (PluginGated's `plugin :key`, or the plugin whose engine holds the
   # controller, for one that isn't gated, as Media's file manager), those
   # whose slots it renders (plugin_slots, all rendered by the time the
-  # layout's <head> is), and those in the admin bar, which is on every page.
+  # layout's <head> is), and those in the sidebar, which is on every page.
   def page_plugins
     owner = (controller.plugin_key if controller.respond_to?(:plugin_key)) || Cms::Plugins.owner_of(controller.class)
     [owner, *@plugins_on_page, *Cms::Plugins.enabled_slots(:nav_actions).keys].compact.uniq
@@ -70,17 +70,11 @@ module ApplicationHelper
     STATUS_TONES.fetch(label.to_s.downcase) { highlight ? "progress" : "neutral" }
   end
 
-  # The badge for each tone (badges.css): green for what's live or done, red
-  # for what failed, yellow for what waits, the accent for what's under way.
-  STATUS_BADGES = {"positive" => "badge badge--success", "negative" => "badge badge--danger", "waiting" => "badge badge--warning",
-                   "progress" => "badge badge--info", "neutral" => "badge"}.freeze
-
-  # A status label as a small chip tinted by what it means (data-tone names
-  # the meaning).
-  def status_tag(label, highlight: false)
-    tone = status_tone(label, highlight: highlight)
-    tag.span label, class: STATUS_BADGES.fetch(tone), data: {tone: tone}
-  end
+  # A status label as the kit's badge in the tone of what it means: a dot in
+  # green for what's live or done, red for what failed, amber for what waits,
+  # blue for what's under way (UiHelper#ui_status_badge; data-tone names the
+  # meaning).
+  def status_tag(label, highlight: false) = ui_status_badge(label, highlight: highlight)
 
   # The site's color and font (Settings › Branding) on top of the app's
   # stylesheets: /branding.css, plus the Google font it names. Nothing when
@@ -146,15 +140,15 @@ module ApplicationHelper
 
   # A key, token or secret, masked until the eye is clicked. A helper, not a
   # partial, so it works inside form_with. reveal_controller toggles
-  # .secret-field--shown, which swaps the eye's two icons (forms.css).
+  # .secret-field--shown, which swaps the eye's two icons (ui/app.css).
   def secret_field(form, method, placeholder: nil, **options)
     tag.span class: "secret-field", data: {controller: "reveal"} do
       safe_join([
         form.password_field(method, value: form.object.try(method), autocomplete: "off",
-          spellcheck: false, placeholder: placeholder, data: {reveal_target: "input", "1p-ignore": true}, **options),
-        tag.button(type: "button", class: "btn btn--plain btn--icon", title: "Show", aria: {pressed: false},
+          spellcheck: false, placeholder: placeholder, class: "ui-input", data: {reveal_target: "input", "1p-ignore": true}, **options),
+        tag.button(type: "button", class: "ui-button ui-button--ghost ui-button--icon-sm", title: "Show", aria: {pressed: false},
           data: {reveal_target: "button", action: "reveal#toggle"}) do
-          safe_join([icon_tag("eye", class: "secret-field__show icon--sm"), icon_tag("eye-off", class: "secret-field__hide icon--sm"),
+          safe_join([icon_tag("eye", class: "secret-field__show"), icon_tag("eye-off", class: "secret-field__hide"),
             tag.span("Show or hide", class: "visually-hidden")])
         end
       ])

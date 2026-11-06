@@ -1,0 +1,760 @@
+/* The admin's frame (layouts/application) as shadcn/ui's Sidebar, "inset" variant: the
+/* sidebar down the left on the sidebar's tint (layouts/shared/_sidebar), and beside it the page
+/* as a sheet with its header (layouts/shared/_inset_header): the menu toggle, the breadcrumb and
+/* search. Folded to icons (html[data-menu="folded"], remembered, layouts/_menu_preference) or,
+/* below 768px, a drawer (html[data-menu-open]); admin_menu_controller sets both. Also the
+/* search command dialog, the flash's toasts and a screen's title row. */
+@layer ui {
+  :root {
+    --sidebar-width: 16rem;
+    --sidebar-width-icon: 3rem;
+    --app-gutter: clamp(1rem, 3vw, 2rem);
+  }
+
+  body {
+    background-color: var(--sidebar);
+  }
+
+  html[data-theme="dark"] body {
+    background-color: var(--background);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html:not([data-theme]) body {
+      background-color: var(--background);
+    }
+  }
+
+  .app-skip-link {
+    inset: 0.5rem auto auto 0.5rem;
+    position: fixed;
+    transform: translateY(-200%);
+    z-index: calc(var(--z-tooltip) + 1);
+
+    &:focus-visible {
+      transform: none;
+    }
+  }
+
+  .app-shell {
+    display: flex;
+    min-block-size: 100dvh;
+  }
+
+  /* Sidebar */
+
+  .app-sidebar {
+    block-size: 100dvh;
+    color: var(--sidebar-foreground);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    gap: 0.5rem;
+    inline-size: var(--sidebar-width);
+    inset-block-start: 0;
+    padding: 0.5rem;
+    position: sticky;
+    transition: inline-size 200ms ease-out;
+    z-index: var(--z-nav);
+
+    :root[data-menu="folded"] & {
+      inline-size: var(--sidebar-width-icon);
+      padding-inline: 0.375rem;
+
+      .app-sidebar__label,
+      .app-sidebar__collapsible,
+      .app-sidebar__group-label,
+      .app-sidebar__new-label {
+        display: none;
+      }
+
+      .app-sidebar__link,
+      .app-sidebar__brand,
+      .app-sidebar__user-button {
+        justify-content: center;
+        padding-inline: 0;
+      }
+
+      .app-sidebar__group {
+        padding-block: 0.25rem;
+      }
+    }
+
+    @media (max-width: 767px) {
+      :root & {
+        background-color: var(--sidebar);
+        border-inline-end: 1px solid var(--sidebar-border);
+        box-shadow: var(--shadow-lg);
+        inline-size: min(18rem, 85vw);
+        inset: 0 auto 0 0;
+        position: fixed;
+        translate: -100% 0;
+        transition: translate 200ms ease-out;
+        z-index: calc(var(--z-flash) + 1);
+
+        .app-sidebar__label,
+        .app-sidebar__group-label,
+        .app-sidebar__new-label {
+          display: revert;
+        }
+      }
+
+      :root[data-menu-open] & {
+        translate: 0 0;
+      }
+    }
+  }
+
+  html[data-theme="dark"] .app-sidebar {
+    background-color: var(--background);
+  }
+
+  /* Settings › Branding's dark top bar: the sidebar dark whatever the theme. */
+  .app-sidebar--dark {
+    --sidebar: oklch(21% 0.006 285.9);
+    --sidebar-foreground: oklch(98.5% 0 0);
+    --sidebar-accent: oklch(27.4% 0.006 286);
+    --sidebar-accent-foreground: oklch(98.5% 0 0);
+    --sidebar-border: oklch(100% 0 0 / 10%);
+    --muted-foreground: oklch(70.5% 0.015 286.1);
+    --popover: oklch(21% 0.006 285.9);
+    --popover-foreground: oklch(98.5% 0 0);
+    --accent: oklch(27.4% 0.006 286);
+    --accent-foreground: oklch(98.5% 0 0);
+    --border: oklch(100% 0 0 / 10%);
+    --input: oklch(100% 0 0 / 15%);
+    --background: oklch(21% 0.006 285.9);
+    --foreground: oklch(98.5% 0 0);
+
+    background-color: var(--sidebar);
+    color-scheme: dark;
+  }
+
+  :root:not([data-theme="dark"]) body:has(.app-sidebar--dark) {
+    background-color: oklch(21% 0.006 285.9);
+  }
+
+  .app-sidebar__brand,
+  .app-sidebar__user-button {
+    align-items: center;
+    background: none;
+    border: 0;
+    border-radius: var(--radius-md);
+    color: inherit;
+    cursor: pointer;
+    display: flex;
+    flex-shrink: 0;
+    font: inherit;
+    gap: 0.5rem;
+    inline-size: 100%;
+    padding: 0.5rem;
+    text-align: start;
+    text-decoration: none;
+
+    &:hover,
+    &[aria-expanded="true"] {
+      background-color: var(--sidebar-accent);
+      color: var(--sidebar-accent-foreground);
+    }
+
+    &:focus-visible {
+      box-shadow: var(--ring-focus);
+      outline: none;
+    }
+  }
+
+  .app-sidebar__user-button {
+    --icon-size: 1rem;
+
+    block-size: 3rem;
+
+    > .icon {
+      color: var(--muted-foreground);
+      margin-inline-start: auto;
+    }
+  }
+
+  .app-sidebar__brand-mark {
+    --icon-size: 1rem;
+
+    align-items: center;
+    aspect-ratio: 1;
+    background-color: var(--primary);
+    block-size: 2rem;
+    border-radius: var(--radius-lg);
+    color: var(--primary-foreground);
+    display: flex;
+    flex-shrink: 0;
+    justify-content: center;
+    overflow: hidden;
+
+    img {
+      block-size: 100%;
+      inline-size: 100%;
+      object-fit: contain;
+    }
+  }
+
+  /* A logo from Settings › Branding sits on the page's colour, not the accent. */
+  .app-sidebar__brand-mark--logo {
+    background-color: var(--background);
+    border: 1px solid var(--sidebar-border);
+  }
+
+  .app-sidebar__brand-text,
+  .app-sidebar__user-text {
+    display: grid;
+    flex: 1;
+    line-height: 1.25;
+    min-inline-size: 0;
+  }
+
+  .app-sidebar__brand-name,
+  .app-sidebar__user-name {
+    font-size: var(--text-normal);
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .app-sidebar__user-name {
+    font-weight: 500;
+  }
+
+  .app-sidebar__brand-sub,
+  .app-sidebar__user-email {
+    color: var(--muted-foreground);
+    font-size: var(--text-x-small);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .app-sidebar__new {
+    padding-inline: 0.5rem;
+
+    :root[data-menu="folded"] & {
+      padding-inline: 0;
+    }
+  }
+
+  .app-sidebar__content {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-block-size: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+
+  .app-sidebar__group {
+    display: flex;
+    flex-direction: column;
+    padding: 0.5rem;
+
+    :root[data-menu="folded"] & {
+      padding-inline: 0;
+    }
+  }
+
+  .app-sidebar__group-label {
+    align-items: center;
+    block-size: 2rem;
+    color: color-mix(in oklch, var(--sidebar-foreground) 70%, transparent);
+    display: flex;
+    font-size: var(--text-x-small);
+    font-weight: 500;
+    margin: 0;
+    padding-inline: 0.5rem;
+  }
+
+  .app-sidebar__menu,
+  .app-sidebar__sub {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .app-sidebar__item {
+    position: relative;
+  }
+
+  /* SidebarMenuButton: h-8, text-sm, a 16px icon, the accent when current. */
+  .app-sidebar__link,
+  .app-sidebar__sub-link {
+    --icon-size: 1rem;
+
+    align-items: center;
+    border-radius: var(--radius-md);
+    color: var(--sidebar-foreground);
+    display: flex;
+    font-size: var(--text-normal);
+    gap: 0.5rem;
+    outline: none;
+    padding: 0.5rem;
+    text-decoration: none;
+
+    &:hover {
+      background-color: var(--sidebar-accent);
+      color: var(--sidebar-accent-foreground);
+    }
+
+    &:focus-visible {
+      box-shadow: var(--ring-focus);
+    }
+
+    &[aria-current="page"] {
+      background-color: var(--sidebar-accent);
+      color: var(--sidebar-accent-foreground);
+      font-weight: 500;
+    }
+  }
+
+  .app-sidebar__link {
+    block-size: 2rem;
+    padding-inline-end: 2rem;
+
+    .app-sidebar__item--current > & {
+      font-weight: 500;
+    }
+
+    :root[data-menu="folded"] & {
+      padding-inline-end: 0;
+    }
+  }
+
+  /* SidebarMenuAction: the chevron that opens an item's submenu (a <details>). */
+  .app-sidebar__action {
+    --icon-size: 1rem;
+
+    align-items: center;
+    block-size: 1.5rem;
+    border-radius: var(--radius-sm);
+    color: var(--muted-foreground);
+    cursor: pointer;
+    display: flex;
+    inline-size: 1.5rem;
+    inset: 0.25rem 0.25rem auto auto;
+    justify-content: center;
+    list-style: none;
+    position: absolute;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    &:hover {
+      background-color: var(--sidebar-accent);
+      color: var(--sidebar-accent-foreground);
+    }
+
+    .icon {
+      rotate: -90deg;
+      transition: rotate 150ms;
+    }
+
+    [open] > & .icon {
+      rotate: 0deg;
+    }
+  }
+
+  /* SidebarMenuSub: indented under its item, a rule down its left. */
+  .app-sidebar__sub {
+    border-inline-start: 1px solid var(--sidebar-border);
+    gap: 0.125rem;
+    margin: 0.125rem 0 0.25rem 0.875rem;
+    padding: 0.125rem 0 0.125rem 0.625rem;
+  }
+
+  .app-sidebar__sub-link {
+    block-size: 1.75rem;
+    color: color-mix(in oklch, var(--sidebar-foreground) 85%, transparent);
+    padding-block: 0;
+  }
+
+  .app-sidebar__footer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  /* A plugin's nav_actions slot, and the update notices, above the person. */
+  .app-sidebar__notices {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+
+    &:not(:has(*)) {
+      display: none;
+    }
+  }
+
+  .app-sidebar__notice {
+    color: var(--primary);
+  }
+
+  .app-sidebar__user-menu {
+    min-inline-size: 15rem;
+
+    .ui-menu__label {
+      display: grid;
+    }
+  }
+
+  /* The drawer's backdrop, on a phone. */
+  .app-sidebar__backdrop {
+    display: none;
+
+    @media (max-width: 767px) {
+      :root[data-menu-open] & {
+        background-color: oklch(var(--lch-black) / 50%);
+        display: block;
+        inset: 0;
+        position: fixed;
+        z-index: var(--z-flash);
+      }
+    }
+  }
+
+  /* The page: a sheet beside the sidebar (SidebarInset) */
+
+  .app-inset {
+    background-color: var(--background);
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    isolation: isolate;
+    min-inline-size: 0;
+
+    @media (min-width: 768px) {
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-sm);
+      margin: 0.5rem 0.5rem 0.5rem 0;
+      min-block-size: calc(100dvh - 1rem);
+    }
+  }
+
+  html[data-theme="dark"] .app-inset {
+    border: 1px solid var(--border);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html:not([data-theme]) .app-inset {
+      border: 1px solid var(--border);
+    }
+  }
+
+  .app-header {
+    align-items: center;
+    background-color: var(--background);
+    block-size: 3.5rem;
+    border-block-end: 1px solid var(--border);
+    border-start-end-radius: inherit;
+    border-start-start-radius: inherit;
+    display: flex;
+    flex-shrink: 0;
+    gap: 0.5rem;
+    inset-block-start: 0;
+    padding-inline: 1rem;
+    position: sticky;
+    z-index: var(--z-nav);
+
+    nav {
+      min-inline-size: 0;
+    }
+
+    .ui-breadcrumb {
+      flex-wrap: nowrap;
+      white-space: nowrap;
+
+      li:last-child {
+        min-inline-size: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+  }
+
+  .app-header__rule {
+    block-size: 1rem;
+    margin-inline-end: 0.25rem;
+  }
+
+  .app-header__tools {
+    align-items: center;
+    display: flex;
+    gap: 0.5rem;
+    margin-inline-start: auto;
+  }
+
+  /* shadcn's search trigger: an outlined field-like button with the shortcut at its end. */
+  .app-header__search {
+    color: var(--muted-foreground);
+    font-weight: 400;
+    justify-content: flex-start;
+
+    @media (min-width: 1024px) {
+      inline-size: 16rem;
+
+      .ui-kbd-group {
+        margin-inline-start: auto;
+      }
+    }
+
+    @media (max-width: 1023px) {
+      .app-header__search-label,
+      .ui-kbd-group {
+        display: none;
+      }
+    }
+  }
+
+  .app-main {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    inline-size: 100%;
+    margin-inline: auto;
+    max-inline-size: 80rem;
+    padding: 1.5rem var(--app-gutter) 3rem;
+  }
+
+  /* A screen's title row (layouts/shared/_page_header): the title and its actions at the
+  /* right, wrapping under it when there's no room. */
+  .page-heading {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.75rem;
+    justify-content: space-between;
+  }
+
+  .page-heading__title {
+    --icon-size: 1.5rem;
+
+    align-items: center;
+    display: flex;
+    font-size: var(--text-xx-large);
+    font-weight: 600;
+    gap: 0.5rem;
+    letter-spacing: -0.025em;
+    line-height: 1.2;
+    margin: 0;
+
+    .icon {
+      color: var(--muted-foreground);
+    }
+  }
+
+  .page-heading__actions {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    margin-inline-start: auto;
+  }
+
+  .page-heading__note {
+    align-items: center;
+    color: var(--muted-foreground);
+    display: flex;
+    flex-wrap: wrap;
+    font-size: var(--text-normal);
+    gap: 0.5rem;
+    margin: 0;
+  }
+
+  /* Search everything (layouts/shared/_global_search), as shadcn's Command in a dialog: the
+  /* field across the top, the results under it, the one picked tinted. */
+  .app-command {
+    gap: 0;
+    max-inline-size: 36rem;
+    overflow: hidden;
+    padding: 0;
+    position: fixed;
+    inset: 12dvh 0 auto;
+    margin-inline: auto;
+  }
+
+  .app-command__field {
+    --icon-size: 1rem;
+
+    align-items: center;
+    border-block-end: 1px solid var(--border);
+    color: var(--muted-foreground);
+    display: flex;
+    gap: 0.5rem;
+    padding-inline: 0.75rem;
+
+    input {
+      background: none;
+      block-size: 3rem;
+      border: 0;
+      color: var(--foreground);
+      box-shadow: none;
+      flex: 1;
+      font: inherit;
+      font-size: var(--text-normal);
+      min-block-size: 0;
+      outline: none;
+      padding: 0;
+
+      &::placeholder {
+        color: var(--muted-foreground);
+      }
+
+      &::-webkit-search-cancel-button {
+        display: none;
+      }
+    }
+  }
+
+  .app-command__results {
+    max-block-size: min(24rem, 60dvh);
+    overflow-y: auto;
+    padding: 0.25rem;
+
+    ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+  }
+
+  .app-command__empty {
+    color: var(--muted-foreground);
+    font-size: var(--text-normal);
+    margin: 0;
+    padding: 1.5rem;
+    text-align: center;
+  }
+
+  .app-command__group {
+    color: var(--muted-foreground);
+    font-size: var(--text-x-small);
+    font-weight: 500;
+    margin: 0;
+    padding: 0.5rem 0.5rem 0.25rem;
+  }
+
+  .app-command__item {
+    align-items: center;
+    border-radius: var(--radius-sm);
+    color: var(--foreground);
+    display: flex;
+    font-size: var(--text-normal);
+    gap: 0.75rem;
+    min-inline-size: 0;
+    padding: 0.5rem;
+    text-decoration: none;
+
+    &[aria-selected="true"] {
+      background-color: var(--accent);
+      color: var(--accent-foreground);
+    }
+
+    mark {
+      background: none;
+      color: inherit;
+      font-weight: 600;
+    }
+  }
+
+  .app-command__text {
+    display: grid;
+    flex: 1;
+    min-inline-size: 0;
+  }
+
+  .app-command__snippet {
+    color: var(--muted-foreground);
+    font-size: var(--text-x-small);
+  }
+
+  .app-command__all {
+    border-block-start: 1px solid var(--border);
+    border-radius: 0;
+    margin-block-start: 0.25rem;
+  }
+
+  /* The flash, as toasts: kit toasts (ui-toast) top centre, a notice fading by itself (the
+  /* kit's animation; animationend removes it), an alert staying until it's dismissed. */
+  .ui-toast--sticky {
+    animation: none;
+  }
+
+  .app-toast__text {
+    flex: 1;
+    margin: 0;
+  }
+
+  /* The theme toggle shows the moon in light and the sun in dark. */
+  .theme-toggle__sun {
+    display: none;
+  }
+
+  html[data-theme="dark"] .theme-toggle {
+    .theme-toggle__sun { display: inline-block; }
+    .theme-toggle__moon { display: none; }
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html:not([data-theme]) .theme-toggle {
+      .theme-toggle__sun { display: inline-block; }
+      .theme-toggle__moon { display: none; }
+    }
+  }
+}
+
+/* While an update runs (layouts/shared/_update_progress, update_progress_controller): a
+/* spinner beside the heading, and a bar per update that eases to where the poll says it is. */
+@layer ui {
+  .update-progress[open] {
+    inline-size: min(32rem, calc(100vw - 2rem));
+  }
+
+  .update-progress__spinner {
+    animation: update-progress-spin 0.8s linear infinite;
+    block-size: 1.25rem;
+    border: 2px solid var(--border);
+    border-block-start-color: var(--primary);
+    border-radius: 50%;
+    flex: none;
+    inline-size: 1.25rem;
+
+    .update-progress--finished & {
+      animation: none;
+      border-color: var(--border);
+    }
+  }
+
+  .update-progress__bar {
+    background-color: color-mix(in oklch, var(--primary) 20%, transparent);
+    block-size: 0.5rem;
+    border-radius: 99rem;
+    overflow: hidden;
+
+    span {
+      background-color: var(--primary);
+      block-size: 100%;
+      border-radius: inherit;
+      display: block;
+      inline-size: 0;
+      transition: inline-size 300ms ease-out;
+    }
+
+    .update-progress--failed & span {
+      background-color: var(--destructive);
+    }
+  }
+
+  @keyframes update-progress-spin {
+    to { transform: rotate(360deg); }
+  }
+}
