@@ -212,8 +212,10 @@ same device login as `cms login`, with `purpose=site`: approving it (which
 takes `settings:write`) issues the site a read-only service token on the
 Production site role instead of handing over the approver's own. The site
 then builds with the `cms()` integration (`@librepublish/astro`, from
-github.com/Martin-Business-Consultants/libre-cms-astro), which writes the frontend
-AGENTS.md — with Site health's checks for the site — into its repo and reports
-each build
+github.com/Martin-Business-Consultants/librepublish-astro); the installer writes
+the frontend AGENTS.md — how the site works with the CMS, and what the
+integration enforces: the schema lock (`npx librepublish-astro sync`), strict
+records, a component for every block type, redirects only in the CMS — into
+its repo, and the integration checks Site health and reports each build
 (`GET /api/frontend`, `cms frontend`).
 

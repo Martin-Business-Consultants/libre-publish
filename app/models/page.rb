@@ -28,6 +28,8 @@ class Page < ApplicationRecord
   include Searchable
   include Referencing
   include Taxonomized
+  include SchemaSource
+  schema_source_of :schema, :status, :path, :title, :deleted_at
 
   # `slug` is a leaf segment (one path component), not the full path; full
   # paths live in the denormalized `path` column (Page::Treeable).

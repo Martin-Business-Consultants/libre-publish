@@ -42,10 +42,14 @@ class BlockType::Validator
       out.reject(&:blank?).join("\n")
     end
 
-    def json_schema_for(fields)
+    # `closed: true` is the delivery API's (DeliverySchema), as the Go core
+    # writes it: groups and repeater items closed too, since they're delivered
+    # with only their declared keys (DeliveredData), and Markdown marked as
+    # such. Without it, the manifest's, which has always left them open.
+    def json_schema_for(fields, closed: false)
       {
         "type"       => "object",
-        "properties" => Array(fields).to_h { |fd| [fd["name"], field_to_json_schema(fd)] },
+        "properties" => Array(fields).to_h { |fd| [fd["name"], field_to_json_schema(fd, closed:)] },
         "required"   => Array(fields).select { |fd| fd["required"] == true }.map { |fd| fd["name"] },
         "additionalProperties" => false
       }
@@ -366,12 +370,12 @@ class BlockType::Validator
     # A field as JSON Schema, annotated with its label (title), help
     # (description) and the CMS's own type (x-cms-type: markdown, asset, link…),
     # which JSON Schema can't say but a renderer needs.
-    def field_to_json_schema(fd)
+    def field_to_json_schema(fd, closed: false)
       {"title" => fd["label"].presence, "description" => fd["help"].presence, "x-cms-type" => fd["type"]}.compact
-        .merge(field_type_schema(fd))
+        .merge(field_type_schema(fd, closed:))
     end
 
-    def field_type_schema(fd)
+    def field_type_schema(fd, closed: false)
       case fd["type"]
       when "integer"     then {"type" => "integer"}
       when "boolean"     then {"type" => "boolean"}
@@ -390,20 +394,9 @@ class BlockType::Validator
       when "record_refs" then {"type" => "array", "items" => {"type" => "string"}}
       when "string_list" then {"type" => "array", "items" => {"type" => "string"}}
       when "repeater"
-        {
-          "type" => "array",
-          "items" => {
-            "type" => "object",
-            "properties" => Array(fd["of"]).to_h { |sf| [sf["name"], field_to_json_schema(sf)] },
-            "required" => Array(fd["of"]).select { |sf| sf["required"] == true }.map { |sf| sf["name"] }
-          }
-        }
+        {"type" => "array", "items" => nested_json_schema(fd, closed:)}
       when "group"
-        {
-          "type" => "object",
-          "properties" => Array(fd["of"]).to_h { |sf| [sf["name"], field_to_json_schema(sf)] },
-          "required" => Array(fd["of"]).select { |sf| sf["required"] == true }.map { |sf| sf["name"] }
-        }
+        nested_json_schema(fd, closed:)
       when "blocks"
         {
           "type"  => "array",
@@ -418,8 +411,18 @@ class BlockType::Validator
           }
         }
       when "url"         then {"type" => "string", "format" => "uri-reference"}
+      when "markdown"
+        closed ? {"type" => "string", "contentMediaType" => "text/markdown"} : {"type" => "string"}
       else {"type" => "string"}
       end
+    end
+
+    def nested_json_schema(fd, closed:)
+      {
+        "type" => "object",
+        "properties" => Array(fd["of"]).to_h { |sf| [sf["name"], field_to_json_schema(sf, closed:)] },
+        "required" => Array(fd["of"]).select { |sf| sf["required"] == true }.map { |sf| sf["name"] }
+      }.tap { it["additionalProperties"] = false if closed }
     end
   end
 end

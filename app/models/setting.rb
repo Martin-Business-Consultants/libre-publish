@@ -22,6 +22,8 @@ class Setting < ApplicationRecord
   # ever queried BY value, so there is nothing a column would buy.
   encrypts :secrets
   include ForgetsUnreadable
+  include SchemaSource
+  schema_source_of :data, if: -> { key == Serving::KEY }
 
   # The settings people edit keep every change (SettingVersion), for
   # Settings › History; secrets never.

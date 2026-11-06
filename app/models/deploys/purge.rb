@@ -6,13 +6,18 @@ require "json"
 # What a site that renders on demand gets instead of a rebuild: a signed POST
 # to the webhook its build reported (Frontend.purge_url — the Astro
 # integration's /_cms/webhook), naming what changed and the cache tags to
-# drop (Deploys::Change). Signed as webhooks are, an HMAC-SHA256 of the body
-# in X-CMS-Signature, with Frontend.purge_secret. `all: true` (Deploy now)
+# drop (Deploys::Change). Signed as webhooks are (Webhook::Signature), with
+# Frontend.purge_secret: an HMAC-SHA256 of the body in X-CMS-Signature, and
+# of the time and the body in X-CMS-Signature-V2, which the site checks with
+# X-CMS-Timestamp's age to refuse a replayed purge. `all: true` (Deploy now)
 # asks for everything.
 #
 #   POST /_cms/webhook
 #   X-CMS-Event: cms.purge
 #   X-CMS-Signature: sha256=<hex>
+#   X-CMS-Signature-V2: sha256=<hex of "<timestamp>.<body>">
+#   X-CMS-Timestamp: 1767225600
+#   X-CMS-Delivery: <id>
 #   {"event": "cms.purge", "reason": "page.published", "site": "acme", "all": false,
 #    "tags": ["page:about", "pages", "sitemap"], "changes": [{…}], "sent_at": "…"}
 module Deploys::Purge
@@ -26,9 +31,8 @@ module Deploys::Purge
     request = Net::HTTP::Post.new(uri.request_uri, {
       "Content-Type"    => "application/json",
       "User-Agent"      => "librepublish-deploy/1",
-      "X-CMS-Event"     => EVENT,
-      "X-CMS-Signature" => signature(body, secret)
-    })
+      "X-CMS-Event"     => EVENT
+    }.merge(Webhook::Signature.headers(body, secret, delivery_id: SecureRandom.uuid)))
     request.body = body
     attempt(http.request(request), nil)
   rescue StandardError => e
@@ -40,7 +44,7 @@ module Deploys::Purge
      changes: changes, sent_at: Time.current.iso8601}
   end
 
-  def signature(body, secret) = "sha256=#{OpenSSL::HMAC.hexdigest("SHA256", secret, body)}"
+  def signature(body, secret) = Webhook::Signature.sign(body, secret)
 
   def attempt(response, error)
     Deploys::Attempt.new(status: response.is_a?(Net::HTTPSuccess) ? "success" : "failure",

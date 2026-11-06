@@ -4,7 +4,8 @@
 # changes, for caching what it renders (GET /api/v1/content): every table a
 # page, entry or global's JSON reads — the records (trashed ones too, so a
 # trash or restore counts), their taxonomy and translation siblings, their
-# collections, and Settings (the default locale shapes every URL, General's
+# collections, block types (a block's data is delivered with only its
+# type's fields), and Settings (the default locale shapes every URL, General's
 # contact details fill contact_info blocks), and patterns (a synced one is
 # drawn into every page that uses it). Each table answers with its row
 # count, its newest updated_at and the sum of them all, so an insert, an edit
@@ -25,7 +26,7 @@ module DeliveryVersion
   end
 
   def scopes
-    [Page.with_discarded, CollectionEntry.with_discarded, Global.with_discarded, Collection.all, Tagging.all,
+    [Page.with_discarded, CollectionEntry.with_discarded, Global.with_discarded, Collection.all, BlockType.all, Tagging.all,
       TranslationGroup.all, Setting.all, BlockPattern.all]
   end
 end

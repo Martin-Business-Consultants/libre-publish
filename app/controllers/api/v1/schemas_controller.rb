@@ -2,15 +2,13 @@
 
 # GET /api/v1/schema — JSON Schema for everything a site renders: each block
 # type's data, each collection's entry fields, each global's data, the pages
-# that have fields of their own, and SEO. A build generates its types from it.
+# that have fields of their own, and SEO (DeliverySchema). A build generates
+# its types from it and pins its digest (meta.schema_digest).
 class Api::V1::SchemasController < Api::V1::BaseController
   requires_capability "block_types:read", only: :show
 
   def show
-    @block_types = BlockType.order(:slug).to_a
-    @collections = Collection.order(:slug).to_a.select { Serving.collection?(it) }
-    @globals = Global.order(:slug).to_a
-    @pages = Page.live.order(:path).select { it.fields.any? }
+    @schema = DeliverySchema.current
     cache_tags("schema")
   end
 end

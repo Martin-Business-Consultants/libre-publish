@@ -5,8 +5,11 @@ that does everything the admin does, a `cms` CLI and MCP surface for AI
 agents, and plugins. One install is one site, in one container, with SQLite
 for everything. Sites render the content with any frontend, starting with
 Astro: the `@librepublish/astro` integration
-([libre-cms-astro](https://github.com/Martin-Business-Consultants/libre-cms-astro)) reads
-the delivery API (`/api/v1`, docs/delivery-api.md). Or the CMS draws the site
+([librepublish-astro](https://github.com/Martin-Business-Consultants/librepublish-astro)) reads
+the delivery API (`/api/v1`, docs/delivery-api.md), which answers the same
+contract as the Go core's (`spec/contracts/delivery_contract_spec.rb`), and
+holds the site to it: a schema lock, strict records, a component for every
+block type. Or the CMS draws the site
 itself, from a theme: plain ERB and CSS, no build (docs/themes.md).
 
 ```sh

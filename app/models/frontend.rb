@@ -36,13 +36,38 @@ module Frontend
     build["render"] = report["render"].to_s.presence_in(RENDERS)
     build["webhook_url"] = web_url(report["webhook_url"])
     build["content_cursor"] = report["content_cursor"].to_s.first(200).presence
+    build["schema_digest"] = report["schema_digest"].to_s[/\Asha256:\h{64}\z/]
+    build["checks_url"] = web_url(report["checks_url"])
+    build["checks"] = launch_checks(report["checks"]).presence
     build.compact!
     build["built_at"] = Time.current.iso8601
     Setting.set(SETTING, {"last_build" => build})
-    Event.record("frontend.built", **build.symbolize_keys.except(:built_at, :webhook_url))
+    Event.record("frontend.built", **build.symbolize_keys.except(:built_at, :webhook_url, :checks, :checks_url))
     reported = build.slice("render", "webhook_url")
     Setting.set(SETTING, {"delivery" => reported}) if rebuilt_only?(delivery) && rebuilt_only?(reported)
     build
+  end
+
+  # What a build checked about the site it built (@librepublish/astro's
+  # launch checklist: its secrets, prerendering, redirects, forms, media, the
+  # site's own items), as it reported them, kept as plain words: at most
+  # LAUNCH_CHECKS of them, each {key, group, title, state, evidence, launch,
+  # manual, fix, fix_label}. `fix` is kept only as a web address.
+  LAUNCH_CHECKS = 60
+  LAUNCH_STATES = %w[passes fails warns unknown n_a].freeze
+
+  def launch_checks(checks)
+    Array(checks).first(LAUNCH_CHECKS).filter_map do |check|
+      check = check.to_unsafe_h if check.respond_to?(:to_unsafe_h)
+      next unless check.is_a?(Hash) && check["key"].present? && check["title"].present?
+
+      {
+        "key" => check["key"].to_s.first(100), "group" => check["group"].to_s.first(100).presence,
+        "title" => check["title"].to_s.first(200), "state" => check["state"].to_s.presence_in(LAUNCH_STATES),
+        "evidence" => check["evidence"].to_s.first(500).presence, "launch" => check["launch"] == true || nil,
+        "manual" => check["manual"] == true || nil, "fix" => web_url(check["fix"]), "fix_label" => check["fix_label"].to_s.first(100).presence
+      }.compact
+    end
   end
 
   # How publishing reaches the site, as approved: {"render", "webhook_url"}.

@@ -24,6 +24,50 @@ out.
   `FORCE=1` replaces a site that has people, keeping its database beside the
   new one. The same task still imports the shared deployment's backups
   (`cms:import_tenant` stays). docs/import.md.
+- **The delivery API answers the Go core's contract**, which
+  [@librepublish/astro](https://github.com/Martin-Business-Consultants/librepublish-astro)
+  0.8 holds every site to, and a spec holds it there:
+  `spec/fixtures/contracts/go` is the Go core's recorded contract (copied by
+  `bin/contracts-sync ../librepublishgo`, pinned in `go.sha256`), and
+  `spec/contracts/delivery_contract_spec.rb` seeds the same site, makes each
+  request and fails on any key, type or header the Go core gives and this
+  CMS doesn't, and on any key this CMS gives that isn't listed as its own.
+  Everything is added beside what was there (docs/compatibility.md):
+  - `/api/v1/schema` in the Go core's shape — `blocks`, `collections`,
+    `globals`, `pages` and `seo`, each a closed JSON Schema (groups and
+    repeater items too), synced patterns expanded out — and its digest in
+    `meta.schema_digest`: canonical JSON hashed byte for byte as the Go core
+    does (`CanonicalJson`).
+  - `X-CMS-Schema-Digest` on every `/api/v1` answer, so a build sees the
+    schema move under it.
+  - `/site`'s `api_version`, `image_widths` and `branding`; its contact
+    details' business name (`title`). `/sitemap`'s `loc`, `type` and each
+    alternate's `hreflang` and `href`. `/site_health`'s `message` (and cache
+    tag `site`). `/robots`' `meta`.
+  - `X-Total-Count`, `X-Total-Pages` and `Link` on lists; `?fields=` (only
+    those keys of each record) and `?include=` (assets, entries, pages or
+    none); `OPTIONS` on a resource answers its JSON Schema.
+  - An entry's blocks are expanded as a page's are (patterns, collection
+    lists, contact details), and a collection_list's entries carry their SEO.
+  - Asset URLs at `/files/<key>/<name>` and `/files/<key>/w<width>/<name>`,
+    as the Go core serves them: @librepublish/astro allows them as remote
+    images and copies them into a site's build. The Active Storage URLs keep
+    working.
+- **Webhooks and purges are signed as the Go core signs them**:
+  `X-CMS-Signature-V2` over the timestamp and the body, `X-CMS-Timestamp`,
+  `X-CMS-Delivery` (the same on every retry) and `X-CMS-Event`; a receiver
+  can refuse a replayed post. `X-CMS-Signature` is still sent.
+- **Webhook retries**: a delivery that can't connect, or is answered 408, 429
+  or 5xx, is sent again after 30s, 2m, 5m, 15m and 40m.
+- **`schema.changed`**, a webhook event (and a rebuild or purge, tag
+  `schema`) when `/api/v1/schema`'s digest moves, debounced. `global.updated`
+  carries the global's `id`.
+- **A build's launch checklist**: `POST /api/frontend/builds` keeps the
+  `checks`, `checks_url` and `schema_digest` @librepublish/astro reports, and
+  Settings › Deploy shows them, and says when the CMS's schema has moved
+  since the build. It answers `ok` and `approval_pending` too.
+- SEO's **Leave out of the sitemap** (`exclude_from_sitemap`), honoured by the
+  sitemap.
 
 ### Changed
 - **The admin is drawn with Runwell UI**, a no-build port of shadcn/ui in
@@ -52,6 +96,29 @@ out.
   component classes (`btn`, `panel`, `field`, `data-table`, `dialog`…) still
   draw, in the kit's look, from `legacy.css`, so Forms 1.7 and other plugins
   written for them keep working. The default Forms plugin is pinned to 1.7.2.
+- **The delivery API sends only what `/api/v1/schema` declares**: a record's
+  frontmatter, its blocks' data, a global's data and its SEO lose keys no
+  field declares (a field since removed, a key an API client stored), as the
+  schema has always said (`additionalProperties: false`). They stay in the
+  record and in `/api`. A record's old `canonical` is given as
+  `canonical_url` too.
+- The Astro installer (`/frontend/install.sh`), the Developers screen and the
+  docs point at
+  [librepublish-astro](https://github.com/Martin-Business-Consultants/librepublish-astro)
+  (0.8), in place of libre-cms-astro. The installer writes the CMS's section
+  of the site's `AGENTS.md` (`/frontend/AGENTS.md`, between markers), which
+  now says what the integration enforces: the schema lock
+  (`npx librepublish-astro sync`, `cms.lock.json`), strict records, a
+  component for every block type, redirects only in the CMS, `<Form>` only on
+  pages rendered on demand, Site health and the launch checklist.
+
+### Deprecated
+- `/api/v1/schema`'s shape before this release, going in 2.0: `block_types`,
+  and inside each collection `enable_blocks` and `frontmatter`, each global
+  `data`, and each page `title` and `frontmatter`. Read `blocks` and the
+  parts themselves. A page's `title` being part of the schema until then,
+  retitling a page that has fields of its own moves the digest.
+- SEO's `canonical`: read `canonical_url`.
 
 ## 1.33.4
 

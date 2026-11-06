@@ -52,6 +52,7 @@
         Last build <%= time_ago_tag build[:built_at] %>
         <% if build[:integration] %> · <%= build[:integration] %> <%= build[:integration_version] %><% end %>
         <% if build[:content_cursor] %> · built from content <span class="text-mono"><%= build[:content_cursor].first(16) %></span><% end %>
+        <% if build[:schema_digest] %> · checked against schema <span class="text-mono"><%= build[:schema_digest].delete_prefix("sha256:").first(12) %></span><% if build[:schema_digest] != DeliverySchema.digest %> (the CMS’s has changed since: the site needs <code>npx librepublish-astro sync</code>)<% end %><% end %>
       </p>
     <% end %>
   </header>
@@ -69,6 +70,25 @@
           The site hasn’t said how it renders, so publishing rebuilds it.
         <% end %>
       </p>
+      <% if build[:checks].present? %>
+        <h3 class="ui-label">The build’s launch checklist</h3>
+        <div class="ui-table-container">
+          <table class="ui-table">
+            <tbody>
+              <% build[:checks].each do |check| %>
+                <tr>
+                  <td><%= status_tag(check["state"] || "unknown") %></td>
+                  <td>
+                    <%= check["title"] %>
+                    <% if check["evidence"].present? %><span class="ui-field__description"> — <%= check["evidence"] %></span><% end %>
+                    <% if check["fix"].present? %> · <%= link_to check["fix_label"].presence || "Fix it", check["fix"], class: "link", rel: "noopener", target: "_blank" %><% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% end %>
       <% if (pending = Frontend.pending_delivery) %>
         <div class="ui-alert ui-alert--warning" role="status">
           <%= icon_tag "bell-alert", class: "ui-alert__icon" %>
