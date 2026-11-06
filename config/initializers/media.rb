@@ -22,7 +22,6 @@ Rails.application.config.to_prepare do
   Cms::Plugins.new_item :media, label: "Media", path: -> { file_manager_path(upload: 1) }, capability: "assets:write",
     after: "Global"
   Cms::Plugins.slot :content_form, :media, "media/slots/picker"
-  Cms::Plugins.stylesheet :media, "media/file-manager"
 
   Cms::Plugins.counts :media, after: :globals, assets: -> { Asset.count }
   Cms::Plugins.trashable :media, "asset", "Asset", label: "Assets", after: "global",

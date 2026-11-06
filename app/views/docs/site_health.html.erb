@@ -2,19 +2,18 @@
 <%= parent_page "Docs", docs_path %>
 <%= render "layouts/shared/page_header", title: "Site health" %>
 
-<div class="with-sidebar">
-  <div>
-    <%= render "docs/checklist", checks: @checks, groups: SiteHealth::GROUPS, key: "site-health" %>
-  </div>
-  <aside>
-    <%= postbox "site-health-summary", "In good order?" do %>
-      <div class="stack stack--xs">
-        <p class="text-large text-semibold text-ink">
-          <%= @summary[:ready] ? "Everything checks out" : "#{pluralize(@summary[:failing], "thing")} to fix" %>
-        </p>
-        <p class="text-muted"><%= @summary[:passing] %> of <%= @summary[:total] %> checks pass. The ones marked ? are yours to judge.</p>
-      </div>
-    <% end %>
+<div class="docs-layout">
+  <aside class="docs-layout__nav">
     <%= render "docs/nav", guides: @guides, current: :site_health %>
   </aside>
+  <div class="docs-layout__main">
+    <div class="ui-alert <%= @summary[:ready] ? "ui-alert--success" : "ui-alert--warning" %>" role="status">
+      <%= icon_tag (@summary[:ready] ? "check-circle" : "bell-alert"), class: "ui-alert__icon" %>
+      <p class="ui-alert__title">
+        <%= @summary[:ready] ? "Everything checks out" : "#{pluralize(@summary[:failing], "thing")} to fix" %>
+      </p>
+      <div class="ui-alert__description"><%= @summary[:passing] %> of <%= @summary[:total] %> checks pass. The ones marked ? are yours to judge.</div>
+    </div>
+    <%= render "docs/checklist", checks: @checks, groups: SiteHealth::GROUPS, key: "site-health" %>
+  </div>
 </div>

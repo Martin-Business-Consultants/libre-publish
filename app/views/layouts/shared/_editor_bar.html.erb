@@ -19,8 +19,8 @@
         <% if cli %>
           <span class="cluster cluster--xs text-small text-muted" title="<%= tx("From the CLI or MCP:") %>">
             <code class="code"><%= cli %></code>
-            <button type="button" class="btn btn--plain btn--sm" title="<%= tx("Copy the command") %>" data-controller="copy-to-clipboard"
-                    data-copy-to-clipboard-content-value="<%= cli %>" data-copy-to-clipboard-success-class="btn--success" data-action="copy-to-clipboard#copy"><%= tx("Copy") %></button>
+            <button type="button" class="ui-button ui-button--ghost ui-button--sm" title="<%= tx("Copy the command") %>" data-controller="copy-to-clipboard"
+                    data-copy-to-clipboard-content-value="<%= cli %>" data-copy-to-clipboard-success-class="ui-button--secondary" data-action="copy-to-clipboard#copy"><%= tx("Copy") %></button>
           </span>
         <% end %>
         <%= content_for(:page_actions) %>

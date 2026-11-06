@@ -1,22 +1,29 @@
 # frozen_string_literal: true
 
-# Reading the admin menu (layouts/shared/_admin_menu) out of a response.
+# Reading the admin menu (the sidebar, layouts/shared/_sidebar) out of a response.
 module AdminMenuHelpers
+  def admin_menu_node(body = response.body)
+    Nokogiri::HTML(body).at_css("aside#admin-menu")
+  end
+
   # The top-level items' labels, in order.
   def menu_labels(body = response.body)
-    menu = body[%r{<nav id="admin-menu".*?</nav>}m].to_s
-    menu.scan(%r{<a [^>]*class="admin-menu__link[ "][^>]*>.*?<span class="admin-menu__label[ "][^>]*>([^<]+)</span>}m).flatten
+    admin_menu_node(body)&.css(".app-sidebar__link .app-sidebar__label")&.map { it.text.squish } || []
   end
 
   # The groups, in order, as their items name them.
   def menu_groups(body = response.body)
-    body[%r{<nav id="admin-menu".*?</nav>}m].to_s.scan(/data-menu-group="([^"]*)"/).flatten.uniq
+    admin_menu_node(body)&.css("[data-menu-group]")&.map { it["data-menu-group"] } || []
+  end
+
+  # One top-level item: its <li>.
+  def menu_item(label, body = response.body)
+    admin_menu_node(body)&.css(".app-sidebar__item")&.find { it.at_css(".app-sidebar__link .app-sidebar__label")&.text&.squish == label }
   end
 
   # One top-level item's submenu labels, in order.
   def submenu_labels(label, body = response.body)
-    list = body[%r{<ul class="admin-menu__submenu[ "][^>]*aria-label="#{Regexp.escape(label)}">.*?</ul>}m].to_s
-    list.scan(%r{class="admin-menu__submenu-link[ "][^>]*>(.*?)</a>}m).flatten.map { it.gsub(/<[^>]+>/, "").squish }
+    admin_menu_node(body)&.at_css(%(.app-sidebar__sub[aria-label="#{label}"]))&.css(".app-sidebar__sub-link")&.map { it.text.squish } || []
   end
 end
 

@@ -1,28 +1,47 @@
 <%# locals: () %>
-<%# The latest editorial actions (AuditLog), the audit log's head. %>
+<%# The latest editorial actions (AuditLog), the audit log's head, as a table in a card. %>
 <% entries = AuditLog.recent.limit(8).to_a %>
-<section class="panel" aria-labelledby="dashboard_activity">
-  <header class="panel__header dashboard__header">
-    <h2 id="dashboard_activity" class="heading">Recent activity</h2>
-    <%= link_to "Audit log", audit_logs_path, class: "btn btn--sm" %>
+<section class="ui-card ui-card--flush" aria-labelledby="dashboard_activity">
+  <header class="ui-card__header ui-card__header--bordered">
+    <h2 id="dashboard_activity" class="ui-card__title">Recent activity</h2>
+    <p class="ui-card__description">The latest changes, by whom.</p>
+    <div class="ui-card__action">
+      <%= link_to "Audit log", audit_logs_path, class: "ui-button ui-button--outline ui-button--sm" %>
+    </div>
   </header>
   <% if entries.any? %>
-    <ul class="divided">
-      <% entries.each do |entry| %>
-        <%# herb:key entry.id %>
-        <li class="dashboard__row dashboard__row--inset">
-          <span class="cluster grow">
-            <span class="text-medium text-ink"><%= entry.actor_label.presence || "system" %></span>
-            <span class="badge"><%= entry.current_action %></span>
-            <% if entry.target_label.present? %>
-              <span class="truncate text-body"><%= audit_target_link(entry) %></span>
-            <% end %>
-          </span>
-          <span class="no-shrink nowrap text-small text-muted"><%= time_ago_tag entry.created_at %></span>
-        </li>
-      <% end %>
-    </ul>
+    <div class="ui-table-container">
+      <table class="ui-table">
+        <thead>
+          <tr>
+            <th>Who</th>
+            <th>Did</th>
+            <th>To</th>
+            <th class="ui-table__numeric">When</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% entries.each do |entry| %>
+            <%# herb:key entry.id %>
+            <tr>
+              <td><span class="nowrap text-medium"><%= entry.actor_label.presence || "system" %></span></td>
+              <td><span class="ui-badge ui-badge--secondary"><%= entry.current_action %></span></td>
+              <td>
+                <% if entry.target_label.present? %>
+                  <span class="dashboard__target truncate"><%= audit_target_link(entry) %></span>
+                <% end %>
+              </td>
+              <td class="ui-table__numeric"><span class="nowrap text-muted"><%= time_ago_tag entry.created_at %></span></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
   <% else %>
-    <p class="empty-state">Nothing has happened yet.</p>
+    <div class="ui-card__content dashboard__activity-empty">
+      <div class="ui-empty">
+        <p class="ui-empty__description">Nothing has happened yet.</p>
+      </div>
+    </div>
   <% end %>
 </section>

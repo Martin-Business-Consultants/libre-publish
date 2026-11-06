@@ -11,7 +11,7 @@
   <div class="editor__main">
     <div>
       <label class="visually-hidden" for="page_title">Title</label>
-      <%= form.text_field :title, required: true, class: "title-input", placeholder: "Add title", data: { slug_target: "source", action: "slug#fill" }, autofocus: page.new_record? %>
+      <%= form.text_field :title, required: true, class: "editor__title", placeholder: "Add title", data: { slug_target: "source", action: "slug#fill" }, autofocus: page.new_record? %>
     </div>
 
     <%= tag.div class: "stack stack--lg", data: ({ tab: "edit", tabs_target: "panel" } if page.persisted?) do %>
@@ -21,12 +21,16 @@
       <% end %>
     <% end %>
 
-    <section class="panel">
-      <h2 class="heading editor__section-title">Blocks</h2>
-      <div class="editor__section-body">
+    <section class="ui-card">
+      <header class="ui-card__header">
+        <h2 class="ui-card__title">Blocks</h2>
+      </header>
+      <div class="ui-card__content">
         <%= render "content_form/blocks", blocks: page.blocks, scope: content_scope("page")["blocks"], depth: 1, record: page %>
       </div>
-      <p class="panel__footer"><%= editor_status_line(page) %></p>
+      <footer class="ui-card__footer ui-card__footer--bordered">
+        <p class="editor__status"><%= editor_status_line(page) %></p>
+      </footer>
     </section>
     <% end %>
 
@@ -40,14 +44,14 @@
 
     <%= postbox "page-attributes", "Page Attributes" do %>
       <%= render "content_form/permalink", record: page, form: form, required: true, hint: "Lowercase letters, digits and dashes." %>
-      <label class="field">
-        <span class="label">Parent</span>
-        <%= form.select :parent_id, parents.map { [ ("  " * it.depth.to_i) + "/" + it.path, it.id ] }, { include_blank: "No parent (top level)" } %>
-        <span class="help">Nests this page under another; its URL becomes the parent’s path plus its slug.</span>
+      <label class="ui-field">
+        <span class="ui-label">Parent</span>
+        <%= form.select :parent_id, parents.map { [ ("  " * it.depth.to_i) + "/" + it.path, it.id ] }, { include_blank: "No parent (top level)" }, { class: "ui-select" } %>
+        <span class="ui-field__description">Nests this page under another; its URL becomes the parent’s path plus its slug.</span>
       </label>
-      <label class="field">
-        <span class="label">Locale</span>
-        <%= form.text_field :locale, required: true, placeholder: "en", autocomplete: "off" %>
+      <label class="ui-field">
+        <span class="ui-label">Locale</span>
+        <%= form.text_field :locale, required: true, placeholder: "en", autocomplete: "off", class: "ui-input" %>
       </label>
       <% if page.persisted? %>
         <%= render "content_form/reference", reference: "/" + page.path %>

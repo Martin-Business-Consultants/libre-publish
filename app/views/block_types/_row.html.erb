@@ -1,0 +1,31 @@
+<%# locals: (block_type:, can_write:, can_delete:) %>
+<%# One block type in the block types data table (block_types/index): its label (and whether
+    it's deprecated), slug, category, how many fields, whether it came with the CMS, and its
+    actions. %>
+<tr id="<%= dom_id(block_type) %>" data-filter-target="item">
+  <% if can_delete %>
+    <%= ui_select_cell block_type.slug, label: "Select #{block_type.label}", form: "block_types_bulk", name: "slugs[]" %>
+  <% end %>
+  <td data-column="label">
+    <span class="row">
+      <% if can_write %>
+        <%= link_to block_type.label, edit_block_type_path(block_type.slug), class: "ui-table__row-link" %>
+      <% else %>
+        <span class="text-medium"><%= block_type.label %></span>
+      <% end %>
+      <% if block_type.deprecated %>
+        <%= ui_badge "Deprecated", :secondary %>
+      <% end %>
+    </span>
+  </td>
+  <td data-column="slug"><span class="text-mono text-small text-muted"><%= block_type.slug %></span></td>
+  <td data-column="category"><span class="text-muted"><%= block_type.category.presence || "—" %></span></td>
+  <td data-column="fields" class="ui-table__numeric"><%= Array(block_type.fields).size %></td>
+  <td data-column="source"><%= ui_badge (block_type.built_in ? "Built-in" : "Custom"), :outline %></td>
+  <td class="ui-table__numeric">
+    <%= render "ui/row_actions", id: dom_id(block_type), name: block_type.label,
+          edit_path: (edit_block_type_path(block_type.slug) if can_write),
+          delete_path: (block_type_path(block_type.slug) if can_delete),
+          delete_message: "Pages using it keep their blocks, which stop validating. This can’t be undone." %>
+  </td>
+</tr>

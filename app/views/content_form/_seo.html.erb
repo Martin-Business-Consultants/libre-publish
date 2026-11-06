@@ -7,22 +7,25 @@
 <% seo = record.seo.is_a?(Hash) ? record.seo : {} %>
 <% seo = seo.merge("json_ld" => invalid_json["json_ld"]) if invalid_json&.key?("json_ld") %>
 <% seo_scope = content_scope(scope)["seo"] %>
-<%= tag.section class: "panel", data: ({ tab: "seo", tabs_target: "panel" } if record.persisted?), hidden: record.persisted? do %>
-  <h2 class="heading seo-panel__title">SEO</h2>
-  <% checks = record.persisted? ? SeoAudit.new.for_record(record) : [] %>
-  <% if checks.any? %>
-    <ul class="seo-panel__checks" aria-label="SEO checks">
-      <% checks.each_with_index do |issue, index| %>
-        <%# herb:key index %>
-        <li class="<%= issue.problem? ? "text-danger" : "text-body" %>"><%= issue.message %></li>
-      <% end %>
-    </ul>
-  <% end %>
-  <div>
+<%= tag.section class: "ui-card", data: ({ tab: "seo", tabs_target: "panel" } if record.persisted?), hidden: record.persisted? do %>
+  <header class="ui-card__header ui-card__header--bordered">
+    <h2 class="ui-card__title">SEO</h2>
+    <p class="ui-card__description">How search engines and social sites show this <%= record.model_name.human.downcase %>.</p>
+  </header>
+  <div class="ui-card__content seo-panel__groups">
+    <% checks = record.persisted? ? SeoAudit.new.for_record(record) : [] %>
+    <% if checks.any? %>
+      <ul class="seo-panel__checks" aria-label="SEO checks">
+        <% checks.each_with_index do |issue, index| %>
+          <%# herb:key index %>
+          <li class="<%= class_names("seo-panel__check--problem": issue.problem?) %>"><%= issue.message %></li>
+        <% end %>
+      </ul>
+    <% end %>
     <% [ [ "Search", SeoFields::SEARCH ], [ "Social sharing", SeoFields::SOCIAL ], [ "Structured data", SeoFields::STRUCTURED ] ].each do |title, fields| %>
       <%# herb:key title %>
       <section class="seo-panel__group">
-        <h3 class="text-small text-medium text-muted"><%= title %></h3>
+        <h3 class="editor-subheading"><%= title %></h3>
         <%= render "content_form/fields", fields: fields, values: seo, scope: seo_scope, depth: 1 %>
       </section>
     <% end %>

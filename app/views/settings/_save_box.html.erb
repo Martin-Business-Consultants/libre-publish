@@ -1,12 +1,13 @@
 <%# locals: (form:, button: "Save changes", note: nil, capability: "settings:write") %>
-<%# A settings page's Save box, in its sidebar (content_for :settings_aside):
-    the button submits the page's form (by id) from outside it. It's off for
-    a role without `capability`, as the form's fields are. %>
-<%= postbox "settings-save", "Save" do %>
-  <div class="stack stack--md">
-    <% if note %>
-      <p class="text-muted"><%= note %></p>
-    <% end %>
-    <%= tag.button tx(button), type: "submit", form: form, class: "btn btn--primary btn--block", disabled: !Current.user.can?(capability) %>
-  </div>
-<% end %>
+<%# A settings page's Save box, a card at the side of the page (content_for
+    :settings_aside): the button submits the page's form (by id) from outside
+    it. It's off for a role without `capability`, as the form's fields are. %>
+<section class="ui-card ui-card--sm">
+  <header class="ui-card__header">
+    <h2 class="ui-card__title"><%= tx("Save") %></h2>
+    <p class="ui-card__description"><%= note || tx("Changes apply once they're saved.") %></p>
+  </header>
+  <footer class="ui-card__footer">
+    <%= tag.button tx(button), type: "submit", form: form, class: "ui-button ui-button--block", disabled: !Current.user.can?(capability) %>
+  </footer>
+</section>

@@ -1,0 +1,133 @@
+/* The signed-out pages (layouts/public: sign in, sign up, password reset, two-factor), as
+/* shadcn's login blocks draw them: the site's logo or name over a centred card, on the muted
+/* page; the theme toggle in the corner. The auth-panel is that column (also on Connect a
+/* machine, inside the admin). */
+@layer ui {
+  .public {
+    background-color: var(--muted);
+  }
+
+  .public__frame {
+    display: flex;
+    flex-direction: column;
+    min-block-size: 100dvh;
+  }
+
+  .public__header {
+    display: flex;
+    justify-content: flex-end;
+    padding: 1rem;
+  }
+
+  .public__main {
+    align-items: center;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 1.5rem;
+    justify-content: center;
+    padding: 1.5rem 1rem 4rem;
+  }
+
+  .public__brand {
+    align-items: center;
+    display: flex;
+    font-size: var(--text-medium);
+    font-weight: 500;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+
+  .public__mark {
+    align-items: center;
+    background-color: var(--primary);
+    block-size: 1.75rem;
+    border-radius: var(--radius-md);
+    color: var(--primary-foreground);
+    display: flex;
+    inline-size: 1.75rem;
+    justify-content: center;
+
+    .icon {
+      --icon-size: 1rem;
+    }
+  }
+
+  .public__logo {
+    display: inline-flex;
+  }
+
+  .public__footer:empty {
+    display: none;
+  }
+
+  /* A login block's column: the card, at most 24rem, and the links under it. */
+  .auth-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    inline-size: 100%;
+    margin-inline: auto;
+    max-inline-size: 24rem;
+  }
+
+  .auth-panel__header {
+    text-align: center;
+  }
+
+  .auth-panel__title {
+    font-size: var(--text-large);
+  }
+
+  .auth-panel__body {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  /* A field's label with a link at the other end (Forgot password?). */
+  .auth-panel__label-row {
+    align-items: center;
+    display: flex;
+    gap: 0.5rem;
+    justify-content: space-between;
+  }
+
+  .auth-panel__link {
+    color: inherit;
+    font-size: var(--text-normal);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+
+    &:hover {
+      color: var(--primary);
+    }
+  }
+
+  .auth-panel__note {
+    color: var(--muted-foreground);
+    font-size: var(--text-normal);
+    margin: 0;
+    text-align: center;
+  }
+
+  .auth-panel__actions {
+    display: grid;
+    gap: 0.5rem;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* A one-time code, typed into the middle of a wide field. */
+  .ui-input.one-time-code {
+    font-family: var(--font-mono);
+    font-size: var(--text-large);
+    letter-spacing: 0.1em;
+    text-align: center;
+  }
+
+  /* A device's code (cms login), as the terminal shows it. */
+  .ui-input.device-code {
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+  }
+}

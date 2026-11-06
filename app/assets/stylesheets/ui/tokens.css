@@ -1,0 +1,101 @@
+/* Runwell UI: a no-build port of shadcn/ui (https://ui.shadcn.com), in plain CSS.
+/*
+/* These are shadcn's semantic tokens under shadcn's names (--background, --primary, --muted…),
+/* built from Runwell's theming tokens (docs/theming.md), so Settings > Appearance and a custom
+/* theme reach every ui- component without knowing about them: --lch-canvas is shadcn's
+/* background, the ink steps its foreground, muted and border, the accent (or the Appearance
+/* scheme) its primary. Unlayered, like the tokens they read.
+/*
+/* Components (ui/*.css) live in the `ui` layer, after Fizzy's `components`, and read only
+/* these tokens. In views, reach for them by their shadcn names: ui-button, ui-card, ui-badge,
+/* ui-input… (app/views/ui/index.html.erb shows each one; UiHelper builds the common ones). */
+
+:root {
+  --background: var(--color-canvas);
+  --foreground: var(--color-ink);
+
+  --card: var(--color-canvas);
+  --card-foreground: var(--color-ink);
+  --popover: var(--color-canvas);
+  --popover-foreground: var(--color-ink);
+
+  /* The accent, so the Appearance scheme (and a theme's --lch-accent) colours buttons, the
+  /* switch, the current item and focus. */
+  --primary: var(--color-link);
+  --primary-foreground: var(--color-ink-inverted);
+
+  --secondary: var(--color-ink-lightest);
+  --secondary-foreground: var(--color-ink);
+  --muted: var(--color-ink-lightest);
+  --muted-foreground: var(--color-ink-dark);
+  --accent: var(--color-ink-lightest);
+  --accent-foreground: var(--color-ink);
+
+  --destructive: var(--color-negative);
+  --destructive-foreground: oklch(var(--lch-white));
+  --success: var(--color-positive);
+  --warning: oklch(var(--lch-yellow-dark));
+  --info: oklch(var(--lch-blue-dark));
+
+  --border: var(--color-ink-lighter);
+  --input: var(--color-ink-light);
+  --ring: color-mix(in oklch, var(--primary) 70%, var(--color-ink-medium));
+
+  /* shadcn's --radius (0.625rem) and its steps, through Corners. Controls share
+  /* --radius-control (appearance.css) so they always match each other. */
+  --radius: calc(0.625rem * var(--radius-scale, 1));
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: var(--radius-control, calc(var(--radius) - 2px));
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --sidebar: oklch(var(--lch-ink-lightest) / 60%);
+  --sidebar-foreground: var(--color-ink);
+  --sidebar-accent: var(--color-ink-lightest);
+  --sidebar-accent-foreground: var(--color-ink);
+  --sidebar-border: var(--color-ink-lighter);
+
+  /* Tailwind's shadow-xs / sm / md / lg, which shadcn's components use. */
+  --shadow-xs: 0 1px 2px 0 oklch(var(--lch-black) / 5%);
+  --shadow-sm: 0 1px 3px 0 oklch(var(--lch-black) / 10%), 0 1px 2px -1px oklch(var(--lch-black) / 10%);
+  --shadow-md: 0 4px 6px -1px oklch(var(--lch-black) / 10%), 0 2px 4px -2px oklch(var(--lch-black) / 10%);
+  --shadow-lg: 0 10px 15px -3px oklch(var(--lch-black) / 10%), 0 4px 6px -4px oklch(var(--lch-black) / 10%);
+
+  /* focus-visible:ring-[3px] ring-ring/50 border-ring */
+  --ring-focus: 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
+  --ring-invalid: 0 0 0 3px color-mix(in oklch, var(--destructive) 20%, transparent);
+}
+
+/* Dark: shadcn lifts cards and popovers a step off the page, and draws borders and inputs in
+/* translucent white. */
+html[data-theme="dark"] {
+  --card: var(--color-ink-lightest);
+  --popover: var(--color-ink-lightest);
+  --secondary: var(--color-ink-lighter);
+  --muted: var(--color-ink-lighter);
+  --accent: var(--color-ink-lighter);
+  --muted-foreground: var(--color-ink-dark);
+  --destructive: oklch(var(--lch-red-medium));
+  --border: oklch(var(--lch-white) / 10%);
+  --input: oklch(var(--lch-white) / 15%);
+  --sidebar: var(--color-ink-lightest);
+  --sidebar-accent: var(--color-ink-lighter);
+  --sidebar-border: oklch(var(--lch-white) / 10%);
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme]) {
+    --card: var(--color-ink-lightest);
+    --popover: var(--color-ink-lightest);
+    --secondary: var(--color-ink-lighter);
+    --muted: var(--color-ink-lighter);
+    --accent: var(--color-ink-lighter);
+    --muted-foreground: var(--color-ink-dark);
+    --destructive: oklch(var(--lch-red-medium));
+    --border: oklch(var(--lch-white) / 10%);
+    --input: oklch(var(--lch-white) / 15%);
+    --sidebar: var(--color-ink-lightest);
+    --sidebar-accent: var(--color-ink-lighter);
+    --sidebar-border: oklch(var(--lch-white) / 10%);
+  }
+}

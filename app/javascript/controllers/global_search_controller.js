@@ -49,6 +49,12 @@ export default class extends Controller {
   // ↑ ↓ pick a result, Enter opens it.
   navigate(event) {
     if (MOD_K(event)) return
+    // Esc closes at once, as a command menu does, rather than first clearing the field.
+    if (event.key === "Escape") {
+      event.preventDefault()
+      this.element.close()
+      return
+    }
     const results = this.resultTargets
     if (event.key === "ArrowDown" || event.key === "ArrowUp") {
       event.preventDefault()

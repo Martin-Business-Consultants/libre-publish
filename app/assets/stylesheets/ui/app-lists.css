@@ -1,0 +1,332 @@
+/* List screens, as shadcn's data table pages lay them out (pages/index is the reference): the
+/* filters (status tabs, quick filters) in a line under the title, then the toolbar (the search
+/* box on the left, bulk actions on the right), then the data table (ui/_data_table), each row
+/* ending in its actions menu (ui/_row_actions). */
+@layer ui {
+  .list-filters {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+
+    &:not(:has(*)) {
+      display: none;
+    }
+  }
+
+  .list-toolbar {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: space-between;
+
+    &:not(:has(*)) {
+      display: none;
+    }
+  }
+
+  .list-toolbar__search {
+    flex: 1;
+    max-inline-size: 24rem;
+    min-inline-size: 12rem;
+  }
+
+  .list-toolbar__bulk {
+    margin-inline-start: auto;
+  }
+
+  .list-search .ui-input {
+    block-size: 2rem;
+  }
+
+  .quick-filter {
+    display: inline-flex;
+  }
+
+  /* The ⋯ at a row's end, level with the row. */
+  .row-actions {
+    display: inline-flex;
+    justify-content: flex-end;
+  }
+
+  /* A page indented by its depth in the tree (pages/_row). */
+  .page-tree__title {
+    display: inline-block;
+  }
+
+  .page-tree__title[data-depth="1"] { padding-inline-start: 1.25rem; }
+  .page-tree__title[data-depth="2"] { padding-inline-start: 2.5rem; }
+  .page-tree__title[data-depth="3"] { padding-inline-start: 3.75rem; }
+  .page-tree__title[data-depth="4"] { padding-inline-start: 5rem; }
+  .page-tree__title[data-depth="5"] { padding-inline-start: 6.25rem; }
+  .page-tree__title[data-depth="6"] { padding-inline-start: 7.5rem; }
+
+  .page-tree__title:not([data-depth="0"])::before {
+    color: var(--muted-foreground);
+    content: "↳ ";
+  }
+
+  /* A person in the users list (users/_row): their avatar beside their name, the email under
+  /* it, as shadcn's tables show people. */
+  .person-cell {
+    align-items: center;
+    display: flex;
+    gap: 0.75rem;
+    min-inline-size: 0;
+  }
+
+  .person-cell__text {
+    display: grid;
+    min-inline-size: 0;
+  }
+
+  .person-cell__name {
+    align-items: center;
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .person-cell__email {
+    color: var(--muted-foreground);
+    font-size: var(--text-x-small);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* A webhook's receiver held to a column (webhooks/_row), cut short with an ellipsis. */
+  .webhooks__url {
+    display: block;
+    max-inline-size: 20rem;
+  }
+
+  /* What a list's sheet holds below its frame (tools/redirects/_sheet, webhooks/_sheet,
+  /* trash/_details): the header, the form and what follows, a sheet's gap apart. In the
+  /* footer, Delete sits at the start, away from Cancel and Save. */
+  .sheet-body {
+    display: grid;
+    gap: 1.5rem;
+    min-inline-size: 0;
+  }
+
+  .sheet-body__delete {
+    align-items: center;
+    display: inline-flex;
+    margin-inline-end: auto;
+  }
+
+  /* A webhook's events (webhooks/_sheet), a hairline box per group, its name on the rule. */
+  .webhook-events__group {
+    align-content: start;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    display: grid;
+    gap: 0.5rem;
+    margin: 0;
+    min-inline-size: 0;
+    padding: 0.75rem 1rem 1rem;
+  }
+
+  .webhook-events__group-name {
+    color: var(--muted-foreground);
+    font-size: var(--text-x-small);
+    font-weight: 500;
+    padding-inline: 0.25rem;
+  }
+
+  /* A role's permissions (roles/_form): a hairline box per group of capabilities, its
+  /* tick-all on the rule. */
+  .permission-group {
+    align-content: start;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    display: grid;
+    gap: 0.75rem;
+    margin: 0;
+    min-inline-size: 0;
+    padding: 0.75rem 1rem 1rem;
+  }
+
+  .permission-group__legend {
+    padding-inline: 0.25rem;
+  }
+
+  /* The audit log's filters (audit_logs/index): side by side in a card, wrapping on a narrow
+  /* screen, the buttons level with the controls. */
+  .audit-filters {
+    align-items: end;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+
+    .ui-field {
+      flex: 1 1 10rem;
+    }
+  }
+
+  /* A trashed image's preview (trash/_details): centered on a muted well. */
+  .trash-item__preview {
+    align-items: center;
+    background-color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    display: flex;
+    justify-content: center;
+    min-block-size: 9rem;
+    overflow: hidden;
+    padding: 0.75rem;
+  }
+
+  /* A collection's Build board (collections/boards), as shadcn's kanban: two columns, off and
+  /* on, side by side from 48rem, each a muted lane of cards that entries are dragged between.
+  /* A dot in a lane's header and on a card's yes/no field is green while on. */
+  .board {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: minmax(0, 1fr);
+
+    @media (width >= 48rem) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .board-column {
+    background-color: color-mix(in oklch, var(--muted) 50%, transparent);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-block-size: 16rem;
+    padding: 0.75rem;
+    transition: background-color 150ms, outline-color 150ms;
+  }
+
+  .board-column__header {
+    align-items: center;
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.25rem 0.25rem 0;
+  }
+
+  .board-column__title {
+    font-size: var(--text-normal);
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .board-column__count {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .board-column__cards {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .board-column__empty {
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-lg);
+    color: var(--muted-foreground);
+    font-size: var(--text-normal);
+    margin: 0;
+    padding: 2rem 1rem;
+    text-align: center;
+  }
+
+  .board-dot {
+    background-color: var(--input);
+    block-size: 0.5rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+    inline-size: 0.5rem;
+  }
+
+  .board-dot--on {
+    background-color: var(--success);
+  }
+
+  .board-card {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xs);
+    color: var(--foreground);
+    display: grid;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    transition: border-color 150ms, box-shadow 150ms;
+
+    &:hover {
+      border-color: var(--input);
+      box-shadow: var(--shadow-sm);
+    }
+  }
+
+  .board-card--movable {
+    cursor: grab;
+  }
+
+  .board-card__head {
+    align-items: flex-start;
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .board-card__grip {
+    color: var(--muted-foreground);
+    user-select: none;
+  }
+
+  .board-card__title {
+    color: inherit;
+    flex: 1;
+    font-size: var(--text-normal);
+    font-weight: 500;
+    min-inline-size: 0;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  /* The fields the collection puts on a card in the right-hand lane, under a hairline. */
+  .board-card__fields {
+    border-block-start: 1px solid var(--border);
+    display: grid;
+    gap: 0.5rem;
+    padding-block-start: 0.75rem;
+  }
+
+  .board-card__field {
+    align-items: center;
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .board-card__field-label {
+    color: var(--muted-foreground);
+    flex-shrink: 0;
+    font-size: var(--text-x-small);
+    inline-size: 6rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Dragging a card on the board (drag_and_drop_controller): the card being dragged, and the
+  /* lane it's over. */
+  .drag-and-drop__dragged-item {
+    opacity: 0.5;
+    outline: 2px dashed var(--ring);
+    outline-offset: 2px;
+  }
+
+  .drag-and-drop__hover-container {
+    background-color: color-mix(in oklch, var(--primary) 6%, transparent);
+    outline: 2px dashed var(--ring);
+    outline-offset: -2px;
+  }
+}

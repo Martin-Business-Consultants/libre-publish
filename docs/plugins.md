@@ -82,7 +82,7 @@ runs, and on a tie the data directory's. So a plugin may depend only on gems
 the core bundles. Each records its GitHub repository in
 `.cms-plugin.json` (`bin/fetch-plugins`, `bin/fetch-theme` and Settings ›
 Plugins write it), which is where its updates come from: a daily check shows
-a newer release in Settings › Plugins and the admin bar, and Update installs
+a newer release in Settings › Plugins and the sidebar, and Update installs
 it into the data directory, over the image's copy.
 Every plugin is off until an administrator switches it on in Settings ›
 Plugins, unless its manifest says `enabled_by_default: true`. Off keeps its
@@ -154,18 +154,26 @@ JSON, with its signature at the same address plus `.sig`) and
   subclass, so jobs already queued still run.
 - **API responses** are jbuilder views under the plugin's `app/views/api/`;
   a controller renders JSON itself only for an error body. 
-- **Views** follow the core's frontend rules (STYLE.md: the admin's own
-  classes, named for what a thing is — `panel`, `btn btn--primary`,
-  `field`, `data-table`, `stack`, `badge` — and the core's partials, strict
-  locals, no inline styles); `bin/ci` lints `engines/` with Herb, and the
-  classes spec checks a plugin's views as it does the core's: a class
-  nothing defines fails it, and so does a rule in the plugin's stylesheet
-  that nothing uses. What's the plugin's alone gets a class named for the
-  plugin (`hello-greeting`), drawn in its stylesheet with the admin's
-  tokens (`--gray-*`, `--space-*`, `--radius-*`), so it follows Settings ›
-  Branding and the dark theme. Tailwind's classes and `ui(...)` are gone:
-  a view that still uses them loses its styling, and `ui(...)`
-  raises `NoMethodError`.
+- **Views** are drawn with **Runwell UI**, the core's no-build port of
+  shadcn/ui (STYLE.md, and every component at `/cms/ui` in development):
+  `ui-card`, `ui-button` (`ui_button`, `ui_link_button`,
+  `ui_button_classes`), `ui-field` with `ui-label` and `ui-input`,
+  `ui-badge` (`ui_status_badge`), `ui-menu`, `ui-dialog`, and an index as
+  the data table (`render "ui/data_table", …`), with the core's layout
+  pieces (`stack`, `row`, `cluster`, `grid`) and partials, strict locals, no
+  inline styles. That is the styling contract: the `ui-` classes and the
+  kit's tokens keep their names and meaning. `bin/ci` lints `engines/` with
+  Herb, and the classes spec checks a plugin's views as it does the
+  core's: a class nothing defines fails it, and so does a rule in the
+  plugin's stylesheet that nothing uses. What's the plugin's alone gets a
+  class named for the plugin (`hello-greeting`), drawn in its stylesheet
+  with the kit's tokens (`--card`, `--border`, `--muted-foreground`,
+  `--primary`, `--radius-lg`, `--shadow-sm`…; never a color of its own),
+  so it follows Settings › Branding and the dark theme. The admin's
+  classes from before the kit (`panel`, `btn btn--primary`, `field`,
+  `data-table`, `badge`…) still draw, in the kit's look, from the core's
+  `legacy.css`, so a plugin written for them keeps working; move it to the
+  kit when you next touch it — new markup on them isn't accepted.
 
 ## Registering
 
@@ -201,8 +209,8 @@ switches on the plugins it `depends_on` that nobody has switched either.
 |---|---|
 | `menu key, :id, label:, icon:, group:, path: -> { … }, capability:, after: :globals, group_after: "Content"` | A top-level item in the admin menu (WordPress's `add_menu_page`), with an `icon_tag` name, in a core group (`"Content"`, `"Insights"`, `"Tools"`, `"Access"`) or a new one, which `group_after:` places (else it goes last, before Settings). `after:` is the id of the item it follows; `:start` puts it first. The item goes to `path`, or to its first submenu link when `path` is nil. |
 | `submenu key, :parent, label:, path: -> { … }, capability:, after: "Redirects"` | A link in a top-level item's submenu (`add_submenu_page`): a core item's (`:pages`, `:collections`, `:globals`, `:audit_log`, `:trash`, `:tools`, `:plugins`, `:users`, `:roles`, `:settings`; Media adds `:media`) or a plugin's own. `after:` is the label it follows. A plugin's settings page (`settings`) joins the Settings submenu by itself. |
-| `new_item key, label:, path: -> { … }, capability:, after: "Global"` | An entry in the admin bar's "+ New" menu. |
-| `slot name, key, "partial"` | A partial in a core view: `:nav_actions` (the admin bar, no locals), `:dashboard` (no locals), `:webhook_filters` (the webhook form, `webhook:`), `:content_form` (once on every content editor page, outside its form, no locals), `:content_aside` (under the Publish box of a saved page or entry, `record:`; inside the editor's form, so its controls name a form drawn by `:content_form` with the `form` attribute). |
+| `new_item key, label:, path: -> { … }, capability:, after: "Global"` | An entry in the sidebar's "+ New" menu. |
+| `slot name, key, "partial"` | A partial in a core view: `:nav_actions` (the sidebar's foot, no locals), `:dashboard` (no locals), `:webhook_filters` (the webhook form, `webhook:`), `:content_form` (once on every content editor page, outside its form, no locals), `:content_aside` (under the Publish box of a saved page or entry, `record:`; inside the editor's form, so its controls name a form drawn by `:content_form` with the `form` attribute). |
 | `settings key, label, -> { path }, description:, capability:, group: "Workspace", after: "Brand context"` | A page in Settings (under "Plugins" unless `group:` names another), linked from the plugin's card. Its controller inherits `Settings::BaseController`. |
 | `permissions key, "Group", %w[key:read key:write], after: "Globals", defaults: {editor: […], author: […], site: […], agent: […]}` | Capabilities, offered in the role editor while the plugin is on and kept on roles while it's off; `defaults:` is what the built-in roles start with (`Permissions.defaults_for`) — on a fresh install seeded with the plugin on, or granted the first time someone switches it on (see below). |
 | `counts key, after: :globals, things: -> { Thing.count }` | Counts in `/api/manifest`'s `counts` and the backup summary (`backup: false` for the manifest only). |
@@ -210,7 +218,7 @@ switches on the plugins it `depends_on` that nobody has switched either.
 | `trashable key, "thing", "Thing", label: "Things", meta: ->(r) { {slug: r.slug} }, after: "entry"` | A soft-deletable model the trash lists, restores and purges (`Trash`). |
 | `hold_api_writes key, ->(write) { … }` | Holds content writes made over the API with a token (the CLI, MCP, a script) instead of applying them: creating, changing or deleting a page, entry or global. The lambda gets a `Cms::Plugins::HeldWrite` (`action`, `record` — unsaved for a create —, `attributes`, `prefix`) and returns what the API answers with 202, or nil to let the write through. While one is on, the bulk content endpoints refuse tokens (409). Approvals (`cms-plugins/approvals`) is the one that does. |
 | `provide key, :name, -> { … }` | Something the core reads if a plugin supplies it (`Cms::Plugins.provided(:name)`, nil otherwise; a lambda is called): Site Health reads `:published_forms` and `:spam_protection` from Forms. |
-| `stylesheet key, "key/name"` | A stylesheet from the engine's `app/assets/stylesheets`, on the pages that show the plugin: its own (its controllers' `plugin :key`), those rendering one of its slots (Media's picker in the content form), and every page when it has a `:nav_actions` slot in the admin bar. |
+| `stylesheet key, "key/name"` | A stylesheet from the engine's `app/assets/stylesheets`, on the pages that show the plugin: its own (its controllers' `plugin :key`), those rendering one of its slots (Media's picker in the content form), and every page when it has a `:nav_actions` slot in the sidebar. |
 | `nightly key, -> { … }` | Work for `PluginsNightlyJob` (1am); a failure is logged and doesn't stop the others. |
 | `minutely key, :name, -> { … }, every: 2` | Work for `PluginsMinutelyJob` (every minute), run on the minutes divisible by `every`; each task is named so one failing doesn't stop another. Keep it to enqueueing a job. |
 | `bootstrap key, -> { … }` | What the plugin sets up on a site: run by `SiteBootstrap` on a fresh install while the plugin is on, the first time someone switches it on in Settings › Plugins, or by `plugins:settle` for a plugin that's on but was never set up (see below). Must be idempotent. |
@@ -292,9 +300,9 @@ The update succeeds when the install boots on the new version.
 
 ## The admin menu
 
-The admin is laid out like WordPress's: the admin bar across the top, the
-admin menu down the left in groups, the page beside it
-(`NavigationHelper::ADMIN_MENU`, `layouts/shared/_admin_menu`). A plugin adds
+The admin is shadcn's sidebar layout: the menu down the left in groups, each
+item's submenu folded under it, "+ New" at the top, the page beside it
+(`NavigationHelper::ADMIN_MENU`, `layouts/shared/_sidebar`). A plugin adds
 to it the way a WordPress plugin does. `engines/hello` adds a top-level item
 with its own submenu, a link in the core's Tools submenu, and a "+ New" entry:
 

@@ -3,21 +3,32 @@
 <%= render "layouts/shared/page_header", title: @page_title,
       description: "The colors, fonts and choices the theme lets you change. Saving changes the website at once." %>
 
-<div class="measure--lg stack stack--lg">
-  <% if @theme.settings.none? %>
-    <section class="panel panel--padded">
-      <p class="text-muted">This theme has nothing to customize: its design is in its code.</p>
-    </section>
-  <% else %>
-    <%= form_with url: settings_theme_design_path(@theme.key), method: :patch, scope: :design, class: "stack stack--lg" do |form| %>
-      <section class="panel panel--padded fields">
+<% if @theme.settings.none? %>
+  <section class="ui-card">
+    <div class="ui-card__content">
+      <div class="ui-empty">
+        <p class="ui-empty__description">This theme has nothing to customize: its design is in its code.</p>
+      </div>
+    </div>
+  </section>
+<% else %>
+  <%= form_with url: settings_theme_design_path(@theme.key), method: :patch, scope: :design, class: "ui-card" do |form| %>
+    <header class="ui-card__header">
+      <h2 class="ui-card__title">Design</h2>
+      <p class="ui-card__description">The colors, fonts and choices the theme lets you change. Saving changes the website at once.</p>
+    </header>
+    <div class="ui-card__content">
+      <div class="ui-fieldset">
         <% @theme.settings.each do |setting| %>
           <%# herb:key setting.name %>
           <% value = @values[setting.name] %>
           <% if setting.type == "boolean" %>
-            <label class="choice choice--top text-ink">
-              <%= form.check_box setting.name, { checked: value }, "1", "0" %>
-              <span><%= setting.label %></span>
+            <label class="ui-field ui-field--inline ui-field--end ui-field--card">
+              <%= form.check_box setting.name, { checked: value, class: "ui-switch", role: "switch" }, "1", "0" %>
+              <span class="ui-label"><%= setting.label %></span>
+              <% if setting.help.present? %>
+                <span class="ui-field__description"><%= setting.help %></span>
+              <% end %>
             </label>
           <% else %>
             <%= settings_field setting.label, hint: setting.help do %>
@@ -25,19 +36,21 @@
               <% when "color" %>
                 <%= form.color_field setting.name, value: value, class: "theme-design__color" %>
               <% when "select" %>
-                <%= form.select setting.name, setting.options.keys.map { |option| [option.humanize, option] }, { selected: value } %>
+                <%= form.select setting.name, setting.options.keys.map { |option| [option.humanize, option] }, { selected: value }, { class: "ui-select" } %>
               <% else %>
-                <%= form.text_field setting.name, value: value, placeholder: setting.default %>
+                <%= form.text_field setting.name, value: value, placeholder: setting.default, class: "ui-input" %>
               <% end %>
             <% end %>
           <% end %>
         <% end %>
-      </section>
-      <div class="cluster">
-        <button type="submit" class="btn btn--primary">Save</button>
-        <%= link_to "View site", root_path, class: "btn", target: "_blank", rel: "noopener" %>
       </div>
-    <% end %>
-    <%= button_to "Reset to the theme’s defaults", settings_theme_design_path(@theme.key), method: :delete, class: "link" %>
+    </div>
+    <footer class="ui-card__footer ui-card__footer--bordered ui-card__footer--end">
+      <%= link_to "View site", root_path, class: "ui-button ui-button--outline", target: "_blank", rel: "noopener" %>
+      <button type="submit" class="ui-button">Save</button>
+    </footer>
   <% end %>
-</div>
+  <div>
+    <%= button_to "Reset to the theme’s defaults", settings_theme_design_path(@theme.key), method: :delete, class: "ui-button ui-button--ghost ui-button--sm" %>
+  </div>
+<% end %>

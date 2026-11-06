@@ -4,9 +4,18 @@
 <%= render "layouts/shared/page_header", title: @page_title %>
 
 <div class="stack stack--lg measure--xl">
-  <div class="panel panel--padded stack stack--sm">
-    <p class="text-mono break-all text-ink"><%= @webhook.url %></p>
-    <p class="cluster text-muted"><%= webhook_health(@webhook) %> <span><%= Array(@webhook.events).join(", ") %></span></p>
-  </div>
+  <section class="ui-card">
+    <header class="ui-card__header">
+      <h2 class="ui-card__title">Where it sends</h2>
+      <p class="ui-card__description text-mono break-all"><%= @webhook.url %></p>
+      <div class="ui-card__action"><%= webhook_health(@webhook) %></div>
+    </header>
+    <div class="ui-card__content">
+      <dl class="fact-list">
+        <dt>Events</dt>
+        <dd><span class="text-mono text-small"><%= Array(@webhook.events).join(", ").presence || "None" %></span></dd>
+      </dl>
+    </div>
+  </section>
   <%= render "webhooks/deliveries", deliveries: @deliveries, pagination: @pagination %>
 </div>

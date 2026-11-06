@@ -1,0 +1,88 @@
+/* Data table (shadcn/ui data-table): a ui-table with sortable headers (sortable_th), a checkbox
+/* column for bulk actions (BulkHelper), a Columns menu that hides columns (ui--data-table,
+/* remembered per table in the browser) and pages underneath (table_pagination). Rendered by the
+/* ui/data_table partial: render "ui/data_table", id:, columns:, rows:, row:, as:, page:.
+/*
+/*   <div class="ui-data-table">
+/*     <div class="ui-data-table__toolbar">…the Columns menu…</div>
+/*     <div class="ui-data-table__container"><table class="data-table ui-data-table__table">…</table></div>
+/*     <nav class="table-pagination">…</nav>
+/*   </div> */
+@layer ui {
+  .ui-data-table {
+    display: grid;
+    gap: 0.75rem;
+    min-inline-size: 0;
+    text-align: start;
+  }
+
+  .ui-data-table__toolbar {
+    align-items: center;
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+
+    &:empty {
+      display: none;
+    }
+  }
+
+  /* shadcn's "rounded-md border" around the table. */
+  .ui-data-table__container {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    overflow-x: auto;
+  }
+
+  .ui-data-table__table {
+    th {
+      border-block-end-color: var(--border);
+      color: var(--foreground);
+    }
+
+    td {
+      border-block-end-color: var(--border);
+      color: var(--foreground);
+    }
+
+    tbody tr:hover td {
+      background-color: color-mix(in oklch, var(--muted) 50%, transparent);
+    }
+
+    tr[data-picked] td {
+      background-color: var(--muted);
+    }
+
+    .ui-checkbox {
+      display: grid;
+      margin: 0 auto;
+    }
+
+    /* A column the Columns menu hid. */
+    [data-column][hidden] {
+      display: none;
+    }
+  }
+
+  .ui-data-table__actions-header {
+    padding-inline-end: 0.5rem;
+    text-align: end;
+  }
+
+  .ui-data-table__columns {
+    display: inline-flex;
+    font-weight: 400;
+  }
+
+  .ui-data-table .table-pagination {
+    margin-block-start: 0;
+  }
+
+  /* The "No results." row when a filter matches nothing. */
+  .ui-data-table__empty td {
+    block-size: 6rem;
+    color: var(--muted-foreground);
+    text-align: center;
+  }
+}

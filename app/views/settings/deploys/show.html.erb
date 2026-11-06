@@ -9,112 +9,146 @@
   <%= render "settings/save_box", form: "settings_form" %>
 <% end %>
 
-
-<section class="panel panel--padded fields">
-  <p class="text-muted">When content is published or updated, the CMS asks the site to rebuild — or, for a site that renders on demand, to drop what changed from its cache. Edits are debounced for 60s so a burst of changes produces one deploy.</p>
-
-  <%= form_with url: settings_deploy_path, id: "settings_form", method: :patch, scope: :settings do |form| %>
-    <%= tag.fieldset class: "fields", disabled: !Current.user.can?("settings:write") do %>
-      <%= settings_field "Provider", hint: "GitHub sends a repository_dispatch (type “cms-publish”) to the repository in Settings › GitHub, using its token; the site’s workflow builds on it. A build hook is a URL the CMS POSTs to." do %>
-        <%= form.select :provider, Deploys.providers.map { |key, provider| [provider.label, key] }, { selected: @provider.key } %>
-      <% end %>
-      <% if @provider.key == "github" %>
-        <p class="text-body">
-          <% if @provider.configured? %>
-            Builds go to <span class="text-mono"><%= @provider.target %></span>.
-          <% else %>
-            Set the repository and a token in <%= link_to "Settings › GitHub", settings_github_path, class: "link" %> first.
-          <% end %>
-        </p>
-      <% end %>
-      <%= settings_field "Deploy hook URL", hint: "For Cloudflare: Pages › your project › Settings › Builds › Deploy hooks, or Workers › your worker › Settings › Build › Deploy hooks. For a build hook: the same idea on Vercel and Netlify." do %>
-        <%= form.url_field :url, value: @settings["url"], autocomplete: "off", placeholder: "https://api.cloudflare.com/client/v4/pages/.../deploy_hooks/...", class: "text-mono" %>
-      <% end %>
-      <%= settings_switch form, :paused, "Pause auto-deploys", checked: @settings["paused"] == true,
-            hint: "Stop firing the hook on content changes. Useful while you’re doing a big edit-pass and don’t want every save to trigger a build." %>
-    <% end %>
-  <% end %>
-
-  <% if Deploys.ready?(@settings) %>
-    <% if writable %>
-      <div><%= button_to "Deploy now", settings_deploy_trigger_path, class: "btn" %></div>
-    <% end %>
-  <% end %>
-</section>
-
-<section id="site" class="settings-section panel panel--padded stack">
-  <h2 class="heading">The site</h2>
-  <% if build %>
-    <p class="text-body">
-      <% case Frontend.render %>
-      <% when "server" %>
-        The site renders on demand, so publishing sends it a cache purge for what changed rather than rebuilding it.
-      <% when "hybrid" %>
-        The site prerenders some pages and renders the rest on demand: publishing rebuilds it and purges what changed.
-      <% when "static" %>
-        The site renders statically, so publishing rebuilds it.
-      <% else %>
-        The site hasn’t said how it renders, so publishing rebuilds it.
-      <% end %>
-    </p>
-    <p class="text-muted">
-      Last build <%= time_ago_tag build[:built_at] %>
-      <% if build[:integration] %> · <%= build[:integration] %> <%= build[:integration_version] %><% end %>
-      <% if build[:content_cursor] %> · built from content <span class="text-mono"><%= build[:content_cursor].first(16) %></span><% end %>
-    </p>
-    <% if (pending = Frontend.pending_delivery) %>
-      <div class="callout callout--warning">
-        <p>
-          The last build says the site renders <strong><%= pending["render"] || "without saying how" %></strong><% if pending["webhook_url"] %>
-          and takes purges at <span class="text-mono"><%= pending["webhook_url"] %></span><% end %>.
-          That changes how publishing reaches the site, so it waits for approval: a build’s token can’t change it on its own.
-        </p>
-        <% if writable %>
-          <div><%= button_to "Approve", settings_deploy_delivery_approval_path, class: "btn btn--sm", form: { data: { turbo_confirm: "Publishing will follow what the site reported. Approve?" } } %></div>
-        <% end %>
+<section class="ui-card">
+  <header class="ui-card__header">
+    <h2 class="ui-card__title">Build hook</h2>
+    <p class="ui-card__description">When content is published or updated, the CMS asks the site to rebuild — or, for a site that renders on demand, to drop what changed from its cache. Edits are debounced for 60s so a burst of changes produces one deploy.</p>
+    <% if Deploys.ready?(@settings) && writable %>
+      <div class="ui-card__action">
+        <%= button_to "Deploy now", settings_deploy_trigger_path, class: "ui-button ui-button--outline ui-button--sm" %>
       </div>
     <% end %>
-    <% if Frontend.purge_url %>
-      <p class="text-body">Purges go to <span class="text-mono"><%= Frontend.purge_url %></span>, signed with this secret — the site’s <code>CMS_WEBHOOK_SECRET</code>:</p>
-      <% if writable %>
-        <%= render "settings/secret", frame_id: "purge_secret", masked: "•" * 24, visible: true, reveal_path: settings_deploy_purge_secret_reveal_path %>
-        <div><%= button_to "Rotate the secret", settings_deploy_purge_secret_rotation_path, class: "btn btn--sm", form: { data: { turbo_confirm: "The site needs the new secret before it accepts another purge. Rotate it?" } } %></div>
+  </header>
+  <div class="ui-card__content">
+    <%= form_with url: settings_deploy_path, id: "settings_form", method: :patch, scope: :settings do |form| %>
+      <%= tag.fieldset class: "ui-fieldset", disabled: !Current.user.can?("settings:write") do %>
+        <%= settings_field "Provider", hint: "GitHub sends a repository_dispatch (type “cms-publish”) to the repository in Settings › GitHub, using its token; the site’s workflow builds on it. A build hook is a URL the CMS POSTs to." do %>
+          <%= form.select :provider, Deploys.providers.map { |key, provider| [provider.label, key] }, { selected: @provider.key }, { class: "ui-select" } %>
+        <% end %>
+        <% if @provider.key == "github" %>
+          <p class="ui-field__description">
+            <% if @provider.configured? %>
+              Builds go to <span class="text-mono"><%= @provider.target %></span>.
+            <% else %>
+              Set the repository and a token in <%= link_to "Settings › GitHub", settings_github_path, class: "link" %> first.
+            <% end %>
+          </p>
+        <% end %>
+        <%= settings_field "Deploy hook URL", hint: "For Cloudflare: Pages › your project › Settings › Builds › Deploy hooks, or Workers › your worker › Settings › Build › Deploy hooks. For a build hook: the same idea on Vercel and Netlify." do %>
+          <%= form.url_field :url, value: @settings["url"], autocomplete: "off", placeholder: "https://api.cloudflare.com/client/v4/pages/.../deploy_hooks/...", class: "ui-input text-mono" %>
+        <% end %>
+        <%= settings_switch form, :paused, "Pause auto-deploys", checked: @settings["paused"] == true,
+              hint: "Stop firing the hook on content changes. Useful while you’re doing a big edit-pass and don’t want every save to trigger a build." %>
       <% end %>
     <% end %>
-  <% else %>
-    <p class="text-muted">No build has reported yet. The Astro integration reports each build, and with it whether the site renders statically or on demand.</p>
-  <% end %>
+  </div>
 </section>
 
-<section class="panel panel--padded stack">
-  <div class="stack stack--xs">
-    <h2 class="heading">Recent activity</h2>
-    <p class="text-muted">Last 20 deploy attempts. A scheduled entry means an edit just happened — the hook fires after the debounce window.</p>
-  </div>
-  <% if log.empty? && !scheduled %>
-    <p class="empty-state">Nothing yet.</p>
-  <% else %>
-    <ul class="divided">
-      <% if scheduled %>
-        <li class="list-row list-row--sm"><%= status_tag "scheduled" %><% if @settings["last_reason"].present? %> <span class="text-muted">· <%= @settings["last_reason"] %></span><% end %></li>
+<section id="site" class="ui-card">
+  <header class="ui-card__header">
+    <h2 class="ui-card__title">The site</h2>
+    <% if build %>
+      <p class="ui-card__description">
+        Last build <%= time_ago_tag build[:built_at] %>
+        <% if build[:integration] %> · <%= build[:integration] %> <%= build[:integration_version] %><% end %>
+        <% if build[:content_cursor] %> · built from content <span class="text-mono"><%= build[:content_cursor].first(16) %></span><% end %>
+      </p>
+    <% end %>
+  </header>
+  <div class="ui-card__content stack">
+    <% if build %>
+      <p>
+        <% case Frontend.render %>
+        <% when "server" %>
+          The site renders on demand, so publishing sends it a cache purge for what changed rather than rebuilding it.
+        <% when "hybrid" %>
+          The site prerenders some pages and renders the rest on demand: publishing rebuilds it and purges what changed.
+        <% when "static" %>
+          The site renders statically, so publishing rebuilds it.
+        <% else %>
+          The site hasn’t said how it renders, so publishing rebuilds it.
+        <% end %>
+      </p>
+      <% if (pending = Frontend.pending_delivery) %>
+        <div class="ui-alert ui-alert--warning" role="status">
+          <%= icon_tag "bell-alert", class: "ui-alert__icon" %>
+          <p class="ui-alert__title">Waiting for approval</p>
+          <div class="ui-alert__description stack stack--sm stack--start">
+            <p>
+              The last build says the site renders <strong><%= pending["render"] || "without saying how" %></strong><% if pending["webhook_url"] %>
+              and takes purges at <span class="text-mono"><%= pending["webhook_url"] %></span><% end %>.
+              That changes how publishing reaches the site, so it waits for approval: a build’s token can’t change it on its own.
+            </p>
+            <% if writable %>
+              <%= button_to "Approve", settings_deploy_delivery_approval_path, class: "ui-button ui-button--outline ui-button--sm", form: { data: { turbo_confirm: "Publishing will follow what the site reported. Approve?" } } %>
+            <% end %>
+          </div>
+        </div>
       <% end %>
-      <% log.each_with_index do |entry, index| %>
-        <%# herb:key index %>
-        <li class="list-row list-row--sm stack stack--xs">
-          <span>
-            <%= status_tag entry["status"].to_s %>
-            <% if entry["reason"].present? %><span class="text-muted"> · <%= entry["reason"] %></span><% end %>
-            <% if entry["via"].present? %><span class="text-muted"> · <%= entry["via"] == "purge" ? "purge" : "build" %></span><% end %>
-            <% if entry["changes"].to_i.positive? %><span class="text-muted"> · <%= pluralize(entry["changes"], "change") %></span><% end %>
-            <% if entry["http_status"] %><span class="text-muted"> · HTTP <%= entry["http_status"] %></span><% end %>
-            <% if entry["duration_ms"] %><span class="text-muted"> · <%= entry["duration_ms"] %>ms</span><% end %>
-            <span class="text-muted"> · <%= entry["at"].present? ? time_ago_tag(Time.zone.parse(entry["at"].to_s)) : "—" %></span>
-          </span>
-          <% if entry["error"].present? %>
-            <span class="truncate text-small text-danger"><%= entry["error"] %></span>
+      <% if Frontend.purge_url %>
+        <div class="ui-field">
+          <p class="ui-label">Purge secret</p>
+          <p class="ui-field__description">Purges go to <span class="text-mono"><%= Frontend.purge_url %></span>, signed with this secret — the site’s <code>CMS_WEBHOOK_SECRET</code>.</p>
+          <% if writable %>
+            <%= render "settings/secret", frame_id: "purge_secret", masked: "•" * 24, visible: true, reveal_path: settings_deploy_purge_secret_reveal_path %>
           <% end %>
-        </li>
+        </div>
+        <% if writable %>
+          <div><%= button_to "Rotate the secret", settings_deploy_purge_secret_rotation_path, class: "ui-button ui-button--outline ui-button--sm", form: { data: { turbo_confirm: "The site needs the new secret before it accepts another purge. Rotate it?" } } %></div>
+        <% end %>
       <% end %>
-    </ul>
-  <% end %>
+    <% else %>
+      <div class="ui-empty">
+        <p class="ui-empty__description">No build has reported yet. The Astro integration reports each build, and with it whether the site renders statically or on demand.</p>
+      </div>
+    <% end %>
+  </div>
+</section>
+
+<section class="ui-card">
+  <header class="ui-card__header">
+    <h2 class="ui-card__title">Recent activity</h2>
+    <p class="ui-card__description">Last 20 deploy attempts. A scheduled entry means an edit just happened — the hook fires after the debounce window.</p>
+  </header>
+  <div class="ui-card__content">
+    <% if log.empty? && !scheduled %>
+      <div class="ui-empty">
+        <p class="ui-empty__description">Nothing yet.</p>
+      </div>
+    <% else %>
+      <ul class="ui-item-group ui-card ui-card--flush">
+        <% if scheduled %>
+          <li class="ui-item ui-item--sm">
+            <div class="ui-item__content">
+              <p class="ui-item__title"><%= status_tag "scheduled" %></p>
+              <% if @settings["last_reason"].present? %>
+                <p class="ui-item__description"><%= @settings["last_reason"] %></p>
+              <% end %>
+            </div>
+          </li>
+        <% end %>
+        <% log.each_with_index do |entry, index| %>
+          <%# herb:key index %>
+          <li class="ui-item ui-item--sm">
+            <div class="ui-item__content">
+              <p class="ui-item__title">
+                <%= status_tag entry["status"].to_s %>
+                <% if entry["reason"].present? %><span><%= entry["reason"] %></span><% end %>
+              </p>
+              <p class="ui-item__description">
+                <%= entry["at"].present? ? time_ago_tag(Time.zone.parse(entry["at"].to_s)) : "—" %>
+                <% if entry["via"].present? %> · <%= entry["via"] == "purge" ? "purge" : "build" %><% end %>
+                <% if entry["changes"].to_i.positive? %> · <%= pluralize(entry["changes"], "change") %><% end %>
+                <% if entry["http_status"] %> · HTTP <%= entry["http_status"] %><% end %>
+                <% if entry["duration_ms"] %> · <%= entry["duration_ms"] %>ms<% end %>
+              </p>
+              <% if entry["error"].present? %>
+                <p class="ui-field__error truncate"><%= entry["error"] %></p>
+              <% end %>
+            </div>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+  </div>
 </section>

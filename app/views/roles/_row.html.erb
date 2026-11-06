@@ -1,0 +1,30 @@
+<%# locals: (role:, can_delete:) %>
+<%# One role in the roles data table (roles/index): its name (and a System badge), what it's
+    for, how many capabilities it grants and how many people hold it, and its actions. A
+    system role has no checkbox and no Delete. %>
+<tr id="<%= dom_id(role) %>" data-filter-target="item">
+  <% if can_delete %>
+    <% if role.system? %>
+      <td></td>
+    <% else %>
+      <%= ui_select_cell role.id, label: "Select #{role.name}", form: "roles_bulk_deletion" %>
+    <% end %>
+  <% end %>
+  <td data-column="name">
+    <span class="row">
+      <%= link_to role.name, edit_role_path(role), class: "ui-table__row-link" %>
+      <% if role.system? %>
+        <%= ui_badge "System", :secondary %>
+      <% end %>
+    </span>
+  </td>
+  <td data-column="description"><span class="text-muted"><%= role.description %></span></td>
+  <td data-column="capabilities" class="ui-table__numeric"><%= role.admin? ? "All" : role.permissions.size %></td>
+  <td data-column="users" class="ui-table__numeric"><%= role.users.size %></td>
+  <td class="ui-table__numeric">
+    <%= render "ui/row_actions", id: dom_id(role), name: role.name,
+          edit_path: edit_role_path(role),
+          delete_path: (role_path(role) if can_delete && !role.system?),
+          delete_message: "Users holding it are left with no role." %>
+  </td>
+</tr>

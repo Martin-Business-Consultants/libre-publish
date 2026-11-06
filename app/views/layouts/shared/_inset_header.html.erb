@@ -1,0 +1,39 @@
+<%# locals: () %>
+<%# The top of the page sheet, as shadcn/ui's sidebar-inset header: the menu's toggle ([), a
+    rule, where this page is (breadcrumb_items), and at the right the "/" filter, search
+    (⌘K) and the theme. %>
+<header class="app-header" id="header">
+  <button type="button" class="ui-button ui-button--ghost ui-button--icon-sm" title="<%= tx("Show or hide the menu ([)") %>"
+          aria-controls="admin-menu" data-keys="[" data-admin-menu-target="toggle" data-action="admin-menu#toggle">
+    <%= icon_tag "column-left" %>
+    <span class="visually-hidden"><%= tx("Show or hide the menu") %></span>
+  </button>
+  <span class="ui-separator ui-separator--vertical app-header__rule" aria-hidden="true"></span>
+  <nav aria-label="<%= tx("Breadcrumb") %>">
+    <ol class="ui-breadcrumb">
+      <% breadcrumb_items.each do |label, url| %>
+        <%# herb:key label %>
+        <li>
+          <% if url %>
+            <%= link_to label, url %>
+          <% else %>
+            <span aria-current="page"><%= label %></span>
+          <% end %>
+        </li>
+      <% end %>
+    </ol>
+  </nav>
+
+  <div class="app-header__tools">
+    <% unless content_for?(:list_search) %>
+      <%= render "layouts/shared/nav_filter" %>
+    <% end %>
+    <%# Opens the command dialog (layouts/shared/global_search); a link, so it still goes to Search without it. %>
+    <%= link_to search_path, class: "ui-button ui-button--outline ui-button--sm app-header__search", title: tx("Search everything (⌘K)"), data: { global_search_open: true } do %>
+      <%= icon_tag "search" %>
+      <span class="app-header__search-label"><%= tx("Search…") %></span>
+      <%= ui_kbd "⌘", "K" %>
+    <% end %>
+    <%= render "layouts/shared/theme_toggle" %>
+  </div>
+</header>

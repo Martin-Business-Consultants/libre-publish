@@ -3,11 +3,11 @@
 
 <% content_for :page_actions do %>
   <% if Current.user.can?("globals:write") %>
-    <%= link_to "Add New", new_global_path, class: "btn" %>
+    <%= link_to "Add New", new_global_path, class: "ui-button ui-button--outline" %>
   <% end %>
-  <%= link_to "Fields", global_schema_path(@global.slug), class: "btn" %>
+  <%= link_to "Fields", global_schema_path(@global.slug), class: "ui-button ui-button--outline" %>
   <% if @global.versions.any? then %>
-    <%= link_to "Revisions (" + @global.versions.size.to_s + ")", global_versions_path(@global.slug), class: "btn" %>
+    <%= link_to "Revisions (" + @global.versions.size.to_s + ")", global_versions_path(@global.slug), class: "ui-button ui-button--outline" %>
   <% end %>
 <% end %>
 <%= render "layouts/shared/errors", record: @global %>

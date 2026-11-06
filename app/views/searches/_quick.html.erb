@@ -1,28 +1,27 @@
 <%# locals: (quick:) %>
-<%# The search modal's results (global-search controller), as the term is
-    typed: titles that match it fuzzily, then records whose text holds it,
-    each a link the arrow keys walk. %>
+<%# The command dialog's results (global-search controller), as the term is typed: titles
+    that match it fuzzily, then records whose text holds it, each a link the arrow keys walk. %>
 <% if quick.blank? then %>
-  <p class="search-results__empty">Type to find a page, entry, global, user…</p>
+  <p class="app-command__empty"><%= tx("Type to find a page, entry, global, user…") %></p>
 <% elsif !quick.any? then %>
-  <p class="search-results__empty">Nothing matches “<%= quick.term %>”.</p>
+  <p class="app-command__empty"><%= tx("Nothing matches") %> “<%= quick.term %>”.</p>
 <% else %>
   <% [["Titles", quick.titles], ["In the text", quick.texts]].each do |heading, results| %>
     <% if results.any? then %>
-      <p class="eyebrow search-results__heading"><%= heading %></p>
-      <ul role="listbox" aria-label="<%= heading %>">
+      <p class="app-command__group"><%= tx(heading) %></p>
+      <ul role="listbox" aria-label="<%= tx(heading) %>">
         <% results.each do |result| %>
           <%# herb:key "#{result.record.class.name}-#{result.record.id}" %>
           <li>
-            <%= link_to search_result_path(result.record), class: "global-search__result search-results__item",
+            <%= link_to search_result_path(result.record), class: "app-command__item",
                   role: "option", data: { global_search_target: "result", action: "mouseenter->global-search#hover" } do %>
-              <span class="grow">
-                <span class="search-results__title truncate"><%= search_marked_title(result.title, result.marks) %></span>
+              <span class="app-command__text">
+                <span class="truncate"><%= search_marked_title(result.title, result.marks) %></span>
                 <% if result.snippet.present? then %>
-                  <span class="search-results__snippet truncate"><%= sanitize result.snippet, tags: %w[mark] %></span>
+                  <span class="app-command__snippet truncate"><%= sanitize result.snippet, tags: %w[mark] %></span>
                 <% end %>
               </span>
-              <span class="badge"><%= result.kind %></span>
+              <%= ui_badge result.kind, :secondary %>
             <% end %>
           </li>
         <% end %>
@@ -31,6 +30,8 @@
   <% end %>
 <% end %>
 <% unless quick.blank? %>
-  <%= link_to "All results for “#{quick.term}”", search_path(q: quick.term), class: "global-search__result search-results__item search-results__all",
-        data: { global_search_target: "result", action: "mouseenter->global-search#hover" } %>
+  <%= link_to search_path(q: quick.term), class: "app-command__item app-command__all",
+        data: { global_search_target: "result", action: "mouseenter->global-search#hover" } do %>
+    <%= icon_tag "search" %> <span><%= tx("All results for") %> “<%= quick.term %>”</span>
+  <% end %>
 <% end %>

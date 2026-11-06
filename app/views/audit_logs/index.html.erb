@@ -1,73 +1,43 @@
 <% @page_title = "Audit log" %>
+<% filtered = params[:actor].present? || params[:action_filter].present? || params[:from].present? || params[:to].present? %>
 
 <%= render "layouts/shared/page_header", title: @page_title %>
 
-<%= form_with url: audit_logs_path, method: :get, class: "panel audit-filters", data: { turbo_action: "advance" } do %>
-  <label class="field">
-    <span class="label">Actor</span>
-    <%= text_field_tag :actor, params[:actor], placeholder: "email or name", autocomplete: "off" %>
-  </label>
-  <label class="field">
-    <span class="label">Action</span>
-    <%= select_tag :action_filter, options_for_select(@known_actions, params[:action_filter]), include_blank: "Any action" %>
-  </label>
-  <label class="field">
-    <span class="label">From</span>
-    <%= datetime_local_field_tag :from, params[:from] %>
-  </label>
-  <label class="field">
-    <span class="label">To</span>
-    <%= datetime_local_field_tag :to, params[:to] %>
-  </label>
-  <div class="row">
-    <button type="submit" class="btn">Apply</button>
-    <%= link_to "Clear", audit_logs_path, class: "btn btn--plain" %>
+<%= form_with url: audit_logs_path, method: :get, class: "ui-card ui-card--sm", data: { turbo_action: "advance" } do %>
+  <div class="ui-card__content audit-filters">
+    <label class="ui-field">
+      <span class="ui-label">Actor</span>
+      <%= text_field_tag :actor, params[:actor], placeholder: "email or name", autocomplete: "off", class: "ui-input" %>
+    </label>
+    <label class="ui-field">
+      <span class="ui-label">Action</span>
+      <%= select_tag :action_filter, options_for_select(@known_actions, params[:action_filter]), include_blank: "Any action", class: "ui-select" %>
+    </label>
+    <label class="ui-field">
+      <span class="ui-label">From</span>
+      <%= datetime_local_field_tag :from, params[:from], class: "ui-input" %>
+    </label>
+    <label class="ui-field">
+      <span class="ui-label">To</span>
+      <%= datetime_local_field_tag :to, params[:to], class: "ui-input" %>
+    </label>
+    <div class="row">
+      <button type="submit" class="ui-button ui-button--outline">Apply</button>
+      <%= link_to "Clear", audit_logs_path, class: "ui-button ui-button--ghost" %>
+    </div>
   </div>
 <% end %>
 
-<div class="cluster cluster--end cluster--md">
-  <%= render "layouts/shared/list_search", placeholder: "Search actions, people and targets…" %>
+<div class="stack stack--md">
+  <div class="list-toolbar">
+    <div class="list-toolbar__search">
+      <%= render "layouts/shared/list_search", placeholder: "Search actions, people and targets…" %>
+    </div>
+  </div>
+
+  <%= render "ui/data_table", id: "audit_log",
+        columns: [ ui_column(:when, "When"), ui_column(:actor, "Actor"), ui_column(:action, "Action", hideable: false),
+                   ui_column(:target, "Target"), ui_column(:detail, "Detail") ],
+        rows: @entries, row: "audit_logs/row", as: :entry, pagination: @pagination, actions: true,
+        empty: "No entries match.", empty_link: ([ "Clear the filters", audit_logs_path ] if filtered || search_term) %>
 </div>
-
-<section class="panel panel--scroll">
-  <table class="data-table">
-    <thead>
-      <tr>
-        <th>When</th>
-        <th>Actor</th>
-        <th>Action</th>
-        <th>Target</th>
-        <th>Detail</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% @entries.each do |entry| %>
-        <%# herb:key entry.id %>
-        <tr id="<%= dom_id(entry) %>" data-filter-target="item">
-          <td><span class="nowrap text-small text-muted"><%= time_ago_tag entry.created_at %></span></td>
-          <td>
-            <div class="text-ink"><%= entry.actor_label.presence || "system" %></div>
-            <% if entry.ip.present? %>
-              <div class="text-mono text-small text-muted"><%= entry.ip %></div>
-            <% end %>
-          </td>
-          <td><%= status_tag entry.current_action, highlight: false %></td>
-          <td>
-            <% if entry.target_label.present? %>
-              <%= audit_target_link(entry) %>
-              <% if entry.target_type.present? %>
-                <span class="text-small text-muted">(<%= entry.target_type %>)</span>
-              <% end %>
-            <% else %>
-              <span class="text-muted">—</span>
-            <% end %>
-          </td>
-          <td><span class="text-mono text-small text-muted"><%= audit_metadata(entry.metadata) %></span></td>
-        </tr>
-      <% end %>
-      <%= table_empty_row("No entries match.", columns: 5) if @entries.none? %>
-    </tbody>
-  </table>
-</section>
-
-<%= pagination_nav @pagination %>

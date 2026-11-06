@@ -2,13 +2,23 @@
 
 <%= render "layouts/shared/page_header", title: "Hello" %>
 
-<section class="panel panel--padded fields measure--lg">
-  <p class="text-muted">A plugin's settings page. Pages published since the plugin was switched on: <%= @settings["pages_published"].to_i %>.</p>
+<%# A plugin's settings page, drawn with the admin's kit (Runwell UI, STYLE.md): a ui-card with
+    its header, a form of ui-field rows, and the save button in the card's footer. %>
+<%= form_with url: hello_settings_path, method: :patch, scope: :settings, class: "ui-card measure--lg" do |form| %>
+  <header class="ui-card__header">
+    <h2 class="ui-card__title">Greetings</h2>
+    <p class="ui-card__description">Pages published since the plugin was switched on: <%= @settings["pages_published"].to_i %>.</p>
+  </header>
 
-  <%= form_with url: hello_settings_path, method: :patch, scope: :settings, class: "fields" do |form| %>
-    <%= settings_field "Default greeting", hint: "What the Greetings form starts with." do %>
-      <%= form.text_field :default_message, value: @settings["default_message"], maxlength: 200 %>
-    <% end %>
-    <div><button type="submit" class="btn btn--primary">Save</button></div>
-  <% end %>
-</section>
+  <div class="ui-card__content">
+    <div class="ui-field">
+      <%= form.label :default_message, "Default greeting", class: "ui-label" %>
+      <%= form.text_field :default_message, value: @settings["default_message"], maxlength: 200, class: "ui-input" %>
+      <p class="ui-field__description">What the Greetings form starts with.</p>
+    </div>
+  </div>
+
+  <footer class="ui-card__footer ui-card__footer--bordered">
+    <button type="submit" class="ui-button">Save</button>
+  </footer>
+<% end %>

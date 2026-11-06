@@ -1,0 +1,429 @@
+/* Form controls (shadcn/ui input, textarea, native-select, label, checkbox, radio-group,
+/* switch, field). All native elements: no JavaScript.
+/*
+/*   <div class="ui-field">
+/*     <label class="ui-label" for="name">Name</label>
+/*     <input class="ui-input" id="name">
+/*     <p class="ui-field__description">Shown on invoices.</p>
+/*     <p class="ui-field__error">can't be blank</p>
+/*   </div>
+/*
+/*   <select class="ui-select">…</select>
+/*   <textarea class="ui-textarea"></textarea>
+/*   <input type="checkbox" class="ui-checkbox">
+/*   <input type="radio" class="ui-radio">
+/*   <input type="checkbox" role="switch" class="ui-switch">
+/*
+/* aria-invalid="true" on a control draws it in the destructive colour. */
+@layer ui {
+  .ui-input,
+  .ui-textarea,
+  .ui-select {
+    background-color: transparent;
+    border: 1px solid var(--input);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-xs);
+    color: var(--foreground);
+    font: inherit;
+    /* text-base md:text-sm: 16px on phones so iOS doesn't zoom in. */
+    font-size: max(16px, var(--text-normal));
+    inline-size: 100%;
+    min-inline-size: 0;
+    outline: none;
+    transition: border-color 150ms, box-shadow 150ms;
+
+    @media (min-width: 768px) {
+      font-size: var(--text-normal);
+    }
+
+    &::placeholder {
+      color: var(--muted-foreground);
+    }
+
+    &:focus-visible {
+      border-color: var(--ring);
+      box-shadow: var(--shadow-xs), var(--ring-focus);
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    &[aria-invalid="true"],
+    .field_with_errors & {
+      border-color: var(--destructive);
+
+      &:focus-visible {
+        box-shadow: var(--shadow-xs), var(--ring-invalid);
+      }
+    }
+
+    &:-webkit-autofill {
+      -webkit-box-shadow: 0 0 0 1000px var(--muted) inset;
+      -webkit-text-fill-color: var(--foreground);
+    }
+  }
+
+  .ui-input {
+    block-size: 2.25rem;
+    padding: 0.25rem 0.75rem;
+
+    &[type="file"] {
+      color: var(--muted-foreground);
+      padding-block: 0.375rem;
+
+      &::file-selector-button {
+        background: transparent;
+        border: 0;
+        color: var(--foreground);
+        font: inherit;
+        font-size: var(--text-normal);
+        font-weight: 500;
+        margin-inline-end: 0.5rem;
+      }
+    }
+
+    &[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+    }
+  }
+
+  .ui-textarea {
+    display: flex;
+    field-sizing: content;
+    min-block-size: 4rem;
+    padding: 0.5rem 0.75rem;
+    resize: vertical;
+  }
+
+  .ui-select {
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-position: right 0.625rem center;
+    background-repeat: no-repeat;
+    background-size: 1rem;
+    block-size: 2.25rem;
+    cursor: pointer;
+    padding: 0.25rem 2.25rem 0.25rem 0.75rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    option {
+      background-color: var(--popover);
+      color: var(--popover-foreground);
+    }
+  }
+
+  .ui-input--sm,
+  .ui-select--sm {
+    block-size: 2rem;
+  }
+
+  .ui-label {
+    align-items: center;
+    display: flex;
+    font-size: var(--text-normal);
+    font-weight: 500;
+    gap: 0.5rem;
+    line-height: 1;
+    user-select: none;
+
+    &:has(+ :disabled),
+    .ui-field:has(:disabled) & {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+  }
+
+  /* Field: a label, its control, a description and an error, stacked. */
+  .ui-field {
+    display: grid;
+    text-align: start;
+    gap: 0.5rem;
+    min-inline-size: 0;
+  }
+
+  /* A checkbox, radio or switch beside its label (and description). */
+  /* The control in one column, its label, description and error in the other. */
+  .ui-field--inline {
+    align-items: start;
+    column-gap: 0.75rem;
+    grid-template-columns: auto 1fr;
+    row-gap: 0.375rem;
+
+    :is(.ui-checkbox, .ui-radio, .ui-switch) {
+      grid-column: 1;
+      grid-row: 1 / span 3;
+      margin-block-start: 0.0625rem;
+    }
+
+    :is(.ui-label, .ui-field__description, .ui-field__error) {
+      grid-column: 2;
+    }
+
+    &.ui-field--end {
+      grid-template-columns: 1fr auto;
+
+      :is(.ui-checkbox, .ui-radio, .ui-switch) {
+        grid-column: 2;
+      }
+
+      :is(.ui-label, .ui-field__description, .ui-field__error) {
+        grid-column: 1;
+      }
+    }
+  }
+
+  /* A choice in a bordered box that highlights when it's on (shadcn's "choice card"). */
+  .ui-field--card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1rem;
+
+    &:has(:checked) {
+      background-color: color-mix(in oklch, var(--primary) 5%, transparent);
+      border-color: var(--primary);
+    }
+  }
+
+  .ui-field__description {
+    color: var(--muted-foreground);
+    font-size: var(--text-normal);
+    margin: 0;
+  }
+
+  .ui-field__error {
+    color: var(--destructive);
+    font-size: var(--text-normal);
+    margin: 0;
+  }
+
+  /* A group of fields, with a legend: shadcn's FieldSet. */
+  .ui-fieldset {
+    border: 0;
+    display: grid;
+    gap: 1.5rem;
+    margin: 0;
+    min-inline-size: 0;
+    padding: 0;
+
+    > legend {
+      font-size: var(--text-medium);
+      font-weight: 500;
+      margin-block-end: 0.75rem;
+      padding: 0;
+    }
+  }
+
+  .ui-field-row {
+    display: grid;
+    gap: 1rem;
+
+    @media (min-width: 640px) {
+      grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    }
+  }
+
+  /* Checkbox and radio */
+
+  .ui-checkbox,
+  .ui-radio {
+    -webkit-appearance: none;
+    appearance: none;
+    background-color: transparent;
+    block-size: 1rem;
+    border: 1px solid var(--input);
+    box-shadow: var(--shadow-xs);
+    cursor: pointer;
+    display: inline-grid;
+    flex-shrink: 0;
+    inline-size: 1rem;
+    margin: 0;
+    outline: none;
+    place-content: center;
+    transition: box-shadow 150ms, background-color 150ms, border-color 150ms;
+
+    &:focus-visible {
+      border-color: var(--ring);
+      box-shadow: var(--ring-focus);
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    &[aria-invalid="true"] {
+      border-color: var(--destructive);
+    }
+  }
+
+  .ui-checkbox {
+    border-radius: 4px;
+
+    &::before {
+      block-size: 0.875rem;
+      background-color: var(--primary-foreground);
+      clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+      content: "";
+      inline-size: 0.875rem;
+      scale: 0.7;
+      visibility: hidden;
+    }
+
+    &:checked,
+    &:indeterminate {
+      background-color: var(--primary);
+      border-color: var(--primary);
+
+      &::before {
+        visibility: visible;
+      }
+    }
+
+    &:indeterminate::before {
+      block-size: 2px;
+      clip-path: none;
+      inline-size: 0.5rem;
+      scale: 1;
+    }
+  }
+
+  .ui-radio {
+    border-radius: 50%;
+    color: var(--primary);
+
+    &::before {
+      background-color: var(--primary);
+      block-size: 0.5rem;
+      border-radius: 50%;
+      content: "";
+      inline-size: 0.5rem;
+      visibility: hidden;
+    }
+
+    &:checked::before {
+      visibility: visible;
+    }
+  }
+
+  .ui-radio-group {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  /* Switch: a checkbox with role="switch". */
+  .ui-switch {
+    -webkit-appearance: none;
+    appearance: none;
+    background-color: var(--input);
+    block-size: 1.15rem;
+    border: 1px solid transparent;
+    border-radius: 99rem;
+    box-shadow: var(--shadow-xs);
+    cursor: pointer;
+    display: inline-flex;
+    flex-shrink: 0;
+    inline-size: 2rem;
+    margin: 0;
+    outline: none;
+    transition: background-color 150ms, box-shadow 150ms;
+
+    &::before {
+      background-color: var(--background);
+      block-size: 1rem;
+      border-radius: 50%;
+      content: "";
+      inline-size: 1rem;
+      transition: translate 150ms;
+    }
+
+    &:checked {
+      background-color: var(--primary);
+
+      &::before {
+        background-color: var(--primary-foreground);
+        translate: calc(2rem - 1rem - 2px) 0;
+      }
+    }
+
+    &:focus-visible {
+      border-color: var(--ring);
+      box-shadow: var(--ring-focus);
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+  }
+
+  html[data-theme="dark"] .ui-switch:not(:checked)::before {
+    background-color: var(--foreground);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html:not([data-theme]) .ui-switch:not(:checked)::before {
+      background-color: var(--foreground);
+    }
+  }
+
+  html[data-theme="dark"] :is(.ui-input, .ui-textarea, .ui-select) {
+    background-color: color-mix(in oklch, var(--input) 30%, transparent);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html:not([data-theme]) :is(.ui-input, .ui-textarea, .ui-select) {
+      background-color: color-mix(in oklch, var(--input) 30%, transparent);
+    }
+
+    html:not([data-theme]) .ui-select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    }
+  }
+
+  html[data-theme="dark"] .ui-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  }
+
+  /* Input group: an input with an icon, text or button attached inside its border. */
+  .ui-input-group {
+    align-items: center;
+    border: 1px solid var(--input);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-xs);
+    display: flex;
+    min-inline-size: 0;
+    transition: border-color 150ms, box-shadow 150ms;
+
+    .ui-input {
+      border: 0;
+      box-shadow: none;
+      flex: 1;
+
+      html & {
+        background-color: transparent;
+      }
+    }
+
+    /* An icon or text before or after the input. */
+    .ui-input-group__addon {
+      align-items: center;
+      color: var(--muted-foreground);
+      display: flex;
+      flex-shrink: 0;
+      gap: 0.5rem;
+      padding-inline: 0.75rem;
+
+      &:first-child { padding-inline-end: 0; }
+      &:last-child { padding-inline-start: 0; }
+    }
+
+    &:has(.ui-input:focus-visible) {
+      border-color: var(--ring);
+      box-shadow: var(--shadow-xs), var(--ring-focus);
+    }
+  }
+}

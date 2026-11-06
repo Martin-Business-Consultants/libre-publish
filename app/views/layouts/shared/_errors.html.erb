@@ -1,10 +1,11 @@
 <%# locals: (record:) %>
-<%# A record's validation errors, above the form that didn't save. %>
+<%# A record's validation errors, above the form that didn't save, as the kit's destructive
+    alert. %>
 <% if record.errors.any? %>
-  <div class="notice notice--danger" role="alert">
-    <%= icon_tag "close-circle" %>
-    <div class="stack stack--xs">
-      <p class="text-medium">That didn’t work:</p>
+  <div class="ui-alert ui-alert--destructive" role="alert">
+    <%= icon_tag "close-circle", class: "ui-alert__icon" %>
+    <p class="ui-alert__title"><%= tx("That didn’t work:") %></p>
+    <div class="ui-alert__description">
       <ul class="bullet-list">
         <% record.errors.full_messages.each do |message| %>
           <%# herb:key message %>

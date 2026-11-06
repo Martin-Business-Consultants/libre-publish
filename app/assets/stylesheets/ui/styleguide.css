@@ -1,0 +1,84 @@
+/* The /ui styleguide page's own layout (app/views/ui/show.html.erb). */
+@layer ui {
+  .ui-styleguide {
+    display: grid;
+    gap: 3rem;
+    margin-inline: auto;
+    max-inline-size: 64rem;
+    padding: 2rem var(--main-padding) 6rem;
+    text-align: start;
+  }
+
+  .ui-styleguide__intro {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .ui-styleguide__title {
+    font-size: var(--text-xx-large);
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    margin: 0;
+  }
+
+  .ui-styleguide__section {
+    display: grid;
+    gap: 1rem;
+    scroll-margin-block-start: 1rem;
+  }
+
+  .ui-styleguide__heading {
+    border-block-end: 1px solid var(--border);
+    font-size: var(--text-large);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 0;
+    padding-block-end: 0.5rem;
+  }
+
+  .ui-styleguide__row {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .ui-styleguide__grid {
+    align-items: start;
+    display: grid;
+    gap: 1.5rem;
+
+    @media (min-width: 768px) {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .ui-styleguide__stack {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .ui-styleguide__grow {
+    flex: 1;
+  }
+
+  .ui-styleguide__text {
+    font-size: var(--text-normal);
+    margin: 0;
+  }
+
+  .ui-styleguide__skeleton-circle {
+    block-size: 3rem;
+    border-radius: 50%;
+    inline-size: 3rem;
+  }
+
+  .ui-styleguide__skeleton-line {
+    block-size: 1rem;
+    inline-size: 100%;
+  }
+
+  .ui-styleguide__skeleton-line--short {
+    inline-size: 60%;
+  }
+}

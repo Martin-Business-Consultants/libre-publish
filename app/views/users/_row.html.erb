@@ -1,0 +1,55 @@
+<%# locals: (user:, can_write:, can_delete:) %>
+<%# One person in the users data table (users/index): their avatar beside their name and
+    email, their role, whether their email is verified and two-factor is on, and their
+    actions. Your own row has no checkbox and no Delete. %>
+<% yourself = user == Current.user %>
+<tr id="<%= dom_id(user) %>" data-filter-target="item">
+  <% if can_delete %>
+    <% if yourself %>
+      <td></td>
+    <% else %>
+      <%= ui_select_cell user.id, label: "Select #{user.email}", form: "users_bulk_deletion" %>
+    <% end %>
+  <% end %>
+  <td data-column="name">
+    <div class="person-cell">
+      <%= ui_avatar user.name %>
+      <div class="person-cell__text">
+        <span class="person-cell__name">
+          <%= link_to user.name, edit_user_path(user), class: "ui-table__row-link" %>
+          <% if yourself %>
+            <%= ui_badge "You", :secondary %>
+          <% end %>
+        </span>
+        <span class="person-cell__email"><%= user.email %></span>
+      </div>
+    </div>
+  </td>
+  <td data-column="role">
+    <% if user.role %>
+      <%= user.role.name %>
+    <% else %>
+      <span class="text-muted">No role</span>
+    <% end %>
+  </td>
+  <td data-column="verified">
+    <% if user.verified %>
+      <%= ui_badge "Verified", :positive %>
+    <% else %>
+      <%= ui_badge "Unverified", :outline %>
+    <% end %>
+  </td>
+  <td data-column="two_factor">
+    <% if user.totp_enabled %>
+      <%= ui_badge "On", :positive %>
+    <% else %>
+      <span class="text-muted">Off</span>
+    <% end %>
+  </td>
+  <td class="ui-table__numeric">
+    <%= render "ui/row_actions", id: dom_id(user), name: user.name,
+          edit_path: (edit_user_path(user) if can_write),
+          delete_path: (user_path(user) if can_delete && !yourself),
+          delete_message: "They can no longer sign in to this workspace." %>
+  </td>
+</tr>

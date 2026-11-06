@@ -2,15 +2,15 @@
 <%= parent_page "Pages", pages_path %>
 
 <% content_for :page_actions do %>
-  <%= link_to "Edit the page", edit_page_path(@page.path), class: "btn" %>
+  <%= link_to "Edit the page", edit_page_path(@page.path), class: "ui-button ui-button--outline" %>
 <% end %>
 <%= render "layouts/shared/page_header", title: @page_title %>
 
 <%= render "layouts/shared/errors", record: @page %>
-<%= form_with url: page_schema_path(@page.path), method: :patch, class: "stack stack--lg" do %>
+<%= form_with url: page_schema_path(@page.path), method: :patch, class: "schema-form" do %>
   <%= render "schemas/editor", fields: @page.fields, scope: "page", field_types: Page::SCHEMA_FIELD_TYPES,
         collection_slugs: Collection.order(:slug).pluck(:slug) %>
   <div>
-    <button type="submit" class="btn btn--primary">Save fields</button>
+    <button type="submit" class="ui-button">Save fields</button>
   </div>
 <% end %>
