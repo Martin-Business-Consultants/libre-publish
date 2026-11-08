@@ -16,7 +16,6 @@ class Api::Redirects::ImportsController < Api::BaseController
       render json: {error: "invalid", message: "No CSV supplied"}, status: :unprocessable_content
     else
       @import = Redirect.import_csv(csv)
-      Redirect.track_event(:imported, created: @import.created, updated: @import.updated, errored: @import.errored)
     end
   rescue CSV::MalformedCSVError => e
     render json: {error: "invalid_csv", message: e.message}, status: :unprocessable_content

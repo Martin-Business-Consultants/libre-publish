@@ -23,6 +23,23 @@ module PublishesOnSchedule
 
   STATUSES = %w[draft published archived].freeze
 
+  # Every page and entry whose time has come, published or archived. The
+  # four steps run whatever happens in the others; returns the errors that
+  # left something due for the next run (empty when all went).
+  def self.run_due(now = Time.current)
+    [
+      -> { Page.publish_due(now) },
+      -> { Page.unpublish_due(now) },
+      -> { CollectionEntry.publish_due(now) },
+      -> { CollectionEntry.unpublish_due(now) }
+    ].flat_map do |step|
+      step.call
+    rescue StandardError => error
+      Rails.error.report(error, handled: true)
+      [error]
+    end
+  end
+
   included do
     # What visitors see: published, and not waiting on a schedule (the
     # scheduler flips status when publish_at or unpublish_at arrives).

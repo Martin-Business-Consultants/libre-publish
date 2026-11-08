@@ -5,6 +5,9 @@
 # (Cms::Plugins.trashable) where they said to sit. Read by the admin Trash
 # screen, /api/trash, and the purge job and recipe.
 module Trash
+  # How long something stays in the trash before TrashPurgeJob deletes it.
+  RETENTION = 30.days
+
   CORE = [
     ["page",   {model: "Page",            label: "Pages"}],
     ["entry",  {model: "CollectionEntry", label: "Entries"}],

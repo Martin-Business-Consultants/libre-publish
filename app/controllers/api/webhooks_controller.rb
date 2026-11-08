@@ -28,18 +28,18 @@ class Api::WebhooksController < Api::BaseController
 
   def create
     @webhook = Webhook.create!(webhook_params)
-    @webhook.track_event(:created, url: @webhook.url, events: @webhook.events)
+    @webhook.track_creation
     render :secret, status: :created
   end
 
   def update
     @webhook.update!(webhook_params)
-    @webhook.track_event(:updated, url: @webhook.url, events: @webhook.events, active: @webhook.active)
+    @webhook.track_update
     render :secret
   end
 
   def destroy
-    @webhook.track_event(:deleted, url: @webhook.url)
+    @webhook.track_deletion
     @webhook.destroy!
     head :no_content
   end

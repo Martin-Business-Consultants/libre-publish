@@ -37,18 +37,18 @@ class Api::RedirectsController < Api::BaseController
 
   def create
     @redirect = Redirect.create!(redirect_params)
-    @redirect.track_event(:created, source: @redirect.source_path)
+    @redirect.track_creation
     render :show, status: :created
   end
 
   def update
     @redirect.update!(redirect_params)
-    @redirect.track_event(:updated, source: @redirect.source_path)
+    @redirect.track_update
     render :show
   end
 
   def destroy
-    @redirect.track_event(:deleted, source: @redirect.source_path)
+    @redirect.track_deletion
     @redirect.destroy!
     head :no_content
   end

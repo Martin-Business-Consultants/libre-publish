@@ -23,7 +23,7 @@ class ContentSnapshot
     @now = now
   end
 
-  def full? = since.nil? || since < now - TrashPurgeJob::RETENTION
+  def full? = since.nil? || since < now - Trash::RETENTION
 
   def cursor = now.utc.iso8601(6)
 

@@ -575,6 +575,21 @@ module Cms
           tasks.filter_map { |name, entry| ["#{key}:#{name}", entry.task] if entry.due?(at) }
         end
       end
+
+      # Runs the enabled plugins' minutely tasks due at `at`
+      # (PluginsMinutelyJob), or their nightly ones (PluginsNightlyJob). One
+      # failing is logged and doesn't stop the others.
+      def run_minutely(at = Time.current) = run_each("minutely", due_minutely_tasks(at))
+      def run_nightly = run_each("nightly", enabled_nightly_tasks)
+
+      def run_each(schedule, tasks)
+        tasks.each do |name, task|
+          task.call
+        rescue StandardError => e
+          Rails.logger.error("[plugins:#{schedule}] #{name}: #{e.class}: #{e.message}")
+        end
+      end
+
       def enabled_permission_groups = permission_groups.select { |key, _| enabled?(key) }.values.reduce({}, :merge)
       def enabled_field_types = merged(field_types)
       def enabled_deploy_providers = merged(deploy_providers)

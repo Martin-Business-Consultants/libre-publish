@@ -109,4 +109,13 @@ module Asset::Optimizable
   def lighten_on_upload? = file.attached? && content_type.in?(OPTIMIZABLE_TYPES) && ImageLimits.optimize_uploads?
 
   def lighten_later = Asset::LightenJob.perform_later(id)
+
+  # Made lighter now, if it still needs it: not trashed, not already done,
+  # and over the limits once its dimensions are known.
+  def lighten_now
+    return if deleted_at || optimized?
+
+    file.analyze unless file.analyzed?
+    optimize! if optimizable?
+  end
 end

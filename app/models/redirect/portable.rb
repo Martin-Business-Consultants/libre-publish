@@ -25,8 +25,13 @@ module Redirect::Portable
     # Upserts by source path, so re-running an import is a no-op rather than a
     # pile of duplicates. Takes the CSV as a string or an IO, read a row at a
     # time. Raises CSV::MalformedCSVError on unparseable input.
+    # Runs the import and records it (redirect.imported), from the admin or
+    # the API alike.
     def import_csv(source)
-      Redirect::Import.new(source).tap(&:run)
+      Redirect::Import.new(source).tap do |import|
+        import.run
+        track_event(:imported, created: import.created, updated: import.updated, errored: import.errored)
+      end
     end
   end
 
