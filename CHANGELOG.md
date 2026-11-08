@@ -8,6 +8,8 @@ out.
 
 ## Unreleased
 
+## 1.36.0
+
 ### Removed
 - **Tools › Developers**: the dashboard still shows the frontend and its
   last build; the delivery API and `/api/frontend` are unchanged.
