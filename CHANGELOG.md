@@ -8,6 +8,8 @@ out.
 
 ## Unreleased
 
+## 1.34.3
+
 ### Fixed
 - **Forms' screens are laid out again**: the form and form email editors
   have their sidebar beside the main column, and links in a submission and
