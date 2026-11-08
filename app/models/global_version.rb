@@ -8,12 +8,5 @@ class GlobalVersion < ApplicationRecord
 
   SNAPSHOT_ATTRIBUTES = %w[name data].freeze
 
-  belongs_to :global
-  belongs_to :author, class_name: "User", optional: true
-
-  scope :newest_first, -> { order(created_at: :desc, id: :desc) }
-
-  def self.versioned_association = :global
-
-  def versioned_record = global
+  snapshot_of :global
 end

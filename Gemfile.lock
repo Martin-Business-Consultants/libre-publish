@@ -87,7 +87,6 @@ GEM
     addressable (2.9.0)
       public_suffix (>= 2.0.2, < 8.0)
     ast (2.4.3)
-    authentication-zero (4.0.3)
     base64 (0.3.0)
     bcrypt (3.1.22)
     bcrypt_pbkdf (1.1.2)
@@ -396,11 +395,6 @@ GEM
       rexml (~> 3.2, >= 3.2.5)
       rubyzip (>= 1.2.2, < 4.0)
       websocket (~> 1.0)
-    solid_cable (4.0.2)
-      actioncable (>= 7.2)
-      activejob (>= 7.2)
-      activerecord (>= 7.2)
-      railties (>= 7.2)
     solid_cache (1.0.10)
       activejob (>= 7.2)
       activerecord (>= 7.2)
@@ -472,7 +466,6 @@ PLATFORMS
   x86_64-linux-musl
 
 DEPENDENCIES
-  authentication-zero (~> 4.0)
   bcrypt (~> 3.1.7)
   bootsnap (~> 1.25)
   brakeman (~> 8.1)
@@ -483,7 +476,6 @@ DEPENDENCIES
   csv (~> 3.3)
   debug (~> 1.11)
   factory_bot_rails (~> 6.5)
-  fugit (~> 1.13)
   herb (~> 0.11.0)
   image_processing (~> 1.2)
   importmap-rails (~> 2.2)
@@ -501,7 +493,6 @@ DEPENDENCIES
   rubyzip (~> 3.0)
   rune_ui!
   selenium-webdriver (~> 4.48)
-  solid_cable (~> 4.0)
   solid_cache (~> 1.0)
   solid_queue (~> 1.7)
   sqlite3 (~> 2.9)

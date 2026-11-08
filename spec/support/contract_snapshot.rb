@@ -28,7 +28,7 @@ module ContractSnapshot
   # gzip archive's size varies with its header's timestamp).
   VOLATILE_FIELDS = %w[bytes].freeze
 
-  WEBHOOK_JOBS = %w[DeliverWebhookJob Webhook::DeliveryJob].freeze
+  WEBHOOK_JOBS = %w[Webhook::DeliveryJob].freeze
 
   class Recorder
     def initialize(spec)

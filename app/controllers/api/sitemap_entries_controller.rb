@@ -35,13 +35,11 @@ class Api::SitemapEntriesController < Api::BaseController
         status: :unprocessable_content
     else
       require_capability!("entries:write") if params[:source].to_s == "collection_entry"
-      # A status change, or any change to what's live, takes publishing it.
-      if (settings.key?(:status) && settings[:status] != @record.status) || @record.try(:status) == "published"
-        require_capability!(Sitemap.publish_capability(params[:source]))
-      end
 
       @record.status = settings[:status] if settings.key?(:status)
       @record.change_sitemap_settings(settings.except(:status))
+      # One gate (PublishGated): a status change, or any change to what's live.
+      require_capability!(Sitemap.publish_capability(params[:source])) if @record.publishing_write?
       @record.save!
 
       @record.track_sitemap_update(source: params[:source])

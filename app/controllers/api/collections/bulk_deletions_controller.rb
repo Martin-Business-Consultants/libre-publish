@@ -3,9 +3,8 @@
 # POST /api/collections/bulk_destroy: deletes the collections at `slugs`,
 # entries and all (Collection.remove_all).
 class Api::Collections::BulkDeletionsController < Api::BaseController
-  include Api::BulkSlugs
+  include BulkSlugs
 
-  enforce_authorization
   requires_capability "collections:delete", only: :create
 
   def create

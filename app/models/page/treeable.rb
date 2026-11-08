@@ -76,15 +76,24 @@ module Page::Treeable
   def compute_path_and_depth
     return if slug.blank?
 
-    result = PageValidator.compute_path_and_depth(parent_id, slug)
-    self.path = result[:path]
-    self.depth = result[:depth]
+    parent_page = Page.find_by(id: parent_id) if parent_id.present?
+    self.path  = parent_page ? "#{parent_page.path}/#{slug}" : slug
+    self.depth = parent_page ? parent_page.depth + 1 : 0
   end
 
   # Reject self-as-parent and any descendant-as-parent (would create a cycle).
   def validate_parent_not_self_or_descendant
-    PageValidator.validate_parent_not_self_or_descendant(id, parent_id, persisted?).each do |msg|
-      errors.add(:parent_id, msg)
+    return if parent_id.blank? || !persisted?
+    return errors.add(:parent_id, "can't be the page itself") if parent_id == id
+
+    node = Page.find_by(id: parent_id)
+    visited = 0
+    while node
+      visited += 1
+      return errors.add(:parent_id, "can't be a descendant of this page") if node.id == id
+      break if visited > 256
+
+      node = node.parent
     end
   end
 

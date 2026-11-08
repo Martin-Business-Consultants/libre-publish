@@ -7,7 +7,7 @@ require "rails_helper"
 # (STYLE.md). An old API URL a client depends on keeps working by routing it
 # to that resource's controller (`post "pages/bulk_destroy", to: …`).
 RSpec.describe "Architecture: CRUD-only routes" do
-  PATTERN = /\b(member|collection)\s*(do\b|\{)/
+  PATTERN = /\b(member|collection)\s*(do\b|\{)|\bon:\s*:(member|collection)\b/
 
   it "has no member or collection routes" do
     files = Dir.glob(["config/routes.rb", "config/routes/**/*.rb", "engines/*/config/**/*.rb", "engines/*/lib/**/*.rb", "plugins/*/config/**/*.rb", "plugins/*/lib/**/*.rb"],

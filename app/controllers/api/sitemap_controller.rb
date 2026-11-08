@@ -10,6 +10,6 @@ class Api::SitemapController < Api::BaseController
   def show
     @sitemap = Sitemap.new
     @entries = @sitemap.entries
-    @site_base_url = Setting.get("general")["site_base_url"].to_s
+    @site_base_url = Site.configured_base_url
   end
 end

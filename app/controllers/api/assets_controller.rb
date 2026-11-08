@@ -4,7 +4,6 @@
 # searched), one asset, uploading one, editing its details, and sending it to
 # the trash. The JSON is app/views/api/assets.
 class Api::AssetsController < Api::BaseController
-  enforce_authorization
   requires_capability "assets:read",   only: [:index, :show]
   requires_capability "assets:write",  only: [:create, :update]
   requires_capability "assets:delete", only: :destroy

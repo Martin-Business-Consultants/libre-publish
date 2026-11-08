@@ -4,11 +4,13 @@
 # update_all) so the status webhooks and the debounced deploy fire, as they do
 # for a single edit.
 class Pages::BulkStatusChangesController < ApplicationController
+  include BulkSlugs
+
   requires_capability "pages:publish", only: :create
 
   def create
     status = params[:status].to_s
-    paths = Array(params[:slugs]).map(&:to_s).reject(&:empty?)
+    paths = bulk_slugs
 
     if Page::STATUSES.exclude?(status)
       redirect_to pages_path, alert: "Pick a status to set."

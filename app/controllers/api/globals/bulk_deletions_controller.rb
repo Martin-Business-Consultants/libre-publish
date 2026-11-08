@@ -3,10 +3,9 @@
 # POST /api/globals/bulk_destroy: the globals at `slugs` to the trash
 # (Global.trash_all).
 class Api::Globals::BulkDeletionsController < Api::BaseController
-  include Api::BulkSlugs
+  include BulkSlugs
   include Api::HeldWrites
 
-  enforce_authorization
   requires_capability "globals:delete", only: :create
   refuse_while_held only: :create
 

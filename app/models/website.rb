@@ -69,7 +69,7 @@ module Website
   def render(template, **locals)
     return unless draws?(template)
 
-    uri = URI.parse(Setting.get("general")["site_base_url"].presence || "#{Rails.configuration.x.app_protocol || "https"}://#{Site.host}")
+    uri = URI.parse(Site.configured_base_url.presence || "#{Rails.configuration.x.app_protocol || "https"}://#{Site.host}")
     renderer = renderer_for(theme).new(http_host: [uri.host, uri.port].join(":"), https: uri.scheme == "https")
     renderer.render(template: template, locals: locals, layout: false)
   end

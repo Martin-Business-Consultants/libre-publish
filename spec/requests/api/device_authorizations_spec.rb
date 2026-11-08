@@ -7,8 +7,6 @@ require "rails_helper"
 # secret out of a settings page and pastes it into a terminal, which is the
 # step that leaks tokens into shell history and chat logs.
 RSpec.describe "Api::DeviceAuthorizations", type: :request do
-  def json = JSON.parse(response.body)
-
   describe "POST /api/device/code" do
     it "mints a code pair without any credential at all" do
       post "/api/device/code", params: {hostname: "alice-laptop"}

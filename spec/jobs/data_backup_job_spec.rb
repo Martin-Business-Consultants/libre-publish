@@ -14,13 +14,10 @@ RSpec.describe DataBackupJob do
 
   it "takes none when the install turned it off" do
     allow(Cms::DataBackup).to receive(:for_install)
-    ENV["CMS_BACKUP_NIGHTLY"] = "false"
 
-    described_class.perform_now
+    with_env("CMS_BACKUP_NIGHTLY" => "false") { described_class.perform_now }
 
     expect(Cms::DataBackup).not_to have_received(:for_install)
-  ensure
-    ENV.delete("CMS_BACKUP_NIGHTLY")
   end
 
   it "is scheduled nightly" do

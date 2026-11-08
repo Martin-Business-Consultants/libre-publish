@@ -5,7 +5,6 @@ module Api::WebhookScoped
   extend ActiveSupport::Concern
 
   included do
-    enforce_authorization
     before_action :set_webhook
   end
 

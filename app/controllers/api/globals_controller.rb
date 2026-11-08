@@ -9,7 +9,6 @@ class Api::GlobalsController < Api::BaseController
   include Api::HeldWrites
   include Api::LockVersioned
 
-  enforce_authorization
   requires_capability "globals:read",   only: [:index, :show]
   requires_capability "globals:write",  only: [:create, :update]
   requires_capability "globals:delete", only: :destroy

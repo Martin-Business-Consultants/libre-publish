@@ -49,7 +49,7 @@ RSpec.describe "Version history for globals and settings", type: :request do
     expect(response.body).to include("Settings history", "General")
 
     first = SettingVersion.where(key: "general").order(:id).first
-    post restore_settings_history_path(first)
+    post settings_history_restoration_path(first)
     expect(Setting.get("general")).to include("title" => "Old Mill", "smtp_password" => "s3cret")
   end
 end

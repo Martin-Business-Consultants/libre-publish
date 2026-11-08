@@ -7,7 +7,6 @@ class Api::PagesController < Api::BaseController
   include Api::HeldWrites
   include Api::LockVersioned
 
-  enforce_authorization
   requires_capability "pages:read",   only: [:index, :show]
   requires_capability "pages:write",  only: [:create, :update]
   requires_capability "pages:delete", only: :destroy

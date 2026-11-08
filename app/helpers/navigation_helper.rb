@@ -145,7 +145,7 @@ module NavigationHelper
 
   # Where "View site" goes: Settings › General's site address, if set.
   def public_site_url
-    Setting.get("general")["site_base_url"].presence
+    Site.configured_base_url.presence
   rescue StandardError
     nil
   end

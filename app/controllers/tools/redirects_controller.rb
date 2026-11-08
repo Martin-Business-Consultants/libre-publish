@@ -24,7 +24,7 @@ class Tools::RedirectsController < ApplicationController
     @redirect = Redirect.new(redirect_params)
 
     if @redirect.save
-      @redirect.track_event(:created, source: @redirect.source_path)
+      @redirect.track_creation
       redirect_to tools_redirects_path, notice: "Redirect created"
     else
       in_sheet(status: :unprocessable_content)
@@ -37,7 +37,7 @@ class Tools::RedirectsController < ApplicationController
 
   def update
     if @redirect.update(redirect_params)
-      @redirect.track_event(:updated, source: @redirect.source_path)
+      @redirect.track_update
       redirect_to tools_redirects_path, notice: "Redirect saved"
     else
       in_sheet(status: :unprocessable_content)
@@ -45,7 +45,7 @@ class Tools::RedirectsController < ApplicationController
   end
 
   def destroy
-    @redirect.track_event(:deleted, source: @redirect.source_path)
+    @redirect.track_deletion
     @redirect.destroy!
     redirect_to tools_redirects_path, notice: "Redirect deleted"
   end

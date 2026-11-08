@@ -47,21 +47,11 @@ class CollectionEventMailer < ApplicationMailer
     (@entry&.title.presence) || @payload["title"].to_s.presence || "(untitled)"
   end
 
-
+  # The entry's editor on the CMS's own host (Site.url_options, via
+  # default_url_options), not the public website's.
   def compute_entry_url
     return nil unless @entry
 
-    cms_url("/collections/#{@collection.slug}/entries/#{@entry.slug}/edit")
-  end
-
-  # An absolute URL on the CMS itself (APP_HOST, Site.url_options): the entry
-  # link opens the CMS's editor. Not the site's
-  # URL (Settings › General): that's the public website, which serves
-  # neither. A URL the media library already made absolute keeps only its
-  # path, since its host is whatever the request that built it was on.
-  def cms_url(path_or_url)
-    uri = URI.parse(path_or_url.to_s)
-    path = uri.absolute? ? uri.request_uri : path_or_url.to_s
-    "#{root_url(**Site.url_options).chomp("/")}#{path}"
+    edit_collection_entry_url(@collection.slug, @entry.slug)
   end
 end

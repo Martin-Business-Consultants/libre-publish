@@ -2,7 +2,7 @@
 
 require "rails_helper"
 
-RSpec.describe Page::Referencing do
+RSpec.describe Referencing, "on a page" do
   it "records what the page links to, rewritten on every save" do
     page = Page.create!(slug: "about", title: "About", status: "draft", locale: "en",
       schema: {"fields" => [{"name" => "more", "type" => "link", "label" => "More"}]},

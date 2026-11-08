@@ -14,8 +14,6 @@ RSpec.describe "Media in the core", type: :request do
 
   def api_for(user) = {"Authorization" => "Bearer #{user.api_token.token}"}
 
-  def json = JSON.parse(response.body)
-
   # [action, metadata without via] of the rows a block writes.
   def rows_from
     from = AuditLog.maximum(:id).to_i

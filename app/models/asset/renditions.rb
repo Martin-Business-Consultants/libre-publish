@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-# The URLs an asset is served at: the original, a thumbnail, a responsive
-# srcset and a focal-point crop. Raster images get resized variants (Active
+# The URLs an asset is served at: the original, a thumbnail and a responsive
+# srcset. Raster images get resized variants (Active
 # Storage, generated on first request); anything else is served as uploaded.
 module Asset::Renditions
   extend ActiveSupport::Concern
@@ -54,35 +54,5 @@ module Asset::Renditions
         )
       }
     }
-  end
-
-  # Art-directed crop honoring the focal point. Width / height in pixels;
-  # the focal_x / focal_y coordinates determine which part of the image
-  # survives the crop.
-  def crop_variant(width, height)
-    return nil unless variantable?
-
-    file.variant(
-      resize_to_fill: [width, height, {gravity: focal_gravity}]
-    )
-  end
-
-  # Translates the focal_x / focal_y floats into ImageMagick / libvips
-  # gravity values via simple thirds. Avoids leaking the underlying
-  # variant processor's API to callers.
-  def focal_gravity
-    horizontal = case focal_x
-    when ..0.33 then "West"
-    when ..0.66 then ""
-    else             "East"
-    end
-    vertical = case focal_y
-    when ..0.33 then "North"
-    when ..0.66 then ""
-    else             "South"
-    end
-
-    coord = "#{vertical}#{horizontal}"
-    coord.empty? ? "Center" : coord
   end
 end

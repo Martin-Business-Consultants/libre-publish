@@ -8,6 +8,19 @@ out.
 
 ## Unreleased
 
+### Added
+- **Keyboard, as in Runwell.** `?` lists every key; `.` turns on hint
+  mode, which puts each control's key on it as a keycap. The admin menu's
+  items have go-to chords (`g p` Pages, `g c` Collections, `g l` Globals,
+  `g t` Patterns, `g a` Audit log, `g x` Trash, `g u` Users, `g d` Docs,
+  `g s` Settings), `s` searches and `[` hides the sidebar. On a list,
+  `j`/`k` pick a row, which is tinted and shows its actions: `e` edits it,
+  `d` deletes it and `x` ticks it. Esc closes a form opened in place.
+- **A bulk bar.** Ticking rows brings up a bar in the search's place with
+  how many are ticked, a button per action, Delete (which asks first) and
+  Clear, instead of the Bulk actions select and Apply.
+- **Help › UI kit** draws every component in the site's own branding.
+
 ### Changed
 - **The admin is drawn with rune_ui**, the UI kit shared with Runwell and
   Botter (vendored in `vendor/rune_ui`). The WordPress-style admin bar and
@@ -30,21 +43,6 @@ out.
   controller is gone, along with the unused `copy_to_clipboard`,
   `fixed_popup`, `frame_reloader`, `element_removal` and `navigable_list`
   controllers.
-
-### Added
-- **Keyboard, as in Runwell.** `?` lists every key; `.` turns on hint
-  mode, which puts each control's key on it as a keycap. The admin menu's
-  items have go-to chords (`g p` Pages, `g c` Collections, `g l` Globals,
-  `g t` Patterns, `g a` Audit log, `g x` Trash, `g u` Users, `g d` Docs,
-  `g s` Settings), `s` searches and `[` hides the sidebar. On a list,
-  `j`/`k` pick a row, which is tinted and shows its actions: `e` edits it,
-  `d` deletes it and `x` ticks it. Esc closes a form opened in place.
-- **A bulk bar.** Ticking rows brings up a bar in the search's place with
-  how many are ticked, a button per action, Delete (which asks first) and
-  Clear, instead of the Bulk actions select and Apply.
-- **Help › UI kit** draws every component in the site's own branding.
-
-### Changed
 - Notices and alerts float as **toasts** in the bottom right instead of
   pushing the screen down (the sign-in pages keep them beside the form).
 - Menus, dialogs, sheets and toasts open with the same short motion, and
@@ -56,11 +54,35 @@ out.
   they change.
 - A list a search left empty says nothing matched, with Show all, rather
   than that there are none yet.
+- Webhook deliveries are attempted once. The retries they declared never
+  ran (every failure is recorded as a failed delivery, never raised), so
+  nothing changes but the job no longer claims to retry.
+- **Docs › Site health** has a new Operations check, "Background work isn't
+  failing": the jobs that failed in the last week, by name.
+- Jobs queued inside a transaction wait for it to commit.
+- Action Cable and Action Mailbox are no longer loaded (nothing used them),
+  and the `production_cable.sqlite3` database is no longer created; an
+  existing one can be deleted. The job aliases kept for jobs queued before
+  1.12 are gone.
 
 ### Fixed
 - The Build board's keys (`h`/`l`, `j`/`k`, `H`/`L`) did nothing: they
   were written for another board's markup.
 - A click inside a sheet below its content closed it.
+- **The "entry changed" email linked to the website, not the editor.** Its
+  link left out `/cms` and only worked because the website redirects old
+  admin addresses; a page or redirect at that path would have won. It now
+  opens the entry's editor.
+- **A service token could never write the Scripts global**, even one whose
+  role holds `globals:scripts`: the check read the signed-in user, which a
+  service token doesn't have. It now asks the token, as every other
+  capability check does.
+- **The Sitemap screen's quick edit could change a live page or entry
+  without the publish capability** (only a status change asked for it). The
+  admin and the API now ask the record's one publish gate, so any change to
+  a live row, or any status change that publishes, needs it.
+- **A downloaded backup's database copy is checked** (`PRAGMA quick_check`),
+  as the automatic backups' always were.
 
 ## 1.33.4
 

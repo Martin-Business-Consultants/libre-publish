@@ -12,8 +12,6 @@ RSpec.describe "Api agent envelope", type: :request do
     {"Authorization" => "Bearer #{actor.api_token.token}"}.merge(extra)
   end
 
-  def json = JSON.parse(response.body)
-
   describe "without asking for it" do
     it "returns the payload exactly as it always did" do
       get "/api/pages", headers: auth_headers

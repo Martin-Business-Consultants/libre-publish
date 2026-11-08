@@ -5,7 +5,6 @@ class Api::Pages::BulkDeletionsController < Api::BaseController
   include Api::PagePaths
   include Api::HeldWrites
 
-  enforce_authorization
   requires_capability "pages:delete", only: :create
   refuse_while_held only: :create
 

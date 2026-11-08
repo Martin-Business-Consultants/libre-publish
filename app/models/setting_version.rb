@@ -12,20 +12,20 @@ class SettingVersion < ApplicationRecord
   VERSIONED = {"general" => "General", "branding" => "Branding", "search" => "Search", "media" => "Media",
                "forms_settings" => "Forms", "mail_delivery" => "Email delivery"}.freeze
 
-  belongs_to :setting
-  belongs_to :author, class_name: "User", optional: true
-
-  scope :newest_first, -> { order(created_at: :desc, id: :desc) }
-
-  def self.versioned_association = :setting
+  snapshot_of :setting
 
   def self.versioned?(key) = VERSIONED.key?(key.to_s)
 
   def self.without_secrets(data) = data.to_h.reject { |key, _| Redactable::SECRET_KEY.match?(key.to_s) }
 
-  def versioned_record = setting
-
   def label = VERSIONED.fetch(key, key.humanize)
+
+  # Puts the setting back as this version kept it (secrets as they are now),
+  # and records it.
+  def restore
+    Setting.changing(key) { it.data = snapshot["data"] }
+    Event.record("settings.restored", key: key, version_id: id)
+  end
 
   # As the setting would take it back: what was kept, with the secrets it
   # holds now.

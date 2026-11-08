@@ -21,8 +21,7 @@
 #
 # The two read endpoints stay capability-free to match the other
 # build-facing endpoints (manifest, sitemap): a token is required, a role is
-# not. Everything that writes is gated, checked inline since the actions
-# aren't uniformly permissioned.
+# not. Everything that writes is gated by its own capability.
 class Api::RedirectsController < Api::BaseController
   # The rules a site serves: what any visitor can see, so any token reads
   # them (the site's own builds with whatever it holds).
@@ -38,18 +37,18 @@ class Api::RedirectsController < Api::BaseController
 
   def create
     @redirect = Redirect.create!(redirect_params)
-    @redirect.track_event(:created, source: @redirect.source_path)
+    @redirect.track_creation
     render :show, status: :created
   end
 
   def update
     @redirect.update!(redirect_params)
-    @redirect.track_event(:updated, source: @redirect.source_path)
+    @redirect.track_update
     render :show
   end
 
   def destroy
-    @redirect.track_event(:deleted, source: @redirect.source_path)
+    @redirect.track_deletion
     @redirect.destroy!
     head :no_content
   end

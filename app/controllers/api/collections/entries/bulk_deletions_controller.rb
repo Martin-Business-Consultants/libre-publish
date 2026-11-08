@@ -4,10 +4,9 @@
 # at `slugs` (CollectionEntry.trash_all).
 class Api::Collections::Entries::BulkDeletionsController < Api::BaseController
   include CollectionScoped
-  include Api::BulkSlugs
+  include BulkSlugs
   include Api::HeldWrites
 
-  enforce_authorization
   requires_capability "entries:delete", only: :create
   refuse_while_held only: :create
 

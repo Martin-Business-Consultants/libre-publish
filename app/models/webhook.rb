@@ -89,6 +89,11 @@ class Webhook < ApplicationRecord
     filter.match.call(event_filters.is_a?(Hash) ? event_filters[event] : nil, payload)
   end
 
+  # The audit trail's names for the editor's and the API's changes alike.
+  def track_creation = track_event(:created, url: url, events: events)
+  def track_update = track_event(:updated, url: url, events: events, active: active)
+  def track_deletion = track_event(:deleted, url: url)
+
   def regenerate_secret!
     update!(secret: self.class.generate_secret)
     track_event(:secret_rotated)

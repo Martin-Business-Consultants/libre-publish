@@ -9,7 +9,6 @@ RSpec.describe "API: updates", type: :request do
   let(:agent) { create(:user, admin: false, role: create(:role, permissions: Permissions.defaults_for(:agent))) }
 
   def auth(user) = {"Authorization" => "Bearer #{user.api_token.token}"}
-  def json = JSON.parse(response.body)
 
   before do
     Setting.set("updates", {"latest_version" => "99.0.0", "release_url" => "https://example.com/r", "notes" => "Faster pages.",

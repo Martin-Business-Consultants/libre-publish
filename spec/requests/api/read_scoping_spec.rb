@@ -13,8 +13,6 @@ RSpec.describe "API reads, scoped to the token", type: :request do
     {"Authorization" => "Bearer #{create(:user, admin: false, role: create(:role, permissions: capabilities)).api_token.token}"}
   end
 
-  def json = JSON.parse(response.body)
-
   let(:posts) { Collection.create!(slug: "posts", name: "Posts", schema: {"fields" => []}) }
 
   before do

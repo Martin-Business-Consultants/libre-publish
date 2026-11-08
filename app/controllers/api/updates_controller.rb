@@ -11,7 +11,6 @@
 class Api::UpdatesController < Api::BaseController
   include Api::UpdateSummary
 
-  enforce_authorization
   requires_capability "settings:read", only: :show
 
   agent_summary(:show) { |payload| update_summary(payload["updates"]) }

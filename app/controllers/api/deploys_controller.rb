@@ -11,7 +11,6 @@
 # and — more importantly — be able to see whether the deploy that followed
 # actually succeeded, rather than reporting "done" on a build that failed.
 class Api::DeploysController < Api::BaseController
-  enforce_authorization
   requires_capability "settings:read",  only: [:show]
   requires_capability "settings:write", only: [:update]
 

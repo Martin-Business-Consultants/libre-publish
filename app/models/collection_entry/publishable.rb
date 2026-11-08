@@ -1,25 +1,9 @@
 # frozen_string_literal: true
 
-# An entry's status and its schedule, as for pages (Page::Publishable): a
-# publish_at or unpublish_at time takes effect once it has passed. Changing
-# status is an ordinary save, so Announceable announces the transition either
-# way.
+# An entry's status and schedule, as for pages (PublishesOnSchedule).
 module CollectionEntry::Publishable
   extend ActiveSupport::Concern
   include PublishesOnSchedule
-
-  included do
-    # What visitors see: published, and not waiting on a schedule (the
-    # scheduler flips status when publish_at or unpublish_at arrives).
-    scope :live, -> { where(status: "published") }
-
-    scope :due_to_publish, ->(now = Time.current) {
-      where("publish_at IS NOT NULL AND publish_at <= ? AND status != 'published'", now)
-    }
-    scope :due_to_unpublish, ->(now = Time.current) {
-      where("unpublish_at IS NOT NULL AND unpublish_at <= ? AND status = 'published'", now)
-    }
-  end
 
   class_methods do
     # Sets every entry of `collection` to `to`, all or nothing, and records one
@@ -32,33 +16,10 @@ module CollectionEntry::Publishable
     end
   end
 
-  def scheduled?
-    (publish_at.present? && publish_at > Time.current && status != "published") ||
-      (unpublish_at.present? && unpublish_at > Time.current && status == "published")
-  end
-
-  # What its schedule's events name it by (PublishesOnSchedule).
-  def schedule_particulars = {collection: collection&.slug, slug: slug}
+  # What its status and schedule events name it by (PublishesOnSchedule).
+  def status_particulars = {collection: collection&.slug, slug: slug}
 
   def track_creation
     track_event(:created, collection: collection.slug, slug: slug, status: status)
-  end
-
-  # What an edit did to the entry's status, in the audit vocabulary the entry
-  # form, bulk status changes and a publishing Build board all speak:
-  # entry.published when it went live, entry.unpublished when it came down,
-  # entry.updated otherwise. `details` are the screen's own particulars (the
-  # board's fields and column).
-  def track_update(from:, **details)
-    base = {collection: collection.slug, slug: slug}.merge(details)
-    if status == from
-      track_event(:updated, **base, status: status)
-    elsif status == "published"
-      track_event(:published, **base.merge(from: from))
-    elsif from == "published"
-      track_event(:unpublished, **base.merge(to: status))
-    else
-      track_event(:updated, **base.merge(from: from, to: status))
-    end
   end
 end

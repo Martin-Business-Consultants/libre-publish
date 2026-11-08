@@ -11,8 +11,6 @@ RSpec.describe "Delivery API v1 caching and limits", type: :request do
   let(:admin) { create(:user) }
   let(:token) { {"Authorization" => "Bearer #{admin.api_token.token}"} }
 
-  def json = JSON.parse(response.body)
-
   def page(slug, **attrs) = Page.create!({slug: slug, title: slug.titleize, status: "published", locale: "en"}.merge(attrs))
 
   around do |example|

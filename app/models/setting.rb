@@ -25,8 +25,7 @@ class Setting < ApplicationRecord
 
   # The settings people edit keep every change (SettingVersion), for
   # Settings › History; secrets never.
-  has_many :versions, class_name: "SettingVersion", dependent: :delete_all
-  after_save :snapshot_version, if: -> { SettingVersion.versioned?(key) && saved_change_to_data? }
+  include Versioned
 
   validates :key, presence: true, uniqueness: true
 
@@ -125,13 +124,13 @@ class Setting < ApplicationRecord
     Deploys.schedule_later(reason: "settings.general_updated", subject: self)
   end
 
-  private
+  def snapshot_version?
+    SettingVersion.versioned?(key) && saved_change_to_data?
+  end
 
-  def snapshot_version
+  # Without its secrets, and nothing when only a secret changed.
+  def version_attributes
     kept = SettingVersion.without_secrets(data)
-    before = SettingVersion.without_secrets(data_before_last_save)
-    return if kept == before
-
-    versions.create!(key: key, data: kept, author_id: Current.user&.id, created_at: Time.current)
+    {key: key, data: kept} unless kept == SettingVersion.without_secrets(data_before_last_save)
   end
 end

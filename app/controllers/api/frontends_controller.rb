@@ -6,7 +6,6 @@
 # an Astro site. `cms frontend` reads it.
 class Api::FrontendsController < Api::BaseController
   include Api::FrontendServed
-  enforce_authorization
   requires_capability "pages:read", only: :show
 
   def show

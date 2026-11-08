@@ -4,7 +4,6 @@
 # on an empty site — a 409 rather than a merge, because re-seeding over
 # hand-edited block types would quietly overwrite work.
 class Api::BlockTypes::SeedingsController < Api::BaseController
-  enforce_authorization
   requires_capability "block_types:write", only: :create
 
   def create

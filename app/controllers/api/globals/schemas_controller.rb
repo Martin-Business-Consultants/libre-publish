@@ -6,7 +6,6 @@ class Api::Globals::SchemasController < Api::BaseController
   include GlobalScoped
   include SchemaParams
 
-  enforce_authorization
   requires_capability "globals:write", only: :update
 
   def update

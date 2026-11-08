@@ -18,11 +18,4 @@ RSpec.describe Collection::NotifySubscribersJob do
     expect { described_class.perform_now(0, entry.id, "entry.published", {}) }
       .not_to change { ActionMailer::Base.deliveries.size }
   end
-
-  # The old name and its trailing tenant argument, for jobs queued before the
-  # rename. Goes with the shim.
-  it "still runs a job queued under its old name" do
-    expect { NotifyCollectionEventJob.perform_now(collection.id, entry.id, "entry.published", {"id" => entry.id}, "cms") }
-      .to change { ActionMailer::Base.deliveries.size }.by(1)
-  end
 end

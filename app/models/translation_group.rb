@@ -22,8 +22,4 @@ class TranslationGroup < ApplicationRecord
     else []
     end
   end
-
-  def member_locales
-    members.pluck(:locale).compact.uniq
-  end
 end

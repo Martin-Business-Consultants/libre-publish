@@ -13,7 +13,6 @@ class Tools::Redirects::ImportsController < ApplicationController
       redirect_to tools_redirects_path, alert: "That CSV is over #{Redirect::Import::MAX_BYTES / 1.megabyte} MB."
     elsif file.respond_to?(:to_io)
       import = Redirect.import_csv(file.to_io)
-      Redirect.track_event(:imported, created: import.created, updated: import.updated, errored: import.errored)
       redirect_to tools_redirects_path, notice: import.summary
     else
       redirect_to tools_redirects_path, alert: "Pick a CSV file."

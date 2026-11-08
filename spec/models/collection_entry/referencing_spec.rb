@@ -2,7 +2,7 @@
 
 require "rails_helper"
 
-RSpec.describe CollectionEntry::Referencing do
+RSpec.describe Referencing, "on an entry" do
   it "records what its fields link to, rewritten on each save" do
     team = Collection.create!(slug: "team", name: "Team", schema: {"fields" => []})
     ada = team.entries.create!(slug: "ada", title: "Ada", status: "published")

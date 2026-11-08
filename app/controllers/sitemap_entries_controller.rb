@@ -11,14 +11,13 @@ class SitemapEntriesController < ApplicationController
     return redirect_to(sitemap_path, alert: "Record not found") unless record
 
     settings = params.require(:entry).permit(:status, *Sitemapped::SETTINGS)
-    changes_status = Page::STATUSES.include?(settings[:status]) && settings[:status] != record.status
-
-    if changes_status && !Current.user.can?(Sitemap.publish_capability(params[:source]))
-      return redirect_to(sitemap_path(show: params[:show].presence), alert: "Changing the status needs permission to publish.")
-    end
-
-    record.status = settings[:status] if changes_status
+    record.status = settings[:status] if Page::STATUSES.include?(settings[:status])
     record.change_sitemap_settings(settings.except(:status))
+
+    # One gate (PublishGated): a status change, or any change to a live row.
+    if record.publishing_write? && !granted?(Sitemap.publish_capability(params[:source]))
+      return redirect_to(sitemap_path(show: params[:show].presence), alert: "Changing a live row, or its status, needs permission to publish.")
+    end
 
     if record.save
       record.track_sitemap_update(source: params[:source])

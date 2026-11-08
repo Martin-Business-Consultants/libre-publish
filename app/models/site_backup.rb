@@ -14,9 +14,9 @@ require "tempfile"
 #   blobs/<key>      — every Active Storage blob attached to a record in this
 #                      DB (the media library's files, a form's uploads…)
 #
-# Only the primary database is included: the cache, queue and cable
-# databases hold nothing a restore needs (Solid Cache, Solid Queue's jobs,
-# Action Cable's messages) and rebuild themselves empty.
+# Only the primary database is included: the cache and queue databases hold
+# nothing a restore needs (Solid Cache, Solid Queue's jobs) and rebuild
+# themselves empty.
 #
 # Restoration is left as a manual / ops process for now. The intent is "I
 # can leave this provider and take my data with me," not "one-click
@@ -25,10 +25,9 @@ class SiteBackup
   # Raised rather than silently shipping a bundle with no database in it.
   # An empty backup that reports success is worse than a failed one.
   MissingDatabase = Class.new(StandardError)
-  # Raised when SQLite's backup of the live database doesn't complete.
+  # Raised when SQLite's backup of the live database doesn't complete, or
+  # the copy fails its integrity check.
   SnapshotFailed = Class.new(StandardError)
-  # How long the copy waits on a lock before giving up.
-  BUSY_TIMEOUT_MS = 10_000
 
   # What a backup would hold, by kind: the core's content and what enabled
   # plugins count (`counts … backup: true`), in reading order.
@@ -115,17 +114,11 @@ class SiteBackup
     end
   end
 
+  # SQLite's online backup, checked (Cms::DataBackup.copy_database).
   def copy_database(source, destination)
-    from = SQLite3::Database.new(source, readonly: true)
-    from.busy_timeout = BUSY_TIMEOUT_MS
-    to = SQLite3::Database.new(destination)
-    backup = SQLite3::Backup.new(to, "main", from, "main")
-    result = backup.step(-1)
-    backup.finish
-    raise SnapshotFailed, "the database backup stopped (SQLite result #{result})" unless result == SQLite3::Constants::ErrorCode::DONE
-  ensure
-    to&.close
-    from&.close
+    Cms::DataBackup.copy_database(source, destination)
+  rescue Cms::DataBackup::CopyFailed => e
+    raise SnapshotFailed, e.message
   end
 
   def write_blobs(tar)

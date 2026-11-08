@@ -12,7 +12,6 @@
 # configuring the receiving end needs it, and the capability that gets you
 # here (`webhooks:read`) is the same one that reveals it in the admin UI.
 class Api::WebhooksController < Api::BaseController
-  enforce_authorization
   requires_capability "webhooks:read",   only: [:index, :show]
   requires_capability "webhooks:write",  only: [:create, :update]
   requires_capability "webhooks:delete", only: [:destroy]
@@ -29,18 +28,18 @@ class Api::WebhooksController < Api::BaseController
 
   def create
     @webhook = Webhook.create!(webhook_params)
-    @webhook.track_event(:created, url: @webhook.url, events: @webhook.events)
+    @webhook.track_creation
     render :secret, status: :created
   end
 
   def update
     @webhook.update!(webhook_params)
-    @webhook.track_event(:updated, url: @webhook.url, events: @webhook.events, active: @webhook.active)
+    @webhook.track_update
     render :secret
   end
 
   def destroy
-    @webhook.track_event(:deleted, url: @webhook.url)
+    @webhook.track_deletion
     @webhook.destroy!
     head :no_content
   end

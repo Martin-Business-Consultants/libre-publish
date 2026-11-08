@@ -32,7 +32,7 @@ class Website::PagesController < ActionController::Base
   end
 
   private def one_host
-    site = URI(Setting.get("general")["site_base_url"].to_s)
+    site = URI(Site.configured_base_url)
     return if site.host.blank? || request.host == site.host
 
     # www.example.com and example.com are one site, at the address Settings ›

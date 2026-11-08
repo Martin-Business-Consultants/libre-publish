@@ -19,8 +19,6 @@ RSpec.describe "Api parity surface", type: :request do
     {"Authorization" => "Bearer #{actor.api_token.token}"}
   end
 
-  def json = JSON.parse(response.body)
-
   def make_page(slug: "about", **attrs)
     Page.create!({slug: slug, title: slug.titleize, status: "draft", locale: "en"}.merge(attrs))
   end

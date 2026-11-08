@@ -69,5 +69,4 @@ module SearchSettings
   def custom_robots? = get["robots_mode"] == "custom" && get["robots_custom"].present?
 
   def ai_search? = get["ai_search"] == "allow"
-  def ai_training? = get["ai_training"] == "allow"
 end

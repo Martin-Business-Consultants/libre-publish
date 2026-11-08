@@ -7,12 +7,5 @@ class PageVersion < ApplicationRecord
 
   SNAPSHOT_ATTRIBUTES = %w[blocks].freeze
 
-  belongs_to :page
-  belongs_to :author, class_name: "User", optional: true
-
-  scope :newest_first, -> { order(created_at: :desc, id: :desc) }
-
-  def self.versioned_association = :page
-
-  def versioned_record = page
+  snapshot_of :page
 end

@@ -16,8 +16,6 @@ RSpec.describe "Webhook contract", type: :request do
     File.read(Rails.root.join("spec/fixtures/contracts/webhook_contract.json"))
   ).freeze
 
-  def json = JSON.parse(response.body)
-
   def auth_headers(capabilities)
     actor = create(:user, admin: false, role: create(:role, permissions: capabilities))
     {"Authorization" => "Bearer #{actor.api_token.token}"}
@@ -103,7 +101,7 @@ RSpec.describe "Webhook contract", type: :request do
         end
       end
 
-      DeliverWebhookJob.perform_now(webhook.id, "page.published", {slug: "about"})
+      Webhook::DeliveryJob.perform_now(webhook.id, "page.published", {slug: "about"})
 
       envelope = JSON.parse(captured.body)
       expect(envelope.keys.sort).to eq(CONTRACT.dig("webhook", "envelope_keys").sort)

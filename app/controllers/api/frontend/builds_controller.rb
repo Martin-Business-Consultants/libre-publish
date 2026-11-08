@@ -15,7 +15,6 @@
 # is that approval.
 class Api::Frontend::BuildsController < Api::BaseController
   include Api::FrontendServed
-  enforce_authorization
   requires_capability "pages:read", only: :create
 
   def create

@@ -14,7 +14,6 @@ class Api::CollectionsController < Api::BaseController
      crumb("Replace its fields", "cms schema collection #{slug} < fields.json")]
   end
 
-  enforce_authorization
   requires_capability "collections:read",   only: [:index, :show]
   requires_capability "collections:write",  only: [:create, :update]
   requires_capability "collections:delete", only: :destroy

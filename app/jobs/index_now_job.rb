@@ -1,13 +1,11 @@
 # frozen_string_literal: true
 
-# Tells IndexNow's search engines about pages that changed (IndexNow).
+# Tells IndexNow's search engines about pages that changed
+# (IndexNow.submit_now).
 class IndexNowJob < ApplicationJob
   queue_as :default
 
   def perform(urls)
-    response = IndexNow.submit(urls)
-    Rails.logger.warn("[indexnow] #{response.code} #{response.body.to_s.truncate(200)}") if response && !response.is_a?(Net::HTTPSuccess)
-  rescue StandardError => error
-    Rails.logger.warn("[indexnow] #{error.class}: #{error.message}")
+    IndexNow.submit_now(urls)
   end
 end

@@ -2,7 +2,7 @@
 
 require "rails_helper"
 
-RSpec.describe CollectionEntry::Versioned do
+RSpec.describe Versioned, "on an entry" do
   it "keeps a snapshot of each content change, not of a rename" do
     collection = Collection.create!(slug: "posts", name: "Posts", schema: {"fields" => [{"name" => "summary", "type" => "string"}]})
     entry = collection.entries.create!(slug: "a", title: "A", status: "draft", frontmatter: {"summary" => "one"})

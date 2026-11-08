@@ -6,7 +6,6 @@ class Api::Pages::BulkStatusChangesController < Api::BaseController
   include Api::PagePaths
   include Api::HeldWrites
 
-  enforce_authorization
   requires_capability "pages:publish", only: :create
   refuse_while_held only: :create
 

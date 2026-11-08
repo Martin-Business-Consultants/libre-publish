@@ -12,7 +12,6 @@
 class Api::BlockTypesController < Api::BaseController
   include SchemaParams
 
-  enforce_authorization
   requires_capability "block_types:read",   only: [:index, :show]
   requires_capability "block_types:write",  only: [:create, :update]
   requires_capability "block_types:delete", only: :destroy

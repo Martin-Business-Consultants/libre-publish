@@ -10,8 +10,7 @@
 #   class PagesController < ApplicationController
 #     requires_capability "pages:read",   only: [:index, :show]
 #     requires_capability "pages:write",  only: [:new, :create, :edit, :update]
-#     requires_capability "pages:delete", only: [:destroy, :bulk_destroy]
-#     requires_capability "pages:publish", only: [:bulk_update_status]
+#     requires_capability "pages:delete", only: :destroy
 #   end
 #
 #   class HomeController < ApplicationController
@@ -109,7 +108,7 @@ module Authorization
     if Current.api_token
       Current.api_token.can?(capability)
     else
-      Current.user&.can?(capability) || Current.api_user&.can?(capability)
+      Current.user&.can?(capability)
     end
   end
 

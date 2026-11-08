@@ -2,7 +2,7 @@
 
 require "rails_helper"
 
-RSpec.describe Global::Referencing do
+RSpec.describe Referencing, "on a global" do
   it "keeps the assets its data points at as content references" do
     global = Global.create!(slug: "footer", name: "Footer",
       schema: {"fields" => [{"name" => "logo_id", "type" => "asset"}]}, data: {"logo_id" => "42"})

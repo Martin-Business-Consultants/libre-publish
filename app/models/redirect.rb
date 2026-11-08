@@ -17,6 +17,11 @@ class Redirect < ApplicationRecord
 
   STATUS_CODES = [301, 302, 307, 308].freeze
 
+  # The audit trail's names for the editor's and the API's changes alike.
+  def track_creation = track_event(:created, source: source_path)
+  def track_update = track_event(:updated, source: source_path)
+  def track_deletion = track_event(:deleted, source: source_path)
+
   STATUS_LABELS = {
     301 => "Moved permanently",
     302 => "Found (temporary)",

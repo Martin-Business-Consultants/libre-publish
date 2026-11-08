@@ -32,7 +32,7 @@ class WebhooksController < ApplicationController
     @webhook = Webhook.new(webhook_params)
 
     if @webhook.save
-      @webhook.track_event(:created, url: @webhook.url, events: @webhook.events)
+      @webhook.track_creation
       redirect_to edit_webhook_path(@webhook), notice: "Webhook created"
     else
       in_sheet(status: :unprocessable_content)
@@ -46,7 +46,7 @@ class WebhooksController < ApplicationController
 
   def update
     if @webhook.update(webhook_params)
-      @webhook.track_event(:updated, url: @webhook.url, events: @webhook.events, active: @webhook.active)
+      @webhook.track_update
       redirect_to edit_webhook_path(@webhook), notice: "Webhook saved"
     else
       @deliveries = @webhook.deliveries.recent(20)
@@ -55,7 +55,7 @@ class WebhooksController < ApplicationController
   end
 
   def destroy
-    @webhook.track_event(:deleted, url: @webhook.url)
+    @webhook.track_deletion
     @webhook.destroy!
     redirect_to webhooks_path, notice: "Webhook deleted"
   end

@@ -1,11 +1,12 @@
 # frozen_string_literal: true
 
 # What an entry is made of: frontmatter in its collection's fields, and blocks
-# when the collection has opted into them (`enable_blocks`). Blocks reuse
-# Page's validators verbatim, so an entry's blocks validate exactly as a
-# page's do.
+# when the collection has opted into them (`enable_blocks`). Its blocks check
+# exactly as a page's do (BlockComposed).
 module CollectionEntry::Composed
   extend ActiveSupport::Concern
+  include BlockComposed
+  include FieldValues
 
   # Whether this entry's collection has opted into the page-style block
   # composer. Entries in non-block collections must keep `blocks` empty.
@@ -18,22 +19,16 @@ module CollectionEntry::Composed
   def validate_frontmatter
     return unless collection
 
-    PageValidator.validate_frontmatter(collection.fields, frontmatter).each do |path, msgs|
-      msgs.each { |msg| errors.add(:frontmatter, "#{path} #{msg}") }
-    end
+    validate_field_values(:frontmatter, frontmatter, fields: collection.fields)
   end
+
+  # What its frontmatter links to, after its blocks' (Referencing); nothing
+  # is rewritten without a collection to read the fields from.
+  def field_references = collection && [collection.fields, frontmatter, -1]
 
   # The shape check is cheap and always runs; per-block validation only runs
   # once the collection has opted in.
-  def validate_blocks_shape_via_validator
-    Array(PageValidator.validate_blocks_shape(blocks)).each { |msg| errors.add(:blocks, msg) }
-  end
-
-  def validate_each_block
-    return unless enable_blocks?
-
-    PageValidator.validate_each_block(blocks).each { |msg| errors.add(:blocks, msg) }
-  end
+  def validates_each_block? = enable_blocks?
 
   # A collection must set `enable_blocks` before its entries can carry blocks.
   # Otherwise stray block data would render nowhere and bypass the per-block

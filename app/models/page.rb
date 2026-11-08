@@ -40,9 +40,9 @@ class Page < ApplicationRecord
   validates :status, inclusion: {in: STATUSES}
   validates :locale, presence: true
   validate  :validate_unpublish_after_publish
-  validate  :validate_blocks_shape_via_validator
+  validate  :validate_blocks_shape
   validate  :validate_each_block
-  validate  :validate_schema_shape_via_validator
+  validate  :validate_schema_shape
   validate  :validate_frontmatter
   validate  :validate_parent_not_self_or_descendant
   validate  :validate_category_in_pool

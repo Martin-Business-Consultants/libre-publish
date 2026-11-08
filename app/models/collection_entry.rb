@@ -28,8 +28,6 @@ class CollectionEntry < ApplicationRecord
   include Referencing
   include Taxonomized
 
-  STATUSES = Page::STATUSES
-
   belongs_to :collection, inverse_of: :entries
 
   belongs_to :translation_group, optional: true
@@ -40,7 +38,7 @@ class CollectionEntry < ApplicationRecord
   validates :status, inclusion: {in: STATUSES}
   validates :locale, presence: true
   validate  :validate_frontmatter
-  validate  :validate_blocks_shape_via_validator
+  validate  :validate_blocks_shape
   validate  :validate_each_block
   validate  :validate_blocks_enabled
   validate  :validate_category_in_pool

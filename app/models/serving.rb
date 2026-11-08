@@ -57,6 +57,11 @@ module Serving
     end
   end
 
+  # Turns the API on for exactly these collections (in website_api mode).
+  def serve_collections(slugs)
+    Collection.find_each { it.update_column(:api_enabled, slugs.include?(it.slug)) unless it.api_enabled? == slugs.include?(it.slug) }
+  end
+
   # Tokens for machines that read anything in the last 30 days: what turning
   # the API off would cut off.
   def recently_used_tokens(within: 30.days)

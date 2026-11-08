@@ -27,8 +27,6 @@ RSpec.describe "Api service tokens", type: :request do
     {"Authorization" => "Bearer #{actor.api_token.token}"}
   end
 
-  def json = JSON.parse(response.body)
-
   def issue(name: "Production site", role: site_role)
     ServiceToken.issue!(name: name, role: role, created_by: admin)
   end
