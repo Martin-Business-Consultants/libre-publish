@@ -109,6 +109,15 @@ RSpec.describe "The admin layout", type: :request do
     expect(main).to include("flashes flashes--toast", "flash flash--notice", "Redirect deleted", "Dismiss", "rune-flash#close")
   end
 
+  it "draws its text in its own Inter, as Runwell does, without asking Google for it" do
+    sign_in_as admin
+
+    get dashboard_path
+
+    expect(response.body).not_to include("fonts.googleapis.com")
+    expect(Rails.application.assets.load_path.find("inter-latin.woff2")).to be_present
+  end
+
   it "keeps a signed-out page's messages in the page, beside the form" do
     post sign_in_path, params: {email: "nobody@example.com", password: "wrong"}
     follow_redirect! if response.redirect?

@@ -22,6 +22,21 @@ out.
 - **Help › UI kit** draws every component in the site's own branding.
 
 ### Changed
+- **Lists take one toolbar row**: their filters on the left, the search and
+  New on the right, and the bulk bar in the filters' place while rows are
+  ticked, instead of a row each for New, the filters and the search.
+- **Tables as Runwell draws them**: rune's own row height, and a row's
+  actions at its end as icons (edit, ⋯ for its other links, delete), quiet
+  until it's hovered, instead of text links over its title.
+- **Settings as Runwell lays it out**: a nav down the left with plugins'
+  pages nested under All plugins, pill tabs on the longer pages (Account,
+  Branding, General, Security policy) and a Save bar held at the foot.
+- **Every tab strip is pill-shaped**, and an editor's title runs across
+  both columns, so its first box and the Publish box start level.
+- **Inter is bundled** (as Runwell bundles it) rather than fetched from
+  Google Fonts; a font chosen in Settings › Branding still is.
+- The "From the CLI or MCP" line and its Copy button are gone from every
+  screen.
 - **The admin is drawn with rune_ui**, the UI kit shared with Runwell and
   Botter (vendored in `vendor/rune_ui`). The WordPress-style admin bar and
   fly-out menu give way to rune's shell: the admin menu in a sidebar (with

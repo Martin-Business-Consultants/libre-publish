@@ -22,7 +22,8 @@ module ApplicationHelper
   # styles.
   def app_stylesheet_tags
     safe_join([
-      rune_ui_stylesheet_tags(lexxy: false),
+      # Inter is the app's own (_font-face.css), as Runwell's is, not Google's.
+      rune_ui_stylesheet_tags(lexxy: false, fonts: false),
       stylesheet_link_tag(:app, "data-turbo-track": "reload"),
       *Cms::Plugins.enabled_stylesheets(page_plugins).filter_map { plugin_stylesheet_tag(it) }
     ], "\n")
