@@ -179,7 +179,7 @@ lexxy-table-tools {
 }
 
 /* Rich text as it reads: in the editor, in a Markdown field's preview
-   (markdown_previews/_preview) and in Docs. */
+   (markdown_previews/_preview). */
 .lexxy-content {
   --lexxy-content-margin: 0.5lh;
 

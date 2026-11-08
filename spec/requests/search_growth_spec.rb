@@ -2,7 +2,7 @@
 
 require "rails_helper"
 
-# Feeds, IndexNow and the SEO audit.
+# Feeds, IndexNow and the SEO tab's checks.
 RSpec.describe "Growing in search", type: :request do
   include ActiveJob::TestHelper
 
@@ -74,17 +74,14 @@ RSpec.describe "Growing in search", type: :request do
     expect(IndexNow).not_to be_enabled
   end
 
-  it "lists what to fix across the site, and a page's own in its SEO tab" do
+  it "shows a page's SEO checks in its SEO tab" do
     Page.create!(slug: "home", title: "Home", status: "published", locale: "en",
       blocks: [{"type" => "text", "version" => 1, "data" => {"body" => "See [our services](/services) and [old](/gone)."}}])
     Page.create!(slug: "services", title: "Home", status: "published", locale: "en", seo: {"meta_description" => "Short."})
     sign_in_as admin
 
-    get tools_seo_audit_path
-    expect(response.body).to include("No meta description", "Links to /gone", "Shares its title with", "is 6 characters")
-    expect(response.body).not_to include("Links to /services")
-
     get edit_page_path("home")
-    expect(response.body).to include("SEO checks", "Links to /gone")
+    expect(response.body).to include("SEO checks", "Links to /gone", "Shares its title with")
+    expect(response.body).not_to include("Links to /services")
   end
 end

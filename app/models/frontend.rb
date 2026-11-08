@@ -4,8 +4,8 @@
 # site lives and its repo (Settings › General and › GitHub), and what its
 # build last reported (POST /api/frontend/builds, sent by the Astro
 # integration): which integration, how it renders, where it takes cache
-# purges, and which content it was built from. Read by the Developers screen,
-# the dashboard, Settings › Deploy — and Deploys, which rebuilds a site that
+# purges, and which content it was built from. Read by the dashboard,
+# Settings › Deploy — and Deploys, which rebuilds a site that
 # renders statically and purges one that renders on demand.
 module Frontend
   SETTING = "frontend"

@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
-# GET /api/frontend — the frontend this headless CMS serves, as the
-# Developers screen shows it: where the site lives, its repo, whether
+# GET /api/frontend — the frontend this headless CMS serves: where the site lives, its repo, whether
 # publishing rebuilds it, what its build last reported, and how to connect
 # an Astro site. `cms frontend` reads it.
 class Api::FrontendsController < Api::BaseController

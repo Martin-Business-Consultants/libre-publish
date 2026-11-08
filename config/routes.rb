@@ -67,12 +67,8 @@ Rails.application.routes.draw do
 
     # How frontends work with the CMS: the JSON, the Astro integration, and
     # the frontend this CMS serves.
-    get "developers", to: "developers#show", as: :developers
 
     # Docs: guides (app/guides) and site health.
-    get "docs", to: "docs#index", as: :docs
-    get "docs/site-health", to: "docs#site_health", as: :site_health_docs
-    get "docs/:slug", to: "docs#show", as: :doc, constraints: {slug: /[a-z0-9-]+/}
 
     resources :sessions, only: [:destroy]
     # A Markdown field's Preview tab (MarkdownPreviewsController).
@@ -194,8 +190,6 @@ Rails.application.routes.draw do
     resource :search, only: :show
     # The update progress modal's poll (UpdateProgress).
     resource :update_progress, only: :show
-    # Every rune_ui component in this site's branding and theme (Help › UI kit).
-    resource :ui, only: :show, controller: "ui"
 
     namespace :settings do
       resource :general, only: [:show, :update], controller: "generals"
@@ -288,7 +282,6 @@ Rails.application.routes.draw do
 
     namespace :tools do
       resource :search_replace, only: [:show, :create], path: "search-replace"
-      resource :seo_audit, only: :show, path: "seo-audit"
       namespace :redirects do
         resource :export, only: :show
         resource :import, only: :create

@@ -78,7 +78,7 @@ What to check before you ship:
   edited.
 - **Customize**: change the design settings in Settings › Themes ›
   Customize and see the site follow.
-- **SEO**: Tools › SEO audit, and the page source's `<head>`.
+- **SEO**: a page's SEO tab, and the page source's `<head>`.
 - **Its spec**: `bin/rspec themes/<name>/spec` runs the theme's own tests
   inside the CMS.
 

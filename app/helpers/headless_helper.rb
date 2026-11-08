@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # What makes the CMS's headlessness visible in the admin: the JSON tab's
-# client call, and the Developers screen's pieces.
+# client and CLI calls.
 module HeadlessHelper
   # The @librepublish/astro client call that reads the record at an API path,
   # live, from the delivery API (/api/v1).

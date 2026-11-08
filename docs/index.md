@@ -10,7 +10,7 @@ surface that AI agents use as well as people do.
 - **The CMS draws the site** from a theme (plain ERB and CSS, no build), or
   stays headless and serves any frontend through its delivery API.
 - **Search and AI built in**: structured data, `llms.txt`, a Markdown copy
-  of every page, IndexNow, an SEO audit.
+  of every page, IndexNow, SEO checks on each page.
 - **A small core, extended by plugins**: Forms, WordPress Import and the
   rest install from Settings › Plugins, reviewed in a signed directory.
 - **Updates in place**, from Settings › Updates, with a backup first.

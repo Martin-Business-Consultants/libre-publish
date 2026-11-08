@@ -3,7 +3,7 @@
 # Whether the site is in good order. The business's details are complete and
 # the same everywhere (name, address, phone: NAP), forms are protected from
 # spam and tell someone, search engines get what they need, the pages a
-# business must have exist, and backups, rebuilds and webhooks work. Checked against the site as it is; shown in Docs › Site health, at
+# business must have exist, and backups, rebuilds and webhooks work. Checked against the site as it is; served at
 # /api/site_health and by `cms site-health`.
 #
 # Plugins' parts come through what they provide (:published_forms,

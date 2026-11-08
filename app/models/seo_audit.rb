@@ -1,27 +1,18 @@
 # frozen_string_literal: true
 
-# What stands between the site and search: missing or poorly sized titles
-# and descriptions, the same title or description on two pages, links to
-# pages that don't exist, images without alt text, and the site-wide details
-# search engines and AI tie everything to. Tools › SEO audit lists it all;
-# a page's or entry's SEO tab shows its own (for_record).
+# What stands between a page or entry and search: a missing or poorly sized
+# title or description, the same title or description as another page, and
+# links to pages that don't exist. Its SEO tab shows them.
 #
-#   SeoAudit.new.issues              # [Issue, …], problems first
 #   SeoAudit.new.for_record(page)    # this record's issues
 class SeoAudit
   Issue = Data.define(:severity, :message, :record) do
     def problem? = severity == :problem
   end
 
-  SEVERITIES = %i[problem warning tip].freeze
   TITLE_MAX = 60
   DESCRIPTION_RANGE = (50..160)
   HREF = /href=["']([^"']+)["']|\]\((\/[^)\s]*)\)/
-
-  def issues
-    (site_issues + records.flat_map { record_issues(it) } + duplicate_issues + image_issues)
-      .sort_by { SEVERITIES.index(it.severity) }
-  end
 
   def for_record(record)
     return [] unless indexable?(record)
@@ -90,21 +81,5 @@ class SeoAudit
       end
     }
     (strings.(record.blocks) + [record.try(:body_markdown).to_s]).join("\n")
-  end
-
-  def image_issues
-    missing = Array(Array(MediaLibrary.images_without_alt).last).size
-    missing.positive? ? [Issue.new(:warning, "#{missing} #{"image".pluralize(missing)} in the media library #{(missing == 1) ? "has" : "have"} no alt text, which search and screen readers read.", nil)] : []
-  end
-
-  def site_issues
-    general = Setting.get("general")
-    found = []
-    found << Issue.new(:problem, "Settings › General has no site URL: canonical addresses, the sitemap and structured data fall back to the address the CMS is visited at.", nil) if general["site_base_url"].blank?
-    found << Issue.new(:warning, "Settings › General has no description of the business, which llms.txt and the structured data lead with.", nil) if general["description"].blank?
-    found << Issue.new(:tip, "Settings › Branding has no logo for search engines to show beside the business.", nil) if Setting.get("branding")["logo_id"].blank?
-    found << Issue.new(:tip, "Settings › Search lists no profiles elsewhere (LinkedIn, Instagram, Google Business…) to tie to the business.", nil) if SearchSettings.get["same_as"].empty?
-    found << Issue.new(:warning, "Settings › Search keeps AI answer engines out, so ChatGPT search, Perplexity and Claude won't cite the site.", nil) unless SearchSettings.ai_search?
-    found
   end
 end

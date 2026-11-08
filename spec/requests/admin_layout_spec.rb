@@ -19,16 +19,16 @@ RSpec.describe "The admin layout", type: :request do
 
     get dashboard_path
 
-    expect(menu_groups).to eq(["Content", "Insights", "Tools", "Access", "Help", "Settings"])
+    expect(menu_groups).to eq(["Content", "Insights", "Tools", "Access", "Settings"])
     expect(menu_labels.first).to eq("Pages")
     expect(menu_labels).not_to include("Dashboard")
     expect(menu_labels.last).to eq("Settings")
     expect(menu_labels).to include("Pages", "Collections", "Globals", "Tools", "Plugins", "Users")
-    expect(menu_labels).not_to include("Block types", "Developers")
-    expect(submenu_labels("Tools")).to start_with("Block types", "Developers", "Redirects")
+    expect(menu_labels).not_to include("Block types", "Redirects")
+    expect(submenu_labels("Tools")).to start_with("Block types", "Redirects")
     expect(menu_labels).not_to include("Approvals")
     expect(submenu_labels("Pages")).to eq(["All pages", "Add new"])
-    expect(submenu_labels("Tools")).to eq(["Block types", "Developers", "Redirects", "Search and replace", "SEO audit", "Sitemap", "Webhooks", "Backup"])
+    expect(submenu_labels("Tools")).to eq(["Block types", "Redirects", "Search and replace", "Sitemap", "Webhooks", "Backup"])
   end
 
   it "lists each collection under Collections, and every settings section under Settings" do
@@ -53,8 +53,8 @@ RSpec.describe "The admin layout", type: :request do
     expect(menu_labels).to include("Pages", "Settings")
     expect(menu_labels).not_to include("Collections", "Users", "Trash")
     expect(submenu_labels("Pages")).to eq(["All pages"])
-    # Developers and the sitemap are tools, readable with pages:read.
-    expect(submenu_labels("Tools")).to eq(["Developers", "Search and replace", "SEO audit", "Sitemap"])
+    # Search and replace and the sitemap are tools, readable with pages:read.
+    expect(submenu_labels("Tools")).to eq(["Search and replace", "Sitemap"])
     expect(response.body).not_to include(">Page</a>")
   end
 

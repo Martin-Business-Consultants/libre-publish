@@ -59,10 +59,9 @@ and Settings, with nothing for a theme to add beyond calling
   turns it off. Google doesn't take IndexNow; it reads the sitemap.
 - **Feeds**: `/<collection>/feed.xml` for each collection the theme draws,
   linked from every page's `<head>`.
-- **Tools › SEO audit** lists what to fix across the site, and each page's
-  SEO tab its own: missing or poorly sized descriptions, long titles,
-  duplicates, links to pages that don't exist, images without alt text,
-  and the site-wide details.
+- **Each page's SEO tab** lists what to fix on it: a missing or poorly
+  sized description, a long title, a title or description another page
+  shares, and links to pages that don't exist.
 
 ## What makes the difference
 

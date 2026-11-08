@@ -39,11 +39,8 @@ module NavigationHelper
     "Tools" => [
       {id: :tools, label: "Tools", icon: "wrench", submenu: [
         ["Block types", :block_types_path, "block_types:read"],
-        # How a frontend (the Astro site) works with this headless CMS.
-        ["Developers", :developers_path, "pages:read"],
         ["Redirects", :tools_redirects_path, "redirects:read"],
         ["Search and replace", :tools_search_replace_path, "pages:read"],
-        ["SEO audit", :tools_seo_audit_path, "pages:read"],
         ["Sitemap", :sitemap_path, "pages:read"],
         ["Webhooks", :webhooks_path, "webhooks:read"],
         ["Backup", :tools_backup_path, "tools:use"]
@@ -62,13 +59,6 @@ module NavigationHelper
       {id: :roles, label: "Roles", icon: "lock", path: :roles_path, capability: "roles:read", submenu: [
         ["All roles", :roles_path, "roles:read"],
         ["Add new", :new_role_path, "roles:write"]
-      ]}
-    ],
-    "Help" => [
-      {id: :docs, label: "Docs", icon: "help-circle", path: :docs_path, keys: "g d", capability: "pages:read", submenu: [
-        ["All docs", :docs_path, "pages:read"],
-        ["Site health", :site_health_docs_path, "pages:read"],
-        ["UI kit", :ui_path, "pages:read"]
       ]}
     ],
     "Settings" => [

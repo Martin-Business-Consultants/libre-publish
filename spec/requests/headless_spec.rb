@@ -3,8 +3,8 @@
 require "rails_helper"
 
 # What makes the CMS's headlessness evident, and what a frontend reads: the
-# editors' JSON tab (the API's own JSON), the Developers screen, the site
-# repo's AGENTS.md, and a build reporting in.
+# editors' JSON tab (the API's own JSON), the dashboard, the site repo's
+# AGENTS.md, and a build reporting in.
 RSpec.describe "Headless", type: :request do
   before { serve_over_api }
 
@@ -42,17 +42,12 @@ RSpec.describe "Headless", type: :request do
     expect(response).to have_http_status(:forbidden)
   end
 
-  it "explains the headless setup on the Developers screen, with the frontend's last build" do
+  it "shows the frontend's last build on the dashboard" do
     sign_in_as admin
-    get developers_path
-    expect(response.body).to include("/api/v1/pages/:path", "@librepublish/astro", "cms()", "No build has reported yet")
-
     post "/api/frontend/builds", params: {integration: "librepublish-cms", integration_version: "1.0.0",
       framework: "astro", framework_version: "5.1.0", pages: 42}, headers: api_headers, as: :json
     expect(response).to have_http_status(:ok)
 
-    get developers_path
-    expect(response.body).to include("astro 5.1.0", "librepublish-cms 1.0.0", "42")
     get dashboard_path
     expect(response.body).to include("Your frontend", "42 pages")
   end

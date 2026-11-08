@@ -51,5 +51,5 @@ time.
 
 ## Where to go next
 
-- [Working with AI](/cms/docs/ai)
-- [Site health](/cms/docs/site-health)
+- Working with AI: `cms docs ai`
+- Site health: `cms site-health`

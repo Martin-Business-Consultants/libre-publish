@@ -5,7 +5,7 @@
 # many pages it built, how it renders (`render`: static, server or hybrid),
 # where it takes cache purges (`webhook_url`), and the content it was built
 # from (`content_cursor`, opaque). The CMS keeps the latest (Frontend): the
-# Developers screen and the dashboard say which frontend it serves, and
+# dashboard says which frontend it serves, and
 # Deploys rebuilds a static site but purges one rendered on demand. Any token
 # the site builds with (pages:read) may send it.
 #

@@ -19,6 +19,15 @@ out.
   the rest of the admin (an install with Forms updates it from Settings ›
   Plugins).
 
+### Removed
+- **Tools › Developers**: the dashboard still shows the frontend and its
+  last build; the delivery API and `/api/frontend` are unchanged.
+- **Tools › SEO audit**: each page's and entry's SEO tab still shows its
+  own checks.
+- **The Help menu** (Docs, Site health, UI kit): the guides and site
+  health stay in the CLI and MCP (`cms docs`, `cms site-health`) and the
+  API (`/api/docs`, `/api/site_health`).
+
 ### Fixed
 - **A list table's tick boxes sit in the middle of their row**, not a
   little low.
