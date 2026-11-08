@@ -63,4 +63,14 @@ RSpec.describe "List search", type: :request do
     get audit_logs_path(s: "zzz-nothing")
     expect(response).to have_http_status(:success)
   end
+
+  it "says a search found nothing, with the way back, rather than that there are none yet" do
+    sign_in_as create(:user)
+
+    get globals_path(s: "zzz-nothing")
+
+    row = response.body[%r{<td [^>]*class="data-table__empty".*?</td>}m]
+    expect(row).to include("Nothing here matches “zzz-nothing”.", %(href="#{globals_path}"), "Show all")
+    expect(row).not_to include("No globals yet")
+  end
 end

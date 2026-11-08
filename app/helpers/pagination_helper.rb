@@ -58,7 +58,14 @@ module PaginationHelper
   #
   #   <%= table_empty_row "No pages yet.", columns: 5 if @pages.none? %>
   #   <%= table_empty_row "No pages match.", columns: 5, link: ["Show all", pages_path] %>
+  #
+  # While the list's search (?s=) is what left it empty, it says so, with the
+  # way back, rather than that there are none yet.
   def table_empty_row(message, columns:, link: nil)
+    if link.nil? && search_term.present?
+      message = AdminLocale.translate("Nothing here matches “%{term}”.", term: search_term)
+      link = [AdminLocale.translate("Show all"), url_for(request.query_parameters.except("s", "page").merge(only_path: true))]
+    end
     tag.tr do
       tag.td colspan: columns, class: "data-table__empty" do
         safe_join([message, (link_to(link.first, link.last) if link)].compact, " ")
