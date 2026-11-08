@@ -17,6 +17,8 @@ out.
   check stopped on it.
 - **New installs get Forms 1.7.2** rather than 1.6.0, whose screens still
   called the `ui` helper the core dropped in 1.29.
+- **Uploads over the image limits are made lighter again**: the background
+  job that does it failed on every upload since 1.34.0.
 
 ## 1.34.1
 
