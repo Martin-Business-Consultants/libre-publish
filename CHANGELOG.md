@@ -8,6 +8,12 @@ out.
 
 ## Unreleased
 
+### Fixed
+- **Forms' screens are laid out again**: the form and form email editors
+  have their sidebar beside the main column, and links in a submission and
+  form names in the list are styled. The `editor`, `link` and `title-link`
+  classes plugins drawn before 1.34 use are back.
+
 ## 1.34.2
 
 ### Fixed

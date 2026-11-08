@@ -20,8 +20,12 @@ RSpec.describe "Architecture: the admin's CSS classes" do
   # browser's own (::file-selector-button is not a class), Stimulus
   # controllers that name a class in a value (data-*-class) or build one
   # from a string.
+  # Plugins' screens drawn before 1.34 (Forms 1.7) write editor, link and
+  # title-link (admin/base.css); a plugin installed at that version keeps
+  # writing them whatever config/default_plugins.yml pins.
   BUILT_ELSEWHERE = %w[
     turbo-progress-bar
+    editor editor__main editor__aside link title-link
   ].freeze
 
   # Families of classes built the same way: icon_tag makes icon--<name>
