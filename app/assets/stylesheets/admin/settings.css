@@ -1,59 +1,105 @@
-/* Settings (layouts/settings, app/views/settings), on rune_ui's tokens: the
-   aside kept in view beside the page, the sections down it, the Settings
-   index's cards, lists of plugins and themes, facts, logs of past runs,
-   Branding's appearance choices and image drop zones. */
+/* Settings (layouts/settings, app/views/settings), on rune_ui's tokens, as
+   Runwell lays it out: the Settings nav down the left, the page beside it
+   with its sections in pill tabs and its Save bar at the window's foot; the
+   Settings index's cards, lists of plugins and themes, facts, logs of past
+   runs, Branding's appearance choices and image drop zones. */
 
-/* The aside (layouts/settings, in base.css's with-aside): its Save box, then
-   the sections, kept in view under the panel bar on a wide screen. */
-@media (min-width: 1101px) {
-  .settings-aside {
-    position: sticky;
-    top: 3.5rem;
-  }
+/* The nav and the page side by side; on a narrow screen the nav is a row
+   that scrolls sideways above the page. */
+.settings-layout {
+  display: grid;
+  grid-template-columns: 13rem minmax(0, 1fr);
+  gap: var(--s-6);
+  align-items: start;
 }
 
-/* The sections down the aside (settings/_sections_box), and a page's own
-   "On this page" links: groups under a small heading, the current page
-   raised. */
-.settings-nav {
+.settings-layout__page {
   display: flex;
   flex-direction: column;
   gap: var(--s-4);
+  min-width: 0;
+  max-width: 52rem;
 }
 
-.settings-nav__group {
+/* The nav (settings/_nav): ghost links grouped under small muted labels, the
+   current one tinted, a plugin's page nested under All plugins on a rule.
+   Kept in view while the page scrolls. */
+.settings-nav {
+  position: sticky;
+  top: var(--s-2);
   display: flex;
   flex-direction: column;
   gap: var(--s-1);
 }
 
-.settings-nav__group > ul {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
 .settings-nav__heading {
-  padding: 0 var(--s-2);
+  display: flex;
+  align-items: center;
+  height: calc(var(--control-h) + var(--s-3));
+  padding: var(--s-3) var(--s-3) 0;
   color: var(--text-faint);
   font-size: var(--text-meta);
   font-weight: var(--weight-strong);
 }
 
+.settings-nav > .settings-nav__heading:first-child { height: var(--control-h-sm); padding-top: 0; }
+
+.settings-nav__list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.settings-nav__list--nested {
+  margin-left: 1.25rem;
+  padding: 2px 0 0 var(--s-2);
+  border-left: 1px solid var(--line);
+}
+
 .settings-nav__link {
-  display: block;
-  padding: var(--s-1) var(--s-2);
-  border-radius: var(--radius-sm);
-  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: var(--control-h);
+  padding: 0 var(--s-3);
+  border-radius: var(--radius-control);
+  color: var(--text);
+  font-weight: var(--weight-strong);
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .settings-nav__link:hover { background: var(--hover); color: var(--text); }
+.settings-nav__link[aria-current="page"] { background: var(--layer-2); }
+.settings-nav__link .icon { flex: 0 0 auto; color: var(--text-muted); }
+.settings-nav__link--nested { height: var(--control-h-sm); color: var(--text-muted); font-weight: var(--weight); }
+.settings-nav__link--nested[aria-current="page"] { color: var(--text); font-weight: var(--weight-strong); }
 
-.settings-nav__link[aria-current] {
-  background: var(--layer-2);
-  color: var(--text);
-  font-weight: var(--weight-strong);
+@media (max-width: 860px) {
+  .settings-layout { grid-template-columns: minmax(0, 1fr); gap: var(--s-4); }
+  .settings-nav { position: static; flex-direction: row; padding-bottom: var(--s-3); border-bottom: 1px solid var(--line); overflow-x: auto; }
+  .settings-nav__heading { display: none; }
+  .settings-nav__list { flex-direction: row; }
+  .settings-nav__list li,
+  .settings-nav__list--nested { display: contents; }
+}
+
+/* A page's Save bar (settings/_save_box): at the page's foot, held at the
+   window's while the page scrolls. */
+.settings-save {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--s-3);
+  padding: var(--s-3) 0;
+  border-top: 1px solid var(--line);
+  background: var(--panel);
 }
 
 /* A section on the Settings index (settings/sections): a card that links to

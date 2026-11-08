@@ -1,19 +1,16 @@
-<%# Settings pages, laid out like the editors: the page's actions and CLI
-    hint across the top (page_header puts them in :settings_header; the title
-    is in the panel bar), the page in the main column, and an aside — the
-    page's Save box (settings/save_box, in :settings_aside) when it has one,
-    then the Settings sections. %>
+<%# Settings pages, laid out as Runwell's: the Settings nav down the left
+    (settings/nav), and the page beside it: its actions across the top
+    (page_header puts them in :settings_header; the title is in the panel
+    bar), the page, its sections in pill tabs where it has several
+    (settings/tabs), and its Save bar (settings/save_box, in
+    :settings_aside) held at the foot of the window. %>
 <% content_for :content do %>
-  <div class="stack">
-    <%= content_for(:settings_header) %>
-    <div class="with-aside">
-      <div class="with-aside__main">
-        <%= yield %>
-      </div>
-      <aside class="with-aside__aside settings-aside">
-        <%= content_for(:settings_aside) %>
-        <%= render "settings/sections_box" %>
-      </aside>
+  <div class="settings-layout">
+    <%= render "settings/nav" %>
+    <div class="settings-layout__page">
+      <%= content_for(:settings_header) %>
+      <%= yield %>
+      <%= content_for(:settings_aside) %>
     </div>
   </div>
 <% end %>

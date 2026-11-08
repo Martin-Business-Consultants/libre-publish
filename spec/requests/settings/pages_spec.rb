@@ -58,14 +58,14 @@ RSpec.describe "Settings pages", type: :request do
   end
 
   describe "profile" do
-    it "shows where the account stands in the sidebar: verified in green, two-factor off in red" do
+    it "shows where the account stands: verified in green, two-factor off in red, and a tab per part" do
       sign_in_as admin
 
       get settings_profile_path
 
       badges = Nokogiri::HTML5(response.body).css("[data-tone]").to_h { [it.text, it["data-tone"]] }
       expect(badges).to include("Verified" => "positive", "Off" => "negative")
-      expect(response.body).to include(%(href="#two-factor"), %(id="two-factor"))
+      expect(response.body).to include(%(href="#sign-in"), %(id="two-factor" data-tabs-target="panel" data-tab="sign-in"))
     end
 
     it "saves the name" do

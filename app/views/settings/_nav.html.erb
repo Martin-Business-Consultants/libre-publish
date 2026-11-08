@@ -1,0 +1,27 @@
+<%# locals: () %>
+<%# The Settings nav, down the left of every settings page (layouts/settings),
+    as Runwell's: the sections under small muted group labels, each with its
+    icon, the current one tinted. Plugins' own settings pages are nested
+    under All plugins. Only what this person can open. %>
+<nav class="settings-nav" aria-label="<%= tx("Settings") %>">
+  <% settings_sections.each do |group, links| %>
+    <%# herb:key group %>
+    <p class="settings-nav__heading"><%= tx(group) %></p>
+    <ul class="settings-nav__list">
+      <% links.each do |label, url, _description, nested| %>
+        <%# herb:key label %>
+        <li>
+          <%= settings_nav_link tx(label), url, icon: settings_icon(label) %>
+          <% if nested.present? %>
+            <ul class="settings-nav__list settings-nav__list--nested">
+              <% nested.each do |sub_label, sub_url| %>
+                <%# herb:key sub_label %>
+                <li><%= settings_nav_link tx(sub_label), sub_url %></li>
+              <% end %>
+            </ul>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</nav>

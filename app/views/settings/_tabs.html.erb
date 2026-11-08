@@ -1,0 +1,12 @@
+<%# locals: (tabs:) %>
+<%# A settings page's sections as rune's pill tabs, as Runwell's long settings
+    pages have them: [[name, label], …]. Wrap the page in
+    data-controller="tabs" and give each section data-tabs-target="panel"
+    data-tab="<name>" (tabs_controller). The chosen tab is kept in the
+    address's #hash, and an anchor inside a section opens its tab. %>
+<nav class="tabs tabs--pills" role="tablist" aria-label="<%= tx("Sections") %>">
+  <% tabs.each do |name, label| %>
+    <%# herb:key name %>
+    <a href="#<%= name %>" role="tab" class="tabs__tab" data-tab="<%= name %>" data-tabs-target="tab" data-action="tabs#select"><%= tx(label) %></a>
+  <% end %>
+</nav>

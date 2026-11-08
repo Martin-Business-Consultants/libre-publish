@@ -2,30 +2,18 @@
 <%# How things look and sound, on one page (Settings::BrandingScreen): this
     browser's appearance, then — for a role with settings:read — the
     workspace's identity, color, type and brand context. Each form saves on
-    its own; the sidebar links down the page. %>
+    its own; pill tabs (settings/tabs) take the page a section at a time. %>
 <% writable = Current.user.can?("settings:write") %>
-<% sections = [["Appearance", "appearance"]] %>
-<% sections += [["Identity", "identity"], ["Color", "color"], ["Type and surface", "type"], ["Brand context", "brand-context"]] if @workspace %>
+<% sections = [["appearance", "Appearance"]] %>
+<% sections += [["identity", "Identity"], ["color", "Color"], ["type", "Type and surface"], ["brand-context", "Brand context"]] if @workspace %>
 
 <% section_classes = "settings-section card" %>
 
 <%= render "layouts/shared/page_header", title: "Branding" %>
-<% content_for :settings_aside do %>
-  <%= postbox "branding-sections", "On this page" do %>
-    <nav class="settings-nav" aria-label="On this page">
-      <div class="settings-nav__group">
-        <ul>
-          <% sections.each do |label, anchor| %>
-            <%# herb:key anchor %>
-            <li><a href="#<%= anchor %>" class="settings-nav__link"><%= label %></a></li>
-          <% end %>
-        </ul>
-      </div>
-    </nav>
-  <% end %>
-<% end %>
+<div class="stack" data-controller="tabs">
+<%= render "settings/tabs", tabs: sections %>
 
-<section id="appearance" class="<%= section_classes %>">
+<section id="appearance" data-tabs-target="panel" data-tab="appearance" class="<%= section_classes %>">
   <div class="card__head">
     <h2 class="card__title">Appearance</h2>
     <p class="card__hint">Light, dark, or follow the system. Applies to this browser only.</p>
@@ -52,7 +40,7 @@
 <% if @workspace %>
   <%= form_with url: settings_branding_path, method: :patch, scope: :branding do |form| %>
     <%= tag.fieldset class: "stack stack--lg", disabled: !writable do %>
-      <section id="identity" class="<%= section_classes %>">
+      <section id="identity" data-tabs-target="panel" data-tab="identity" class="<%= section_classes %>">
         <div class="card__head">
           <h2 class="card__title">Identity</h2>
           <p class="card__hint">The logo, color and type flow into the public site. The admin uses the color and font too.</p>
@@ -69,7 +57,7 @@
         <% end %>
       </section>
 
-      <section id="color" class="<%= section_classes %>">
+      <section id="color" data-tabs-target="panel" data-tab="color" class="<%= section_classes %>">
         <div class="card__head"><h2 class="card__title">Color</h2></div>
         <div class="field-row">
           <%= settings_field "Primary color", hint: "Buttons, links, focus and what’s current. Black when blank." do %>
@@ -84,7 +72,7 @@
         </div>
       </section>
 
-      <section id="type" class="<%= section_classes %>">
+      <section id="type" data-tabs-target="panel" data-tab="type" class="<%= section_classes %>">
         <div class="card__head"><h2 class="card__title">Type and surface</h2></div>
         <div class="field-row">
           <%= settings_field "Font", hint: "Every word in the admin." do %>
@@ -102,7 +90,7 @@
     <% end %>
   <% end %>
 
-  <section id="brand-context" class="<%= section_classes %>">
+  <section id="brand-context" data-tabs-target="panel" data-tab="brand-context" class="<%= section_classes %>">
     <div class="card__head">
       <h2 class="card__title">Brand context</h2>
       <p class="card__hint">A short brief describing how this workspace writes. Nothing in the CMS renders it — it’s published in <code>/api/manifest</code> so an agent working through the API or the <code>cms</code> CLI writes in your voice instead of a generic one. Leave a field blank to omit it.</p>
@@ -123,3 +111,4 @@
     <% end %>
   </section>
 <% end %>
+</div>

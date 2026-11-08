@@ -1,35 +1,25 @@
 <% @page_title = "Account" %>
-<%# Your account on one page (Settings::AccountScreen): a section per form,
-    each at its own anchor, and a sidebar with where things stand and links
-    down the page. @failed names the section a failed save came from, so only
-    it shows the errors. %>
+<%# Your account on one page (Settings::AccountScreen): where things stand on
+    one line, then a section per form in pill tabs (Profile; Sign-in: email,
+    password and two-factor; Sessions; Delete account), each section at its
+    own anchor, which opens its tab. @failed names the section a failed save
+    came from, so only it shows the errors, and its tab opens. %>
 <% remaining = @totp.recovery_code_digests.is_a?(Array) ? @totp.recovery_code_digests.size : 0 %>
 <% errors_for = ->(section) { render "layouts/shared/errors", record: @user if @failed == section } %>
 
 <% section_classes = "settings-section card" %>
 
 <%= render "layouts/shared/page_header", title: "Account" %>
-<% content_for :settings_aside do %>
-  <%= postbox "account-summary", "Your account" do %>
-    <dl class="details">
-      <dt>Email</dt><dd><%= status_tag(@user.verified? ? "Verified" : "Not verified") %></dd>
-      <dt>Two-factor</dt><dd><%= status_tag(@totp.totp_enabled? ? "Enabled" : "Off") %></dd>
-      <dt>Signed in on</dt><dd><strong><%= pluralize(@sessions.size, "device") %></strong></dd>
-    </dl>
-    <nav class="settings-nav" aria-label="On this page">
-      <div class="settings-nav__group">
-        <ul>
-          <% [["Profile", "profile"], ["Email", "email"], ["Password", "password"], ["Two-factor", "two-factor"], ["Sessions", "sessions"], ["Delete account", "delete"]].each do |label, anchor| %>
-            <%# herb:key anchor %>
-            <li><a href="#<%= anchor %>" class="settings-nav__link"><%= label %></a></li>
-          <% end %>
-        </ul>
-      </div>
-    </nav>
-  <% end %>
-<% end %>
+<% failed_tab = %w[email password two_factor].include?(@failed.to_s) ? "sign-in" : @failed.to_s %>
+<div class="stack" data-controller="tabs" data-tabs-initial-value="<%= failed_tab %>">
+<p class="button-row small muted">
+  <span>Email <%= status_tag(@user.verified? ? "Verified" : "Not verified") %></span>
+  <span>Two-factor <%= status_tag(@totp.totp_enabled? ? "Enabled" : "Off") %></span>
+  <span>Signed in on <strong><%= pluralize(@sessions.size, "device") %></strong></span>
+</p>
+<%= render "settings/tabs", tabs: [ [ "profile", "Profile" ], [ "sign-in", "Sign-in" ], [ "sessions", "Sessions" ], [ "delete", "Delete account" ] ] %>
 
-<section id="profile" class="<%= section_classes %>">
+<section id="profile" data-tabs-target="panel" data-tab="profile" class="<%= section_classes %>">
   <div class="card__head"><h2 class="card__title">Profile</h2></div>
   <%= errors_for.("profile") %>
   <%= form_with url: settings_profile_path, method: :patch do |form| %>
@@ -43,7 +33,7 @@
   <% end %>
 </section>
 
-<section id="email" class="<%= section_classes %>">
+<section id="email" data-tabs-target="panel" data-tab="sign-in" class="<%= section_classes %>">
   <div class="card__head">
     <h2 class="card__title">Email</h2>
     <p class="card__hint">The address you sign in with. A new address has to be verified.</p>
@@ -66,7 +56,7 @@
   <% end %>
 </section>
 
-<section id="password" class="<%= section_classes %>">
+<section id="password" data-tabs-target="panel" data-tab="sign-in" class="<%= section_classes %>">
   <div class="card__head">
     <h2 class="card__title">Password</h2>
     <p class="card__hint">Use a long, random password to keep your account secure.</p>
@@ -86,7 +76,7 @@
   <% end %>
 </section>
 
-<section id="two-factor" class="<%= section_classes %>">
+<section id="two-factor" data-tabs-target="panel" data-tab="sign-in" class="<%= section_classes %>">
   <div class="card__head">
     <h2 class="card__title">Two-factor authentication</h2>
     <p class="card__hint">Adds a second step at sign-in: a code from an authenticator app (1Password, Authy, Google Authenticator…).</p>
@@ -165,7 +155,7 @@
   <% end %>
 </section>
 
-<section id="sessions" class="settings-section card">
+<section id="sessions" data-tabs-target="panel" data-tab="sessions" class="settings-section card">
   <div class="card__head">
     <h2 class="card__title">Sessions</h2>
     <p class="card__hint">Everywhere you’re signed in. Signing a session out ends it on that device.</p>
@@ -190,7 +180,7 @@
   </ul>
 </section>
 
-<section id="delete" class="<%= section_classes %> card--danger">
+<section id="delete" data-tabs-target="panel" data-tab="delete" class="<%= section_classes %> card--danger">
   <div class="card__head">
     <h2 class="card__title">Delete account</h2>
     <p class="card__hint">Deletes your account and everything that belongs to it. This can’t be undone.</p>
@@ -206,3 +196,4 @@
     <% end %>
   <% end %>
 </section>
+</div>

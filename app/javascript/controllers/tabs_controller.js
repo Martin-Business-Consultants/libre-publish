@@ -5,15 +5,25 @@ import { Controller } from "@hotwired/stimulus"
 // (data-tab="edit seo"), and panels may nest. The chosen one is kept in the address's #hash, so a link
 // or a reload lands on it. A lazy frame in a panel loads when the panel is
 // shown: Turbo waits for a lazy frame to scroll into view, and doesn't see
-// one that was hidden come out. Showing one dispatches tabs:shown, with its
+// one that was hidden come out. An address whose #hash is an element inside a
+// panel opens that panel's tab; without one, the initial value's (a form sent
+// back with errors names its own). Showing one dispatches tabs:shown, with its
 // name, for what a panel needs to do then (the website preview loads).
 export default class extends Controller {
   static targets = [ "tab", "panel" ]
+  static values = { initial: String }
 
   connect() {
     const wanted = window.location.hash.slice(1)
     const names = this.tabTargets.map(tab => tab.dataset.tab)
-    this.#show(names.includes(wanted) ? wanted : names[0], { remember: false })
+    if (names.includes(wanted)) return this.#show(wanted, { remember: false })
+
+    // An anchor inside a panel (settings/profile#email): show the tab holding it, and go to it.
+    const target = wanted && document.getElementById(wanted)
+    const panel = target && this.panelTargets.find(panel => panel.contains(target))
+    const initial = names.includes(this.initialValue) ? this.initialValue : names[0]
+    this.#show(panel ? panel.dataset.tab.split(" ")[0] : initial, { remember: false })
+    if (panel) target.scrollIntoView({ block: "start" })
   }
 
   select(event) {

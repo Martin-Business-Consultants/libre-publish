@@ -180,7 +180,9 @@ module NavigationHelper
 
   def settings_submenu
     [{label: "All settings", path: :settings_path}] +
-      settings_sections.flat_map { |_, links| links.map { |label, url, _| {label: label, path: -> { url }} } }
+      settings_sections.flat_map { |_, links|
+        links.flat_map { |label, url, _, nested| [{label: label, path: -> { url }}] + Array(nested).map { |sub, sub_url| {label: sub, path: -> { sub_url }} } }
+      }
   end
 
   def menu_collections

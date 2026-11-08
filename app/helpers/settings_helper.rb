@@ -56,13 +56,45 @@ module SettingsHelper
     end
 
     visible = Cms::Plugins.enabled_settings_pages.values.select { |page| page.capability.nil? || Current.user&.can?(page.capability) }
-    visible.group_by(&:group).each do |group, pages|
+    by_group = visible.group_by(&:group)
+    plugin_pages = by_group.delete("Plugins") || []
+    by_group.each do |group, pages|
       section = sections.find { |name, _| name == group } || (sections << [group, []]).last
       core = section[1].map { |label, path, description| [label, [path, description]] }
       additions = pages.map { |page| [page.label, [instance_exec(&page.path), page.description], page.after] }
       section[1] = Cms::Plugins.arrange(core, additions).map { |label, (path, description)| [label, path, description] }
     end
+    sections << ["Plugins", plugins_section(plugin_pages)] if Current.user&.can?("settings:read")
     sections.select { |_, links| links.any? }
+  end
+
+  # Settings › Plugins and Themes, as Runwell nests them: each plugin's own
+  # settings page (Cms::Plugins.settings, in the "Plugins" group) under All
+  # plugins, as its fourth element [[label, url], …].
+  def plugins_section(pages)
+    nested = Cms::Plugins.arrange([], pages.map { |page| [page.label, instance_exec(&page.path), page.after] }).map { |label, url| [label, url] }
+    [["All plugins", settings_plugins_path, "What this install adds to the CMS, and switching it on.", nested],
+      ["Themes", settings_themes_path, "The theme that draws the site, and the others installed.", []]]
+  end
+
+  # The Settings nav's icon for a section (settings/nav), rune's dot for one
+  # it doesn't know (a plugin's).
+  SETTINGS_ICONS = {
+    "Account" => "person", "API token" => "password", "Service tokens" => "lock", "General" => "globe",
+    "Branding" => "art", "Search" => "search", "Security policy" => "authentication", "Media" => "image",
+    "Updates" => "refresh", "History" => "history", "GitHub" => "code", "Deploy" => "paper-plane",
+    "Email delivery" => "email", "All plugins" => "package", "Themes" => "sliders"
+  }.freeze
+
+  def settings_icon(label) = SETTINGS_ICONS.fetch(label, "dot")
+
+  # A link in the Settings nav: an icon for a section, none for one nested
+  # under it. Current on its page and the pages under it.
+  def settings_nav_link(label, url, icon: nil)
+    here = request.path == url || request.path.start_with?("#{url}/")
+    link_to url, class: class_names("settings-nav__link", "settings-nav__link--nested": icon.nil?), aria: {current: ("page" if here)} do
+      safe_join([(icon_tag(icon) if icon), tag.span(label)].compact)
+    end
   end
 
   # Where a plugin's running copy came from (InstalledPlugins), and its repository.

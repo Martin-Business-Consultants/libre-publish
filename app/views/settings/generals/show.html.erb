@@ -1,13 +1,15 @@
 <% @page_title = "General" %>
 
 <%= render "layouts/shared/page_header", title: "General" %>
+<div class="stack" data-controller="tabs">
+<%= render "settings/tabs", tabs: [ [ "identity", "Identity" ], [ "serving", "How it's served" ], [ "contact", "Contact" ] ] %>
 <% content_for :settings_aside do %>
   <%= render "settings/save_box", form: "settings_form" %>
 <% end %>
 
 <%= form_with url: settings_general_path, id: "settings_form", method: :patch, scope: :settings do |form| %>
   <%= tag.fieldset class: "stack stack--lg", disabled: !Current.user.can?("settings:write") do %>
-    <section class="card">
+    <section data-tabs-target="panel" data-tab="identity" class="card">
       <div class="card__head">
         <h2 class="card__title">Identity</h2>
         <p class="card__hint">Site title and description used as defaults across SEO, headers, and emails.</p>
@@ -37,7 +39,7 @@
       <% end %>
     </section>
 
-    <section class="card" id="serving">
+    <section data-tabs-target="panel" data-tab="serving" class="card" id="serving">
       <div class="card__head">
         <h2 class="card__title">How the site is served</h2>
         <p class="card__hint">Most sites are the theme’s website alone. Serve content as JSON too only when something else reads it: an app, another site, a frontend built elsewhere.</p>
@@ -83,7 +85,7 @@
       <% end %>
     </section>
 
-    <section class="card">
+    <section data-tabs-target="panel" data-tab="contact" class="card">
       <div class="card__head">
         <h2 class="card__title">Contact</h2>
         <p class="card__hint">Surfaces on the public site footer, contact pages, and SEO structured data.</p>
@@ -113,3 +115,4 @@
     </section>
   <% end %>
 <% end %>
+</div>

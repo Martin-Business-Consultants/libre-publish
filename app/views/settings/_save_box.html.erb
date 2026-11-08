@@ -1,10 +1,12 @@
 <%# locals: (form:, button: "Save changes", note: nil, capability: "settings:write") %>
-<%# A settings page's Save box, in its aside (content_for :settings_aside):
-    the button submits the page's form (by id) from outside it. It's off for
-    a role without `capability`, as the form's fields are. %>
-<%= postbox "settings-save", "Save" do %>
+<%# A settings page's Save bar, at the foot of the page and held at the foot of
+    the window while the page scrolls (content_for :settings_aside,
+    layouts/settings): the button submits the page's form (by id) from
+    outside it, so it reaches the fields in every tab. It's off for a role
+    without `capability`, as the form's fields are. %>
+<div class="settings-save">
   <% if note %>
-    <p class="muted"><%= note %></p>
+    <p class="muted small"><%= note %></p>
   <% end %>
-  <%= tag.button tx(button), type: "submit", form: form, class: "btn btn--primary btn--block", disabled: !Current.user.can?(capability) %>
-<% end %>
+  <%= tag.button tx(button), type: "submit", form: form, class: "btn btn--primary", disabled: !Current.user.can?(capability) %>
+</div>
