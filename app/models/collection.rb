@@ -41,7 +41,7 @@ class Collection < ApplicationRecord
 
   validates :slug, presence: true, uniqueness: true, format: {with: Page::SLUG_FORMAT}
   validates :name, presence: true
-  validate  :validate_schema_shape_via_validator
+  validate  :validate_schema_shape
   validate  :validate_notification_events
   validate  :validate_build_config
 

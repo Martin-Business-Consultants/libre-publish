@@ -8,7 +8,7 @@
 
 <%= render "layouts/shared/errors", record: @page %>
 <%= form_with url: page_schema_path(@page.path), method: :patch, class: "stack stack--lg" do %>
-  <%= render "schemas/editor", fields: @page.fields, scope: "page", field_types: Page::SCHEMA_FIELD_TYPES,
+  <%= render "schemas/editor", fields: @page.fields, scope: "page", field_types: Page::FIELD_TYPES,
         collection_slugs: Collection.order(:slug).pluck(:slug) %>
   <div>
     <button type="submit" class="btn btn--primary">Save fields</button>

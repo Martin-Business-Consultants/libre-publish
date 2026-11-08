@@ -18,9 +18,6 @@ class Global < ApplicationRecord
   search_on :name, :slug, :description
   include SearchIndexed
 
-  # Its title and text in the admin's search (SearchIndexed).
-  def search_document = {title: name, body: [slug, description].compact.join("\n")}
-
   include SoftDeletable
   include Eventable
   include PublishGated
@@ -34,8 +31,6 @@ class Global < ApplicationRecord
   has_many :versions, class_name: "GlobalVersion", dependent: :delete_all
   after_save :snapshot_version, if: -> { saved_change_to_data? || saved_change_to_name? }
   include Redactable
-
-  FIELD_TYPES = BlockType::COLLECTION_FIELD_TYPES
 
   validates :slug, presence: true, uniqueness: true, format: {with: BlockType::SLUG_FORMAT}
   validates :name, presence: true
