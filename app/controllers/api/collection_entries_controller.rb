@@ -9,7 +9,6 @@ class Api::CollectionEntriesController < Api::BaseController
   include Api::HeldWrites
   include Api::LockVersioned
 
-  enforce_authorization
   requires_capability "entries:read",   only: [:index, :show]
   requires_capability "entries:write",  only: [:create, :update]
   requires_capability "entries:delete", only: :destroy

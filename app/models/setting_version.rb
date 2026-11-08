@@ -20,6 +20,13 @@ class SettingVersion < ApplicationRecord
 
   def label = VERSIONED.fetch(key, key.humanize)
 
+  # Puts the setting back as this version kept it (secrets as they are now),
+  # and records it.
+  def restore
+    Setting.changing(key) { it.data = snapshot["data"] }
+    Event.record("settings.restored", key: key, version_id: id)
+  end
+
   # As the setting would take it back: what was kept, with the secrets it
   # holds now.
   def snapshot

@@ -2,13 +2,15 @@
 
 # One status for every ticked entry (CollectionEntry.change_status_of).
 class Collections::Entries::BulkStatusChangesController < ApplicationController
+  include BulkSlugs
+
   include CollectionScoped
 
   requires_capability "entries:publish", only: :create
 
   def create
     status = params[:status].to_s
-    slugs = Array(params[:slugs]).map(&:to_s).reject(&:empty?)
+    slugs = bulk_slugs
 
     if CollectionEntry::STATUSES.exclude?(status)
       redirect_to collection_entries_path(@collection.slug), alert: "Pick a status to set."

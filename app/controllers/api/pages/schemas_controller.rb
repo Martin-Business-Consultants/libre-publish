@@ -7,7 +7,6 @@ class Api::Pages::SchemasController < Api::BaseController
   include PageScoped
   include SchemaParams
 
-  enforce_authorization
   requires_capability "pages:write", only: :update
 
   def update

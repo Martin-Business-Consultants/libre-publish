@@ -20,7 +20,6 @@
 # reveals on click; an API caller has nowhere to redirect to and no second
 # chance at a rotation, so those responses carry the secret directly.
 class Api::ServiceTokensController < Api::BaseController
-  enforce_authorization
   requires_capability "settings:read",  only: [:index, :show]
   requires_capability "settings:write", only: [:create]
   include GrantGuard

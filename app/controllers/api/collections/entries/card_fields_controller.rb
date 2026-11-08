@@ -8,7 +8,6 @@ class Api::Collections::Entries::CardFieldsController < Api::BaseController
   include EntryScoped
   include Api::HeldWrites
 
-  enforce_authorization
   requires_capability "entries:write", only: :update
   refuse_while_held only: :update
 

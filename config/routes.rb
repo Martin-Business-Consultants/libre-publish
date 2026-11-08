@@ -199,7 +199,7 @@ Rails.application.routes.draw do
       resource :general, only: [:show, :update], controller: "generals"
       # Every change to the settings people edit (SettingVersion).
       resources :histories, path: "history", only: [:index, :show] do
-        post :restore, on: :member
+        resource :restoration, only: :create, module: :histories
       end
       resource :search, only: [:show, :update], controller: "searches"
       resource :security_policy, only: [:show, :update], controller: "security_policies" do

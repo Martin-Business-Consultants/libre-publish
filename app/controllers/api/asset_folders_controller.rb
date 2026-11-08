@@ -4,7 +4,6 @@
 # "rename" moves every asset under the old path and "delete" trashes them —
 # see AssetFolders, which records each. Assets themselves are at /api/assets.
 class Api::AssetFoldersController < Api::BaseController
-  enforce_authorization
   requires_capability "assets:write",  only: [:create, :update]
   requires_capability "assets:delete", only: :destroy
 

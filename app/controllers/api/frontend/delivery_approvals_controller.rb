@@ -6,7 +6,6 @@
 # nothing was waiting.
 class Api::Frontend::DeliveryApprovalsController < Api::BaseController
   include Api::FrontendServed
-  enforce_authorization
   requires_capability "settings:write", only: :create
 
   def create

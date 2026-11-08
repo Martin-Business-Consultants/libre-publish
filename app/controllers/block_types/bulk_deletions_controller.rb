@@ -2,10 +2,12 @@
 
 # Structure › Block types: deleting the ticked block types in one go.
 class BlockTypes::BulkDeletionsController < ApplicationController
+  include BulkSlugs
+
   requires_capability "block_types:delete", only: :create
 
   def create
-    deleted = BlockType.remove_all(BlockType.where(slug: Array(params[:slugs]).map(&:to_s).reject(&:empty?)).to_a).size
+    deleted = BlockType.remove_all(BlockType.where(slug: bulk_slugs).to_a).size
     redirect_to block_types_path, notice: "#{deleted} #{"block type".pluralize(deleted)} deleted"
   end
 end

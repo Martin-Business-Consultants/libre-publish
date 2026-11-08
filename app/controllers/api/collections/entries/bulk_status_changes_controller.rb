@@ -5,10 +5,9 @@
 # nothing.
 class Api::Collections::Entries::BulkStatusChangesController < Api::BaseController
   include CollectionScoped
-  include Api::BulkSlugs
+  include BulkSlugs
   include Api::HeldWrites
 
-  enforce_authorization
   requires_capability "entries:publish", only: :create
   refuse_while_held only: :create
 

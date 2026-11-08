@@ -10,8 +10,7 @@
 #   class PagesController < ApplicationController
 #     requires_capability "pages:read",   only: [:index, :show]
 #     requires_capability "pages:write",  only: [:new, :create, :edit, :update]
-#     requires_capability "pages:delete", only: [:destroy, :bulk_destroy]
-#     requires_capability "pages:publish", only: [:bulk_update_status]
+#     requires_capability "pages:delete", only: :destroy
 #   end
 #
 #   class HomeController < ApplicationController

@@ -2,6 +2,6 @@
 <%= parent_page "History", settings_histories_path %>
 <%= render "layouts/shared/page_header", title: "Compare a version of " + @version.label %>
 <section class="panel panel--padded fields">
-  <%= render "versions/comparison", version: @version, restore_path: restore_settings_history_path(@version),
+  <%= render "versions/comparison", version: @version, restore_path: settings_history_restoration_path(@version),
         can_restore: Current.user.can?("settings:write") %>
 </section>

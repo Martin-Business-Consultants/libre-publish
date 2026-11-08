@@ -12,7 +12,6 @@
 # configuring the receiving end needs it, and the capability that gets you
 # here (`webhooks:read`) is the same one that reveals it in the admin UI.
 class Api::WebhooksController < Api::BaseController
-  enforce_authorization
   requires_capability "webhooks:read",   only: [:index, :show]
   requires_capability "webhooks:write",  only: [:create, :update]
   requires_capability "webhooks:delete", only: [:destroy]

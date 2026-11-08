@@ -8,7 +8,6 @@ class Api::Collections::SchemasController < Api::BaseController
   include CollectionScoped
   include SchemaParams
 
-  enforce_authorization
   requires_capability "collections:write", only: :update
 
   # A body without the `collection` key is refused, like a bad schema, rather

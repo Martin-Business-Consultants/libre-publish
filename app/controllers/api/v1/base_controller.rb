@@ -13,8 +13,6 @@
 #
 # /api stays the admin's and the CLI's: writes, drafts, management.
 class Api::V1::BaseController < Api::BaseController
-  enforce_authorization
-
   MAX_PER = 100
 
   # Per token, across the whole delivery API. A build reads it about ten

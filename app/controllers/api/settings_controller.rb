@@ -5,7 +5,6 @@
 # globals (Redactable). Writes still go through `data: {}` so secrets can be
 # set via the API; they just can't be read back over it.
 class Api::SettingsController < Api::BaseController
-  enforce_authorization
   requires_capability "settings:read",  only: [:index, :show]
   requires_capability "settings:write", only: [:create, :update, :destroy]
 

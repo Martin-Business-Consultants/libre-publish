@@ -5,7 +5,6 @@
 class Api::Updates::ChecksController < Api::BaseController
   include Api::UpdateSummary
 
-  enforce_authorization
   requires_capability "settings:read", only: :create
 
   agent_summary(:create) { |payload| update_summary(payload["updates"]) }

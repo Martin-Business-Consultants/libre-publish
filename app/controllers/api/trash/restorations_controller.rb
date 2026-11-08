@@ -4,7 +4,6 @@
 class Api::Trash::RestorationsController < Api::BaseController
   include Api::TrashScoped
 
-  enforce_authorization
   requires_capability "trash:write", only: [:create]
 
   # A restore puts content back: while a plugin holds API writes for a person

@@ -5,7 +5,6 @@ module Api::ServiceTokenScoped
   extend ActiveSupport::Concern
 
   included do
-    enforce_authorization
     requires_capability "settings:write", only: [:create]
     before_action :set_service_token
     include GrantGuard

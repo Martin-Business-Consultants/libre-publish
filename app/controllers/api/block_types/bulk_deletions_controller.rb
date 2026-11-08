@@ -3,9 +3,8 @@
 # POST /api/block_types/bulk_destroy: deletes the block types at `slugs`
 # (BlockType.remove_all).
 class Api::BlockTypes::BulkDeletionsController < Api::BaseController
-  include Api::BulkSlugs
+  include BulkSlugs
 
-  enforce_authorization
   requires_capability "block_types:delete", only: :create
 
   def create

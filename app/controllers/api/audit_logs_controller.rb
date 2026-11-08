@@ -6,7 +6,6 @@
 #
 #   GET /api/audit_log?action=page.published&actor=alice&from=2026-08-01&target_type=Page
 class Api::AuditLogsController < Api::BaseController
-  enforce_authorization
   requires_capability "audit_log:read", only: [:index]
 
   def index

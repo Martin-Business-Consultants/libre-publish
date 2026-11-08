@@ -3,7 +3,6 @@
 # POST /api/deploy/trigger — deploy now, skipping the debounce the
 # content-change path uses.
 class Api::Deploys::TriggersController < Api::BaseController
-  enforce_authorization
   requires_capability "settings:write", only: [:create]
 
   agent_breadcrumbs(:create) { [crumb("Did it actually build?", "cms deploy")] }

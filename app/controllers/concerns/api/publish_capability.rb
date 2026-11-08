@@ -13,17 +13,6 @@ module Api::PublishCapability
   private
 
   def require_publish_capability!(record, prefix:)
-    raise Authorization::Forbidden, "#{prefix}:publish" if record.publishing_write? && !can_publish?(prefix)
-  end
-
-  # Mirrors Authorization#granted? — a token is bounded by its owner's role,
-  # and a session falls through to the signed-in user.
-  def can_publish?(prefix)
-    capability = "#{prefix}:publish"
-    if Current.api_token
-      Current.api_token.can?(capability)
-    else
-      Current.user&.can?(capability) || Current.api_user&.can?(capability)
-    end
+    require_capability!("#{prefix}:publish") if record.publishing_write?
   end
 end

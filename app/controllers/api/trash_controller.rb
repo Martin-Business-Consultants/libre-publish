@@ -15,7 +15,6 @@
 class Api::TrashController < Api::BaseController
   include Api::TrashScoped
 
-  enforce_authorization
   requires_capability "trash:read",  only: [:index]
   requires_capability "trash:write", only: [:destroy]
 
