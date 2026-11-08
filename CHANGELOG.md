@@ -8,6 +8,8 @@ out.
 
 ## Unreleased
 
+## 1.34.2
+
 ### Fixed
 - Every item in the sidebar's menu is the same height: Audit log and Trash,
   which have no submenu, shrank when the menu was taller than the window.
