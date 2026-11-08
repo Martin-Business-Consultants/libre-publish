@@ -8,6 +8,11 @@ out.
 
 ## Unreleased
 
+### Fixed
+- **New installs get Forms 1.8.1**, whose list of forms draws its Import,
+  Export, Settings and New form buttons once rather than twice (an install
+  with Forms 1.8.0 updates it from Settings › Plugins).
+
 ## 1.35.0
 
 ### Changed
