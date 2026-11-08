@@ -2,9 +2,10 @@
 <%# The sidebar (rune_ui's): the site, search, the admin menu
     (NavigationHelper#admin_menu) in its groups, update notices, and the
     signed-in person with the theme toggle at the foot. Each item's submenu is
-    under it, shown for the current item (shell.css); the others go to their
-    first link. ⇧⌘B or the panel bar's toggle hides it (rune-sidebar), and on
-    a narrow screen it's a drawer. %>
+    under it, shown for the current item; the others go to their
+    first link (rune_ui's sidebar_link sub:). An item's go-to chord (g p…) is
+    on its link. [ or the panel bar's toggle hides the sidebar (rune-sidebar),
+    and on a narrow screen it's a drawer. %>
 <% branding = current_branding %>
 <% site_name = branding[:site_title].presence || Site.key %>
 <% site_url = public_site_url %>
@@ -25,7 +26,7 @@
   </div>
 
   <%# Opens the search modal (layouts/shared/global_search); a link, so it still goes to Search without it. %>
-  <%= link_to search_path, class: "sidebar__link", data: { global_search_open: true } do %>
+  <%= link_to search_path, class: "sidebar__link", title: tx("Search (s)"), data: { global_search_open: true, keys: "s" } do %>
     <%= icon "search" %>
     <span class="sidebar__label"><%= tx("Search") %></span>
     <span class="sidebar__kbd">⌘K</span>
@@ -38,28 +39,10 @@
     <% end %>
     <% entries.each do |entry| %>
       <%# herb:key entry.id %>
-      <% current_link = entry.submenu.find(&:current) %>
-      <div class="<%= class_names("sidebar__item", "sidebar__item--current": entry.current) %>" data-menu-group="<%= group %>">
-        <%= link_to entry.url, class: "sidebar__link", aria: { current: ("page" if entry.current && current_link.nil?) } do %>
-          <%= icon_tag entry.icon %>
-          <span class="sidebar__label"><%= tx(entry.label) %></span>
-        <% end %>
-        <% if entry.submenu.any? %>
-          <ul class="sidebar__sub" aria-label="<%= tx(entry.label) %>">
-            <% entry.submenu.each do |link| %>
-              <%# herb:key link.url %>
-              <li>
-                <%= link_to link.url, class: "sidebar__sub-link", aria: { current: ("page" if link.current) } do %>
-                  <% if link.icon %>
-                    <%= icon_tag link.icon, class: "icon--sm" %>
-                  <% end %>
-                  <span class="sidebar__label"><%= tx(link.label) %></span>
-                <% end %>
-              </li>
-            <% end %>
-          </ul>
-        <% end %>
-      </div>
+      <% label = tx(entry.label) %>
+      <%= sidebar_link label, entry.url, icon: known_icon(entry.icon), current: entry.current,
+            sub: entry.submenu.map { |link| { label: tx(link.label), url: link.url, current: link.current, icon: (known_icon(link.icon) if link.icon) } },
+            title: ("#{label} (#{entry.keys})" if entry.keys), data: { keys: entry.keys, menu_group: group } %>
     <% end %>
   <% end %>
 

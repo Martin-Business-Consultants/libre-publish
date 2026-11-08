@@ -89,7 +89,7 @@ RSpec.describe "Tools › Redirects", type: :request do
       expect(response.body).to include('turbo-frame id="redirect_sheet"', "Last hit", "7")
 
       get edit_tools_redirect_path(redirect)
-      expect(response.body).to include('data-dialog-auto-open-value="true"', "Edit redirect", "Last hit")
+      expect(response.body).to include('data-rune-dialog-auto-open-value="true"', "Edit redirect", "Last hit")
 
       get tools_redirects_path
       expect(response.body).to include('data-turbo-frame="redirect_sheet"', "dialog sheet")
@@ -102,7 +102,7 @@ RSpec.describe "Tools › Redirects", type: :request do
       patch tools_redirect_path(redirect), params: {redirect: {destination_url: ""}}
 
       expect(response).to have_http_status(:unprocessable_content)
-      expect(response.body).to include('data-dialog-auto-open-value="true"', "Edit redirect")
+      expect(response.body).to include('data-rune-dialog-auto-open-value="true"', "Edit redirect")
     end
   end
 

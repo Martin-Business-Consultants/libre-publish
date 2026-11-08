@@ -40,7 +40,7 @@
     the filters, Bulk select, grid or list), then every file as a square, or a
     list. Picking one opens its details in a sheet (file_manager/assets#show,
     into the asset_details frame). Bulk select turns the squares into ticks. %>
-<div class="media-library" data-controller="dialog" data-dialog-modal-value="true" data-action="keydown.esc->dialog#close:stop">
+<div class="media-library" data-controller="rune-dialog" data-action="keydown.esc->rune-dialog#close:stop">
   <div class="media-toolbar">
     <%= form_with url: file_manager_path, method: :get, class: "media-toolbar__search", data: { turbo_action: "replace" } do |form| %>
       <%= form.hidden_field :view, value: @view, id: nil %>
@@ -163,11 +163,11 @@
     <p class="media-library__count"><%= pluralize(@total, "media item") %></p>
   <% end %>
 
-  <dialog class="dialog sheet media-sheet" data-dialog-target="dialog" aria-label="Attachment details" closedby="any">
+  <dialog class="dialog sheet media-sheet" data-rune-dialog-target="dialog" data-action="click->rune-dialog#backdrop" aria-label="Attachment details" closedby="any">
     <div class="dialog__box">
       <header class="dialog__header">
         <h2 class="dialog__title">Attachment details</h2>
-        <%= icon_button "close", label: "Close", data: { action: "dialog#close" } %>
+        <%= icon_button "close", label: "Close", data: { action: "rune-dialog#close" } %>
       </header>
       <turbo-frame id="asset_details">
         <p class="muted">Loading…</p>

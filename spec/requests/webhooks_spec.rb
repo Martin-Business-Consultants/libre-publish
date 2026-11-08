@@ -29,11 +29,11 @@ RSpec.describe "Webhooks", type: :request do
       expect(response.body).to include('turbo-frame id="webhook_sheet"', "Signing secret", "Recent deliveries")
 
       get new_webhook_url
-      expect(response.body).to include('data-dialog-auto-open-value="true"', "New webhook")
+      expect(response.body).to include('data-rune-dialog-auto-open-value="true"', "New webhook")
 
       post webhooks_url, params: {webhook: {name: "", url: "nope", events: []}}
       expect(response).to have_http_status(:unprocessable_content)
-      expect(response.body).to include('data-dialog-auto-open-value="true"')
+      expect(response.body).to include('data-rune-dialog-auto-open-value="true"')
     end
   end
 

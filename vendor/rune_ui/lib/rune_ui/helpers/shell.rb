@@ -96,12 +96,39 @@ module RuneUi
       end
 
       # A link in the sidebar, current on its page and the pages under it. count: a pill.
-      def sidebar_link(label, path, icon:, count: 0, exact: false)
-        current = request.path == path || (!exact && path != "/" && request.path.start_with?("#{path.to_s.chomp("/")}/"))
-        link_to path, class: "sidebar__link", aria: { current: ("page" if current) } do
+      # current: true or false decides it instead (an app that works out which item is current
+      # itself). Other options (title, data) go on the link.
+      #
+      # sub: the item's submenu, shown under it while it's current: hashes of label:, url: and
+      # optionally current: and icon:. With one, the item is a div.sidebar__item, and its own
+      # link is the current page only when none of the submenu's links is.
+      #   sidebar_link "Pages", pages_path, icon: :document,
+      #     sub: [ { label: "All pages", url: pages_path }, { label: "Add new", url: new_page_path } ]
+      def sidebar_link(label, path, icon:, count: 0, exact: false, current: nil, sub: nil, **options)
+        current = sidebar_current?(path, exact:) if current.nil?
+        sub = Array(sub).map { { current: sidebar_current?(it[:url], exact: true) }.merge(it) }
+        own_page = current && sub.none? { it[:current] }
+        link = link_to path, **options, class: [ "sidebar__link", options[:class] ].compact, aria: { current: ("page" if own_page) } do
           safe_join([ icon(icon), tag.span(label, class: "sidebar__label"), count_pill(count) ].compact)
         end
+        return link if sub.empty?
+
+        links = sub.map do |item|
+          tag.li do
+            link_to item[:url], class: "sidebar__sub-link", aria: { current: ("page" if item[:current]) } do
+              safe_join([ (icon(item[:icon], css: "icon--sm") if item[:icon]), tag.span(item[:label], class: "sidebar__label") ].compact)
+            end
+          end
+        end
+        tag.div safe_join([ link, tag.ul(safe_join(links), class: "sidebar__sub", aria: { label: label }) ]),
+          class: [ "sidebar__item", ("sidebar__item--current" if current) ].compact
       end
+
+      def sidebar_current?(path, exact: false)
+        path = path.to_s
+        request.path == path || (!exact && path != "/" && request.path.start_with?("#{path.chomp("/")}/"))
+      end
+      private :sidebar_current?
 
       def sidebar_section(label) = tag.div(label, class: "sidebar__section")
 

@@ -4,7 +4,7 @@
 module AdminMenuHelpers
   # The top-level items' labels, in order.
   def menu_labels(body = response.body)
-    admin_menu(body).scan(%r{<div class="sidebar__item[^"]*"[^>]*>\s*<a [^>]*class="sidebar__link[ "][^>]*>.*?<span class="sidebar__label[ "][^>]*>([^<]+)</span>}m).flatten
+    admin_menu(body).scan(%r{<a [^>]*data-menu-group="[^"]*"[^>]*>.*?<span class="sidebar__label[ "][^>]*>([^<]+)</span>}m).flatten
   end
 
   # The groups, in order, as their items name them.

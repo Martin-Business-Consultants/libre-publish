@@ -3,16 +3,16 @@
     fields it starts with; the rest comes after, on the schema. It opens by
     itself at /collections/new (the menus link there) and when a submit came
     back with errors. %>
-<div class="dialog-wrap" data-controller="dialog" data-dialog-modal-value="true" data-dialog-auto-open-value="<%= open %>" data-action="keydown.esc->dialog#close:stop">
-  <button type="button" class="btn btn--secondary" data-keys="n" data-action="dialog#open">
+<div class="dialog-wrap" data-controller="rune-dialog" data-rune-dialog-auto-open-value="<%= open %>" data-action="keydown.esc->rune-dialog#close:stop">
+  <button type="button" class="btn btn--secondary" data-keys="n" data-action="rune-dialog#open">
     <%= icon_tag "add" %>
     <span>New collection</span>
   </button>
-  <dialog class="dialog sheet" data-dialog-target="dialog" aria-label="New collection" closedby="any">
+  <dialog class="dialog sheet" data-rune-dialog-target="dialog" data-action="click->rune-dialog#backdrop" aria-label="New collection" closedby="any">
     <div class="dialog__box">
     <header class="dialog__header">
       <h2 class="dialog__title">New collection</h2>
-      <%= icon_button "close", label: "Close", data: { action: "dialog#close" } %>
+      <%= icon_button "close", label: "Close", data: { action: "rune-dialog#close" } %>
     </header>
     <%= render "layouts/shared/errors", record: collection %>
     <%= form_with model: collection, url: collections_path, class: "dialog__body", data: { controller: "slug" } do |form| %>
@@ -47,7 +47,7 @@
       </fieldset>
 
       <div class="dialog__actions">
-        <button type="button" class="btn btn--ghost" data-action="dialog#close">Cancel</button>
+        <button type="button" class="btn btn--ghost" data-action="rune-dialog#close">Cancel</button>
         <%= form.button "Create collection", class: "btn btn--primary" %>
       </div>
     <% end %>

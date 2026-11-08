@@ -7,7 +7,7 @@
   <div class="stack">
     <header class="dialog__header">
       <h2 class="dialog__title"><%= redirect.new_record? ? "New redirect" : "Edit redirect" %></h2>
-      <%= icon_button "close", label: "Close", data: { action: "dialog#close" } %>
+      <%= icon_button "close", label: "Close", data: { action: "rune-dialog#close" } %>
     </header>
     <%= render "layouts/shared/errors", record: redirect %>
 
@@ -56,7 +56,7 @@
                   message: "Anyone visiting " + redirect.source_path_was.to_s + " will get a 404 instead." %>
           </span>
         <% end %>
-        <button type="button" class="btn btn--ghost" data-action="dialog#close">Cancel</button>
+        <button type="button" class="btn btn--ghost" data-action="rune-dialog#close">Cancel</button>
         <%= form.button (redirect.new_record? ? "Add redirect" : "Save changes"), class: "btn btn--primary" %>
       </div>
     <% end %>

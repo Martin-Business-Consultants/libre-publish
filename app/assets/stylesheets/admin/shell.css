@@ -1,6 +1,5 @@
 /* The admin's part of rune_ui's shell (layouts/application,
-   layouts/shared/_sidebar, _panel_bar): the admin menu's items with their
-   submenus, update notices, the account row, the theme toggle, the panel
+   layouts/shared/_sidebar, _panel_bar): update notices, the account row, the theme toggle, the panel
    bar's tools (the "/" filter, Screen options), ⌘K search, the update
    progress modal, and the signed-out layout (layouts/public). */
 
@@ -17,47 +16,6 @@
 }
 
 .skip-link:focus-visible { transform: none; }
-
-/* The admin menu: each item's submenu under it, shown for the current item;
-   the others' first link is the item's own. */
-.sidebar__item {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.sidebar__sub {
-  display: none;
-  flex-direction: column;
-  gap: 1px;
-  margin: 0;
-  padding: 0 0 var(--s-1) 1.625rem;
-  list-style: none;
-}
-
-.sidebar__item--current > .sidebar__sub { display: flex; }
-
-.sidebar__item--current > .sidebar__link {
-  color: var(--text);
-  font-weight: var(--weight-strong);
-}
-
-.sidebar__item--current > .sidebar__link .icon { color: var(--text-muted); }
-
-.sidebar__sub-link {
-  display: flex;
-  align-items: center;
-  gap: var(--s-2);
-  height: var(--control-h-sm);
-  padding: 0 var(--s-2);
-  border-radius: var(--radius-sm);
-  color: var(--text-muted);
-  text-decoration: none;
-}
-
-.sidebar__sub-link:hover { background: var(--hover); color: var(--text); }
-.sidebar__sub-link[aria-current="page"] { background: var(--layer-2); color: var(--text); }
-.sidebar__sub-link .icon { color: var(--text-faint); }
 
 /* A newer version of the CMS or a plugin. */
 .sidebar__link--update,

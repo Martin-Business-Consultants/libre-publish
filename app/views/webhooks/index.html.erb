@@ -6,14 +6,14 @@
     wraps the whole page, as the New button sits in the title row. %>
 <% content_for :page_actions do %>
   <% if Current.user.can?("webhooks:write") %>
-    <%= link_to new_webhook_path, class: "btn btn--secondary", data: { keys: "n", turbo_frame: "webhook_sheet", action: "dialog#open" } do %>
+    <%= link_to new_webhook_path, class: "btn btn--secondary", data: { keys: "n", turbo_frame: "webhook_sheet", action: "rune-dialog#open" } do %>
       <%= icon_tag "add" %>
       <span>New webhook</span>
     <% end %>
   <% end %>
 <% end %>
-<div class="dialog-wrap" data-controller="dialog" data-dialog-modal-value="true" data-dialog-auto-open-value="<%= @sheet_webhook.present? %>"
-     data-action="keydown.esc->dialog#close:stop">
+<div class="dialog-wrap" data-controller="rune-dialog" data-rune-dialog-auto-open-value="<%= @sheet_webhook.present? %>"
+     data-action="keydown.esc->rune-dialog#close:stop">
 <%= render "layouts/shared/page_header", title: @page_title %>
 
 <section class="table-wrap">
@@ -33,7 +33,7 @@
         <tr id="<%= dom_id(webhook) %>" data-filter-target="item">
           <td>
             <% if Current.user.can?("webhooks:write") %>
-              <%= link_to webhook.name, edit_webhook_path(webhook), class: "row-link", data: { turbo_frame: "webhook_sheet", action: "dialog#open" } %>
+              <%= link_to webhook.name, edit_webhook_path(webhook), class: "row-link", data: { turbo_frame: "webhook_sheet", action: "rune-dialog#open" } %>
             <% else %>
               <%= link_to webhook.name, webhook_path(webhook), class: "row-link" %>
             <% end %>
@@ -53,7 +53,7 @@
 </section>
 <%= pagination_nav @pagination %>
 
-<dialog class="dialog sheet webhook-sheet" data-dialog-target="dialog" aria-label="Webhook" closedby="any">
+<dialog class="dialog sheet webhook-sheet" data-rune-dialog-target="dialog" data-action="click->rune-dialog#backdrop" aria-label="Webhook" closedby="any">
   <% if @sheet_webhook %>
     <%= render "webhooks/sheet", webhook: @sheet_webhook, deliveries: @sheet_deliveries || [] %>
   <% else %>

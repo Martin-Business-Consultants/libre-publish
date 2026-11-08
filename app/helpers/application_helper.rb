@@ -63,8 +63,11 @@ module ApplicationHelper
   # icon() because plugins and the menu's data name icons as strings; a name
   # the set doesn't have draws as a dot.
   def icon_tag(name, **options)
-    icon(RuneUi.icons.key?(name.to_s.to_sym) ? name : "dot", css: options[:class])
+    icon(known_icon(name), css: options[:class])
   end
+
+  # An icon name rune_ui knows, or its dot for one it doesn't (a plugin's).
+  def known_icon(name) = RuneUi.icons.key?(name.to_s.to_sym) ? name : "dot"
 
   STATUS_TONES = {
     "positive" => %w[published active approved paid accepted delivered succeeded success enabled ready verified],

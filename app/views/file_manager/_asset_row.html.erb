@@ -12,7 +12,7 @@
       </span>
       <div class="grow">
         <%= link_to asset.title, file_manager_asset_path(asset), class: "row-link truncate",
-              data: { turbo_frame: "asset_details", action: "dialog#open" } %>
+              data: { turbo_frame: "asset_details", action: "rune-dialog#open" } %>
         <%= render "layouts/shared/row_links", name: asset.title, edit_path: file_manager_asset_path(asset),
               delete_path: (file_manager_asset_path(asset) if can_delete), delete_message: "It goes to the trash, where it can be restored." %>
       </div>

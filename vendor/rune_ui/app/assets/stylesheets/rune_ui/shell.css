@@ -38,6 +38,16 @@
   .sidebar__link .icon { color: var(--text-faint); }
   .sidebar__link:hover .icon, .sidebar__link[aria-current="page"] .icon { color: var(--text-muted); }
   .sidebar__list { display: flex; flex-direction: column; gap: 1px; }
+  /* An item with a submenu (sidebar_link sub:): the submenu shows under the current item. */
+  .sidebar__item { display: flex; flex-direction: column; gap: 1px; }
+  .sidebar__item--current > .sidebar__link { color: var(--text); font-weight: var(--weight-strong); }
+  .sidebar__item--current > .sidebar__link .icon { color: var(--text-muted); }
+  .sidebar__sub { display: none; flex-direction: column; gap: 1px; margin: 0; padding: 0 0 var(--s-1) 1.625rem; list-style: none; }
+  .sidebar__item--current > .sidebar__sub { display: flex; }
+  .sidebar__sub-link { display: flex; align-items: center; gap: var(--s-2); height: var(--control-h-sm); padding: 0 var(--s-2); border-radius: var(--radius-sm); color: var(--text-muted); text-decoration: none; }
+  .sidebar__sub-link:hover { background: var(--hover); color: var(--text); }
+  .sidebar__sub-link[aria-current="page"] { background: var(--layer-2); color: var(--text); }
+  .sidebar__sub-link .icon { color: var(--text-faint); }
   .sidebar__label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .sidebar__kbd { color: var(--text-faint); font-size: var(--text-meta); }
   .sidebar__footer { margin-top: auto; padding-top: var(--s-3); display: flex; align-items: center; gap: var(--s-1); }

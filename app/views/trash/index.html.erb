@@ -7,7 +7,7 @@
 
 <%# The trash as a list table; picking an item opens what it was in a sheet
     (trash#show, into the trash_item frame), where it's restored or deleted. %>
-<div class="dialog-wrap" data-controller="dialog" data-dialog-modal-value="true" data-action="keydown.esc->dialog#close:stop">
+<div class="dialog-wrap" data-controller="rune-dialog" data-action="keydown.esc->rune-dialog#close:stop">
   <section class="table-wrap">
     <table class="table data-table">
       <thead>
@@ -25,7 +25,7 @@
           <tr id="trash_<%= kind %>_<%= record.id %>" data-filter-target="item">
             <td>
               <%= link_to label, trash_item_path(kind, record.id), class: "row-link",
-                    data: { turbo_frame: "trash_item", action: "dialog#open" } %>
+                    data: { turbo_frame: "trash_item", action: "rune-dialog#open" } %>
               <%= render "layouts/shared/row_links",
                     links: [ [ "View", trash_item_path(kind, record.id) ] ],
                     buttons: ([ [ "Restore", trash_item_restoration_path(kind, record.id) ] ] if can_write),
@@ -43,12 +43,12 @@
   </section>
   <%= pagination_nav @pagination %>
 
-  <dialog class="dialog sheet" data-dialog-target="dialog"
+  <dialog class="dialog sheet" data-rune-dialog-target="dialog" data-action="click->rune-dialog#backdrop"
           aria-label="In the trash" closedby="any">
     <div class="dialog__box">
       <header class="dialog__header">
         <h2 class="dialog__title">In the trash</h2>
-        <%= icon_button "close", label: "Close", data: { action: "dialog#close" } %>
+        <%= icon_button "close", label: "Close", data: { action: "rune-dialog#close" } %>
       </header>
       <turbo-frame id="trash_item">
         <p class="muted">Loading…</p>

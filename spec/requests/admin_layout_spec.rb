@@ -11,7 +11,8 @@ RSpec.describe "The admin layout", type: :request do
     sign_in_as create(:user, admin: false, role: create(:role, permissions: capabilities))
   end
 
-  def item(label) = response.body[%r{<div class="sidebar__item[^"]*"[^>]*>\s*<a [^>]*class="sidebar__link[ "][^>]*>(?:(?!</a>).)*?#{Regexp.escape(label)}</span>}m]
+  # A top-level item: its link, and the div around it when it has a submenu.
+  def item(label) = response.body[%r{(?:<div class="sidebar__item[^"]*"[^>]*>\s*)?<a [^>]*data-menu-group="[^"]*"[^>]*>(?:(?!</a>).)*?#{Regexp.escape(label)}</span>}m]
 
   it "lists the menu in its groups, Pages first and Settings last" do
     sign_in_as admin

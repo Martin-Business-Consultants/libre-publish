@@ -5,7 +5,7 @@
     select, the whole tile is its tick (admin/media.css). %>
 <div id="<%= dom_id(asset) %>" class="media-tile" data-filter-target="item">
   <%= link_to file_manager_asset_path(asset), class: "media-tile__link", title: asset.title,
-        data: { turbo_frame: "asset_details", action: "dialog#open" } do %>
+        data: { turbo_frame: "asset_details", action: "rune-dialog#open" } do %>
     <span class="media-thumb media-thumb--square">
       <%= asset_thumbnail asset, size: 320 %>
     </span>

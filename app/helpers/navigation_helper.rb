@@ -7,33 +7,34 @@
 # new_item). Every link shows only when the role grants its capability.
 module NavigationHelper
   # A top-level item: its id (what plugins' submenus and `after:` name), label,
-  # icon, where it goes, the capability it needs, and its submenu of
+  # icon, where it goes, its go-to chord for the keyboard controller (keys,
+  # listed in the ? sheet), the capability it needs, and its submenu of
   # [label, path, capability]. A path is a route helper's name, or a lambda
   # run in the view (nil hides the link). An item without a path goes to the
   # first submenu link the role may see.
   ADMIN_MENU = {
     "Content" => [
-      {id: :pages, label: "Pages", icon: "document", path: :pages_path, capability: "pages:read", submenu: [
+      {id: :pages, label: "Pages", icon: "document", path: :pages_path, keys: "g p", capability: "pages:read", submenu: [
         ["All pages", :pages_path, "pages:read"],
         ["Add new", :new_page_path, "pages:write"]
       ]},
-      {id: :collections, label: "Collections", icon: "stack", path: :collections_path, capability: "collections:read",
+      {id: :collections, label: "Collections", icon: "stack", path: :collections_path, keys: "g c", capability: "collections:read",
        submenu: [
          ["All collections", :collections_path, "collections:read"],
          ["Add new", :new_collection_path, "collections:write"]
        ]},
-      {id: :globals, label: "Globals", icon: "world", path: :globals_path, capability: "globals:read", submenu: [
+      {id: :globals, label: "Globals", icon: "world", path: :globals_path, keys: "g l", capability: "globals:read", submenu: [
         ["All globals", :globals_path, "globals:read"],
         ["Add new", :new_global_path, "globals:write"]
       ]},
-      {id: :patterns, label: "Patterns", icon: "copy-paste", path: :block_patterns_path, capability: "pages:read", submenu: [
+      {id: :patterns, label: "Patterns", icon: "copy-paste", path: :block_patterns_path, keys: "g t", capability: "pages:read", submenu: [
         ["All patterns", :block_patterns_path, "pages:read"],
         ["Add new", :new_block_pattern_path, "pages:write"]
       ]}
     ],
     "Insights" => [
-      {id: :audit_log, label: "Audit log", icon: "history", path: :audit_logs_path, capability: "audit_log:read"},
-      {id: :trash, label: "Trash", icon: "trash", path: :trash_path, capability: "trash:read"}
+      {id: :audit_log, label: "Audit log", icon: "history", path: :audit_logs_path, keys: "g a", capability: "audit_log:read"},
+      {id: :trash, label: "Trash", icon: "trash", path: :trash_path, keys: "g x", capability: "trash:read"}
     ],
     "Tools" => [
       {id: :tools, label: "Tools", icon: "wrench", submenu: [
@@ -54,7 +55,7 @@ module NavigationHelper
       ]}
     ],
     "Access" => [
-      {id: :users, label: "Users", icon: "everyone", path: :users_path, capability: "users:read", submenu: [
+      {id: :users, label: "Users", icon: "everyone", path: :users_path, keys: "g u", capability: "users:read", submenu: [
         ["All users", :users_path, "users:read"],
         ["Add new", :new_user_path, "users:write"]
       ]},
@@ -64,13 +65,13 @@ module NavigationHelper
       ]}
     ],
     "Help" => [
-      {id: :docs, label: "Docs", icon: "help-circle", path: :docs_path, capability: "pages:read", submenu: [
+      {id: :docs, label: "Docs", icon: "help-circle", path: :docs_path, keys: "g d", capability: "pages:read", submenu: [
         ["All docs", :docs_path, "pages:read"],
         ["Site health", :site_health_docs_path, "pages:read"]
       ]}
     ],
     "Settings" => [
-      {id: :settings, label: "Settings", icon: "settings-outline", path: :settings_path}
+      {id: :settings, label: "Settings", icon: "settings-outline", path: :settings_path, keys: "g s"}
     ]
   }.freeze
 
@@ -86,7 +87,7 @@ module NavigationHelper
   # The collections listed by name under Collections, at most this many.
   COLLECTIONS_IN_MENU = 12
 
-  MenuEntry = Struct.new(:id, :label, :icon, :url, :current, :submenu, keyword_init: true)
+  MenuEntry = Struct.new(:id, :label, :icon, :url, :current, :submenu, :keys, keyword_init: true)
   SubmenuEntry = Struct.new(:label, :url, :current, :icon, keyword_init: true)
 
   # [[group, [MenuEntry, …]], …] for the admin menu, with empty items and
@@ -228,7 +229,7 @@ module NavigationHelper
     url = item[:path] ? resolve_path(item[:path]) : submenu.first&.url
     return unless url
 
-    MenuEntry.new(id: item[:id], label: item[:label], icon: item[:icon], url: url, current: false, submenu: submenu)
+    MenuEntry.new(id: item[:id], label: item[:label], icon: item[:icon], url: url, current: false, submenu: submenu, keys: item[:keys])
   end
 
   # The item whose own link or submenu links match this page most closely is

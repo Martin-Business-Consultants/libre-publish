@@ -3,17 +3,17 @@
     an icon; its fields come after, on the schema. It opens by itself at
     /globals/new (the menus link there) and when a submit came back with
     errors. %>
-<div class="contents" data-controller="dialog" data-dialog-modal-value="true" data-dialog-auto-open-value="<%= open %>" data-action="keydown.esc->dialog#close:stop">
-  <button type="button" class="btn btn--secondary" data-keys="n" data-action="dialog#open">
+<div class="contents" data-controller="rune-dialog" data-rune-dialog-auto-open-value="<%= open %>" data-action="keydown.esc->rune-dialog#close:stop">
+  <button type="button" class="btn btn--secondary" data-keys="n" data-action="rune-dialog#open">
     <%= icon_tag "add" %>
     <span class="truncate">New global</span>
     <kbd>N</kbd>
   </button>
-  <dialog class="dialog sheet" data-dialog-target="dialog" aria-label="New global" closedby="any">
+  <dialog class="dialog sheet" data-rune-dialog-target="dialog" data-action="click->rune-dialog#backdrop" aria-label="New global" closedby="any">
     <div class="dialog__box">
       <header class="dialog__header">
         <h2 class="dialog__title">New global</h2>
-        <%= icon_button "close", label: "Close", data: { action: "dialog#close" } %>
+        <%= icon_button "close", label: "Close", data: { action: "rune-dialog#close" } %>
       </header>
       <%= render "layouts/shared/errors", record: global %>
       <%= form_with model: global, url: globals_path, class: "stack", data: { controller: "slug", slug_separator_value: "_" } do |form| %>
@@ -35,7 +35,7 @@
           <%= form.text_field :icon, placeholder: "Globe", autocomplete: "off" %>
         </label>
         <div class="dialog__actions">
-          <button type="button" class="btn btn--ghost" data-action="dialog#close">Cancel</button>
+          <button type="button" class="btn btn--ghost" data-action="rune-dialog#close">Cancel</button>
           <%= form.button "Create global", class: "btn btn--primary" %>
         </div>
       <% end %>

@@ -2,7 +2,7 @@
 
 <% content_for :page_actions do %>
   <% if Current.user.can?("redirects:write") %>
-    <%= link_to new_tools_redirect_path, class: "btn btn--secondary", data: { keys: "n", turbo_frame: "redirect_sheet", action: "dialog#open" } do %>
+    <%= link_to new_tools_redirect_path, class: "btn btn--secondary", data: { keys: "n", turbo_frame: "redirect_sheet", action: "rune-dialog#open" } do %>
       <%= icon_tag "add" %>
       <span>New redirect</span>
     <% end %>
@@ -11,8 +11,8 @@
 <%# The redirects as a list table. New and Edit open in a sheet beside it
     (tools/redirects/sheet, into the redirect_sheet frame); at their own
     addresses, and when a save is refused, the list opens with it. %>
-<div class="contents" data-controller="dialog" data-dialog-modal-value="true" data-dialog-auto-open-value="<%= @sheet_redirect.present? %>"
-     data-action="keydown.esc->dialog#close:stop">
+<div class="contents" data-controller="rune-dialog" data-rune-dialog-auto-open-value="<%= @sheet_redirect.present? %>"
+     data-action="keydown.esc->rune-dialog#close:stop">
 <%= render "layouts/shared/page_header", title: @page_title %>
 
 <div class="button-row tools-list-actions">
@@ -61,7 +61,7 @@
 
 <%= pagination_nav @pagination %>
 
-<dialog class="dialog sheet" data-dialog-target="dialog" aria-label="Redirect" closedby="any">
+<dialog class="dialog sheet" data-rune-dialog-target="dialog" data-action="click->rune-dialog#backdrop" aria-label="Redirect" closedby="any">
   <div class="dialog__box">
     <% if @sheet_redirect %>
       <%= render "tools/redirects/sheet", redirect: @sheet_redirect %>

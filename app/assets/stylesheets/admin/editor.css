@@ -404,7 +404,7 @@ textarea.markdown-editor__input {
   min-height: 10rem;
   padding: var(--s-3) var(--s-4);
   border: 1px solid var(--line);
-  border-radius: var(--radius-control);
+  border-radius: var(--radius-lg);
 }
 
 /* The SEO panel (content_form/_seo): its title and checks ruled off above

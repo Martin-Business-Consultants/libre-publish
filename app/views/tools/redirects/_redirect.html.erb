@@ -7,7 +7,7 @@
   <% end %>
   <td>
     <%= link_to redirect.source_path, edit_tools_redirect_path(redirect), class: "row-link mono",
-          data: { turbo_frame: "redirect_sheet", action: "dialog#open" } %>
+          data: { turbo_frame: "redirect_sheet", action: "rune-dialog#open" } %>
     <%= render "layouts/shared/row_links", name: redirect.source_path,
         delete_path: (tools_redirect_path(redirect) if can_delete),
         delete_message: "Anyone visiting " + redirect.source_path + " will get a 404 instead." %>

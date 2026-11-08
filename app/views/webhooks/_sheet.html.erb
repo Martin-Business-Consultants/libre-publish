@@ -8,7 +8,7 @@
   <div class="dialog__box">
     <header class="dialog__header">
       <h2 class="dialog__title"><%= webhook.new_record? ? "New webhook" : webhook.name_was.presence || "Webhook" %></h2>
-      <%= icon_button "close", label: "Close", data: { action: "dialog#close" } %>
+      <%= icon_button "close", label: "Close", data: { action: "rune-dialog#close" } %>
     </header>
 
     <% if webhook.persisted? %>
@@ -89,7 +89,7 @@
       </label>
 
       <div class="button-row">
-        <button type="button" class="btn btn--ghost" data-action="dialog#close">Cancel</button>
+        <button type="button" class="btn btn--ghost" data-action="rune-dialog#close">Cancel</button>
         <%= form.button (webhook.new_record? ? "Add webhook" : "Save changes"), class: "btn btn--primary" %>
       </div>
     <% end %>
