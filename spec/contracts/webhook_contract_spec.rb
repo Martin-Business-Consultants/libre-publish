@@ -16,8 +16,6 @@ RSpec.describe "Webhook contract", type: :request do
     File.read(Rails.root.join("spec/fixtures/contracts/webhook_contract.json"))
   ).freeze
 
-  def json = JSON.parse(response.body)
-
   def auth_headers(capabilities)
     actor = create(:user, admin: false, role: create(:role, permissions: capabilities))
     {"Authorization" => "Bearer #{actor.api_token.token}"}

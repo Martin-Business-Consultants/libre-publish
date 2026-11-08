@@ -8,6 +8,34 @@ out.
 
 ## Unreleased
 
+### Fixed
+- **The "entry changed" email linked to the website, not the editor.** Its
+  link left out `/cms` and only worked because the website redirects old
+  admin addresses; a page or redirect at that path would have won. It now
+  opens the entry's editor.
+- **A service token could never write the Scripts global**, even one whose
+  role holds `globals:scripts`: the check read the signed-in user, which a
+  service token doesn't have. It now asks the token, as every other
+  capability check does.
+- **The Sitemap screen's quick edit could change a live page or entry
+  without the publish capability** (only a status change asked for it). The
+  admin and the API now ask the record's one publish gate, so any change to
+  a live row, or any status change that publishes, needs it.
+- **A downloaded backup's database copy is checked** (`PRAGMA quick_check`),
+  as the automatic backups' always were.
+
+### Changed
+- Webhook deliveries are attempted once. The retries they declared never
+  ran (every failure is recorded as a failed delivery, never raised), so
+  nothing changes but the job no longer claims to retry.
+- **Docs › Site health** has a new Operations check, "Background work isn't
+  failing": the jobs that failed in the last week, by name.
+- Jobs queued inside a transaction wait for it to commit.
+- Action Cable and Action Mailbox are no longer loaded (nothing used them),
+  and the `production_cable.sqlite3` database is no longer created; an
+  existing one can be deleted. The job aliases kept for jobs queued before
+  1.12 are gone.
+
 ## 1.33.4
 
 ### Fixed

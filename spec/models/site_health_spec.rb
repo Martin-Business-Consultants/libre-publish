@@ -5,6 +5,18 @@ require "rails_helper"
 RSpec.describe SiteHealth do
   def check(key) = described_class.checks.find { it.key == key }
 
+  it "names background jobs that failed, where jobs go through Solid Queue" do
+    expect(check("background_jobs").ok).to be_nil
+
+    allow(described_class).to receive(:failed_job_classes).and_return(%w[Webhook::DeliveryJob Webhook::DeliveryJob IndexNowJob])
+    result = check("background_jobs")
+    expect(result.ok).to be(false)
+    expect(result.detail).to include("3 failed", "Webhook::DeliveryJob (2)", "IndexNowJob (1)")
+
+    allow(described_class).to receive(:failed_job_classes).and_return([])
+    expect(check("background_jobs").ok).to be(true)
+  end
+
   it "finds a phone number in the content that isn't the business's" do
     Setting.set("general", phone: "(269) 555-1234")
     Page.create!(slug: "home", title: "Home", status: "published", locale: "en", frontmatter: {"cta" => "Call 269.555.1234 today"})

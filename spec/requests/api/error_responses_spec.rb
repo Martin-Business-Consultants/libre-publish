@@ -12,8 +12,6 @@ RSpec.describe "API error responses", type: :request do
   let(:admin) { create(:user) }
   let(:token) { {"Authorization" => "Bearer #{admin.api_token.token}"} }
 
-  def json = JSON.parse(response.body)
-
   it "answers a missing parameter with 400" do
     post "/api/pages", headers: token, params: {}, as: :json
 

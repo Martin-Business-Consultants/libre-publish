@@ -12,8 +12,6 @@ RSpec.describe "API behaviours", type: :request do
 
   def api(user) = {"Authorization" => "Bearer #{user.api_token.token}"}
 
-  def json = JSON.parse(response.body)
-
   describe "entry fields" do
     let(:collection) do
       Collection.create!(slug: "specials", name: "Specials", schema: {"fields" => [

@@ -73,10 +73,7 @@ RSpec.describe "Content editor", type: :request do
   describe "round trips" do
     before do
       sign_in_as admin
-      ENV["CMS_DEMO_SEED"] = "1"
-      load Rails.root.join("db/seeds.rb")
-    ensure
-      ENV.delete("CMS_DEMO_SEED")
+      with_env("CMS_DEMO_SEED" => "1") { load Rails.root.join("db/seeds.rb") }
     end
 
     it "saves every page, entry and global back unchanged when nothing was edited" do

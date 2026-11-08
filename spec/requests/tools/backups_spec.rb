@@ -14,10 +14,7 @@ RSpec.describe "Tools › Backup", type: :request do
   describe "backup" do
     around do |example|
       Dir.mktmpdir do |dir|
-        ENV["CMS_BACKUP_DIR"] = dir
-        example.run
-      ensure
-        ENV.delete("CMS_BACKUP_DIR")
+        with_env("CMS_BACKUP_DIR" => dir) { example.run }
       end
     end
 

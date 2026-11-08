@@ -161,6 +161,7 @@ module SiteHealth
     archives = SiteBackup.data_archives
     failing = Webhook.where(active: true).where.not(last_status: [nil, "", "success"]).pluck(:name)
     admins = User.joins(:role).where(roles: {name: "Admin"})
+    failed = failed_job_classes
     [
       Check.new(key: "https", group: "Operations", title: "The site is served over HTTPS",
         detail: "Settings › General › Site base URL starts with https://.", ok: Site.configured_base_url.start_with?("https://"), href: "/#{Cms::PATH}/settings/general", cli: nil),
@@ -172,6 +173,10 @@ module SiteHealth
       Check.new(key: "webhooks", group: "Operations", title: "Webhooks are delivering",
         detail: failing.empty? ? "None is failing." : "#{failing.to_sentence} #{failing.one? ? "is" : "are"} failing.",
         ok: Webhook.where(active: true).exists? ? failing.empty? : nil, href: "/#{Cms::PATH}/webhooks", cli: "cms webhooks"),
+      Check.new(key: "background_jobs", group: "Operations", title: "Background work isn't failing",
+        detail: failed.nil? ? "Background jobs run inline here." : failed.empty? ? "No job has failed in the last week." :
+          "#{failed.size} failed in the last week: #{failed.tally.map { |name, count| "#{name} (#{count})" }.first(3).to_sentence}. The log has why.",
+        ok: failed&.empty?, href: nil, cli: nil),
       Check.new(key: "recent_backup", group: "Operations", title: "A backup from the last week",
         detail: archives.any? ? "The newest is from #{archives.map(&:taken_at).max.to_date}." : "Tools › Backup: none yet. Updates take one automatically; download one too.",
         ok: archives.any? { it.taken_at > 7.days.ago }, href: "/#{Cms::PATH}/tools/backup", cli: "cms backup > backup.tar.gz"),
@@ -182,6 +187,16 @@ module SiteHealth
   end
 
   # --- Helpers ---------------------------------------------------------------
+
+  # The job classes that failed in the last week and weren't retried (Solid
+  # Queue keeps them); nil where jobs don't go through Solid Queue.
+  def failed_job_classes(since: 7.days.ago)
+    return unless Rails.configuration.active_job.queue_adapter.to_s == "solid_queue"
+
+    SolidQueue::FailedExecution.joins(:job).where(created_at: since..).pluck("solid_queue_jobs.class_name")
+  rescue ActiveRecord::ActiveRecordError
+    nil
+  end
 
   def digits(text)
     match = text.to_s.match(PHONE) or return nil
