@@ -194,6 +194,8 @@ Rails.application.routes.draw do
     resource :search, only: :show
     # The update progress modal's poll (UpdateProgress).
     resource :update_progress, only: :show
+    # Every rune_ui component in this site's branding and theme (Help › UI kit).
+    resource :ui, only: :show, controller: "ui"
 
     namespace :settings do
       resource :general, only: [:show, :update], controller: "generals"

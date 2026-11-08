@@ -1,0 +1,166 @@
+<% @page_title = "UI kit" %>
+<% parent_page "Docs", docs_path %>
+<%= render "layouts/shared/page_header", title: @page_title %>
+
+<%# Help › UI kit (UiController): every rune_ui component, and the admin's own,
+    drawn in this site's branding and theme. Nothing here sends anything: its
+    forms post nowhere and its buttons only open what they show. Toggle the
+    theme at the sidebar's foot, or change Settings › Branding, and look again. %>
+<div class="stack stack--lg">
+  <%= callout tone: :info, title: "Drawn live" do %>
+    <p>Everything below is the real component in this site's colours, font, corners and shadow. Press <kbd>.</kbd> for key hints, or <kbd>?</kbd> for every key.</p>
+  <% end %>
+
+  <%= card "Buttons", hint: "button_classes(variant:, size:), button_link, icon_button" do %>
+    <div class="stack">
+      <div class="button-row">
+        <button type="button" class="<%= button_classes(variant: :primary) %>">Primary</button>
+        <button type="button" class="<%= button_classes(variant: :secondary) %>">Secondary</button>
+        <button type="button" class="<%= button_classes(variant: :ghost) %>">Ghost</button>
+        <button type="button" class="<%= button_classes(variant: :danger) %>">Danger</button>
+        <button type="button" class="<%= button_classes(variant: :primary) %>" disabled>Disabled</button>
+      </div>
+      <div class="button-row">
+        <button type="button" class="<%= button_classes(variant: :primary, size: :sm) %>">Small primary</button>
+        <button type="button" class="<%= button_classes(size: :sm) %>">Small</button>
+        <%= button_link "A link as a button", docs_path, icon: "help-circle" %>
+        <%= icon_button "settings-outline", label: "An icon button" %>
+        <%= icon_button "trash", label: "A danger icon button", class: "icon-button--danger" %>
+        <span class="pill">A pill</span>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="grid-2">
+    <%= card "Badges and marks", hint: "status_tag, badge(text, tone:), count_pill, status_dot, avatar" do %>
+      <div class="stack">
+        <div class="button-row">
+          <% %w[published draft scheduled failed running].each do |status| %>
+            <%# herb:key status %>
+            <%= status_tag status %>
+          <% end %>
+        </div>
+        <div class="button-row">
+          <%= badge "Info", tone: :info %>
+          <%= badge "OK", tone: :ok %>
+          <%= badge "Attention", tone: :attention %>
+          <%= badge "Danger", tone: :danger %>
+          <%= count_pill 3 %>
+          <%= status_dot :unread, label: "Unread" %>
+          <%= status_dot :attention, label: "Needs attention" %>
+          <%= status_dot :busy, label: "Working" %>
+        </div>
+        <div class="button-row">
+          <%= avatar "Ada Lovelace" %>
+          <%= avatar "Grace Hopper", size: :md %>
+          <%= avatar "Alan Turing", size: :lg %>
+          <%= avatar_stack { safe_join([ avatar("Ada Lovelace"), avatar("Grace Hopper"), avatar("Alan Turing") ]) } %>
+          <%= empty_avatar %>
+        </div>
+        <%= progress_bar 62, label: "Sixty-two percent" %>
+      </div>
+    <% end %>
+
+    <%= card "Callouts", hint: "callout(text, tone:, title:): a message that stays on the page" do %>
+      <div class="stack">
+        <%= callout "A tip, or what a screen is for.", tone: :info %>
+        <%= callout "Saved, and live on the site.", tone: :ok %>
+        <%= callout "The backup is a week old.", tone: :attention, title: "Worth a look" %>
+        <%= callout "The theme couldn't be fetched.", tone: :danger %>
+      </div>
+    <% end %>
+  </div>
+
+  <%= card "Fields", hint: "field, search_input, switch, segmented; a textarea takes a box's corners" do %>
+    <%= form_with url: ui_path, scope: :demo, method: :get do |form| %>
+      <div class="stack">
+        <div class="field-row">
+          <%= field form, :title, label: "Title", hint: "Shown in the tab and in search results." do %>
+            <%= form.text_field :title, value: "About us" %>
+          <% end %>
+          <%= field form, :status, label: "Status" do %>
+            <%= form.select :status, [ [ "Draft", "draft" ], [ "Published", "published" ] ] %>
+          <% end %>
+        </div>
+        <%= field form, :summary, label: "Summary" do %>
+          <%= form.text_area :summary, value: "A sentence or two about the page.", rows: 3 %>
+        <% end %>
+        <div class="button-row">
+          <%= search_input name: "demo_search", placeholder: "Search" %>
+          <%= segmented form, :theme, [ [ "Light", "light", :sun ], [ "Dark", "dark", :moon ] ], checked: false %>
+        </div>
+        <%= settings_switch form, :noindex, "Keep it out of search engines", hint: "Adds noindex to the page." %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <%= card "A list table", hint: "table data-table: j / k move, x ticks, e edits", flush: true do %>
+    <div class="table-wrap">
+      <table class="table data-table">
+        <thead>
+          <tr><th>Title</th><th>Status</th><th>Updated</th></tr>
+        </thead>
+        <tbody>
+          <% [ [ "Home", "published", 2.hours.ago ], [ "About us", "draft", 1.day.ago ], [ "Contact", "scheduled", 3.days.ago ] ].each do |title, status, time| %>
+            <%# herb:key title %>
+            <tr data-filter-target="item">
+              <td>
+                <a href="#" class="row-link"><%= title %></a>
+                <%= render "layouts/shared/row_links", links: [ [ "Edit", "#" ], [ "View", "#" ] ] %>
+              </td>
+              <td><%= status_tag status %></td>
+              <td><span class="nowrap small muted"><%= time_ago time %></span></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+
+  <div class="grid-2">
+    <%= card "Menus, dialogs and sheets", hint: "menu, popover_menu, dialog, sheet: each opens with the kit's motion" do %>
+      <div class="button-row">
+        <%= menu "A menu" do %>
+          <%= menu_label "Signed in" %>
+          <%= menu_link "Edit profile", "#" %>
+          <%= menu_divider %>
+          <%= menu_link "Settings", "#" %>
+        <% end %>
+        <%= popover_menu "A popover menu" do %>
+          <%= menu_link "Duplicate", "#" %>
+          <%= menu_link "Move", "#" %>
+        <% end %>
+        <%= dialog "A dialog", trigger: "Open a dialog" do %>
+          <p class="muted">A question, and the two answers to it.</p>
+          <%= dialog_actions do %>
+            <button type="button" class="<%= button_classes(variant: :primary) %>" data-action="rune-dialog#close">Got it</button>
+          <% end %>
+        <% end %>
+        <%= sheet "A sheet", trigger: "Open a sheet" do %>
+          <p class="muted">Slides in from the right, for a form beside a list.</p>
+        <% end %>
+      </div>
+    <% end %>
+
+    <%= card "Tabs and empty states", hint: "tabs, empty_state" do %>
+      <div class="stack">
+        <%= tabs [ [ "Content", "#", { current: true } ], [ "SEO", "#" ], [ "History", "#", { count: 4 } ] ] %>
+        <%= empty_state "Nothing matches this filter." do %>
+          <%= button_link "Show all", "#", size: :sm %>
+        <% end %>
+        <%= empty_state "No pages yet. The first is usually the home page.", compact: true %>
+      </div>
+    <% end %>
+  </div>
+
+  <%= card "Settings rows", hint: "settings_group, setting_row" do %>
+    <%= settings_group "Notifications", hint: "Where we tell you what changed." do %>
+      <%= setting_row "Email me a weekly summary", hint: "Every Monday morning." do %>
+        <span class="muted small">On</span>
+      <% end %>
+      <%= setting_row "Copy a value" do %>
+        <%= copy_button "lp_live_example_token", label: "Copy" %>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

@@ -67,7 +67,8 @@ module NavigationHelper
     "Help" => [
       {id: :docs, label: "Docs", icon: "help-circle", path: :docs_path, keys: "g d", capability: "pages:read", submenu: [
         ["All docs", :docs_path, "pages:read"],
-        ["Site health", :site_health_docs_path, "pages:read"]
+        ["Site health", :site_health_docs_path, "pages:read"],
+        ["UI kit", :ui_path, "pages:read"]
       ]}
     ],
     "Settings" => [
