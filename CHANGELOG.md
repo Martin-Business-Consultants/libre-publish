@@ -8,6 +8,19 @@ out.
 
 ## Unreleased
 
+### Security
+- **Gems with published vulnerabilities updated**, among them Rails 8.1.4.1
+  (Active Storage, Action Pack and Active Support advisories, one critical),
+  Rack 3.2.8, net-ssh, Nokogiri 1.19.7, Loofah, rails-html-sanitizer,
+  addressable and sqlite3 2.10.2. CI's gem audit had failed on them since
+  1.33.4.
+
+### Fixed
+- **Plugins' screens drawn before 1.34 work again**, Forms among them: the
+  `layouts/shared/row_links` partial and the `dialog` controller they use
+  are back for them (the core's own rows and sheets use `row_actions` and
+  rune_ui's dialog).
+
 ## 1.34.0
 
 ### Added

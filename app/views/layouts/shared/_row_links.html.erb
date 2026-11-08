@@ -1,0 +1,34 @@
+<%# locals: (links: nil, buttons: nil, note: nil, name: nil, edit_path: nil, delete_path: nil, delete_name: nil, delete_message: nil, delete_label: nil) %>
+<%# For plugins' screens drawn before 1.34 (the core's rows use
+    layouts/shared/row_actions, actions at the row's end): a row's actions as
+    links under its title, revealed while the row is hovered or holds focus
+    (.row-actions, components.css). links: [[label, url], …] after Edit (edit_path).
+    buttons: [[label, url, title], …], actions that POST (Restore, Run), drawn
+    as the same links. note: a line of text in place of an action that isn't
+    available. delete_path: the record's delete, confirmed in the page's one
+    delete dialog (layouts/shared/row_delete_dialog). Pass nil for what the
+    record or the role doesn't allow. With a row picked (j / k), e edits it
+    and d deletes it. %>
+<% links = ([ ([ "Edit", edit_path ] if edit_path) ] + Array(links)).compact %>
+<% buttons = Array(buttons).compact %>
+<% if links.any? || buttons.any? || note || delete_path %>
+  <div class="row-actions">
+    <% links.each do |label, url| %>
+      <%# herb:key label %>
+      <%= link_to label, url, class: "row-actions__link", data: { keys: ("e" if label == "Edit") } %>
+    <% end %>
+    <% buttons.each do |label, url, title| %>
+      <%# herb:key label %>
+      <%= button_to label, url, class: "row-actions__link", title: title %>
+    <% end %>
+    <% if note %>
+      <span class="faint"><%= note %></span>
+    <% end %>
+    <% if delete_path %>
+      <% delete_name ||= name || "this" %>
+      <button type="button" class="link-button link-button--danger" title="Delete <%= delete_name %>?" aria-haspopup="dialog" data-keys="d"
+              data-action="row-delete#open" data-row-delete-name-param="<%= delete_name %>" data-row-delete-path-param="<%= delete_path %>"
+              data-row-delete-message-param="<%= delete_message %>"><%= delete_label || "Delete" %></button>
+    <% end %>
+  </div>
+<% end %>
