@@ -1,0 +1,48 @@
+<%# locals: (name: nil, edit_path: nil, edit_data: {}, links: nil, buttons: nil, note: nil, delete_path: nil, delete_name: nil, delete_message: nil, delete_label: nil) %>
+<%# A list table row's last cell, as Runwell draws it: edit and delete as icon
+    buttons at the row's end, quiet until the row is hovered, and any other
+    links (links: [[label, url], …]) or actions that POST (buttons:
+    [[label, url, title], …]) in a ⋯ menu between them. note: a line in the
+    menu in place of an action that isn't available. delete_path: the
+    record's delete, confirmed in the page's one delete dialog
+    (layouts/shared/row_delete_dialog); delete_label words it there and in
+    the button's title ("Trash", "Delete permanently"). Pass nil for what the
+    record or the role doesn't allow. edit_data: data for the pencil (a
+    sheet's turbo_frame and rune-dialog#open). With a row picked (j / k), e edits it
+    and d deletes it. The table's header gets a
+    <th class="data-table__actions-header"> to match. %>
+<% links = Array(links).compact %>
+<% buttons = Array(buttons).compact %>
+<% delete_name ||= name || "this" %>
+<td class="data-table__actions">
+  <div class="data-table__actions-row">
+    <% if edit_path %>
+      <%= link_to edit_path, class: "icon-button row-action", title: "Edit #{name}".strip, aria: { label: "Edit #{name}".strip }, data: { keys: "e" }.merge(edit_data) do %>
+        <%= icon_tag "pencil" %>
+      <% end %>
+    <% end %>
+    <% if links.any? || buttons.any? || note %>
+      <%= popover_menu icon_tag("menu-dots-horizontal"), trigger_class: "icon-button row-action", title: "More for #{delete_name}" do %>
+        <% links.each do |label, url| %>
+          <%# herb:key label %>
+          <%= menu_link label, url, data: { keys: ("e" if label == "Edit" && !edit_path) } %>
+        <% end %>
+        <% buttons.each do |label, url, title| %>
+          <%# herb:key label %>
+          <%= menu_button label, url, data: { title: title } %>
+        <% end %>
+        <% if note %>
+          <%= menu_label note %>
+        <% end %>
+      <% end %>
+    <% end %>
+    <% if delete_path %>
+      <% title = (delete_label.presence || "Delete") + " " + delete_name %>
+      <button type="button" class="icon-button icon-button--danger row-action" title="<%= title %>" aria-label="<%= title %>" aria-haspopup="dialog" data-keys="d"
+              data-action="row-delete#open" data-row-delete-name-param="<%= delete_name %>" data-row-delete-path-param="<%= delete_path %>"
+              data-row-delete-message-param="<%= delete_message %>">
+        <%= icon_tag "trash" %>
+      </button>
+    <% end %>
+  </div>
+</td>

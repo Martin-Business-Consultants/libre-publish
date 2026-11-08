@@ -232,10 +232,11 @@ screens (`editor.css`, `records.css`, `settings.css`, `media.css`…).
   admin's own: `icon_tag` (rune's icons, plus the admin's, registered in
   `config/initializers/rune_ui.rb`), `status_tag` (a badge toned by its
   word), `postbox`, `settings_field`, `settings_switch`, `secret_field`, and
-  the partials in `layouts/shared` (page_header, delete_dialog,
-  confirm_dialog, save_box, status_links, quick_filter, row_links (its
-  Delete fills in the page's one row_delete_dialog), bulk_actions,
-  pagination, errors, editor_bar).
+  the partials in `layouts/shared` (page_header (actions: false on
+  an index), list_toolbar (an index's one row: filters, search, New, and
+  the bulk bar), row_actions (a row's last cell: edit, ⋯, delete, which
+  fills in the page's one row_delete_dialog), delete_dialog, confirm_dialog,
+  save_box, status_links, quick_filter, pagination, errors, editor_bar).
 - *rune's classes*: `stack`, `grid-2`, `catalog`, `button-row`,
   `dot-list`, `dl.details`; `card` (`card__head`, `card__header`,
   `card__title`, `card__hint`, `card__content`, `card__footer`, `card--flush`,
@@ -253,7 +254,7 @@ screens (`editor.css`, `records.css`, `settings.css`, `media.css`…).
   boxes: `with-aside__main`, `with-aside__aside`), `measure`, `divided`,
   `bullet-list`, `code-block`, `mono`, `strong`, `tabular`, `truncate`,
   `contents`, `icon--xs|md|lg|xl`; list tables (`data-table` with
-  `data-table__check|num|empty`, `row-actions`, `list-toolbar`,
+  `data-table__check|num|empty|actions`, `row-action`, `list-toolbar`,
   `pagination`), `postbox`, `save-box`, `editor-bar`, `switch-field`,
   `checkbox--top`, `secret-field`, `title-input`, `link-button--danger`.
 

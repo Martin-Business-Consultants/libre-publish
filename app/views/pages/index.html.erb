@@ -41,6 +41,7 @@
         <th>Status</th>
         <th>Locale</th>
         <th>Updated</th>
+        <th class="data-table__actions-header"><span class="visually-hidden">Actions</span></th>
       </tr>
     </thead>
     <tbody>
@@ -56,19 +57,19 @@
             <span class="page-tree__title" data-depth="<%= [ page.depth.to_i, 6 ].min %>">
               <%= link_to page.title, (can_write ? edit_page_path(page.path) : page_schema_path(page.path)), class: "row-link" %>
             </span>
-            <%= render "layouts/shared/row_links",
-                  links: [ ([ "Edit", edit_page_path(page.path) ] if can_write), ([ "Fields", page_schema_path(page.path) ] if can_write),
-                           ([ "View", site_url.chomp("/") + "/" + page.path ] if site_url && page.status == "published") ].compact,
-                  delete_path: (page_path(page.path) if can_delete), delete_name: page.title, delete_label: "Trash",
-                  delete_message: "It goes to the trash, where it can be restored." %>
           </td>
           <td><span class="mono small muted">/<%= page.path %></span></td>
           <td><%= status_tag page.status %></td>
           <td><span class="muted"><%= page.locale %></span></td>
           <td><span class="nowrap small muted"><%= time_ago_tag page.updated_at %></span></td>
+          <%= render "layouts/shared/row_actions", name: page.title,
+                edit_path: (edit_page_path(page.path) if can_write),
+                links: [ ([ "Fields", page_schema_path(page.path) ] if can_write), ([ "View", site_url.chomp("/") + "/" + page.path ] if site_url && page.status == "published") ].compact,
+                delete_path: (page_path(page.path) if can_delete), delete_name: page.title, delete_label: "Trash",
+                delete_message: "It goes to the trash, where it can be restored." %>
         </tr>
       <% end %>
-      <%= table_empty_row((@status || @locale) ? "No pages match." : "No pages yet. The first one is usually the home page.", columns: ticks ? 6 : 5, link: (["Show all", pages_path] if @status || @locale)) if @pages.none? %>
+      <%= table_empty_row((@status || @locale) ? "No pages match." : "No pages yet. The first one is usually the home page.", columns: ticks ? 7 : 6, link: (["Show all", pages_path] if @status || @locale)) if @pages.none? %>
     </tbody>
   </table>
 </section>

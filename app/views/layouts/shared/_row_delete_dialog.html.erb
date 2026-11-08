@@ -1,5 +1,5 @@
 <%# locals: () %>
-<%# The rows' one delete dialog: each list row's Delete (layouts/shared/row_links) fills it in
+<%# The rows' one delete dialog: each list row's Delete (layouts/shared/row_actions) fills it in
     and opens it (row_delete_controller), so a long list doesn't carry a dialog and a form per
     row. %>
 <dialog class="dialog" aria-label="<%= tx("Delete") %>" data-row-delete-target="dialog" data-action="click->row-delete#backdrop keydown.esc->row-delete#close:stop">

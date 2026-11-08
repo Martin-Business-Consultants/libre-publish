@@ -23,6 +23,7 @@
         <th>Slug</th>
         <th class="data-table__num">Fields</th>
         <th class="data-table__num">Entries</th>
+        <th class="data-table__actions-header"><span class="visually-hidden">Actions</span></th>
       </tr>
     </thead>
     <tbody>
@@ -37,19 +38,17 @@
               <%= icon_tag collection.admin_icon, class: "icon--sm faint" %>
               <span><%= collection.name %></span>
             <% end %>
-            <%= render "layouts/shared/row_links",
-                  links: [ [ "Entries", collection_entries_path(collection.slug) ],
-                           ([ "Build", build_collection_entries_path(collection.slug) ] if collection.build_board?),
-                           ([ "Schema", collection_schema_path(collection.slug) ] if can_write) ].compact,
-                  delete_path: (collection_path(collection.slug) if can_delete), delete_name: collection.name,
-                  delete_message: "Its entries are deleted with it. This can’t be undone." %>
           </td>
           <td><span class="mono muted"><%= collection.slug %></span></td>
           <td class="data-table__num"><%= collection.fields.size %></td>
           <td class="data-table__num"><%= @entry_counts.fetch(collection.id, 0) %></td>
+          <%= render "layouts/shared/row_actions",
+                links: [ [ "Entries", collection_entries_path(collection.slug) ], ([ "Build", build_collection_entries_path(collection.slug) ] if collection.build_board?), ([ "Schema", collection_schema_path(collection.slug) ] if can_write) ].compact,
+                delete_path: (collection_path(collection.slug) if can_delete), delete_name: collection.name,
+                delete_message: "Its entries are deleted with it. This can’t be undone." %>
         </tr>
       <% end %>
-      <%= table_empty_row("No collections yet. Start from a template, or define the fields yourself.", columns: can_delete ? 5 : 4) if @collections.none? %>
+      <%= table_empty_row("No collections yet. Start from a template, or define the fields yourself.", columns: can_delete ? 6 : 5) if @collections.none? %>
     </tbody>
   </table>
 </section>

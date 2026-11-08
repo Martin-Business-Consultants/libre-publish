@@ -41,15 +41,7 @@ label.btn { cursor: pointer; }
    action, opening the row's sitemap settings in place on a line of its own. */
 .quick-edit > summary { display: inline; }
 .row-actions > .quick-edit[open] { flex-basis: 100%; }
-/* An open quick edit takes the row's actions out of their overlay
-   (components.css) and under the title, where its form has the cell's width. */
-.row-actions:has(.quick-edit[open]) {
-  position: static;
-  flex-wrap: wrap;
-  padding: 0;
-  background: none;
-  visibility: visible;
-}
+.row-actions:has(.quick-edit[open]) { visibility: visible; }
 
 .row-actions .quick-edit__link { color: var(--accent); text-decoration: none; cursor: pointer; }
 .row-actions .quick-edit__link:hover { color: var(--accent-hover); text-decoration: underline; }

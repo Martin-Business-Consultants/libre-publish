@@ -8,6 +8,7 @@
         <th>Saved</th>
         <th>By</th>
         <th>Differs from now</th>
+        <th class="data-table__actions-header"><span class="visually-hidden">Actions</span></th>
       </tr>
     </thead>
     <tbody>
@@ -19,7 +20,6 @@
             <%= link_to show_path.call(version), class: "row-link" do %>
               <%= site_time_tag version.created_at %>
             <% end %>
-            <%= render "layouts/shared/row_links", links: [ [ "Compare", show_path.call(version) ] ] %>
           </td>
           <td><span class="muted"><%= version.author&.name.presence || version.author&.email || "—" %></span></td>
           <td>
@@ -29,9 +29,10 @@
               <%= changed.map(&:humanize).to_sentence %>
             <% end %>
           </td>
+          <%= render "layouts/shared/row_actions", links: [ [ "Compare", show_path.call(version) ] ] %>
         </tr>
       <% end %>
-      <%= table_empty_row("No saved versions yet. One is kept each time the content changes.", columns: 3) if versions.none? %>
+      <%= table_empty_row("No saved versions yet. One is kept each time the content changes.", columns: 4) if versions.none? %>
     </tbody>
   </table>
 </section>

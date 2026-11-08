@@ -4,14 +4,12 @@
    label, secrets behind an eye). Each area's screens are in their own file
    beside this one. */
 
-/* A list table, as WordPress lays one out (layouts/shared/_status_links,
-   _bulk_actions, _row_links): <table class="table data-table"> in a
-   .table-wrap, drawn by rune's .table. __check is the tick-box column,
-   __num a number (right aligned), __empty the one cell that says there's
+/* A list table, as Runwell draws one (layouts/shared/_list_toolbar,
+   _row_actions): <table class="table data-table"> in a .table-wrap, drawn
+   by rune's .table at its own row height and padding. __check is the
+   tick-box column, __num a number (right aligned), __actions the row's
+   edit, ⋯ and delete at its end, __empty the one cell that says there's
    nothing (PaginationHelper#table_empty_row). */
-/* Dense: rows at --row-h, cells closer together than rune's default table. */
-.data-table :is(th, td) { padding: var(--s-1) var(--s-2); }
-.data-table th { height: var(--row-h); }
 
 /* The tick-box column fits its box, and the column after it (the row's
    title) takes the leftover width and wraps. rune's own rule gives the
@@ -19,6 +17,18 @@
 .data-table .data-table__check { width: 1%; padding-right: 0; }
 .data-table:has(.data-table__check) :is(th, td):nth-child(2) { width: auto; white-space: normal; }
 .data-table .data-table__num { text-align: right; }
+
+/* The row's actions: icon buttons at its end, quiet until the row is
+   hovered, picked (j / k) or one of them has focus. */
+.data-table :is(.data-table__actions, .data-table__actions-header) { width: 1%; padding-block: 0; white-space: nowrap; text-align: right; }
+.data-table__actions-row { display: flex; align-items: center; justify-content: flex-end; gap: 2px; }
+.data-table .row-action { opacity: .6; }
+.data-table tr:is(:hover, [data-keyboard-current]) .row-action,
+.data-table .row-action:is(:focus-visible, [aria-expanded="true"]) { opacity: 1; }
+
+@media (any-hover: none) {
+  .data-table .row-action { opacity: 1; }
+}
 
 .data-table .data-table__empty {
   padding-block: var(--s-6);
@@ -28,54 +38,22 @@
 
 .data-table tbody tr:has(.data-table__empty):hover td { background: none; }
 
-/* A row's actions show at the right of its title cell while the row is
-   hovered or holds focus, over the end of the title, so they take no line
-   of their own. On a touch screen they're always there, under the title. */
-.data-table td:has(> .row-actions) { position: relative; }
-
+/* The Sitemap's links under a row's title (Edit, View, Quick edit), shown
+   while the row is hovered or holds focus; always on a touch screen. */
 .row-actions {
-  position: absolute;
-  inset-block: 0;
-  right: 0;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--s-3);
-  padding: 0 var(--s-2) 0 var(--s-6);
+  gap: var(--s-1) var(--s-3);
   font-size: var(--text-meta);
-  line-height: var(--leading-tight);
-  white-space: nowrap;
-  background:
-    linear-gradient(to right, transparent, var(--hover) var(--s-5)),
-    linear-gradient(to right, transparent, var(--panel) var(--s-5));
   visibility: hidden;
 }
 
 tr:is(:hover, :focus-within, [data-keyboard-current]) .row-actions { visibility: visible; }
 
 @media (any-hover: none) {
-  .row-actions {
-    position: static;
-    flex-wrap: wrap;
-    gap: var(--s-1) var(--s-3);
-    padding: 0;
-    background: none;
-    visibility: visible;
-  }
+  .row-actions { visibility: visible; }
 }
-
-.row-actions .row-actions__link {
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--text-muted);
-  font: inherit;
-  font-weight: var(--weight);
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.row-actions .row-actions__link:hover { color: var(--text); text-decoration: underline; }
-.row-actions .link-button { font-size: inherit; }
 
 /* An index's one toolbar row (layouts/shared/list_toolbar): filters, or
    the bulk bar, on the left; the search and the page's actions on the right. */

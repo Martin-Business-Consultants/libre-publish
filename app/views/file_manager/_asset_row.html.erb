@@ -13,8 +13,6 @@
       <div class="grow">
         <%= link_to asset.title, file_manager_asset_path(asset), class: "row-link truncate",
               data: { turbo_frame: "asset_details", action: "rune-dialog#open" } %>
-        <%= render "layouts/shared/row_links", name: asset.title, edit_path: file_manager_asset_path(asset),
-              delete_path: (file_manager_asset_path(asset) if can_delete), delete_message: "It goes to the trash, where it can be restored." %>
       </div>
     </div>
   </td>
@@ -22,4 +20,7 @@
   <td><span class="mono muted"><%= asset.folder %></span></td>
   <td class="data-table__num"><span class="nowrap"><%= number_to_human_size(asset.byte_size) %></span></td>
   <td><span class="nowrap small muted"><%= time_ago_tag asset.created_at %></span></td>
+  <%= render "layouts/shared/row_actions", name: asset.title, edit_path: file_manager_asset_path(asset),
+        edit_data: { turbo_frame: "asset_details", action: "rune-dialog#open" },
+        delete_path: (file_manager_asset_path(asset) if can_delete), delete_message: "It goes to the trash, where it can be restored." %>
 </tr>

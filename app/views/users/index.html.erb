@@ -23,6 +23,7 @@
         <th>Role</th>
         <th>Verified</th>
         <th>2FA</th>
+        <th class="data-table__actions-header"><span class="visually-hidden">Actions</span></th>
       </tr>
     </thead>
     <tbody>
@@ -42,15 +43,15 @@
             <% if yourself %>
               <span class="small muted">(you)</span>
             <% end %>
-            <%= render "layouts/shared/row_links", name: user.name,
-                  edit_path: (edit_user_path(user) if Current.user.can?("users:write")),
-                  delete_path: (user_path(user) if can_delete && !yourself),
-                  delete_message: "They can no longer sign in to this workspace." %>
           </td>
           <td><span class="muted"><%= user.email %></span></td>
           <td><%= user.role&.name || "No role" %></td>
           <td><%= user.verified ? "Yes" : "No" %></td>
           <td><%= user.totp_enabled ? "On" : "Off" %></td>
+          <%= render "layouts/shared/row_actions", name: user.name,
+                edit_path: (edit_user_path(user) if Current.user.can?("users:write")),
+                delete_path: (user_path(user) if can_delete && !yourself),
+                delete_message: "They can no longer sign in to this workspace." %>
         </tr>
       <% end %>
     </tbody>

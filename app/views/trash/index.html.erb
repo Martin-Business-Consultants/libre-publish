@@ -16,6 +16,7 @@
           <th>Type</th>
           <th>Details</th>
           <th>Deleted</th>
+          <th class="data-table__actions-header"><span class="visually-hidden">Actions</span></th>
         </tr>
       </thead>
       <tbody>
@@ -26,18 +27,18 @@
             <td>
               <%= link_to label, trash_item_path(kind, record.id), class: "row-link",
                     data: { turbo_frame: "trash_item", action: "rune-dialog#open" } %>
-              <%= render "layouts/shared/row_links",
-                    links: [ [ "View", trash_item_path(kind, record.id) ] ],
-                    buttons: ([ [ "Restore", trash_item_restoration_path(kind, record.id) ] ] if can_write),
-                    delete_path: (trash_item_path(kind, record.id) if can_write), delete_name: label,
-                    delete_label: "Delete permanently", delete_message: "It’s deleted for good. This can’t be undone." %>
             </td>
             <td><%= status_tag Trash.labels.fetch(kind, kind.humanize).singularize %></td>
             <td><span class="mono small muted"><%= trash_detail(kind, record) %></span></td>
             <td><span class="nowrap small muted"><%= time_ago_tag record.deleted_at %></span></td>
+            <%= render "layouts/shared/row_actions",
+                  links: [ [ "View", trash_item_path(kind, record.id) ] ],
+                  buttons: ([ [ "Restore", trash_item_restoration_path(kind, record.id) ] ] if can_write),
+                  delete_path: (trash_item_path(kind, record.id) if can_write), delete_name: label, delete_label: "Delete permanently",
+                  delete_message: "It’s deleted for good. This can’t be undone." %>
           </tr>
         <% end %>
-        <%= table_empty_row("Nothing in the trash.", columns: 4) if @entries.none? %>
+        <%= table_empty_row("Nothing in the trash.", columns: 5) if @entries.none? %>
       </tbody>
     </table>
   </section>

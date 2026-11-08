@@ -26,7 +26,7 @@ import { post } from "@rails/request.js"
 
 const ITEM = "[data-filter-target~='item'], [data-keyboard-item]"
 const TYPING = "input, textarea, select, [contenteditable], lexxy-editor"
-const OPENER = ":is(a[href], button):not(.row-actions__link):not([data-keys])"
+const OPENER = ":is(a[href], button):not(.row-action):not([data-keys])"
 const CHORD_TIMEOUT = 1500
 const EXTEND_TIMEOUT = 600 // how long a two-key chord waits for a third before it goes
 const MOD = /Mac|iPhone|iPad/.test(navigator.platform) ? "meta" : "ctrl"

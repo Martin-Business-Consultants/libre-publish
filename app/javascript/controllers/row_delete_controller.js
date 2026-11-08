@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 // The rows' one delete dialog (layouts/shared/_row_delete_dialog), rather than one in every row:
-// a row's Delete (layouts/shared/_row_links) names what goes, and this fills the dialog in,
+// a row's trash button (layouts/shared/_row_actions) names what goes, and this fills the dialog in,
 // points its form at the record and opens it. Esc and the backdrop close it.
 export default class extends Controller {
   static targets = [ "dialog", "title", "message", "form" ]

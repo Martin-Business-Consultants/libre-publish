@@ -146,6 +146,7 @@
             <th>Folder</th>
             <th class="data-table__num">Size</th>
             <th>Added</th>
+            <th class="data-table__actions-header"><span class="visually-hidden">Actions</span></th>
           </tr>
         </thead>
         <tbody id="<%= pagination_frame_id_for(:assets_rows, @page.number) %>">
@@ -153,8 +154,8 @@
             <%# herb:key asset.id %>
             <%= render "file_manager/asset_row", asset: asset, selectable: ticks, can_delete: can_delete %>
           <% end %>
-          <%= table_next_page_row :assets_rows, @page, columns: ticks ? 6 : 5 %>
-          <%= table_empty_row(empty, columns: ticks ? 6 : 5) if @assets.none? %>
+          <%= table_next_page_row :assets_rows, @page, columns: ticks ? 7 : 6 %>
+          <%= table_empty_row(empty, columns: ticks ? 7 : 6) if @assets.none? %>
         </tbody>
       </table>
     </section>

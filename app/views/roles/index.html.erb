@@ -22,6 +22,7 @@
         <th>Description</th>
         <th class="data-table__num">Capabilities</th>
         <th class="data-table__num">Users</th>
+        <th class="data-table__actions-header"><span class="visually-hidden">Actions</span></th>
       </tr>
     </thead>
     <tbody>
@@ -42,14 +43,14 @@
                 <%= status_tag "System" %>
               <% end %>
             </span>
-            <%= render "layouts/shared/row_links", name: role.name,
-                  edit_path: edit_role_path(role),
-                  delete_path: (role_path(role) if can_delete && !role.system?),
-                  delete_message: "Users holding it are left with no role." %>
           </td>
           <td><span class="muted"><%= role.description %></span></td>
           <td class="data-table__num"><%= role.admin? ? "All" : role.permissions.size %></td>
           <td class="data-table__num"><%= role.users.size %></td>
+          <%= render "layouts/shared/row_actions", name: role.name,
+                edit_path: edit_role_path(role),
+                delete_path: (role_path(role) if can_delete && !role.system?),
+                delete_message: "Users holding it are left with no role." %>
         </tr>
       <% end %>
     </tbody>

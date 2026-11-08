@@ -98,7 +98,7 @@
     <div class="table-wrap">
       <table class="table data-table">
         <thead>
-          <tr><th>Title</th><th>Status</th><th>Updated</th></tr>
+          <tr><th>Title</th><th>Status</th><th>Updated</th><th class="data-table__actions-header"><span class="visually-hidden">Actions</span></th></tr>
         </thead>
         <tbody>
           <% [ [ "Home", "published", 2.hours.ago ], [ "About us", "draft", 1.day.ago ], [ "Contact", "scheduled", 3.days.ago ] ].each do |title, status, time| %>
@@ -106,10 +106,10 @@
             <tr data-filter-target="item">
               <td>
                 <a href="<%= ui_path %>" class="row-link"><%= title %></a>
-                <%= render "layouts/shared/row_links", links: [ [ "Edit", ui_path ], [ "View", ui_path ] ] %>
               </td>
               <td><%= status_tag status %></td>
               <td><span class="nowrap small muted"><%= time_ago time %></span></td>
+              <%= render "layouts/shared/row_actions", name: title, edit_path: ui_path, links: [ [ "View", ui_path ] ] %>
             </tr>
           <% end %>
         </tbody>

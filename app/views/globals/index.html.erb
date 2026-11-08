@@ -22,6 +22,7 @@
         <th>Slug</th>
         <th class="data-table__num">Fields</th>
         <th>Updated</th>
+        <th class="data-table__actions-header"><span class="visually-hidden">Actions</span></th>
       </tr>
     </thead>
     <tbody>
@@ -36,17 +37,18 @@
             <% if global.description.present? %>
               <div class="small muted"><%= global.description %></div>
             <% end %>
-            <%= render "layouts/shared/row_links",
-                  links: [ ([ "Edit", edit_global_path(global.slug) ] if can_write), ([ "Schema", global_schema_path(global.slug) ] if can_write) ].compact,
-                  delete_path: (global_path(global.slug) if can_delete), delete_name: global.name, delete_label: "Trash",
-                  delete_message: "It goes to the trash, where it can be restored." %>
           </td>
           <td><span class="mono small muted"><%= global.slug %></span></td>
           <td class="data-table__num"><%= global.fields.size %></td>
           <td><span class="nowrap small muted"><%= time_ago_tag global.updated_at %></span></td>
+          <%= render "layouts/shared/row_actions", name: global.name,
+                edit_path: (edit_global_path(global.slug) if can_write),
+                links: [ ([ "Schema", global_schema_path(global.slug) ] if can_write) ].compact,
+                delete_path: (global_path(global.slug) if can_delete), delete_name: global.name, delete_label: "Trash",
+                delete_message: "It goes to the trash, where it can be restored." %>
         </tr>
       <% end %>
-      <%= table_empty_row("No globals yet.", columns: can_delete ? 5 : 4) if @globals.none? %>
+      <%= table_empty_row("No globals yet.", columns: can_delete ? 6 : 5) if @globals.none? %>
     </tbody>
   </table>
 </section>

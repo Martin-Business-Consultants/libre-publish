@@ -41,6 +41,7 @@
         <th>Status</th>
         <th>State</th>
         <th class="data-table__num">Hits</th>
+        <th class="data-table__actions-header"><span class="visually-hidden">Actions</span></th>
       </tr>
     </thead>
     <tbody>
@@ -48,7 +49,7 @@
         <%# herb:key redirect.id %>
         <%= render "tools/redirects/redirect", redirect: redirect, can_delete: can_delete %>
       <% end %>
-      <%= table_empty_row("No redirects yet. Add one, or import a CSV.", columns: can_delete ? 6 : 5) if @redirects.none? %>
+      <%= table_empty_row("No redirects yet. Add one, or import a CSV.", columns: can_delete ? 7 : 6) if @redirects.none? %>
     </tbody>
   </table>
 </section>

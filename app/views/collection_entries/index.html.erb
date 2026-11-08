@@ -4,7 +4,7 @@
 <% can_publish = Current.user.can?("entries:publish") %>
 <% can_delete = Current.user.can?("entries:delete") %>
 <% ticks = can_publish || can_delete %>
-<% columns = 4 + @flag_fields.size + (ticks ? 1 : 0) %>
+<% columns = 5 + @flag_fields.size + (ticks ? 1 : 0) %>
 
 <% content_for :page_actions do %>
   <% if @collection.build_board? %>
@@ -41,6 +41,7 @@
           <th><%= field_label_text(field) %></th>
         <% end %>
         <th>Updated</th>
+        <th class="data-table__actions-header"><span class="visually-hidden">Actions</span></th>
       </tr>
     </thead>
     <tbody>
@@ -52,10 +53,6 @@
           <% end %>
           <td>
             <%= link_to entry.title, edit_collection_entry_path(@collection.slug, entry.slug), class: "row-link" %>
-            <%= render "layouts/shared/row_links", name: entry.title,
-                edit_path: (edit_collection_entry_path(@collection.slug, entry.slug) if can_write),
-                delete_path: (collection_entry_path(@collection.slug, entry.slug) if can_delete),
-                delete_message: "It goes to the trash, where it can be restored." %>
           </td>
           <td><span class="mono small muted"><%= entry.slug %></span></td>
           <td><%= status_tag entry.status %></td>
@@ -64,6 +61,10 @@
             <td><%= render "collection_entries/flag", collection: @collection, entry: entry, field: field, can_write: can_write %></td>
           <% end %>
           <td><span class="nowrap small muted"><%= time_ago_tag entry.updated_at %></span></td>
+          <%= render "layouts/shared/row_actions", name: entry.title,
+                edit_path: (edit_collection_entry_path(@collection.slug, entry.slug) if can_write),
+                delete_path: (collection_entry_path(@collection.slug, entry.slug) if can_delete),
+                delete_message: "It goes to the trash, where it can be restored." %>
         </tr>
       <% end %>
       <%= table_empty_row(@status ? "No #{@status} entries." : "No entries yet.", columns: columns, link: (["Show all", collection_entries_path(@collection.slug)] if @status)) if @entries.none? %>
