@@ -23,18 +23,12 @@
 
 .trash-item__facts { grid-template-columns: 8rem minmax(0, 1fr); }
 
-/* The audit log's filters: fields side by side in a card, wrapping on a
-   narrow screen, the buttons lined up with the controls at the end; the
-   search under them at the right. */
-.card.audit-filters {
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: flex-end;
-}
-
-.audit-filters .field { flex: 1 1 10rem; }
-
-.audit-search {
+/* The audit log's filters, in rune's filter bar: a date with its label
+   beside it, on one line. */
+.audit-filters__date {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  gap: var(--s-1);
 }
+
+.audit-filters__date input { height: var(--control-h-sm); }
