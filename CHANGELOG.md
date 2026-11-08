@@ -13,7 +13,6 @@ out.
   Settings › Themes take a repository and install its latest release, and
   updates follow its releases. The plugin directory is off, neither shown
   nor fetched; `CMS_PLUGIN_DIRECTORY=on` turns it back on.
-
 - **New installs get Forms 1.8.0**, its screens drawn with rune_ui like
   the rest of the admin (an install with Forms updates it from Settings ›
   Plugins).
