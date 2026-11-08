@@ -32,7 +32,7 @@
         <%# herb:key collection.id %>
         <tr id="<%= dom_id(collection) %>" data-filter-target="item">
           <% if can_delete %>
-            <td class="data-table__check"><input type="checkbox" data-select-all-target="box" data-action="select-all#sync" name="slugs[]" value="<%= collection.slug %>" form="collections_bulk" aria-label="Select <%= collection.name %>"></td>
+            <td class="data-table__check"><input type="checkbox" data-select-all-target="box" data-keys="x" data-action="select-all#sync" name="slugs[]" value="<%= collection.slug %>" form="collections_bulk" aria-label="Select <%= collection.name %>"></td>
           <% end %>
           <td>
             <%= link_to collection_entries_path(collection.slug), class: "row-link row" do %>

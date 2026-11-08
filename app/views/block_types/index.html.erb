@@ -43,7 +43,7 @@
         <%# herb:key block_type.id %>
         <tr id="<%= dom_id(block_type) %>" data-filter-target="item">
           <% if can_delete %>
-            <td class="data-table__check"><input type="checkbox" data-select-all-target="box" data-action="select-all#sync" name="slugs[]" value="<%= block_type.slug %>" form="block_types_bulk" aria-label="Select <%= block_type.label %>"></td>
+            <td class="data-table__check"><input type="checkbox" data-select-all-target="box" data-keys="x" data-action="select-all#sync" name="slugs[]" value="<%= block_type.slug %>" form="block_types_bulk" aria-label="Select <%= block_type.label %>"></td>
           <% end %>
           <td>
             <% if can_write %>

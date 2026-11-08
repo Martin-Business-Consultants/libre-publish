@@ -2,7 +2,7 @@
 <tr id="<%= dom_id(asset) %>" data-filter-target="item">
   <% if selectable %>
     <td class="data-table__check">
-      <input type="checkbox" data-select-all-target="box" data-action="select-all#sync" name="ids[]" value="<%= asset.id %>" form="assets_bulk" aria-label="Select <%= asset.title %>">
+      <input type="checkbox" data-select-all-target="box" data-keys="x" data-action="select-all#sync" name="ids[]" value="<%= asset.id %>" form="assets_bulk" aria-label="Select <%= asset.title %>">
     </td>
   <% end %>
   <td>

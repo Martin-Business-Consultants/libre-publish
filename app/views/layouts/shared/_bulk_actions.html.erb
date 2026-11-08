@@ -1,73 +1,56 @@
 <%# locals: (id:, noun:, status_path: nil, statuses: nil, deletion_path: nil, delete_message: nil, search: nil) %>
-<%# A list table's top bar, as WordPress lays it out: a "Bulk actions" select
-    and Apply on the left, the search box on the right. The ticked rows'
-    checkboxes join the form with form="<id>"; the chosen action says where
-    it posts (bulk_actions_controller), and deleting asks first. Pass nil for
-    an action the role doesn't grant. search: false leaves the search box out.
+<%# A list table's top bar: the search box, until rows are ticked. Then the
+    bulk bar takes the row (bulk_actions_controller): how many are ticked,
+    a button per action, Delete, and Clear. The ticked rows' checkboxes join
+    the form with form="<id>" (x ticks the row j / k is on); each action's
+    button says where it posts (formaction), and Delete asks first in a
+    dialog. Pass nil for an action the role doesn't grant. search: false
+    leaves the search box out.
 
-    Without JavaScript the select can't choose where the form posts, so it
-    stays hidden (the controller shows it) and <noscript> offers a button per
-    action instead, each posting to its own resource (formaction); Delete
-    opens under a <details> first, so it still takes a second click. %>
+    Without JavaScript the bar is always there, and Delete opens under a
+    <details> instead of the dialog, so it still takes a second click. %>
 <% message = delete_message || "They go to the trash, where they can be restored." %>
-<div class="list-toolbar">
+<div class="list-toolbar" data-controller="bulk-actions" data-bulk-actions-form-value="<%= id %>">
   <% if status_path || deletion_path %>
-    <%= form_with url: status_path || deletion_path, id: id, data: { controller: "bulk-actions" } do %>
-      <div data-bulk-actions-target="controls" hidden>
-        <div class="row">
-          <label class="visually-hidden" for="<%= id %>_choice">Bulk actions</label>
-          <select id="<%= id %>_choice" class="select--sm list-toolbar__choice" data-bulk-actions-target="choice">
-            <option value="">Bulk actions</option>
-            <% if deletion_path %>
-              <option value="delete" data-url="<%= deletion_path %>" data-confirm="true">Delete</option>
-            <% end %>
-            <% if status_path %>
-              <% Array(statuses).each do |status| %>
-                <%# herb:key status %>
-                <option value="status-<%= status %>" data-url="<%= status_path %>" data-status="<%= status %>">Set to <%= status.to_s.humanize.downcase %></option>
-              <% end %>
-            <% end %>
-          </select>
-          <input type="hidden" name="status" value="" data-bulk-actions-target="status">
-          <button type="button" class="btn btn--secondary btn--sm" data-action="bulk-actions#apply">Apply</button>
-        </div>
-      </div>
-      <noscript>
-        <div class="button-row">
-          <% if status_path %>
-            <% Array(statuses).each do |status| %>
-              <%# herb:key status %>
-              <button type="submit" class="btn btn--secondary btn--sm" formaction="<%= status_path %>" name="status" value="<%= status %>">Set to <%= status.to_s.humanize.downcase %></button>
-            <% end %>
-          <% end %>
-          <% if deletion_path %>
-            <details>
-              <summary class="btn btn--danger btn--sm">Delete…</summary>
-              <div class="list-toolbar__confirm button-row">
-                <span><%= message %></span>
-                <button type="submit" class="btn btn--danger btn--sm" formaction="<%= deletion_path %>">Delete the ticked <%= noun.pluralize %></button>
+    <%= form_with url: status_path || deletion_path, id: id, class: "bulk-bar", aria: { label: "Bulk actions" }, data: { bulk_actions_target: "bar" } do %>
+      <span class="pill bulk-bar__count" data-bulk-actions-target="count" aria-live="polite">Ticked <%= noun.pluralize %></span>
+      <% if status_path %>
+        <% Array(statuses).each do |status| %>
+          <%# herb:key status %>
+          <button type="submit" class="btn btn--secondary btn--sm" formaction="<%= status_path %>" name="status" value="<%= status %>">Set to <%= status.to_s.humanize.downcase %></button>
+        <% end %>
+      <% end %>
+      <% if deletion_path %>
+        <button type="button" class="btn btn--danger btn--sm" data-bulk-actions-target="delete" data-action="bulk-actions#confirm" hidden>
+          <%= icon_tag "trash" %>
+          <span>Delete…</span>
+        </button>
+        <details class="bulk-bar__fallback" data-bulk-actions-target="fallback">
+          <summary class="btn btn--danger btn--sm">Delete…</summary>
+          <div class="list-toolbar__confirm button-row">
+            <span><%= message %></span>
+            <button type="submit" class="btn btn--danger btn--sm" formaction="<%= deletion_path %>">Delete the ticked <%= noun.pluralize %></button>
+          </div>
+        </details>
+        <dialog class="dialog" aria-label="Delete the ticked <%= noun.pluralize %>?" data-bulk-actions-target="dialog" data-action="click->bulk-actions#backdrop keydown.esc->bulk-actions#cancel:stop">
+          <div class="dialog__box">
+            <header class="dialog__header">
+              <h2 class="dialog__title">Delete the ticked <%= noun.pluralize %>?</h2>
+            </header>
+            <div class="dialog__body">
+              <p class="muted"><%= message %></p>
+              <div class="dialog__actions">
+                <button type="button" class="btn btn--ghost" data-action="bulk-actions#cancel">Cancel</button>
+                <button type="submit" class="btn btn--danger" formaction="<%= deletion_path %>">
+                  <%= icon_tag "trash" %>
+                  <span>Delete</span>
+                </button>
               </div>
-            </details>
-          <% end %>
-        </div>
-      </noscript>
-      <dialog class="dialog" data-bulk-actions-target="dialog">
-        <div class="dialog__box">
-          <header class="dialog__header">
-            <h2 class="dialog__title">Delete the ticked <%= noun.pluralize %>?</h2>
-          </header>
-          <div class="dialog__body">
-            <p class="muted"><%= message %></p>
-            <div class="dialog__actions">
-              <button type="button" class="btn btn--ghost" data-action="bulk-actions#cancel">Cancel</button>
-              <button type="submit" class="btn btn--danger">
-                <%= icon_tag "trash" %>
-                <span>Delete</span>
-              </button>
             </div>
           </div>
-        </div>
-      </dialog>
+        </dialog>
+      <% end %>
+      <button type="button" class="btn btn--ghost btn--sm" title="Untick every row (Esc)" data-keys="esc" data-action="bulk-actions#clear" hidden data-bulk-actions-target="clear">Clear</button>
     <% end %>
   <% end %>
   <% unless search == false %>

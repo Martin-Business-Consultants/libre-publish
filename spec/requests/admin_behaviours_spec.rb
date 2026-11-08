@@ -46,17 +46,21 @@ RSpec.describe "Admin behaviours", type: :request do
       get pages_path
       body = response.body
 
-      expect(body).to include("<noscript>", %(formaction="#{pages_bulk_status_changes_path}" name="status" value="published"),
+      bar = body[%r{<form [^>]*class="bulk-bar".*?</form>}m]
+      expect(bar).to include(%(formaction="#{pages_bulk_status_changes_path}" name="status" value="published"),
         %(formaction="#{pages_bulk_deletions_path}"), "Delete the ticked pages")
-      expect(body).to match(/data-bulk-actions-target="controls" hidden/)
+      # Delete asks under a <details> without JavaScript; the controller swaps in its dialog.
+      expect(bar).to match(%r{<details class="bulk-bar__fallback".*?<summary}m)
+      expect(bar).to match(/data-bulk-actions-target="delete"[^>]*hidden/)
+      expect(body).to include('name="slugs[]" value="one" form="pages_bulk"')
     end
 
     it "sets the status with only the submitted button's value" do
       sign_in_as admin
       page = Page.create!(slug: "one", title: "One", status: "draft", locale: "en")
 
-      # What a browser posts from the <noscript> button: the form's empty
-      # status field first, then the button's own name and value.
+      # What a browser posted from the old bar: the form's empty status
+      # field first, then the button's own name and value. Still read right.
       post pages_bulk_status_changes_path, params: "slugs%5B%5D=one&status=&status=published",
         headers: {"CONTENT_TYPE" => "application/x-www-form-urlencoded"}
 
