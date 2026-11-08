@@ -45,10 +45,6 @@ class User < ApplicationRecord
     role&.admin? || false
   end
 
-  # The user's API token, minting it if the account predates the token
-  # backfill or the row was deleted out from under us.
-  def api_token! = ApiToken.for(self)
-
   validates :name, presence: true
   validates :email, presence: true, uniqueness: true, format: {with: URI::MailTo::EMAIL_REGEXP}
   validates :password, allow_nil: true, length: {minimum: 8}

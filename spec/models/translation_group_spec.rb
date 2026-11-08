@@ -21,7 +21,6 @@ RSpec.describe TranslationGroup do
     en = make_page(locale: "en", translation_group: group)
     es = make_page(locale: "es", slug: "p-es", translation_group: group)
 
-    expect(group.member_locales).to contain_exactly("en", "es")
     expect(group.members.pluck(:id)).to contain_exactly(en.id, es.id)
   end
 

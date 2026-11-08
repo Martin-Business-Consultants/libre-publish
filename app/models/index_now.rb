@@ -19,7 +19,7 @@ module IndexNow
     SearchSettings.get["indexnow_key"].presence || SecureRandom.hex(16).tap { Setting.set(SearchSettings::SETTING_KEY, {"indexnow_key" => it}) }
   end
 
-  def base_url = Setting.get("general")["site_base_url"].to_s.chomp("/")
+  def base_url = Site.configured_base_url.chomp("/")
 
   def enabled?
     return false if Rails.configuration.x.indexnow == false # the test suite's, but for IndexNow's own specs

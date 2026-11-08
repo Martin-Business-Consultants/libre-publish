@@ -103,7 +103,7 @@ RSpec.describe "Webhook contract", type: :request do
         end
       end
 
-      DeliverWebhookJob.perform_now(webhook.id, "page.published", {slug: "about"})
+      Webhook::DeliveryJob.perform_now(webhook.id, "page.published", {slug: "about"})
 
       envelope = JSON.parse(captured.body)
       expect(envelope.keys.sort).to eq(CONTRACT.dig("webhook", "envelope_keys").sort)

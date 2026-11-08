@@ -68,7 +68,7 @@ class SeoAudit
   def broken_links(record)
     return [] unless Website.enabled?
 
-    site = Setting.get("general")["site_base_url"].to_s.chomp("/")
+    site = Site.configured_base_url.chomp("/")
     text_of(record).scan(HREF).flatten.compact.filter_map do |href|
       href = href.delete_prefix(site) if site.present?
       next unless href.start_with?("/") && !href.start_with?("//", "/rails/", "/#{Cms::PATH}/", "/api/")

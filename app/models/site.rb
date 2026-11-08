@@ -19,6 +19,10 @@ module Site
     Rails.configuration.x.app_host.presence || site_url_host || "localhost"
   end
 
+  # The site URL as Settings › General holds it ("" when unset), each caller
+  # trimming it as it needs.
+  def configured_base_url = Setting.get("general")["site_base_url"].to_s
+
   # The public website's own address, for what its pages and sitemap print
   # about themselves (canonical, og:url, JSON-LD, sitemap.xml): the site URL
   # (Settings › General), else this install's APP_HOST. Never the request's
@@ -26,7 +30,7 @@ module Site
   # cache would keep in a page for everyone. nil with neither set (a fresh
   # development copy), where the caller falls back to the request.
   def public_base_url
-    configured = Setting.get("general")["site_base_url"].to_s.strip.chomp("/")
+    configured = configured_base_url.strip.chomp("/")
     return configured if configured.present?
 
     app_host = Rails.configuration.x.app_host.presence or return
@@ -36,7 +40,7 @@ module Site
   end
 
   def site_url_host
-    uri = URI.parse(Setting.get("general")["site_base_url"].to_s.strip)
+    uri = URI.parse(configured_base_url.strip)
     return unless uri.host
 
     uri.port == uri.default_port ? uri.host : "#{uri.host}:#{uri.port}"

@@ -9,7 +9,7 @@ class RobotsController < ApplicationController
 
   def edit
     @settings = SearchSettings.get
-    @base_url = Setting.get("general")["site_base_url"].presence&.chomp("/") || Site.public_base_url || request.base_url
+    @base_url = Site.configured_base_url.presence&.chomp("/") || Site.public_base_url || request.base_url
     # What's published: this host's own with a theme, a frontend's (no admin lines) without one.
     @robots = Website::Robots.new(@base_url, settings: @settings, frontend: !Website.enabled?)
     @text = @robots.to_s
@@ -28,5 +28,5 @@ class RobotsController < ApplicationController
 
   private
 
-  def base_url_for_reset = Setting.get("general")["site_base_url"].presence || Site.public_base_url || request.base_url
+  def base_url_for_reset = Site.configured_base_url.presence || Site.public_base_url || request.base_url
 end

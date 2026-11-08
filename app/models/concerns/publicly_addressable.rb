@@ -58,7 +58,7 @@ module PubliclyAddressable
 
   class_methods do
     def site_base_url
-      Setting.get("general")["site_base_url"].to_s.strip
+      Site.configured_base_url.strip
     end
 
     def default_locale

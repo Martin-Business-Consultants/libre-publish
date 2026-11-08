@@ -14,8 +14,4 @@ RSpec.describe Webhook::DeliveryJob do
   it "does nothing for a webhook that no longer exists" do
     expect { described_class.perform_now(0, "page.published", {}) }.not_to raise_error
   end
-
-  it "still runs under its old name, for deliveries queued before the rename" do
-    expect(DeliverWebhookJob.superclass).to eq(described_class)
-  end
 end

@@ -15,10 +15,8 @@ require "active_record/railtie"
 require "active_storage/engine"
 require "action_controller/railtie"
 require "action_mailer/railtie"
-require "action_mailbox/engine"
 require "action_text/engine"
 require "action_view/railtie"
-require "action_cable/engine"
 # require "rails/test_unit/railtie"
 
 # Require the gems listed in Gemfile, including any gems
@@ -39,10 +37,14 @@ require_relative "../lib/middleware/admin_host"
 # Proxies whose X-Forwarded-For counts (CMS_TRUSTED_PROXIES), read below.
 require_relative "trusted_proxies"
 
-module ReactStarterKit
+module LibrePublish
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 8.1
+
+    # The session cookie keeps the name it had when this module was
+    # ReactStarterKit (the generator's), so renaming it signed no one out.
+    config.session_store :cookie_store, key: "_react_starter_kit_session"
 
     # The site this install serves (Site.key): what the API sends as
     # `tenant`. Defaults to the first label of APP_HOST.

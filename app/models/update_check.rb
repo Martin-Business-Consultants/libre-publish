@@ -21,8 +21,6 @@ module UpdateCheck
   # Off with CMS_UPDATE_CHECK=false: an install with no way out to GitHub.
   def checking? = ENV["CMS_UPDATE_CHECK"] != "false"
 
-  def check_later = UpdateCheckJob.perform_later
-
   def check_now
     check_now!
   rescue StandardError => e

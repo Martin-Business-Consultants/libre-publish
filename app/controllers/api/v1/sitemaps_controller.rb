@@ -7,7 +7,7 @@ class Api::V1::SitemapsController < Api::V1::BaseController
 
   def show
     @sitemap = Sitemap.new
-    @site_base_url = Setting.get("general")["site_base_url"].to_s
+    @site_base_url = Site.configured_base_url
     @entries = @sitemap.entries.select(&:included?)
     cache_tags("sitemap")
   end

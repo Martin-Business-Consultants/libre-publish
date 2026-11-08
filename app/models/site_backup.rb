@@ -14,9 +14,9 @@ require "tempfile"
 #   blobs/<key>      — every Active Storage blob attached to a record in this
 #                      DB (the media library's files, a form's uploads…)
 #
-# Only the primary database is included: the cache, queue and cable
-# databases hold nothing a restore needs (Solid Cache, Solid Queue's jobs,
-# Action Cable's messages) and rebuild themselves empty.
+# Only the primary database is included: the cache and queue databases hold
+# nothing a restore needs (Solid Cache, Solid Queue's jobs) and rebuild
+# themselves empty.
 #
 # Restoration is left as a manual / ops process for now. The intent is "I
 # can leave this provider and take my data with me," not "one-click

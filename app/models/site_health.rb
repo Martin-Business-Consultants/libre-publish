@@ -75,7 +75,7 @@ module SiteHealth
     protection = Cms::Plugins.provided(:spam_protection) || {}
     silent = forms.reject { |form| form.notification_email&.enabled && form.notification_email.recipient_list.any? }
     sender = Setting.get("forms_settings")["from_email"].to_s
-    site_domain = URI.parse(Setting.get("general")["site_base_url"].to_s).host.to_s.delete_prefix("www.") rescue ""
+    site_domain = URI.parse(Site.configured_base_url).host.to_s.delete_prefix("www.") rescue ""
     [
       Check.new(key: "captcha", group: "Forms and spam", title: "Forms are protected from spam",
         detail: protection[:configured] ? "#{protection[:provider] == "turnstile" ? "Cloudflare Turnstile" : "Google reCAPTCHA"} is set up with both keys." :
@@ -163,7 +163,7 @@ module SiteHealth
     admins = User.joins(:role).where(roles: {name: "Admin"})
     [
       Check.new(key: "https", group: "Operations", title: "The site is served over HTTPS",
-        detail: "Settings › General › Site base URL starts with https://.", ok: Setting.get("general")["site_base_url"].to_s.start_with?("https://"), href: "/#{Cms::PATH}/settings/general", cli: nil),
+        detail: "Settings › General › Site base URL starts with https://.", ok: Site.configured_base_url.start_with?("https://"), href: "/#{Cms::PATH}/settings/general", cli: nil),
       (if Serving.api?
          Check.new(key: "rebuilds", group: "Operations", title: "Publishing rebuilds the site, and the last rebuild worked",
            detail: Deploys.current.configured? ? "The last rebuild was #{deploy["last_status"].presence || "never run"}." : "Settings › Deploy: a GitHub dispatch or a host's build hook.",

@@ -12,6 +12,4 @@ module Granting
     permissions = Array(permissions).map(&:to_s)
     permissions.exclude?(Permissions::WILDCARD) && permissions.all? { can?(it) }
   end
-
-  def can_grant_role?(role) = role.nil? || can_grant?(role.permissions)
 end

@@ -7,7 +7,7 @@ class Api::V1::RobotsController < Api::V1::BaseController
   requires_capability "pages:read", only: :show
 
   def show
-    base_url = Setting.get("general")["site_base_url"].to_s
+    base_url = Site.configured_base_url
     @robots = Website::Robots.new(base_url, frontend: true)
     cache_tags("robots")
     respond_to do |format|

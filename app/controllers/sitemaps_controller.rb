@@ -54,7 +54,7 @@ class SitemapsController < ApplicationController
   end
 
   def configured_site_base_url
-    Setting.get("general")["site_base_url"].to_s
+    Site.configured_base_url
   end
 
   # Never the request's Host (Site.public_base_url): the sitemap is cached.

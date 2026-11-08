@@ -8,7 +8,7 @@ class Settings::SearchesController < Settings::BaseController
 
   def show
     @search = SearchSettings.get
-    @base_url = Setting.get("general")["site_base_url"].presence&.chomp("/") || request.base_url
+    @base_url = Site.configured_base_url.presence&.chomp("/") || request.base_url
   end
 
   def update

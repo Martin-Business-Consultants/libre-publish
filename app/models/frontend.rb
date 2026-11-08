@@ -113,9 +113,7 @@ module Frontend
     build.symbolize_keys.merge(built_at: Time.zone.parse(build["built_at"]))
   end
 
-  def connected? = last_build.present?
-
-  def site_url = Setting.get("general")["site_base_url"].presence
+  def site_url = Site.configured_base_url.presence
 
   def repo = Setting.get("github")["frontend_github_repo"].presence
 
