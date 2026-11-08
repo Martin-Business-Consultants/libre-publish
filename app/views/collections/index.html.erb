@@ -7,12 +7,10 @@
     <%= render "collections/new_collection", collection: @new_collection || Collection.new, open: @new_collection.present? %>
   <% end %>
 <% end %>
-<%= render "layouts/shared/page_header", title: @page_title %>
+<%= render "layouts/shared/page_header", title: @page_title, actions: false %>
 
-<% if can_delete && @collections.any? %>
-  <%= render "layouts/shared/bulk_actions", id: "collections_bulk", noun: "collection", deletion_path: collections_bulk_deletions_path,
-        delete_message: "Their entries are deleted with them. This can’t be undone." %>
-<% end %>
+<%= render "layouts/shared/bulk_actions", id: "collections_bulk", noun: "collection", deletion_path: (collections_bulk_deletions_path if can_delete && @collections.any?),
+      delete_message: "Their entries are deleted with them. This can’t be undone." %>
 
 <section class="table-wrap" data-controller="select-all">
   <table class="table data-table">

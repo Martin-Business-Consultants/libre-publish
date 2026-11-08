@@ -5,13 +5,11 @@
     <%= render "layouts/shared/new_link", text: "New user", path: new_user_path %>
   <% end %>
 <% end %>
-<%= render "layouts/shared/page_header", title: @page_title %>
+<%= render "layouts/shared/page_header", title: @page_title, actions: false %>
 
 <% can_delete = Current.user.can?("users:delete") %>
-<% if can_delete %>
-  <%= render "layouts/shared/bulk_deletion", id: "users_bulk_deletion", path: users_bulk_deletions_path, noun: "user",
-        message: "They can no longer sign in. Your own account is never included." %>
-<% end %>
+<%= render "layouts/shared/bulk_actions", id: "users_bulk_deletion", noun: "user", deletion_path: (users_bulk_deletions_path if can_delete),
+      delete_message: "They can no longer sign in. Your own account is never included." %>
 
 <section class="table-wrap" data-controller="select-all">
   <table class="table data-table">

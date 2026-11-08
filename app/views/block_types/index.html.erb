@@ -10,19 +10,13 @@
     <% end %>
   <% end %>
 <% end %>
-<%= render "layouts/shared/page_header", title: @page_title %>
+<%= render "layouts/shared/page_header", title: @page_title, actions: false %>
 
-<% if @categories.many? %>
-  <div class="button-row">
-    <%= render "layouts/shared/quick_filter", title: "Category", param: :category, current: @category.to_s,
-          options: [ [ "Every category", "" ] ] + @categories.map { [ it.humanize, it ] } %>
-  </div>
-<% end %>
-
-<% if can_delete && @block_types.any? %>
-  <%= render "layouts/shared/bulk_actions", id: "block_types_bulk", noun: "block type", deletion_path: block_types_bulk_deletions_path,
-        delete_message: "Pages using them keep their blocks, which stop validating until the type is back. This can’t be undone." %>
-<% end %>
+<% category_filter = (render("layouts/shared/quick_filter", title: "Category", param: :category, current: @category.to_s,
+      options: [ [ "Every category", "" ] ] + @categories.map { [ it.humanize, it ] }) if @categories.many?) %>
+<%= render "layouts/shared/bulk_actions", id: "block_types_bulk", noun: "block type", filters: category_filter,
+      deletion_path: (block_types_bulk_deletions_path if can_delete && @block_types.any?),
+      delete_message: "Pages using them keep their blocks, which stop validating until the type is back. This can’t be undone." %>
 
 <section class="table-wrap" data-controller="select-all">
   <table class="table data-table">

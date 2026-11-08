@@ -1,9 +1,9 @@
 <% @page_title = "Trash" %>
 <% can_write = Current.user.can?("trash:write") %>
 
-<%= render "layouts/shared/page_header", title: @page_title %>
-
-<%= render "layouts/shared/status_links", param: :kind, current: @kind.to_s, options: trash_kind_links(@counts) %>
+<%= render "layouts/shared/page_header", title: @page_title, actions: false %>
+<%= render "layouts/shared/list_toolbar", search: false,
+      filters: render("layouts/shared/status_links", param: :kind, current: @kind.to_s, options: trash_kind_links(@counts)) %>
 
 <%# The trash as a list table; picking an item opens what it was in a sheet
     (trash#show, into the trash_item frame), where it's restored or deleted. %>

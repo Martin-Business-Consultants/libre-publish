@@ -1,14 +1,15 @@
-<%# locals: (title:, **) %>
+<%# locals: (title:, actions: true, **) %>
 <%# An admin page's title row, as rune_ui draws one: the title in the panel
     bar, after the page one level up (parent_page), and in the page the
     page's actions (content_for :page_actions, a New button first) at the
-    right. Other locals (icon:, a plugin's description:) are taken and not
+    right. actions: false leaves them to the page's list toolbar
+    (layouts/shared/list_toolbar), so an index has no row for them alone. Other locals (icon:, a plugin's description:) are taken and not
     shown. On a Settings page it goes above the page and its sidebar
     (layouts/settings) rather than where it's rendered. %>
 <% title = title.is_a?(String) && !title.html_safe? ? tx(title) : title %>
 <%= page_crumbs(title) %>
 <% header = capture do %>
-  <% if content_for?(:page_actions) %>
+  <% if actions && content_for?(:page_actions) %>
     <div class="page-header">
       <div class="page-header__text"></div>
       <div class="button-row"><%= content_for(:page_actions) %></div>

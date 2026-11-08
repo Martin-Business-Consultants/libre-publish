@@ -14,7 +14,8 @@
 <% end %>
 <div class="dialog-wrap" data-controller="rune-dialog" data-rune-dialog-auto-open-value="<%= @sheet_webhook.present? %>"
      data-action="keydown.esc->rune-dialog#close:stop">
-<%= render "layouts/shared/page_header", title: @page_title %>
+<%= render "layouts/shared/page_header", title: @page_title, actions: false %>
+<%= render "layouts/shared/list_toolbar", search: false %>
 
 <section class="table-wrap">
   <table class="table data-table">

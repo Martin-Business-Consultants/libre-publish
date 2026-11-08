@@ -5,13 +5,11 @@
     <%= render "layouts/shared/new_link", text: "New role", path: new_role_path %>
   <% end %>
 <% end %>
-<%= render "layouts/shared/page_header", title: @page_title %>
+<%= render "layouts/shared/page_header", title: @page_title, actions: false %>
 
 <% can_delete = Current.user.can?("roles:delete") %>
-<% if can_delete %>
-  <%= render "layouts/shared/bulk_deletion", id: "roles_bulk_deletion", path: roles_bulk_deletions_path, noun: "role",
-        message: "Users holding them are left with no role. System roles are never included." %>
-<% end %>
+<%= render "layouts/shared/bulk_actions", id: "roles_bulk_deletion", noun: "role", deletion_path: (roles_bulk_deletions_path if can_delete),
+      delete_message: "Users holding them are left with no role. System roles are never included." %>
 
 <section class="table-wrap" data-controller="select-all">
   <table class="table data-table">

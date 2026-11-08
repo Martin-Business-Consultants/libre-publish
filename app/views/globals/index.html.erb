@@ -7,11 +7,9 @@
     <%= render "globals/new_global", global: @new_global || Global.new, open: @new_global.present? %>
   <% end %>
 <% end %>
-<%= render "layouts/shared/page_header", title: @page_title %>
+<%= render "layouts/shared/page_header", title: @page_title, actions: false %>
 
-<% if can_delete && @globals.any? %>
-  <%= render "layouts/shared/bulk_actions", id: "globals_bulk", noun: "global", deletion_path: globals_bulk_deletions_path %>
-<% end %>
+<%= render "layouts/shared/bulk_actions", id: "globals_bulk", noun: "global", deletion_path: (globals_bulk_deletions_path if can_delete && @globals.any?) %>
 
 <section class="table-wrap" data-controller="select-all">
   <table class="table data-table">

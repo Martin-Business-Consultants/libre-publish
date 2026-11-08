@@ -11,10 +11,6 @@
 .tools-boxed-list > li { padding: var(--s-2) var(--s-3); }
 .tools-boxed-list > li + li { border-top: 1px solid var(--line); }
 
-/* The Import and Export buttons, at the right above the redirects. */
-.tools-list-actions { justify-content: flex-end; }
-.tools-list-actions > form { display: contents; }
-
 /* A label drawn as a button (Import CSV, around a hidden file input) points like one. */
 label.btn { cursor: pointer; }
 
@@ -41,17 +37,8 @@ label.btn { cursor: pointer; }
 
 .robots-preview__text { max-height: 28rem; overflow-y: auto; }
 
-/* The Sitemap (sitemaps/index): where it's published beside the list's
-   search, and each row's Quick edit, the last row action, opening the row's
-   sitemap settings in place on a line of its own. */
-.sitemap-intro {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--s-3) var(--s-4);
-}
-
+/* The Sitemap (sitemaps/index): each row's Quick edit, the last row
+   action, opening the row's sitemap settings in place on a line of its own. */
 .quick-edit > summary { display: inline; }
 .row-actions > .quick-edit[open] { flex-basis: 100%; }
 /* An open quick edit takes the row's actions out of their overlay

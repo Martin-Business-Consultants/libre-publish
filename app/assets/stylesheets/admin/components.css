@@ -77,7 +77,8 @@ tr:is(:hover, :focus-within, [data-keyboard-current]) .row-actions { visibility:
 .row-actions .row-actions__link:hover { color: var(--text); text-decoration: underline; }
 .row-actions .link-button { font-size: inherit; }
 
-/* Over a list table: bulk actions on the left, the search on the right. */
+/* An index's one toolbar row (layouts/shared/list_toolbar): filters, or
+   the bulk bar, on the left; the search and the page's actions on the right. */
 .list-toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -93,11 +94,19 @@ tr:is(:hover, :focus-within, [data-keyboard-current]) .row-actions { visibility:
   gap: var(--s-2);
 }
 
-.list-toolbar__search { margin-left: auto; }
+/* The search and the page's actions (its New), together at the right. */
+.list-toolbar__end {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+  margin-left: auto;
+}
+
 .list-toolbar__confirm { padding-top: var(--s-2); }
 
-/* The bulk bar (layouts/shared/_bulk_actions): while rows are ticked it
-   takes the toolbar's row, the search giving way, and the ticked rows are
+/* The bulk bar (layouts/shared/_bulk_bar): while rows are ticked it takes
+   the filters' place, the search giving way, and the ticked rows are
    tinted. */
 .bulk-bar {
   display: flex;

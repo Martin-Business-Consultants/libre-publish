@@ -1,0 +1,31 @@
+<%# locals: (bulk: nil, search: true, placeholder: nil, filters: nil) %>
+<%# An index page's one toolbar row, as Runwell lays it out: the list's
+    filters on the left (filters:, or content_for :list_filters: status
+    pills, quick filters), the search box and the page's actions (content_for
+    :page_actions, its New) on the right. Render the page header with
+    actions: false above it, so they show here and not on a row of their own.
+
+    bulk: the bulk bar's locals (layouts/shared/bulk_bar: id:, noun:,
+    status_path:, statuses:, deletion_path:, delete_message:), for a list
+    whose rows can be ticked; while any are, the bar takes the filters' and
+    the search's place. search: false leaves the search box out. %>
+<% content_for :list_toolbar, "yes" %>
+<%= tag.div class: "list-toolbar", data: ({ controller: "bulk-actions", bulk_actions_form_value: bulk[:id] } if bulk) do %>
+  <% filters ||= content_for(:list_filters) %>
+  <% if filters.present? %>
+    <div class="list-toolbar__filters"><%= filters %></div>
+  <% end %>
+  <% if bulk %>
+    <%= render "layouts/shared/bulk_bar", **bulk %>
+  <% end %>
+  <div class="list-toolbar__end">
+    <% if search %>
+      <div class="list-toolbar__search">
+        <%= render "layouts/shared/list_search", placeholder: placeholder %>
+      </div>
+    <% end %>
+    <% if content_for?(:page_actions) %>
+      <div class="button-row"><%= content_for(:page_actions) %></div>
+    <% end %>
+  </div>
+<% end %>

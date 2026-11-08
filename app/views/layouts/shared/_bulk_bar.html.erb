@@ -1,0 +1,51 @@
+<%# locals: (id:, noun:, status_path: nil, statuses: nil, deletion_path: nil, delete_message: nil) %>
+<%# The bulk bar (in layouts/shared/list_toolbar): while rows are ticked it
+    takes the filters' place (bulk_actions_controller): how many are ticked,
+    a button per action, Delete, and Clear. The ticked rows' checkboxes join
+    its form with form="<id>" (x ticks the row j / k is on); each action's
+    button says where it posts (formaction), and Delete asks first in a
+    dialog. Pass nil for an action the role doesn't grant.
+
+    Without JavaScript the bar is always there, and Delete opens under a
+    <details> instead of the dialog, so it still takes a second click. %>
+<% message = delete_message || "They go to the trash, where they can be restored." %>
+<%= form_with url: status_path || deletion_path, id: id, class: "bulk-bar", aria: { label: "Bulk actions" }, data: { bulk_actions_target: "bar" } do %>
+  <span class="pill bulk-bar__count" data-bulk-actions-target="count" aria-live="polite">Ticked <%= noun.pluralize %></span>
+  <% if status_path %>
+    <% Array(statuses).each do |status| %>
+      <%# herb:key status %>
+      <button type="submit" class="btn btn--secondary btn--sm" formaction="<%= status_path %>" name="status" value="<%= status %>">Set to <%= status.to_s.humanize.downcase %></button>
+    <% end %>
+  <% end %>
+  <% if deletion_path %>
+    <button type="button" class="btn btn--danger btn--sm" data-bulk-actions-target="delete" data-action="bulk-actions#confirm" hidden>
+      <%= icon_tag "trash" %>
+      <span>Delete…</span>
+    </button>
+    <details class="bulk-bar__fallback" data-bulk-actions-target="fallback">
+      <summary class="btn btn--danger btn--sm">Delete…</summary>
+      <div class="list-toolbar__confirm button-row">
+        <span><%= message %></span>
+        <button type="submit" class="btn btn--danger btn--sm" formaction="<%= deletion_path %>">Delete the ticked <%= noun.pluralize %></button>
+      </div>
+    </details>
+    <dialog class="dialog" aria-label="Delete the ticked <%= noun.pluralize %>?" data-bulk-actions-target="dialog" data-action="click->bulk-actions#backdrop keydown.esc->bulk-actions#cancel:stop">
+      <div class="dialog__box">
+        <header class="dialog__header">
+          <h2 class="dialog__title">Delete the ticked <%= noun.pluralize %>?</h2>
+        </header>
+        <div class="dialog__body">
+          <p class="muted"><%= message %></p>
+          <div class="dialog__actions">
+            <button type="button" class="btn btn--ghost" data-action="bulk-actions#cancel">Cancel</button>
+            <button type="submit" class="btn btn--danger" formaction="<%= deletion_path %>">
+              <%= icon_tag "trash" %>
+              <span>Delete</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </dialog>
+  <% end %>
+  <button type="button" class="btn btn--ghost btn--sm" title="Untick every row (Esc)" data-keys="esc" data-action="bulk-actions#clear" hidden data-bulk-actions-target="clear">Clear</button>
+<% end %>

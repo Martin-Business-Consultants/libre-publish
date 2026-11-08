@@ -17,7 +17,7 @@
     <%= render "layouts/shared/new_link", text: "New entry", path: new_collection_entry_path(@collection.slug) %>
   <% end %>
 <% end %>
-<%= render "layouts/shared/page_header", title: @page_title, icon: @collection.admin_icon %>
+<%= render "layouts/shared/page_header", title: @page_title, icon: @collection.admin_icon, actions: false %>
 
 <% status_tabs = render("layouts/shared/status_links", param: :status, current: @status.to_s,
       options: [ [ "All", nil, @status_counts.values.sum ] ] + CollectionEntry::STATUSES.filter_map { |status| [ status.humanize, status, @status_counts[status] ] if @status_counts[status].to_i.positive? }) %>

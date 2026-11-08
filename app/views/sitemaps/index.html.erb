@@ -8,18 +8,11 @@
   <%= link_to "View sitemap.xml", "/sitemap.xml", class: "btn btn--secondary", target: "_blank", rel: "noopener" %>
   <%= copy_button xml_url, label: "Copy URL" %>
 <% end %>
-<%= render "layouts/shared/page_header", title: @page_title %>
+<%= render "layouts/shared/page_header", title: @page_title, actions: false %>
 
-<%= render "layouts/shared/status_links", param: :show, current: @filter.to_s,
-      options: [ [ "All", nil, @entries.size ], [ "Included", "included", included ], [ "Excluded", "excluded", @entries.size - included ] ] %>
-
-<div class="sitemap-intro">
-  <p class="small muted">
-    Published at <span class="mono"><%= xml_url %></span>, and to a build as <a href="/api/sitemap" class="mono">/api/sitemap</a>.
-    Crawlers find it through <%= link_to "robots.txt", sitemap_robots_path %><%= " (written by hand)" if SearchSettings.custom_robots? %>.
-  </p>
-  <%= render "layouts/shared/list_search", placeholder: "Search the sitemap…" %>
-</div>
+<%= render "layouts/shared/list_toolbar", placeholder: "Search the sitemap…",
+      filters: render("layouts/shared/status_links", param: :show, current: @filter.to_s,
+        options: [ [ "All", nil, @entries.size ], [ "Included", "included", included ], [ "Excluded", "excluded", @entries.size - included ] ]) %>
 
 <section class="table-wrap">
   <table class="table data-table">
@@ -107,3 +100,7 @@
   </table>
 </section>
 <%= pagination_nav @pagination %>
+<p class="small muted">
+  Published at <span class="mono"><%= xml_url %></span>, and to a build as <a href="/api/sitemap" class="mono">/api/sitemap</a>.
+  Crawlers find it through <%= link_to "robots.txt", sitemap_robots_path %><%= " (written by hand)" if SearchSettings.custom_robots? %>.
+</p>
