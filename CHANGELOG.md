@@ -8,6 +8,8 @@ out.
 
 ## Unreleased
 
+## 1.34.0
+
 ### Added
 - **A collection says whether its entries have pages of their own**:
   "Entries have their own page" in the collection's schema settings (and
