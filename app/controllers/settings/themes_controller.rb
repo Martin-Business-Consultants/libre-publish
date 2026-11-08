@@ -12,6 +12,6 @@ class Settings::ThemesController < Settings::BaseController
     @themes = Website.themes.values.sort_by(&:name)
     @change = PluginChange.current
     @directory = PluginDirectory.themes
-    PluginDirectoryJob.perform_later unless PluginDirectory.checked_at
+    PluginDirectoryJob.perform_later if PluginDirectory.enabled? && !PluginDirectory.checked_at
   end
 end

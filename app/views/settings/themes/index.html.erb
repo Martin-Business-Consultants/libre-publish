@@ -74,14 +74,14 @@
   </section>
 
   <% if Current.user.admin? %>
-    <%= render "settings/plugins/directory", entries: @directory, kind: "theme", from: "themes" %>
+    <%= render "settings/plugins/directory", entries: @directory, kind: "theme", from: "themes" if PluginDirectory.enabled? %>
 
     <section class="card">
-      <h2 class="card__title">Or any theme, by its repository</h2>
+      <h2 class="card__title">From GitHub</h2>
       <p class="muted">
-        Its GitHub repository: the CMS installs its latest release on this server, where it stays through deploys
-        and updates, and restarts. One the directory doesn’t list hasn’t been reviewed: install only code you trust,
-        since a plugin runs with the CMS’s full access. Then switch it on here.
+        A theme’s GitHub repository: the CMS installs its latest release on this server, where it stays through
+        deploys and updates, and restarts. Install only code you trust, since a theme runs with the CMS’s full
+        access. Then switch it on here.
       </p>
       <%= form_with url: settings_plugins_installations_path(from: "themes"), class: "settings-install" do |form| %>
         <%= form.text_field :repo, class: "grow", placeholder: "owner/acme-theme", autocomplete: "off", required: true,

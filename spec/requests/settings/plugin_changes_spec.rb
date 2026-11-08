@@ -9,7 +9,8 @@ RSpec.describe "Installing plugins from Settings › Plugins", type: :request do
     sign_in_as admin
 
     get settings_plugins_path
-    expect(response.body).to include("Or any plugin, by its repository", "owner/cms-thing")
+    expect(response.body).to include("From GitHub", "owner/cms-thing")
+    expect(response.body).not_to include("From the directory")
 
     post settings_plugins_installations_path, params: {repo: "acme/cms-thing"}
 
@@ -36,7 +37,7 @@ RSpec.describe "Installing plugins from Settings › Plugins", type: :request do
     sign_in_as editor
 
     get settings_plugins_path
-    expect(response.body).not_to include("Or any plugin")
+    expect(response.body).not_to include("From GitHub")
 
     post settings_plugins_installations_path, params: {repo: "acme/cms-thing"}
     expect(response).not_to redirect_to(settings_plugins_path)

@@ -14,7 +14,7 @@ RSpec.describe PluginDirectory do
     ]}.to_json
   end
 
-  around { |example| with_env("CMS_PLUGIN_DIRECTORY_KEY" => key.public_to_pem) { example.run } }
+  around { |example| with_env("CMS_PLUGIN_DIRECTORY" => "on", "CMS_PLUGIN_DIRECTORY_KEY" => key.public_to_pem) { example.run } }
 
   def serve(body, signature)
     allow(described_class).to receive(:get).with(described_class.url).and_return(body)
@@ -41,6 +41,19 @@ RSpec.describe PluginDirectory do
     serve(list, [other.sign(nil, list)].pack("m0"))
     expect { described_class.refresh! }.to raise_error(described_class::Invalid, /signature doesn't match/)
     expect(described_class.entries).to be_empty
+  end
+
+  it "is off unless CMS_PLUGIN_DIRECTORY is on: nothing fetched, nothing listed, nothing pinned" do
+    serve(list, [key.sign(nil, list)].pack("m0"))
+    described_class.refresh!
+
+    with_env("CMS_PLUGIN_DIRECTORY" => nil) do
+      expect(described_class).not_to be_enabled
+      expect(described_class).not_to receive(:get)
+      expect(described_class.refresh).to be_nil
+      expect(described_class.plugins).to be_empty
+      expect(described_class.find_by_repo("ACME/cms-wordpress-import")).to be_nil
+    end
   end
 
   it "ships the public key of the directory's own signing key" do

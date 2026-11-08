@@ -22,6 +22,10 @@ require "openssl"
 #
 # A self-hosted directory: CMS_PLUGIN_DIRECTORY_URL (the JSON; the signature
 # is beside it, + ".sig") and CMS_PLUGIN_DIRECTORY_KEY (its public key, PEM).
+#
+# Off unless CMS_PLUGIN_DIRECTORY=on: Settings › Plugins and Themes show no
+# directory, nothing fetches it, and installs and updates take each
+# repository's latest release (PluginChange, UpdateCheck::Plugins).
 module PluginDirectory
   class Invalid < StandardError; end
 
@@ -47,10 +51,13 @@ module PluginDirectory
 
   module_function
 
+  def enabled? = ENV["CMS_PLUGIN_DIRECTORY"] == "on"
   def url = ENV["CMS_PLUGIN_DIRECTORY_URL"].presence || DEFAULT_URL
   def public_key = OpenSSL::PKey.read(ENV["CMS_PLUGIN_DIRECTORY_KEY"].presence || PUBLIC_KEY)
 
   def refresh
+    return unless enabled?
+
     refresh!
   rescue StandardError => error
     Rails.logger.warn("[plugin_directory] #{error.class}: #{error.message}")
@@ -74,6 +81,8 @@ module PluginDirectory
   end
 
   def entries
+    return [] unless enabled?
+
     Array(Setting.get(SETTING_KEY)["entries"]).filter_map do |row|
       Entry.new(**Entry.members.to_h { [it, row[it.to_s]] }.merge(kind: row["kind"].presence || "plugin"))
     rescue ArgumentError

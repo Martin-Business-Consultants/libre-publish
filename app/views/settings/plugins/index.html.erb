@@ -46,14 +46,13 @@
   </section>
 
   <% if Current.user.admin? %>
-    <%= render "settings/plugins/directory", entries: @directory, kind: "plugin" %>
+    <%= render "settings/plugins/directory", entries: @directory, kind: "plugin" if PluginDirectory.enabled? %>
 
     <section class="card">
-      <h2 class="card__title">Or any plugin, by its repository</h2>
+      <h2 class="card__title">From GitHub</h2>
       <p class="muted">
-        Its GitHub repository: the CMS installs its latest release on this server, where it stays through deploys
-        and updates, and restarts. One the directory doesn’t list hasn’t been reviewed: install only code you trust,
-        since a plugin runs with the CMS’s full access.
+        A plugin’s GitHub repository: the CMS installs its latest release on this server, where it stays through
+        deploys and updates, and restarts. Install only code you trust, since a plugin runs with the CMS’s full access.
       </p>
       <%= form_with url: settings_plugins_installations_path, class: "settings-install" do |form| %>
         <%= form.text_field :repo, class: "grow", placeholder: "owner/cms-thing", autocomplete: "off", required: true,
