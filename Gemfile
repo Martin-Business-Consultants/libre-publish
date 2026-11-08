@@ -9,7 +9,10 @@ gem "bcrypt", "~> 3.1.7"
 gem "bootsnap", "~> 1.25", require: false
 gem "commonmarker", "~> 2.10"
 gem "csv", "~> 3.3"
-gem "herb", "~> 0.11.0"
+# Below 0.11.2, which vendors Prism 2.1 and serializes Ruby nodes the prism
+# gem (1.x: rubocop-ast holds it there) can't read back: "Invalid
+# serialization" (bin/check-bundle). Lift it once rubocop-ast allows prism 2.
+gem "herb", "~> 0.11.0", "< 0.11.2"
 gem "image_processing", "~> 1.2"
 gem "importmap-rails", "~> 2.2"
 gem "jbuilder", "~> 2.15"

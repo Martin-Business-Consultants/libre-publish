@@ -11,6 +11,12 @@ out.
 ### Fixed
 - Every item in the sidebar's menu is the same height: Audit log and Trash,
   which have no submenu, shrank when the menu was taller than the window.
+- **1.34.1's release bundles build again**, so installs can update to it
+  from Settings › Updates: Herb is held below 0.11.2, which writes Ruby nodes
+  in Prism 2's format that the bundled Prism 1.9 can't read, and the bundle
+  check stopped on it.
+- **New installs get Forms 1.7.2** rather than 1.6.0, whose screens still
+  called the `ui` helper the core dropped in 1.29.
 
 ## 1.34.1
 
