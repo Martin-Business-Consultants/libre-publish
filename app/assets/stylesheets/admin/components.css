@@ -21,6 +21,9 @@
 .table:not(.table--even, :has(colgroup)) :is(th, td) { width: 1%; white-space: nowrap; }
 .table:not(.table--even, :has(colgroup)) :is(th, td):last-child { width: auto; white-space: normal; }
 .data-table .data-table__check { padding-right: 0; }
+/* A block, so the cell centers the box itself rather than a line of text
+   whose baseline it sat on (it rode a pixel or two low). */
+.data-table__check input { display: block; }
 .data-table .data-table__num { text-align: right; }
 
 /* The row's actions: icon buttons at its end, quiet until the row is

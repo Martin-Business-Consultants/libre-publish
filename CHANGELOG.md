@@ -8,6 +8,16 @@ out.
 
 ## Unreleased
 
+### Changed
+- **Plugins and themes install from GitHub only**: Settings › Plugins and
+  Settings › Themes take a repository and install its latest release, and
+  updates follow its releases. The plugin directory is off, neither shown
+  nor fetched; `CMS_PLUGIN_DIRECTORY=on` turns it back on.
+
+### Fixed
+- **A list table's tick boxes sit in the middle of their row**, not a
+  little low.
+
 ## 1.34.3
 
 ### Fixed
