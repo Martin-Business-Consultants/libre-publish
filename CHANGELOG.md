@@ -25,6 +25,42 @@ out.
   `fields`, `text-muted`…) and tokens (`--space-*`, `--radius-md`…) no
   longer exist. This is a breaking change for any plugin with admin
   screens, Forms among them.
+- **Plugins' sheets use rune's dialog** (`data-controller="rune-dialog"`,
+  `data-rune-dialog-auto-open-value`): the admin's own `dialog`
+  controller is gone, along with the unused `copy_to_clipboard`,
+  `fixed_popup`, `frame_reloader`, `element_removal` and `navigable_list`
+  controllers.
+
+### Added
+- **Keyboard, as in Runwell.** `?` lists every key; `.` turns on hint
+  mode, which puts each control's key on it as a keycap. The admin menu's
+  items have go-to chords (`g p` Pages, `g c` Collections, `g l` Globals,
+  `g t` Patterns, `g a` Audit log, `g x` Trash, `g u` Users, `g d` Docs,
+  `g s` Settings), `s` searches and `[` hides the sidebar. On a list,
+  `j`/`k` pick a row, which is tinted and shows its actions: `e` edits it,
+  `d` deletes it and `x` ticks it. Esc closes a form opened in place.
+- **A bulk bar.** Ticking rows brings up a bar in the search's place with
+  how many are ticked, a button per action, Delete (which asks first) and
+  Clear, instead of the Bulk actions select and Apply.
+- **Help › UI kit** draws every component in the site's own branding.
+
+### Changed
+- Notices and alerts float as **toasts** in the bottom right instead of
+  pushing the screen down (the sign-in pages keep them beside the form).
+- Menus, dialogs, sheets and toasts open with the same short motion, and
+  **page changes cross-fade**, the sidebar holding still; neither for
+  anyone who asks for less motion.
+- Every list's rows share **one delete dialog** instead of carrying one
+  each.
+- The audit log's filters sit in one row with its search and apply as
+  they change.
+- A list a search left empty says nothing matched, with Show all, rather
+  than that there are none yet.
+
+### Fixed
+- The Build board's keys (`h`/`l`, `j`/`k`, `H`/`L`) did nothing: they
+  were written for another board's markup.
+- A click inside a sheet below its content closed it.
 
 ## 1.33.4
 

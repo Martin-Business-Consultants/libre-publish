@@ -1,5 +1,5 @@
 <% @page_title = "UI kit" %>
-<% parent_page "Docs", docs_path %>
+<%= parent_page "Docs", docs_path %>
 <%= render "layouts/shared/page_header", title: @page_title %>
 
 <%# Help › UI kit (UiController): every rune_ui component, and the admin's own,
@@ -105,8 +105,8 @@
             <%# herb:key title %>
             <tr data-filter-target="item">
               <td>
-                <a href="#" class="row-link"><%= title %></a>
-                <%= render "layouts/shared/row_links", links: [ [ "Edit", "#" ], [ "View", "#" ] ] %>
+                <a href="<%= ui_path %>" class="row-link"><%= title %></a>
+                <%= render "layouts/shared/row_links", links: [ [ "Edit", ui_path ], [ "View", ui_path ] ] %>
               </td>
               <td><%= status_tag status %></td>
               <td><span class="nowrap small muted"><%= time_ago time %></span></td>
@@ -122,13 +122,13 @@
       <div class="button-row">
         <%= menu "A menu" do %>
           <%= menu_label "Signed in" %>
-          <%= menu_link "Edit profile", "#" %>
+          <%= menu_link "Edit profile", ui_path %>
           <%= menu_divider %>
-          <%= menu_link "Settings", "#" %>
+          <%= menu_link "Settings", ui_path %>
         <% end %>
         <%= popover_menu "A popover menu" do %>
-          <%= menu_link "Duplicate", "#" %>
-          <%= menu_link "Move", "#" %>
+          <%= menu_link "Duplicate", ui_path %>
+          <%= menu_link "Move", ui_path %>
         <% end %>
         <%= dialog "A dialog", trigger: "Open a dialog" do %>
           <p class="muted">A question, and the two answers to it.</p>
@@ -144,9 +144,9 @@
 
     <%= card "Tabs and empty states", hint: "tabs, empty_state" do %>
       <div class="stack">
-        <%= tabs [ [ "Content", "#", { current: true } ], [ "SEO", "#" ], [ "History", "#", { count: 4 } ] ] %>
+        <%= tabs [ [ "Content", ui_path, { current: true } ], [ "SEO", ui_path ], [ "History", ui_path, { count: 4 } ] ] %>
         <%= empty_state "Nothing matches this filter." do %>
-          <%= button_link "Show all", "#", size: :sm %>
+          <%= button_link "Show all", ui_path, size: :sm %>
         <% end %>
         <%= empty_state "No pages yet. The first is usually the home page.", compact: true %>
       </div>
