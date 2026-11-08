@@ -25,7 +25,7 @@ RSpec.describe CollectionEventMailer do
   it "links the entry on the CMS itself, not the public site" do
     Setting.set("general", {"site_base_url" => "https://www.acme.test"})
 
-    expect(html(sent)).to include(%(href="http://example.com/collections/posts/entries/hello/edit"))
+    expect(html(sent)).to include(%(href="http://example.com/cms/collections/posts/entries/hello/edit"))
     expect(html(sent)).not_to include("acme.test/collections")
   end
 

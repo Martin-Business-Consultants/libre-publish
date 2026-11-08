@@ -155,9 +155,9 @@ RSpec.describe "Sitemap", type: :request do
   end
 end
 
-# Changing a row's status publishes or unpublishes it, so from the sitemap it
-# takes the publish capability, as the page and entry editors do; sitemap
-# settings alone need only write.
+# From the sitemap, as from the page and entry editors, anything in front of
+# visitors takes the publish capability (PublishGated): a status change, or
+# any change to a live row. A draft's sitemap settings need only write.
 RSpec.describe "Sitemap status changes", type: :request do
   let(:writer) { create(:user, admin: false, role: create(:role, permissions: %w[pages:read pages:write])) }
   let(:draft) { Page.create!(slug: "draft-one", title: "Draft", status: "draft", locale: "en", blocks: [], schema: {"fields" => []}, frontmatter: {}, seo: {}) }
@@ -178,6 +178,19 @@ RSpec.describe "Sitemap status changes", type: :request do
 
     expect(draft.reload.status).to eq("draft")
     expect(draft.seo["sitemap_priority"]).to eq(0.9)
+  end
+
+  it "refuses a writer's settings change to a live row, in the admin as over the API" do
+    live = Page.create!(slug: "live-one", title: "Live", status: "published", locale: "en", blocks: [], schema: {"fields" => []}, frontmatter: {}, seo: {})
+    sign_in_as writer
+
+    patch sitemap_entry_path("page", live.id), params: {entry: {sitemap_priority: "0.9"}}
+    expect(flash[:alert]).to match(/permission to publish/)
+
+    patch "/api/sitemap/page/#{live.id}", params: {entry: {sitemap_priority: "0.9"}},
+      headers: {"Authorization" => "Bearer #{writer.api_token.token}"}, as: :json
+    expect(response).to have_http_status(:forbidden)
+    expect(live.reload.seo).to eq({})
   end
 
   it "hides the status field from a writer's Quick edit" do

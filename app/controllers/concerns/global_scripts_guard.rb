@@ -4,7 +4,8 @@
 # a chat widget: website_scripts), so whoever writes it can run script in
 # every visitor's browser, and in an admin's while they look at the site.
 # Writing it takes its own capability, globals:scripts, which only admins
-# hold unless a role is given it; globals:write is for the rest.
+# hold unless a role is given it (a service token through its role, like any
+# other capability); globals:write is for the rest.
 module GlobalScriptsGuard
   extend ActiveSupport::Concern
 
@@ -17,7 +18,7 @@ module GlobalScriptsGuard
   def guard_scripts_global!
     slugs = [@global&.slug, params.dig(:global, :slug)].compact.map(&:to_s)
     return unless slugs.include?(Global::SCRIPTS_SLUG)
-    return if Current.user&.can?(CAPABILITY)
+    return if granted?(CAPABILITY)
 
     raise Authorization::Forbidden, CAPABILITY
   end

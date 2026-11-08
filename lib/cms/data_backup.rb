@@ -154,8 +154,9 @@ module Cms
 
     # Copies one database with SQLite's online backup and checks the copy.
     # Raises rather than archiving a partial or damaged copy: an update must
-    # not migrate on the strength of a backup that wouldn't restore.
-    def backup_database(source, destination)
+    # not migrate on the strength of a backup that wouldn't restore. SiteBackup
+    # (the editor's download) copies its database through this too.
+    def self.copy_database(source, destination)
       from = SQLite3::Database.new(source, readonly: true)
       from.busy_timeout = BUSY_TIMEOUT_MS
       to = SQLite3::Database.new(destination)
@@ -170,6 +171,8 @@ module Cms
       to&.close
       from&.close
     end
+
+    def backup_database(source, destination) = self.class.copy_database(source, destination)
 
     # Keep the newest `keep` archives.
     def prune!

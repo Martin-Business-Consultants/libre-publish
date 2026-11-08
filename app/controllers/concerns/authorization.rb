@@ -109,7 +109,7 @@ module Authorization
     if Current.api_token
       Current.api_token.can?(capability)
     else
-      Current.user&.can?(capability) || Current.api_user&.can?(capability)
+      Current.user&.can?(capability)
     end
   end
 

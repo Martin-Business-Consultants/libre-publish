@@ -1,13 +1,10 @@
 # frozen_string_literal: true
 
 # Delivers one event to one webhook (Webhook::Deliverable#deliver_now).
-# Retries are bounded — a misconfigured URL shouldn't fill the queue.
+# One attempt: a failure, network errors included, is recorded as a failed
+# delivery (and counts toward Webhook#record_attempt!), not retried.
 class Webhook::DeliveryJob < ApplicationJob
   queue_as :default
-
-  retry_on Net::ReadTimeout,    wait: 30.seconds, attempts: 3
-  retry_on Net::OpenTimeout,    wait: 30.seconds, attempts: 3
-  retry_on Errno::ECONNREFUSED, wait: 30.seconds, attempts: 3
 
   # `_tenant` is only for jobs queued before this app became a single install;
   # it's ignored. Drop it once those have drained.

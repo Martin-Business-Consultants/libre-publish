@@ -44,6 +44,18 @@ RSpec.describe "Security", type: :request do
         headers: bearer(admin), as: :json
       expect(Global.find_by!(slug: "scripts").data["items"].first["name"]).to eq("GA")
     end
+
+    it "is open to a service token whose role holds globals:scripts, and only that" do
+      writer = ServiceToken.issue(name: "Deploy", role: create(:role, permissions: %w[globals:read globals:write]), created_by: nil)
+      patch "/api/globals/scripts", params: {global: {data: {"items" => [{"head" => "<script>x()</script>"}]}}},
+        headers: {"Authorization" => "Bearer #{writer.token}"}, as: :json
+      expect(response).to have_http_status(:forbidden)
+
+      scripts = ServiceToken.issue(name: "Tags", role: create(:role, permissions: %w[globals:read globals:write globals:publish globals:scripts]), created_by: nil)
+      patch "/api/globals/scripts", params: {global: {data: {"items" => [{"name" => "GTM", "head" => "<script>gtm()</script>"}]}}},
+        headers: {"Authorization" => "Bearer #{scripts.token}"}, as: :json
+      expect(Global.find_by!(slug: "scripts").data["items"].first["name"]).to eq("GTM")
+    end
   end
 
   describe "backups" do
