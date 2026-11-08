@@ -1,0 +1,31 @@
+<%# locals: () %>
+<%# The ? sheet: a button at the sidebar's foot opening rune_ui's dialog, listing every key
+    the keyboard controller answers to (layouts/shared/shortcut_list), with hint mode's switch. %>
+<div class="dialog-wrap" data-controller="rune-dialog" data-action="keydown.esc->rune-dialog#close:stop">
+  <button type="button" class="icon-button" title="<%= tx("Keyboard shortcuts (?)") %>" aria-haspopup="dialog" data-keys="?" data-action="rune-dialog#open">
+    <kbd>?</kbd>
+    <span class="visually-hidden"><%= tx("Keyboard shortcuts") %></span>
+  </button>
+  <dialog class="dialog dialog--lg shortcuts" data-rune-dialog-target="dialog" data-action="click->rune-dialog#backdrop" aria-labelledby="shortcuts_title">
+    <div class="dialog__box">
+      <header class="dialog__header">
+        <div class="stack stack--xs">
+          <h2 class="dialog__title" id="shortcuts_title"><%= tx("Keyboard shortcuts") %></h2>
+          <p class="muted"><%= tx("Letters work anywhere outside a text field. A pair like g p is pressed one key after the other.") %></p>
+        </div>
+        <%= icon_button "close", label: tx("Close"), data: { action: "rune-dialog#close" } %>
+      </header>
+      <div class="dialog__body">
+        <%= render "layouts/shared/shortcut_list" %>
+      </div>
+      <footer class="dialog__actions shortcuts__footer">
+        <button type="button" class="<%= button_classes(variant: :secondary) %>" data-action="keyboard#toggleHints">
+          <span class="hints-switch__show"><%= tx("Show key hints") %></span>
+          <span class="hints-switch__hide"><%= tx("Hide key hints") %></span>
+          <kbd class="hide-on-touch">.</kbd>
+        </button>
+        <button type="button" class="<%= button_classes(variant: :primary) %>" data-action="rune-dialog#close"><%= tx("Close") %> <kbd class="hide-on-touch">Esc</kbd></button>
+      </footer>
+    </div>
+  </dialog>
+</div>

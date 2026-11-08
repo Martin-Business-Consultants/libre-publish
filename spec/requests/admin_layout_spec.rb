@@ -98,7 +98,7 @@ RSpec.describe "The admin layout", type: :request do
     expect(bar).to include(">Page</a>", ">User</a>")
   end
 
-  it "shows a notice as a dismissible flash at the top of the page" do
+  it "shows a notice as a toast, out of the page's flow" do
     sign_in_as admin
     redirect = Redirect.create!(source_path: "/old", destination_url: "/new", status_code: 301)
 
@@ -106,7 +106,47 @@ RSpec.describe "The admin layout", type: :request do
     follow_redirect!
 
     main = response.body[%r{<main .*?</main>}m]
-    expect(main).to include("flash flash--notice", "Redirect deleted", "Dismiss", "rune-flash#close")
+    expect(main).to include("flashes flashes--toast", "flash flash--notice", "Redirect deleted", "Dismiss", "rune-flash#close")
+  end
+
+  it "keeps a signed-out page's messages in the page, beside the form" do
+    post sign_in_path, params: {email: "nobody@example.com", password: "wrong"}
+    follow_redirect! if response.redirect?
+
+    expect(response.body).to include("flash flash--alert")
+    expect(response.body).not_to include("flashes--toast")
+  end
+
+  it "puts each menu item's go-to chord on its link, and lists them in the ? sheet" do
+    sign_in_as admin
+
+    get dashboard_path
+
+    expect(item("Pages")).to include('data-keys="g p"', 'title="Pages (g p)"')
+    expect(item("Trash")).to include('data-keys="g x"')
+    sheet = response.body[%r{<dialog class="dialog dialog--lg shortcuts".*?</dialog>}m]
+    expect(sheet).to include("Keyboard shortcuts", "keyboard#toggleHints", "<kbd>g</kbd><kbd>p</kbd></dt><dd>Pages</dd>")
+    expect(response.body).to include('data-keys="?"', 'data-keys="["', 'class="hint-legend')
+  end
+
+  it "leaves out the chords for what the role can't open" do
+    sign_in_with %w[pages:read]
+
+    get pages_path
+
+    sheet = response.body[%r{<dialog class="dialog dialog--lg shortcuts".*?</dialog>}m]
+    expect(sheet).to include("<dd>Pages</dd>")
+    expect(sheet).not_to include("<dd>Users</dd>", "<dd>Trash</dd>")
+  end
+
+  it "gives a list's rows one delete dialog, which each row's Delete fills in" do
+    sign_in_as admin
+    Page.create!(slug: "about", title: "About", status: "draft", locale: "en")
+
+    get pages_path
+
+    expect(response.body.scan('data-row-delete-target="dialog"').size).to eq(1)
+    expect(response.body).to include('data-action="row-delete#open"', 'data-row-delete-name-param="About"', 'data-keys="d"', 'data-keys="e"')
   end
 
   it "renders the notices once a page, whether or not it has a title row" do

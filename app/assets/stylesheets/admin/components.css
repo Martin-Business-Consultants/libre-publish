@@ -33,8 +33,7 @@
   visibility: hidden;
 }
 
-tr:is(:hover, :focus-within) .row-actions,
-.row-actions:has(dialog[open]) { visibility: visible; }
+tr:is(:hover, :focus-within, [data-keyboard-current]) .row-actions { visibility: visible; }
 
 @media (any-hover: none) {
   .row-actions { visibility: visible; }

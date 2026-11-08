@@ -2,12 +2,13 @@
 <%# The admin, in rune_ui's shell: the sidebar (layouts/shared/sidebar) on the
     page, and the screen in an inset panel under a bar holding the trail of
     crumbs (page_header sets it) and the page's tools (layouts/shared/panel_bar).
-    The keyboard controller's keys, the "/" filter (filter) and ⌘K search
-    (global_search) ride on it. Signed-out pages use layouts/public. %>
+    The keyboard controller's keys (the ? sheet lists them; . shows them on
+    their buttons), the "/" filter (filter), ⌘K search (global_search) and
+    the rows' one delete dialog (row_delete_dialog) ride on it. Signed-out pages use layouts/public. %>
 <html lang="<%= I18n.locale %>">
   <%= render "layouts/shared/head" %>
 
-  <body class="<%= class_names(@body_class) %>" data-controller="keyboard">
+  <body class="<%= class_names(@body_class) %>" data-controller="keyboard row-delete">
     <a href="#main" class="skip-link" data-turbo="false"><%= tx("Skip to main content") %></a>
     <% page = capture do %>
       <%= content_for?(:content) ? yield(:content) : yield %>
@@ -15,9 +16,12 @@
     <% if Current.user %>
       <%= app_shell sidebar: render("layouts/shared/sidebar"), main: page, storage_key: "admin-menu", shortcuts: false,
             bar: render("layouts/shared/panel_bar"), flash: render("layouts/shared/flash"),
+            toggle: icon_button(:sidebar, label: tx("Show the sidebar ([)"), class: "panel-bar__toggle",
+                                data: { action: "rune-sidebar#toggle", keys: "[", keys_anywhere: true }),
             attributes: { id: "global-container", data: { controller: "filter" } },
             main_attributes: { id: "main" }, main_class: @main_class,
-            after: safe_join([render("layouts/shared/global_search"), render("layouts/shared/update_progress")]) %>
+            after: safe_join([render("layouts/shared/global_search"), render("layouts/shared/update_progress"),
+                              render("layouts/shared/row_delete_dialog"), render("layouts/shared/hint_legend")]) %>
     <% else %>
       <div id="global-container" data-controller="filter">
         <main id="main" class="main">

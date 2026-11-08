@@ -1,0 +1,22 @@
+<%# locals: () %>
+<%# The rows' one delete dialog: each list row's Delete (layouts/shared/row_links) fills it in
+    and opens it (row_delete_controller), so a long list doesn't carry a dialog and a form per
+    row. %>
+<dialog class="dialog" aria-label="<%= tx("Delete") %>" data-row-delete-target="dialog" data-action="click->row-delete#backdrop keydown.esc->row-delete#close:stop">
+  <div class="dialog__box">
+    <header class="dialog__header">
+      <h2 class="dialog__title" data-row-delete-target="title"><%= tx("Delete?") %></h2>
+      <%= icon_button "close", label: tx("Close"), data: { action: "row-delete#close" } %>
+    </header>
+    <div class="dialog__body">
+      <p class="muted" data-row-delete-target="message"></p>
+      <div class="dialog__actions">
+        <button type="button" class="btn btn--ghost" data-action="row-delete#close"><%= tx("Cancel") %></button>
+        <%= button_to "#", method: :delete, class: "btn btn--danger", form: { data: { row_delete_target: "form", turbo_frame: "_top" } } do %>
+          <%= icon_tag "trash" %>
+          <span><%= tx("Delete") %></span>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</dialog>

@@ -1,0 +1,13 @@
+<%# locals: () %>
+<%# Hint mode's strip at the foot of the page: the keys with no control to label. Shown only
+    while hint mode is on (keyboard.css); the keyboard controller turns it on and off. %>
+<aside class="hint-legend hide-on-touch" aria-label="<%= tx("Keyboard hints") %>">
+  <span class="hint-legend__item"><kbd>j</kbd><kbd>k</kbd> <%= tx("Move") %></span>
+  <span class="hint-legend__item"><kbd>Enter</kbd> <%= tx("Open") %></span>
+  <span class="hint-legend__item"><kbd>/</kbd> <%= tx("Filter") %></span>
+  <span class="hint-legend__item"><kbd>Esc</kbd> <%= tx("Back") %></span>
+  <span class="hint-legend__item"><kbd>?</kbd> <%= tx("All keys") %></span>
+  <button type="button" class="<%= button_classes(variant: :ghost, size: :sm) %>" data-action="keyboard#toggleHints">
+    <kbd>.</kbd> <%= tx("Hide hints") %>
+  </button>
+</aside>

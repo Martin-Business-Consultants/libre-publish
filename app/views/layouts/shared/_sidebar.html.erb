@@ -22,7 +22,7 @@
     <% if site_url %>
       <%= icon_button "external", label: tx("View site"), url: site_url, target: "_blank", rel: "noopener" %>
     <% end %>
-    <%= sidebar_toggle label: tx("Hide the sidebar") %>
+    <%= icon_button :sidebar, label: tx("Hide the sidebar ([)"), data: { action: "rune-sidebar#toggle", keys: "[" } %>
   </div>
 
   <%# Opens the search modal (layouts/shared/global_search); a link, so it still goes to Search without it. %>
@@ -70,6 +70,7 @@
         <%= menu_divider %>
         <%= menu_button tx("Sign out"), session_path(Current.session), method: :delete, icon: "logout" %>
       <% end %>
+      <%= render "layouts/shared/shortcuts" %>
       <%= render "layouts/shared/theme_toggle" %>
     </div>
   </div>

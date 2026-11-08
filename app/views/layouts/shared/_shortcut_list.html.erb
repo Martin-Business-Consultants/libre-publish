@@ -1,0 +1,61 @@
+<%# locals: () %>
+<%# Every key the keyboard controller answers to, grouped, for the ? sheet. The go-to chords
+    are the admin menu's own (NavigationHelper::ADMIN_MENU's keys), so only what this person
+    can open is listed. %>
+<% chords = admin_menu.flat_map(&:last).select(&:keys) %>
+<div class="shortcuts__groups">
+  <section>
+    <h3 class="shortcuts__heading"><%= tx("Move around") %></h3>
+    <dl class="shortcut-list">
+      <dt><kbd>j</kbd> <kbd>k</kbd></dt><dd><%= tx("Next or previous row or card") %></dd>
+      <dt><kbd>g</kbd><kbd>g</kbd> <kbd>G</kbd></dt><dd><%= tx("First or last row") %></dd>
+      <dt><kbd>Enter</kbd> <kbd>o</kbd></dt><dd><%= tx("Open the row") %></dd>
+      <dt><kbd>e</kbd></dt><dd><%= tx("Edit the row") %></dd>
+      <dt><kbd>d</kbd></dt><dd><%= tx("Delete or trash the row (asks first)") %></dd>
+      <dt><kbd>x</kbd></dt><dd><%= tx("Tick the row, to act on several at once") %></dd>
+      <dt><kbd>Esc</kbd></dt><dd><%= tx("Drop the selection, then go up a level") %></dd>
+    </dl>
+  </section>
+
+  <section>
+    <h3 class="shortcuts__heading"><%= tx("Go to") %></h3>
+    <dl class="shortcut-list">
+      <dt><kbd>g</kbd><kbd>h</kbd></dt><dd><%= tx("Dashboard") %></dd>
+      <% chords.each do |entry| %>
+        <%# herb:key entry.id %>
+        <dt><% entry.keys.split.each do |key| %><kbd><%= key %></kbd><% end %></dt><dd><%= tx(entry.label) %></dd>
+      <% end %>
+    </dl>
+  </section>
+
+  <section>
+    <h3 class="shortcuts__heading"><%= tx("On a page") %></h3>
+    <dl class="shortcut-list">
+      <dt><kbd>n</kbd></dt><dd><%= tx("New one, on a list page") %></dd>
+      <dt><kbd>/</kbd></dt><dd><%= tx("Filter what’s on the page") %></dd>
+      <dt><kbd>s</kbd> <kbd>⌘K</kbd></dt><dd><%= tx("Search everything") %></dd>
+      <dt><kbd>[</kbd></dt><dd><%= tx("Hide or show the sidebar") %></dd>
+      <dt><kbd>?</kbd></dt><dd><%= tx("This list") %></dd>
+      <dt><kbd>.</kbd></dt><dd><%= tx("Hint mode: show each key on the button it presses") %></dd>
+    </dl>
+  </section>
+
+  <section>
+    <h3 class="shortcuts__heading"><%= tx("Build board") %></h3>
+    <dl class="shortcut-list">
+      <dt><kbd>h</kbd> <kbd>l</kbd></dt><dd><%= tx("The other column") %></dd>
+      <dt><kbd>j</kbd> <kbd>k</kbd></dt><dd><%= tx("Up or down the column") %></dd>
+      <dt><kbd>H</kbd> <kbd>L</kbd></dt><dd><%= tx("Move the card a column left or right") %></dd>
+      <dt><kbd>Enter</kbd></dt><dd><%= tx("Open the card") %></dd>
+    </dl>
+  </section>
+
+  <section>
+    <h3 class="shortcuts__heading"><%= tx("Forms and editors") %></h3>
+    <dl class="shortcut-list">
+      <dt><kbd>⌘</kbd><kbd>Enter</kbd></dt><dd><%= tx("Save (Ctrl+Enter on Windows and Linux)") %></dd>
+      <dt><kbd>Esc</kbd></dt><dd><%= tx("Close a form opened on the page, or go back") %></dd>
+      <dt><kbd>↑</kbd> <kbd>↓</kbd> <kbd>Enter</kbd></dt><dd><%= tx("Pick from search results") %></dd>
+    </dl>
+  </section>
+</div>

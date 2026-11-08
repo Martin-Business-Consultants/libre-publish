@@ -216,7 +216,8 @@ The stylesheets, in the order `app_stylesheet_tags` loads them: rune_ui's
 `_global.css` (the palette and the branding contract), `_rune-theme.css`
 (points rune's tokens at the palette), and `admin/*.css`: `base.css` (the
 admin's additions to rune's vocabulary), `components.css` (its shared
-pieces), `shell.css` (the shell's admin parts), and one file per area of
+pieces), `shell.css` (the shell's admin parts), `keyboard.css` (the row j / k
+is on, the ? sheet, hint mode, page transitions), and one file per area of
 screens (`editor.css`, `records.css`, `settings.css`, `media.css`…).
 
 **The vocabulary.** Reach for these before writing a new class.
@@ -232,8 +233,9 @@ screens (`editor.css`, `records.css`, `settings.css`, `media.css`…).
   `config/initializers/rune_ui.rb`), `status_tag` (a badge toned by its
   word), `postbox`, `settings_field`, `settings_switch`, `secret_field`, and
   the partials in `layouts/shared` (page_header, delete_dialog,
-  confirm_dialog, save_box, status_links, quick_filter, row_links,
-  bulk_actions, pagination, errors, editor_bar).
+  confirm_dialog, save_box, status_links, quick_filter, row_links (its
+  Delete fills in the page's one row_delete_dialog), bulk_actions,
+  pagination, errors, editor_bar).
 - *rune's classes*: `stack`, `grid-2`, `catalog`, `button-row`,
   `dot-list`, `dl.details`; `card` (`card__head`, `card__header`,
   `card__title`, `card__hint`, `card__content`, `card__footer`, `card--flush`,
@@ -294,6 +296,14 @@ screens (`editor.css`, `records.css`, `settings.css`, `media.css`…).
 - **Don't give a display class to something a stylesheet shows and hides**
   (a `stack` on an element a rule sets `display: none`): let the
   stylesheet set its display.
+- **Keys are declared, not coded.** A control that has a key says so with
+  `data-keys` (`"n"`, `"e"`, `"g p"`, `"mod+s"`; commas for alternatives),
+  and the keyboard controller clicks it (or focuses it, with
+  `data-keys-focus`); one inside the row j / k is on wins over the page's.
+  A list row is `data-filter-target="item"`. A go-to chord belongs to its
+  admin menu item (`NavigationHelper::ADMIN_MENU`'s `keys:`), and every key
+  is listed in the ? sheet (`layouts/shared/_shortcut_list`). Esc goes up
+  to the page `parent_page` names.
 - **Hooks**: keep a BEM class only while a stylesheet, JavaScript or a spec
   reads it; the classes spec reports one nothing reads.
 - **Plugins** use the same kit, and ship their own stylesheet for what's

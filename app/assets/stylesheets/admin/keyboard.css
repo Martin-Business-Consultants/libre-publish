@@ -1,0 +1,102 @@
+/* The keyboard (keyboard_controller) and page changes: the row or card j / k
+   is on, the ? sheet (layouts/shared/_shortcuts), hint mode's keycaps and
+   strip (the . key, layouts/shared/_hint_legend), and the cross-fade between
+   pages. */
+
+/* The row or card j / k landed on: tinted like a picked row, so it reads
+   at a glance without a focus ring around a whole table row. */
+.data-table tbody tr:focus-visible td,
+.data-table tbody tr[data-keyboard-current] td { background: var(--accent-soft); }
+.data-table tbody tr:focus-visible { outline: none; }
+.board-card[data-keyboard-current] { border-color: var(--accent); box-shadow: var(--ring); outline: none; }
+
+/* The ? sheet: groups in two columns, each a list of what a key does with
+   its keys at the end; the footer turns hint mode on and off. */
+.dialog.shortcuts { width: min(56rem, calc(100vw - 2rem)); }
+.shortcuts__groups { columns: 2 20rem; column-gap: var(--s-6); }
+.shortcuts__groups section { display: flex; flex-direction: column; gap: var(--s-1); padding-bottom: var(--s-5); break-inside: avoid; }
+.shortcuts__heading { color: var(--text-faint); font-size: var(--text-meta); font-weight: var(--weight-strong); }
+.shortcut-list { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-auto-flow: dense; margin: 0; }
+.shortcut-list :is(dt, dd) { margin: 0; padding: 7px 0; border-bottom: 1px solid var(--line); }
+.shortcut-list dt { grid-column: 2; display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 4px; padding-left: var(--s-4); white-space: nowrap; }
+.shortcut-list dd { grid-column: 1; }
+.shortcut-list :is(dt, dd):last-of-type { border-bottom: 0; }
+.shortcut-list kbd { text-transform: none; }
+.shortcuts__footer { margin: 0 calc(var(--s-5) * -1); padding: var(--s-4) var(--s-5) 0; border-top: 1px solid var(--line); }
+.hints-switch__hide,
+html[data-hints] .hints-switch__show { display: none; }
+html[data-hints] .hints-switch__hide { display: inline; }
+
+/* Hint mode: each control's key as a keycap on its corner, from
+   data-key-hint. Keycaps are overlays, so turning hints on moves nothing.
+   Inside a list, only the row j / k is on (or the one hovered) shows its
+   row's keys, so a table isn't a wall of e and d. */
+:where(html[data-hints] [data-key-hint]:not(input, textarea, select)) { position: relative; }
+html[data-hints] [data-key-hint]:not(input, textarea, select, :has(kbd))::after {
+  content: attr(data-key-hint);
+  position: absolute;
+  inset: -.55em -.55em auto auto;
+  z-index: 2;
+  min-width: 1.4em;
+  padding: .25em .4em;
+  border-radius: var(--radius-xs);
+  background: var(--text);
+  color: var(--panel);
+  box-shadow: 0 0 0 2px var(--panel);
+  font-family: var(--font-sans);
+  font-size: .65rem;
+  font-weight: 600;
+  line-height: 1;
+  text-align: center;
+  text-transform: none;
+  white-space: pre;
+  word-spacing: .2em;
+  pointer-events: none;
+}
+html[data-hints] :is(.sidebar__link, .sidebar__brand)[data-key-hint]::after { inset: 50% var(--s-2) auto auto; translate: 0 -50%; }
+html[data-hints] :is([data-filter-target~="item"], [data-keyboard-item]):not(:hover, :focus-within, [data-keyboard-current]) [data-key-hint]::after { display: none; }
+
+.hint-legend { display: none; }
+html[data-hints] .hint-legend {
+  position: fixed;
+  bottom: var(--s-4);
+  left: 50%;
+  translate: -50% 0;
+  z-index: 30;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2) var(--s-4);
+  max-width: calc(100vw - 2rem);
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--radius-lg);
+  background: var(--panel);
+  box-shadow: var(--shadow-popover);
+  color: var(--text-muted);
+  font-size: var(--text-meta);
+  animation: rune-pop var(--motion) var(--ease);
+}
+.hint-legend__item { display: inline-flex; align-items: center; gap: 4px; }
+
+@media (any-hover: none) {
+  html[data-hints] [data-key-hint]::after { display: none; }
+  .hide-on-touch { display: none !important; }
+}
+
+/* Page changes cross-fade with the browser's own view transitions: Turbo's
+   visits (the view-transition meta in layouts/shared/_head) and full page
+   loads (@view-transition). The sidebar is its own group, so it holds still
+   while the screen beside it changes. None for anyone who asks for less
+   motion. */
+@view-transition { navigation: auto; }
+.app > .sidebar { view-transition-name: admin-sidebar; }
+::view-transition-old(root),
+::view-transition-new(root) { animation-duration: .12s; }
+
+@media (prefers-reduced-motion: reduce) {
+  @view-transition { navigation: none; }
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) { animation: none; }
+}
