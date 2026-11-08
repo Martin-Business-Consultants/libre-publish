@@ -51,10 +51,14 @@
   align-items: start;
 }
 
-/* What heads both columns (an editor's title), across them, so the main
+/* What heads the main column (an editor's title), as wide as it, with the
+   main column and the sidebar both on the row under it, so the main
    column's first box and the sidebar's start on one line. */
+.with-aside:has(> .with-aside__lead) > .with-aside__main { grid-column: 1; grid-row: 2; }
+.with-aside:has(> .with-aside__lead) > .with-aside__aside { grid-column: 2; grid-row: 2; }
+
 .with-aside__lead {
-  grid-column: 1 / -1;
+  grid-column: 1;
   display: flex;
   flex-direction: column;
   gap: var(--s-3);
@@ -71,6 +75,7 @@
 
 @media (max-width: 1100px) {
   .with-aside { grid-template-columns: minmax(0, 1fr); }
+  .with-aside:has(> .with-aside__lead) > .with-aside__aside { grid-column: 1; grid-row: 3; }
 }
 
 /* Text that reads best in a column, not across a wide screen. */

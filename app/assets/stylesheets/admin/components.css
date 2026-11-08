@@ -11,11 +11,16 @@
    edit, ⋯ and delete at its end, __empty the one cell that says there's
    nothing (PaginationHelper#table_empty_row). */
 
-/* The tick-box column fits its box, and the column after it (the row's
-   title) takes the leftover width and wraps. rune's own rule gives the
-   leftover to the first column, which in a list table is the tick box. */
-.data-table .data-table__check { width: 1%; padding-right: 0; }
-.data-table:has(.data-table__check) :is(th, td):nth-child(2) { width: auto; white-space: normal; }
+/* Every column fits its content, so each starts right after the widest cell
+   of the one before it, and the width left over goes to the row's end: the
+   actions column (its icons stay at the right edge), or the last column of
+   a table without one. Overrides rune's convention, which gives the leftover
+   to the first column and pushes the rest to the far right. A table that
+   sizes its own columns with a <colgroup>, or opts out with table--even, is
+   left alone. */
+.table:not(.table--even, :has(colgroup)) :is(th, td) { width: 1%; white-space: nowrap; }
+.table:not(.table--even, :has(colgroup)) :is(th, td):last-child { width: auto; white-space: normal; }
+.data-table .data-table__check { padding-right: 0; }
 .data-table .data-table__num { text-align: right; }
 
 /* The row's actions: icon buttons at its end, quiet until the row is

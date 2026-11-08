@@ -31,8 +31,14 @@ out.
 - **Settings as Runwell lays it out**: a nav down the left with plugins'
   pages nested under All plugins, pill tabs on the longer pages (Account,
   Branding, General, Security policy) and a Save bar held at the foot.
-- **Every tab strip is pill-shaped**, and an editor's title runs across
-  both columns, so its first box and the Publish box start level.
+- **Every tab strip is pill-shaped.** A page's or entry's editor has Edit,
+  SEO and Schema tabs on every install: Schema holds the schema.org type
+  and the JSON-LD, which used to sit at the foot of SEO. Its title is as
+  wide as the main column, and the column's first box and the Publish box
+  start level.
+- **Table columns fit their content**, each starting right after the widest
+  cell of the one before, with the spare width at the row's end, instead
+  of the first column taking it and pushing the rest to the far right.
 - **Inter is bundled** (as Runwell bundles it) rather than fetched from
   Google Fonts; a font chosen in Settings › Branding still is.
 - The "From the CLI or MCP" line and its Copy button are gone from every

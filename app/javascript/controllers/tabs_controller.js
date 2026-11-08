@@ -21,7 +21,9 @@ export default class extends Controller {
     // An anchor inside a panel (settings/profile#email): show the tab holding it, and go to it.
     const target = wanted && document.getElementById(wanted)
     const panel = target && this.panelTargets.find(panel => panel.contains(target))
-    const initial = names.includes(this.initialValue) ? this.initialValue : names[0]
+    // A panel marked data-tabs-open (a JSON-LD box sent back unparsed) opens first.
+    const flagged = this.panelTargets.find(panel => panel.hasAttribute("data-tabs-open"))?.dataset.tab.split(" ")[0]
+    const initial = flagged || (names.includes(this.initialValue) ? this.initialValue : names[0])
     this.#show(panel ? panel.dataset.tab.split(" ")[0] : initial, { remember: false })
     if (panel) target.scrollIntoView({ block: "start" })
   }

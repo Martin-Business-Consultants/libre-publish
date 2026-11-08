@@ -1,6 +1,7 @@
 <%# locals: (record:, kind:) %>
-<%# An editor's tabs: Edit (the form, yielded); SEO, for a record that has
-    it — the form's own SEO panel (content_form/seo), so it saves with the
+<%# An editor's tabs: Edit (the form, yielded); SEO and Schema (its
+    structured data, JSON-LD), for every record that has SEO, on every
+    install — the form's own panels (content_form/seo), so they save with the
     rest; and JSON, the record as the API hands it to the site
     (api_previews#show, loaded when the tab is first opened); and Preview,
     the page as the theme draws it with what's in the form now, saved or not
@@ -21,6 +22,10 @@
             <%= icon_tag "search" %>
             <span>SEO</span>
           </a>
+          <a href="#schema" role="tab" class="tabs__tab" data-tab="schema" data-tabs-target="tab" data-action="tabs#select">
+            <%= icon_tag "tag-outline" %>
+            <span>Schema</span>
+          </a>
         <% end %>
         <% if json then %>
           <a href="#json" role="tab" class="tabs__tab" data-tab="json" data-tabs-target="tab" data-action="tabs#select">
@@ -37,7 +42,7 @@
       </nav>
     <% end %>
     <%= render "layouts/shared/editor_bar", tabs: tabs %>
-    <div data-tab="<%= seo ? "edit seo" : "edit" %>" data-tabs-target="panel">
+    <div data-tab="<%= seo ? "edit seo schema" : "edit" %>" data-tabs-target="panel">
       <%= yield %>
     </div>
     <% if json then %>

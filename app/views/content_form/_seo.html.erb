@@ -1,15 +1,20 @@
 <%# locals: (record:, scope:, invalid_json: nil) %>
-<%# The SEO panel: SeoFields as ordinary content fields, so ContentForm reads
-    them back like any object. A saved record shows it under the editor's SEO
-    tab (content_form/editor_tabs) in place of the content, still inside the
-    form so it saves with it; a new one shows it below. A JSON-LD box that
-    didn't parse shows what was typed (`invalid_json`). %>
+<%# The SEO and Schema panels: SeoFields as ordinary content fields, so
+    ContentForm reads them back like any object. A saved record shows each
+    under its own editor tab (content_form/editor_tabs: Edit, SEO, Schema),
+    in place of the content, still inside the form so it saves with it; a
+    new one shows them below. SEO is search and social sharing, with the
+    record's SEO checks; Schema is its structured data, the schema.org type
+    and JSON-LD. A JSON-LD box that didn't parse shows what was typed
+    (`invalid_json`), and its tab opens. %>
 <% seo = record.seo.is_a?(Hash) ? record.seo : {} %>
-<% seo = seo.merge("json_ld" => invalid_json["json_ld"]) if invalid_json&.key?("json_ld") %>
+<% bad_json = invalid_json&.key?("json_ld") %>
+<% seo = seo.merge("json_ld" => invalid_json["json_ld"]) if bad_json %>
 <% seo_scope = content_scope(scope)["seo"] %>
-<%= tag.section class: "card card--flush seo-panel", data: ({ tab: "seo", tabs_target: "panel" } if record.persisted?), hidden: record.persisted? do %>
+<% saved = record.persisted? %>
+<%= tag.section class: "card card--flush seo-panel", data: ({ tab: "seo", tabs_target: "panel" } if saved), hidden: saved do %>
   <h2 class="card__title seo-panel__title">SEO</h2>
-  <% checks = record.persisted? ? SeoAudit.new.for_record(record) : [] %>
+  <% checks = saved ? SeoAudit.new.for_record(record) : [] %>
   <% if checks.any? %>
     <ul class="seo-panel__checks" aria-label="SEO checks">
       <% checks.each_with_index do |issue, index| %>
@@ -19,7 +24,7 @@
     </ul>
   <% end %>
   <div>
-    <% [ [ "Search", SeoFields::SEARCH ], [ "Social sharing", SeoFields::SOCIAL ], [ "Structured data", SeoFields::STRUCTURED ] ].each do |title, fields| %>
+    <% [ [ "Search", SeoFields::SEARCH ], [ "Social sharing", SeoFields::SOCIAL ] ].each do |title, fields| %>
       <%# herb:key title %>
       <section class="seo-panel__group">
         <h3 class="muted"><%= title %></h3>
@@ -27,4 +32,11 @@
       </section>
     <% end %>
   </div>
+<% end %>
+<%= tag.section class: "card card--flush seo-panel", data: ({ tab: "schema", tabs_target: "panel", tabs_open: (true if bad_json) } if saved), hidden: saved do %>
+  <h2 class="card__title seo-panel__title">Schema</h2>
+  <p class="card__hint seo-panel__group">What search engines read as structured data: the page's schema.org type, or your own JSON-LD in its place.</p>
+  <section class="seo-panel__group">
+    <%= render "content_form/fields", fields: SeoFields::STRUCTURED, values: seo, scope: seo_scope, depth: 1 %>
+  </section>
 <% end %>

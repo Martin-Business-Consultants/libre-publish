@@ -241,6 +241,17 @@ RSpec.describe "Content editor", type: :request do
       expect(response.body).to match(/>\s*\d+ errors?\s*</)
     end
 
+    it "has Edit, SEO and Schema tabs, the JSON-LD under Schema rather than SEO" do
+      get edit_page_path(page.path)
+
+      tabs = response.body[%r{<nav class="tabs tabs--pills editor-tabs".*?</nav>}m]
+      expect(tabs.scan(/data-tab="(\w+)"/).flatten.first(3)).to eq(%w[edit seo schema])
+      seo = response.body[%r{<section class="card card--flush seo-panel" data-tab="seo".*?</section>\s*</div>\s*</section>}m]
+      expect(seo).to include("Meta title", "Social share image")
+      expect(seo).not_to include("JSON-LD")
+      expect(response.body[%r{<section class="card card--flush seo-panel" data-tab="schema".*}m]).to include("JSON-LD", "schema.org type")
+    end
+
     it "refuses JSON-LD that doesn't parse, keeping what was typed, and saves JSON-LD that does" do
       pairs = pairs_for(page)
       index = pairs.index { |name, _| name == "page[seo][json_ld]" }
@@ -248,6 +259,8 @@ RSpec.describe "Content editor", type: :request do
       submit(page_path(page.path), pairs)
       expect(response).to have_http_status(:unprocessable_content)
       expect(response.body).to include("json_ld is not valid JSON", "{nope")
+      # It opens on the Schema tab, where the JSON-LD box is.
+      expect(response.body).to match(/data-tab="schema" data-tabs-target="panel" data-tabs-open="true"/)
 
       pairs[index] = ["page[seo][json_ld]", %({"@type": "FAQPage"})]
       submit(page_path(page.path), pairs)
