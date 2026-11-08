@@ -98,12 +98,7 @@ module SettingsHelper
   def settings_switch(form, method, label, hint: nil, checked: nil)
     tag.label class: "switch-field" do
       safe_join([
-        tag.span(class: "switch") do
-          safe_join([
-            form.check_box(method, {role: "switch", checked: checked}.compact),
-            tag.span(class: "switch__track", aria: {hidden: true})
-          ])
-        end,
+        switch(form, method, **{checked: checked}.compact),
         tag.span(class: "switch-field__text") do
           safe_join([tag.span(label, class: "field__label"), (tag.span(hint, class: "field__hint") if hint)].compact)
         end

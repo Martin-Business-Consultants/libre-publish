@@ -78,7 +78,9 @@ class Branding
     @data["box_shadow"].presence_in(SHADOWS)
   end
 
-  def dark_top_bar? = @data["top_bar"] == "dark"
+  # The sidebar drawn dark in the light theme too. Stored as "top_bar", the
+  # name it had when the admin had a top bar, so saved brandings keep it.
+  def dark_sidebar? = @data["top_bar"] == "dark"
 
   # What every mail client draws; anything else (WebP, a large file) goes as
   # a PNG of it, and an SVG, which few draw and can't be converted, not at all.

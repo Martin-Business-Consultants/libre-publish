@@ -9,7 +9,7 @@
 <% branding = current_branding %>
 <% site_name = branding[:site_title].presence || Site.key %>
 <% site_url = public_site_url %>
-<nav id="admin-menu" class="<%= class_names("sidebar", "sidebar--dark" => Branding.current.dark_top_bar?) %>" aria-label="<%= tx("Admin menu") %>">
+<nav id="admin-menu" class="<%= class_names("sidebar", "sidebar--dark" => Branding.current.dark_sidebar?) %>" aria-label="<%= tx("Admin menu") %>">
   <div class="sidebar__top">
     <%= link_to dashboard_path, class: "sidebar__brand", title: tx("Dashboard (g h)"), data: { keys: "g h" } do %>
       <% if branding[:logo_url_small].present? %>
