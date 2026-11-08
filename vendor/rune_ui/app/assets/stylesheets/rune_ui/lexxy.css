@@ -29,10 +29,12 @@
   --lexxy-color-code-token-selector: light-dark(#22863a, #85e89d);
 }
 
+/* Lexxy's own corners (--lexxy-radius, the frame a toolbar gap rounder), never the app's control
+/* radius, which round corners make a pill. */
 lexxy-editor {
   display: block;
   border: 1px solid var(--line-strong);
-  border-radius: var(--radius-control);
+  border-radius: calc(var(--lexxy-radius) + var(--lexxy-toolbar-gap, 2px));
   background: var(--panel);
   color: var(--text);
   min-height: 8rem;
@@ -41,6 +43,6 @@ lexxy-editor {
 lexxy-editor:focus-within { border-color: var(--accent); }
 .lexxy-content { color: var(--text); }
 
-.composer__box lexxy-editor { min-height: 4rem; max-height: 40vh; overflow-y: auto; border: 0; border-radius: var(--radius-lg) var(--radius-lg) 0 0; background: transparent; font-size: var(--text-read); }
+.composer__box lexxy-editor { min-height: 4rem; max-height: 40vh; overflow-y: auto; border: 0; border-radius: 0; background: transparent; font-size: var(--text-read); }
 .composer__box lexxy-editor:focus-within { border: 0; }
 .composer__box [contenteditable] { padding: var(--s-3) var(--s-4) var(--s-1); }

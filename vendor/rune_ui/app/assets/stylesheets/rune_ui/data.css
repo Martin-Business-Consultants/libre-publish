@@ -10,6 +10,17 @@
   .table a:not([class]) { color: var(--text); text-decoration: none; font-weight: var(--weight-strong); }
   .table a:not([class]):hover { color: var(--accent); }
   .table .number { text-align: right; }
+
+  /* Column widths, one convention for every table: the column that identifies the row (the first,
+     or the one marked table__grow) takes the leftover width and wraps or truncates; every other
+     column fits its content, one gap apart, so narrow facts (type, status, dates) sit together.
+     table__cap keeps long text in a fitted column from taking over (it truncates). table--even
+     opts out, for a table whose columns are all alike; a table that sizes its own columns with a
+     <colgroup> is left to it. */
+  .table:not(.table--even, :has(colgroup)) :is(th, td):not(:first-child) { width: 1%; white-space: nowrap; }
+  .table:not(.table--even, :has(colgroup)):has(.table__grow) :is(th, td):first-child { width: 1%; white-space: nowrap; }
+  .table:not(.table--even, :has(colgroup)) :is(th, td).table__grow { width: auto; white-space: normal; }
+  .table .table__cap { display: inline-block; max-width: 16rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; }
   .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--panel); }
 
   .tabs { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-1); border-bottom: 1px solid var(--line); }

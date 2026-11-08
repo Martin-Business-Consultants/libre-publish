@@ -6,4 +6,25 @@
   .flash--info { background: color-mix(in srgb, var(--accent) 7%, var(--panel)); border-color: color-mix(in srgb, var(--accent) 28%, transparent); }
   .flash--attention { background: color-mix(in srgb, var(--attention) 9%, var(--panel)); border-color: color-mix(in srgb, var(--attention) 32%, transparent); }
   .flash.is-leaving { opacity: 0; transform: translateY(-4px); transition: opacity .25s, transform .25s; }
+
+  /* Toasts (flash_messages toast: true): a stack in the bottom right, above the page, each a solid
+  /* card with its tint over the panel. --toast-bottom lifts the stack (above buttons in that
+  /* corner); --toast-z sets what it floats over. */
+  .flashes--toast {
+    position: fixed; right: calc(var(--s-3) + env(safe-area-inset-right)); bottom: calc(var(--toast-bottom, var(--s-3)) + env(safe-area-inset-bottom));
+    z-index: var(--toast-z, 60); width: min(24rem, 100vw - 2 * var(--s-3)); pointer-events: none;
+  }
+  /* A toast slides in from the side and eases to a stop, then fades away softly. */
+  .flashes--toast .flash { pointer-events: auto; background-color: var(--panel); box-shadow: var(--shadow-popover, 0 8px 24px rgb(0 0 0 / .12)); animation: rune-toast-in var(--motion-slow) var(--ease); }
+  .flashes--toast .flash--notice { background-image: linear-gradient(color-mix(in srgb, var(--ok) 8%, transparent), color-mix(in srgb, var(--ok) 8%, transparent)); }
+  .flashes--toast .flash--alert { background-image: linear-gradient(color-mix(in srgb, var(--danger) 8%, transparent), color-mix(in srgb, var(--danger) 8%, transparent)); }
+  .flashes--toast .flash--info { background-image: linear-gradient(color-mix(in srgb, var(--accent) 7%, transparent), color-mix(in srgb, var(--accent) 7%, transparent)); }
+  .flashes--toast .flash--attention { background-image: linear-gradient(color-mix(in srgb, var(--attention) 9%, transparent), color-mix(in srgb, var(--attention) 9%, transparent)); }
+  .flashes--toast .flash.is-leaving { opacity: 0; transform: scale(.97); transition: opacity var(--motion-slow) var(--ease-in), transform var(--motion-slow) var(--ease-in); }
+  @keyframes rune-toast-in { from { opacity: 0; transform: translateX(calc(100% + var(--s-3) + env(safe-area-inset-right))); } }
+  @media (prefers-reduced-motion: reduce) {
+    .flashes--toast .flash { animation: rune-toast-fade .2s ease-out; }
+    .flashes--toast .flash.is-leaving { transform: none; transition: opacity .3s ease; }
+  }
+  @keyframes rune-toast-fade { from { opacity: 0; } }
 }

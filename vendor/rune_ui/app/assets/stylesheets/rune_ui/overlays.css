@@ -4,10 +4,13 @@
   .popover-menu { display: inline-flex; }
   .popover.menu__items { position: fixed; inset: auto; right: auto; margin: 0; border: 0; color: var(--text); }
   .popover:not(:popover-open) { display: none; }
+  :is(.popover:popover-open, .menu[open] .menu__items) { animation: rune-pop var(--motion-fast) var(--ease); }
 
   .dialog-wrap { display: contents; }
   .dialog { width: min(32rem, calc(100vw - 2rem)); max-height: calc(100vh - 4rem); margin: 10vh auto auto; padding: 0; border: 0; border-radius: var(--radius-lg); background: var(--panel); color: var(--text); box-shadow: var(--shadow-popover); overflow: auto; }
   .dialog::backdrop { background: rgb(0 0 0 / .45); }
+  .dialog[open] { animation: rune-pop var(--motion) var(--ease); }
+  .dialog[open]::backdrop { animation: rune-fade var(--motion) var(--ease); }
   .dialog--lg { width: min(48rem, calc(100vw - 2rem)); }
   .dialog__box { display: flex; flex-direction: column; gap: var(--s-4); padding: var(--s-4) var(--s-5) var(--s-5); }
   .dialog__header { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); }
@@ -18,8 +21,7 @@
   .dialog__actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--s-2); }
 
   .sheet { width: min(28rem, 100vw); height: 100vh; max-height: none; margin: 0 0 0 auto; border-radius: var(--radius-panel) 0 0 var(--radius-panel); }
-  .sheet[open] { animation: sheet-in .2s var(--ease); }
-  @keyframes sheet-in { from { transform: translateX(100%); } }
+  .sheet[open] { animation: rune-slide var(--motion) var(--ease); }
 
   /* A tooltip on anything with data-tooltip="…" (CSS only; the title attribute stays for touch). */
   [data-tooltip] { position: relative; }

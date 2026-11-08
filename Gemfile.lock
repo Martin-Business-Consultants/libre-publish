@@ -1,7 +1,7 @@
 PATH
   remote: vendor/rune_ui
   specs:
-    rune_ui (0.1.0)
+    rune_ui (0.2.1)
       actionview (>= 7.1)
       importmap-rails (>= 2.0)
       railties (>= 7.1)

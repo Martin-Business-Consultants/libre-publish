@@ -1,7 +1,9 @@
-<%# locals: () %>
-<%# The flash, at the top of the page (rune_ui's flash): a notice goes by
-    itself after a few seconds, an alert stays until it's dismissed. In a
-    frame, so a Turbo Stream can replace it ("flash"). %>
+<%# locals: (toast: Current.user.present?) %>
+<%# The flash (rune_ui's flash): a notice goes by itself after a few seconds,
+    an alert stays until it's dismissed. Signed in, it floats as toasts in the
+    bottom right, so a message never pushes the screen down; the sign-in pages
+    keep it in the page, beside the form it's about. In a frame, so a Turbo
+    Stream can replace it ("flash"). %>
 <%= turbo_frame_tag :flash do %>
-  <%= flash_messages %>
+  <%= flash_messages(toast:) %>
 <% end %>

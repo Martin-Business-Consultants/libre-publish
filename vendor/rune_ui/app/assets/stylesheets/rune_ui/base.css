@@ -29,4 +29,9 @@
 
   @keyframes spin { to { transform: rotate(360deg); } }
   @keyframes pulse { 50% { opacity: .3; } }
+  /* The motion everything shares (--motion tokens): pop for what opens in place (menus, dialogs),
+     slide for what comes in from the edge (sheets, toasts), fade for backdrops. */
+  @keyframes rune-pop { from { opacity: 0; scale: .97; translate: 0 -2px; } }
+  @keyframes rune-slide { from { opacity: 0; translate: 1.5rem 0; } }
+  @keyframes rune-fade { from { opacity: 0; } }
 }

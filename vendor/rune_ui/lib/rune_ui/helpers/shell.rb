@@ -106,11 +106,14 @@ module RuneUi
       def sidebar_section(label) = tag.div(label, class: "sidebar__section")
 
       # The flash as dismissible messages; notices go by themselves after a few seconds.
-      def flash_messages
+      # Notices and alerts. toast: true floats them in the bottom right as toasts, out of the page's
+      # flow, so a message never pushes the page down (lift them with --toast-bottom, e.g. above
+      # buttons in that corner). A notice goes by itself after six seconds; an alert stays.
+      def flash_messages(toast: false)
         messages = { notice: flash[:notice], alert: flash[:alert] }.compact_blank
         return if messages.empty?
 
-        tag.div(class: "flashes") do
+        tag.div(class: [ "flashes", ("flashes--toast" if toast) ].compact.join(" ")) do
           safe_join(messages.map do |kind, text|
             tag.div(class: "flash flash--#{kind}", role: (kind == :alert ? "alert" : "status"),
                     data: { controller: "rune-flash", rune_flash_timeout_value: (kind == :notice ? 6000 : 0) }) do

@@ -10,8 +10,12 @@ export default class extends Controller {
 
   disconnect() { clearTimeout(this.timer) }
 
+  // Leaves with the stylesheet's own transition (is-leaving), removed once it has played out.
   close() {
+    if (this.leaving) return
+    this.leaving = true
     this.element.classList.add("is-leaving")
-    setTimeout(() => this.element.remove(), 250)
+    const seconds = getComputedStyle(this.element).transitionDuration.split(",").map(parseFloat)
+    setTimeout(() => this.element.remove(), (Math.max(...seconds) * 1000 || 250) + 20)
   }
 }
