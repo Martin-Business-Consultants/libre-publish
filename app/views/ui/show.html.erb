@@ -144,7 +144,7 @@
 
     <%= card "Tabs and empty states", hint: "tabs, empty_state" do %>
       <div class="stack">
-        <%= tabs [ [ "Content", ui_path, { current: true } ], [ "SEO", ui_path ], [ "History", ui_path, { count: 4 } ] ] %>
+        <%= tabs [ [ "Content", ui_path, { current: true } ], [ "SEO", ui_path ], [ "History", ui_path, { count: 4 } ] ], pills: true %>
         <%= empty_state "Nothing matches this filter." do %>
           <%= button_link "Show all", ui_path, size: :sm %>
         <% end %>

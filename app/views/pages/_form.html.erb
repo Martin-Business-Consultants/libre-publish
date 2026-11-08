@@ -8,12 +8,11 @@
 <%= form_with model: page, url: (page.persisted? ? page_path(page.path) : pages_path), scope: :page, id: "page_form",
       class: "with-aside", data: { controller: "form slug", action: "keydown.esc->form#cancel", slug_locked_value: page.persisted? } do |form| %>
   <%= form.hidden_field :lock_version %>
+  <div class="with-aside__lead">
+    <label class="visually-hidden" for="page_title">Title</label>
+    <%= form.text_field :title, required: true, class: "title-input", placeholder: "Add title", data: { slug_target: "source", action: "slug#fill" }, autofocus: page.new_record? %>
+  </div>
   <div class="with-aside__main">
-    <div>
-      <label class="visually-hidden" for="page_title">Title</label>
-      <%= form.text_field :title, required: true, class: "title-input", placeholder: "Add title", data: { slug_target: "source", action: "slug#fill" }, autofocus: page.new_record? %>
-    </div>
-
     <%= tag.div class: "stack stack--lg", data: ({ tab: "edit", tabs_target: "panel" } if page.persisted?) do %>
     <% if page.fields.any? %>
       <%= postbox "page-fields", "Fields" do %>

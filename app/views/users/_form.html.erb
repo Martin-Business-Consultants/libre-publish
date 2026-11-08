@@ -10,12 +10,11 @@
 
 <%= form_with model: user, id: "user_form", class: "with-aside",
       data: { controller: "form", action: "keydown.esc->form#cancel" } do |form| %>
+  <div class="with-aside__lead">
+    <label class="visually-hidden" for="user_name">Name</label>
+    <%= form.text_field :name, required: true, class: "title-input", autofocus: user.new_record?, autocomplete: "off", placeholder: "Full name" %>
+  </div>
   <div class="with-aside__main">
-    <div>
-      <label class="visually-hidden" for="user_name">Name</label>
-      <%= form.text_field :name, required: true, class: "title-input", autofocus: user.new_record?, autocomplete: "off", placeholder: "Full name" %>
-    </div>
-
     <%= postbox "user-account", "Signing in" do %>
       <div class="stack">
         <%= settings_field "Email", hint: "They sign in with it, and get the workspace's emails at it." do %>

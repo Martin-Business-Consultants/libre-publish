@@ -11,12 +11,11 @@
 <%= form_with model: entry, url: (entry.persisted? ? collection_entry_path(collection.slug, entry.slug) : collection_entries_path(collection.slug)),
       scope: :entry, id: "entry_form", class: "with-aside", data: { controller: "form slug", action: "keydown.esc->form#cancel", slug_locked_value: entry.persisted? } do |form| %>
   <%= form.hidden_field :lock_version %>
+  <div class="with-aside__lead">
+    <label class="visually-hidden" for="entry_title">Name</label>
+    <%= form.text_field :title, required: true, class: "title-input", placeholder: "Add title", data: { slug_target: "source", action: "slug#fill" }, autofocus: entry.new_record? %>
+  </div>
   <div class="with-aside__main">
-    <div>
-      <label class="visually-hidden" for="entry_title">Name</label>
-      <%= form.text_field :title, required: true, class: "title-input", placeholder: "Add title", data: { slug_target: "source", action: "slug#fill" }, autofocus: entry.new_record? %>
-    </div>
-
     <%= tag.div class: "stack stack--lg", data: ({ tab: "edit", tabs_target: "panel" } if entry.persisted?) do %>
     <% if main_fields.any? %>
       <%= postbox "entry-fields", "Fields" do %>

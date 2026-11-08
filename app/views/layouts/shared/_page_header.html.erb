@@ -14,13 +14,6 @@
       <div class="button-row"><%= content_for(:page_actions) %></div>
     </div>
   <% end %>
-  <% if (cli = cli_command_hint) %>
-    <p class="cli-hint">
-      <span><%= tx("From the CLI or MCP:") %></span>
-      <code><%= cli %></code>
-      <%= copy_button cli, label: tx("Copy") %>
-    </p>
-  <% end %>
   <% if search_term %>
     <p>
       <%= tx("Search results for") %> “<strong><%= search_term %></strong>”

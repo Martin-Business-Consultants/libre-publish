@@ -11,17 +11,16 @@
 <% end %>
 <%= render "layouts/shared/page_header", title: @page_title %>
 
-<%= render "layouts/shared/status_links", param: :status, current: @status.to_s,
-      options: [ [ "All", nil, @status_counts.values.sum ] ] + Page::STATUSES.filter_map { |status| [ status.humanize, status, @status_counts[status] ] if @status_counts[status].to_i.positive? } %>
-
-<% if @locales.many? %>
-  <div class="button-row">
+<% list_filters = capture do %>
+  <%= render "layouts/shared/status_links", param: :status, current: @status.to_s,
+        options: [ [ "All", nil, @status_counts.values.sum ] ] + Page::STATUSES.filter_map { |status| [ status.humanize, status, @status_counts[status] ] if @status_counts[status].to_i.positive? } %>
+  <% if @locales.many? %>
     <%= render "layouts/shared/quick_filter", title: "Locale", param: :locale, current: @locale.to_s,
           options: [ [ "Any locale", "" ] ] + @locales.map { [ it, it ] } %>
-  </div>
+  <% end %>
 <% end %>
 
-<%= render "layouts/shared/bulk_actions", id: "pages_bulk", noun: "page",
+<%= render "layouts/shared/bulk_actions", id: "pages_bulk", noun: "page", filters: list_filters,
       status_path: (pages_bulk_status_changes_path if can_publish), statuses: Page::STATUSES,
       deletion_path: (pages_bulk_deletions_path if can_delete) %>
 

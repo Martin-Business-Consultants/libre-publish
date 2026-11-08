@@ -9,7 +9,15 @@
    .table-wrap, drawn by rune's .table. __check is the tick-box column,
    __num a number (right aligned), __empty the one cell that says there's
    nothing (PaginationHelper#table_empty_row). */
-.data-table__check { width: 2.5rem; }
+/* Dense: rows at --row-h, cells closer together than rune's default table. */
+.data-table :is(th, td) { padding: var(--s-1) var(--s-2); }
+.data-table th { height: var(--row-h); }
+
+/* The tick-box column fits its box, and the column after it (the row's
+   title) takes the leftover width and wraps. rune's own rule gives the
+   leftover to the first column, which in a list table is the tick box. */
+.data-table .data-table__check { width: 1%; padding-right: 0; }
+.data-table:has(.data-table__check) :is(th, td):nth-child(2) { width: auto; white-space: normal; }
 .data-table .data-table__num { text-align: right; }
 
 .data-table .data-table__empty {
@@ -20,23 +28,39 @@
 
 .data-table tbody tr:has(.data-table__empty):hover td { background: none; }
 
-/* The actions under a row's title show while the row is hovered or holds
-   focus, and always on a touch screen. */
+/* A row's actions show at the right of its title cell while the row is
+   hovered or holds focus, over the end of the title, so they take no line
+   of their own. On a touch screen they're always there, under the title. */
+.data-table td:has(> .row-actions) { position: relative; }
+
 .row-actions {
+  position: absolute;
+  inset-block: 0;
+  right: 0;
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: var(--s-1) var(--s-3);
-  margin-top: 2px;
+  gap: var(--s-3);
+  padding: 0 var(--s-2) 0 var(--s-6);
   font-size: var(--text-meta);
   line-height: var(--leading-tight);
+  white-space: nowrap;
+  background:
+    linear-gradient(to right, transparent, var(--hover) var(--s-5)),
+    linear-gradient(to right, transparent, var(--panel) var(--s-5));
   visibility: hidden;
 }
 
 tr:is(:hover, :focus-within, [data-keyboard-current]) .row-actions { visibility: visible; }
 
 @media (any-hover: none) {
-  .row-actions { visibility: visible; }
+  .row-actions {
+    position: static;
+    flex-wrap: wrap;
+    gap: var(--s-1) var(--s-3);
+    padding: 0;
+    background: none;
+    visibility: visible;
+  }
 }
 
 .row-actions .row-actions__link {
@@ -62,6 +86,13 @@ tr:is(:hover, :focus-within, [data-keyboard-current]) .row-actions { visibility:
   gap: var(--s-2) var(--s-4);
 }
 
+.list-toolbar__filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+}
+
 .list-toolbar__search { margin-left: auto; }
 .list-toolbar__confirm { padding-top: var(--s-2); }
 
@@ -82,7 +113,7 @@ tr:is(:hover, :focus-within, [data-keyboard-current]) .row-actions { visibility:
   color: var(--text);
 }
 
-.list-toolbar[data-bulk-active] .list-toolbar__search { display: none; }
+.list-toolbar[data-bulk-active] :is(.list-toolbar__search, .list-toolbar__filters) { display: none; }
 .data-table tbody tr[data-picked] td { background: var(--accent-soft); }
 
 .list-search { flex-direction: row; }
@@ -175,21 +206,19 @@ tr:is(:hover, :focus-within, [data-keyboard-current]) .row-actions { visibility:
 .save-box__submit { margin-left: auto; }
 
 /* An editor's top bar (layouts/shared/editor_bar), in place of a page
-   title: the tabs or a label on the left, the CLI command and the page's
-   actions on the right, on a rule. */
+   title: the pill tabs or a label on the left, the page's actions on the
+   right, over a rule. */
 .editor-bar {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
   gap: var(--s-2) var(--s-4);
+  padding-bottom: var(--s-3);
   box-shadow: inset 0 -1px var(--line);
 }
 
-.editor-bar > .tabs { border-bottom: 0; }
-
 .editor-bar__label {
-  padding-bottom: var(--s-2);
   color: var(--text-muted);
   font-weight: var(--weight-strong);
 }
@@ -201,7 +230,6 @@ tr:is(:hover, :focus-within, [data-keyboard-current]) .row-actions { visibility:
   justify-content: flex-end;
   gap: var(--s-2);
   margin-left: auto;
-  padding-bottom: var(--s-2);
 }
 
 /* A switch beside its label and hint (SettingsHelper#settings_switch). */

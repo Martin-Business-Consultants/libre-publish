@@ -99,14 +99,14 @@ RSpec.describe "Headless", type: :request do
     expect(ServiceToken.authenticate(body["token"])).to eq(token)
   end
 
-  it "names each screen's cms command under its title, and lists recent API use on the dashboard" do
+  it "keeps CLI commands off the screens, and lists recent API use on the dashboard" do
     sign_in_as admin
     page = Page.create!(slug: "about", title: "About", status: "draft", locale: "en")
 
     get edit_page_path(page.path)
-    expect(response.body).to include("From the CLI or MCP", ">cms page about</code>")
+    expect(response.body).not_to include("From the CLI or MCP")
     get tools_redirects_path
-    expect(response.body).to include(">cms redirects</code>")
+    expect(response.body).not_to include(">cms redirects</code>")
 
     admin.api_token.update_columns(last_used_at: 1.hour.ago)
     get dashboard_path

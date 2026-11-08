@@ -51,6 +51,16 @@
   align-items: start;
 }
 
+/* What heads both columns (an editor's title), across them, so the main
+   column's first box and the sidebar's start on one line. */
+.with-aside__lead {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  min-width: 0;
+}
+
 .with-aside__main,
 .with-aside__aside {
   display: flex;
@@ -130,3 +140,8 @@
 
 /* A turbo-frame or a wrapper that shouldn't make a box of its own. */
 .contents { display: contents; }
+
+/* No scrollbars anywhere. Everything that scrolls still does (wheel,
+   trackpad, touch, keys); it just draws no bar beside or under it. */
+* { scrollbar-width: none; }
+*::-webkit-scrollbar { display: none; }

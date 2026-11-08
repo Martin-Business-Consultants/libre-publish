@@ -3,6 +3,13 @@
    bar's tools (the "/" filter, Screen options), ⌘K search, the update
    progress modal, and the signed-out layout (layouts/public). */
 
+/* Dense: a screen's sections 12px apart (rune: 24) and less margin around
+   them. The signed-out column (main--narrow) keeps rune's. */
+.main:not(.main--narrow) {
+  gap: var(--s-3);
+  padding: var(--s-2) var(--s-4) var(--s-6);
+}
+
 .skip-link {
   position: fixed;
   top: var(--s-2);
@@ -187,16 +194,6 @@ html[data-theme="dark"] .theme-toggle__moon { display: none; }
   border-radius: inherit;
   background: var(--accent);
   transition: width .3s var(--ease);
-}
-
-/* The CLI command for what's on the page, under its title row. */
-.cli-hint {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--s-2);
-  color: var(--text-muted);
-  font-size: var(--text-meta);
 }
 
 /* Signed-out pages: the site's logo and the theme toggle over rune's narrow

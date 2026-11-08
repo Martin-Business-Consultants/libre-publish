@@ -11,10 +11,10 @@
 <% json = Serving.record?(record) %>
 <% preview = kind.in?(%w[page entry]) && Website.enabled? %>
 <% if record.persisted? %>
-  <%= tag.div data: { controller: ["tabs", ("website-preview" if preview)].compact.join(" "), action: ("tabs:shown->website-preview#shown" if preview),
+  <%= tag.div class: "stack", data: { controller: ["tabs", ("website-preview" if preview)].compact.join(" "), action: ("tabs:shown->website-preview#shown" if preview),
         website_preview_form_value: ("#{kind}_form" if preview) } do %>
     <% tabs = capture do %>
-      <nav class="tabs editor-tabs" role="tablist" aria-label="View">
+      <nav class="tabs tabs--pills editor-tabs" role="tablist" aria-label="View">
         <a href="#edit" role="tab" class="tabs__tab" data-tab="edit" data-tabs-target="tab" data-action="tabs#select">Edit</a>
         <% if seo %>
           <a href="#seo" role="tab" class="tabs__tab" data-tab="seo" data-tabs-target="tab" data-action="tabs#select">

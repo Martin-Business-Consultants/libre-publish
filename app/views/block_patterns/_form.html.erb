@@ -1,12 +1,12 @@
 <%# locals: (pattern:) %>
 <%= form_with model: pattern, url: (pattern.persisted? ? block_pattern_path(pattern) : block_patterns_path), scope: :block_pattern,
       id: "block_pattern_form", class: "with-aside" do |form| %>
-  <div class="with-aside__main">
+  <div class="with-aside__lead">
     <%= render "layouts/shared/errors", record: pattern %>
-    <div>
-      <label class="visually-hidden" for="block_pattern_name">Name</label>
-      <%= form.text_field :name, required: true, class: "title-input", placeholder: "Pattern name", autofocus: pattern.new_record? %>
-    </div>
+    <label class="visually-hidden" for="block_pattern_name">Name</label>
+    <%= form.text_field :name, required: true, class: "title-input", placeholder: "Pattern name", autofocus: pattern.new_record? %>
+  </div>
+  <div class="with-aside__main">
     <section class="card">
       <%= render "content_form/blocks", blocks: pattern.blocks, scope: content_scope("block_pattern")["blocks"], depth: 1,
             allowed_types: BlockType.ordered.reject { |type| type.slug == "pattern" || type.deprecated }.map(&:slug) %>

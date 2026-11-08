@@ -26,14 +26,14 @@
   .tabs { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-1); border-bottom: 1px solid var(--line); }
   .tabs__tab { display: inline-flex; align-items: center; gap: 6px; height: 2.25rem; padding: 0 var(--s-2); margin-bottom: -1px; border: 0; border-bottom: 2px solid transparent; background: none; color: var(--text-muted); font: inherit; text-decoration: none; cursor: pointer; }
   .tabs__tab:hover { color: var(--text); }
-  .tabs__tab:is([aria-current="page"], [aria-pressed="true"]) { border-bottom-color: var(--text); color: var(--text); font-weight: var(--weight-strong); }
+  .tabs__tab:is([aria-current="page"], [aria-pressed="true"], [aria-selected="true"]) { border-bottom-color: var(--text); color: var(--text); font-weight: var(--weight-strong); }
 
   .tabs--icons { gap: 2px; padding: 2px; border: 0; border-radius: var(--radius); background: var(--layer-2); }
   .tabs--icons .tabs__tab { height: var(--control-h-sm); padding: 0 var(--s-2); margin: 0; border: 0; border-radius: var(--radius-sm); }
-  .tabs--icons .tabs__tab:is([aria-current="page"], [aria-pressed="true"]) { background: var(--panel); box-shadow: 0 1px 2px rgb(0 0 0 / .12); }
+  .tabs--icons .tabs__tab:is([aria-current="page"], [aria-pressed="true"], [aria-selected="true"]) { background: var(--panel); box-shadow: 0 1px 2px rgb(0 0 0 / .12); }
   .tabs--pills { gap: 2px; padding: 2px; border: 0; border-radius: var(--radius); background: var(--layer-2); width: fit-content; }
   .tabs--pills .tabs__tab { height: var(--control-h-sm); padding: 0 var(--s-3); margin: 0; border: 0; border-radius: var(--radius-sm); }
-  .tabs--pills .tabs__tab:is([aria-current="page"], [aria-pressed="true"]) { background: var(--panel); box-shadow: 0 1px 2px rgb(0 0 0 / .12); }
+  .tabs--pills .tabs__tab:is([aria-current="page"], [aria-pressed="true"], [aria-selected="true"]) { background: var(--panel); box-shadow: 0 1px 2px rgb(0 0 0 / .12); }
   .table a.row-link { color: var(--text); text-decoration: none; font-weight: var(--weight-strong); }
   .table a.row-link:hover { color: var(--accent); }
 

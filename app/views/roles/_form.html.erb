@@ -8,12 +8,11 @@
 
 <%= form_with model: role, id: "role_form", class: "with-aside",
       data: { controller: "form", action: "keydown.esc->form#cancel" } do |form| %>
+  <div class="with-aside__lead">
+    <label class="visually-hidden" for="role_name">Name</label>
+    <%= form.text_field :name, required: true, disabled: locked, class: "title-input", autofocus: role.new_record?, autocomplete: "off", placeholder: "Role name, such as Editor" %>
+  </div>
   <div class="with-aside__main">
-    <div>
-      <label class="visually-hidden" for="role_name">Name</label>
-      <%= form.text_field :name, required: true, disabled: locked, class: "title-input", autofocus: role.new_record?, autocomplete: "off", placeholder: "Role name, such as Editor" %>
-    </div>
-
     <%= postbox "role-details", "About it" do %>
       <div class="stack">
         <%= settings_field "Description" do %>

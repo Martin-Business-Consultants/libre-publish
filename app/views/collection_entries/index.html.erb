@@ -19,10 +19,10 @@
 <% end %>
 <%= render "layouts/shared/page_header", title: @page_title, icon: @collection.admin_icon %>
 
-<%= render "layouts/shared/status_links", param: :status, current: @status.to_s,
-      options: [ [ "All", nil, @status_counts.values.sum ] ] + CollectionEntry::STATUSES.filter_map { |status| [ status.humanize, status, @status_counts[status] ] if @status_counts[status].to_i.positive? } %>
+<% status_tabs = render("layouts/shared/status_links", param: :status, current: @status.to_s,
+      options: [ [ "All", nil, @status_counts.values.sum ] ] + CollectionEntry::STATUSES.filter_map { |status| [ status.humanize, status, @status_counts[status] ] if @status_counts[status].to_i.positive? }) %>
 
-<%= render "layouts/shared/bulk_actions", id: "entries_bulk", noun: "entry",
+<%= render "layouts/shared/bulk_actions", id: "entries_bulk", noun: "entry", filters: status_tabs,
       status_path: (collection_entries_bulk_status_changes_path(@collection.slug) if can_publish), statuses: CollectionEntry::STATUSES,
       deletion_path: (collection_entries_bulk_deletions_path(@collection.slug) if can_delete) %>
 

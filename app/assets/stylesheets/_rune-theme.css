@@ -33,6 +33,9 @@
   /* The admin's screens are wider than rune's default: list tables, and
      editors with a sidebar of boxes. */
   --main-width: 80rem;
+
+  /* Dense: list rows at 32px rather than rune's 40. */
+  --row-h: 2rem;
 }
 
 html[data-theme="dark"],

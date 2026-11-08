@@ -22,45 +22,4 @@ module HeadlessHelper
     when %r{\A/api/globals/([^/]+)\z} then "cms global #{$1}"
     end
   end
-
-  # The `cms` command that does what this admin screen shows, for the line
-  # under its title (layouts/shared/page_header): the admin is for doing
-  # things by hand, and the CLI (and MCP, and the API under both) is the
-  # real surface. Nil for a screen with no one command.
-  def cli_command_hint
-    case [controller_path, action_name]
-    in ["dashboard", "index"] then "cms doctor"
-    in ["pages", "index"] then "cms pages"
-    in ["pages", "edit"] if @page then "cms page #{@page.path}"
-    in ["pages/schemas", "show"] if @page then "cms schema page #{@page.path} < fields.json"
-    in ["sitemaps", "index"] then "cms sitemap"
-    in ["collections", "index"] then "cms collections"
-    in ["collections/schemas", "show"] if @collection then "cms collection #{@collection.slug}"
-    in ["collection_entries", "index"] if @collection then "cms entries #{@collection.slug}"
-    in ["collection_entries", "edit"] if @collection && @entry then "cms entry #{@collection.slug} #{@entry.slug}"
-    in ["globals", "index"] then "cms globals"
-    in ["globals", "edit"] if @global then "cms global #{@global.slug}"
-    in ["block_types", "index"] then "cms blocks"
-    in ["file_manager", "index"] then "cms assets"
-    in ["file_manager/assets", "show"] if @asset then "cms asset #{@asset.id}"
-    in ["forms", "index"] then "cms forms"
-    in ["form_emails", "edit"] if @form && @email then "cms email #{@form.slug} #{@email.kind}"
-    in ["submissions", "index"] then "cms submissions"
-    in ["audit_logs", "index"] then "cms audit"
-    in ["trash", "index"] then "cms trash"
-    in ["tools/redirects", "index"] then "cms redirects"
-    in ["tools/backups", "show"] then "cms backup > backup.tar.gz"
-    in ["webhooks", "index"] then "cms webhooks"
-    in ["settings/deploys", "show"] then "cms deploy"
-    in ["settings/updates", "show"] then "cms updates"
-    in ["settings/service_tokens", "index"] then "cms service-tokens"
-    in ["settings/api_tokens", "show"] then "cms whoami"
-    in ["settings/brands", "show"] then "cms brand"
-    in ["developers", "show"] then "cms frontend"
-    in ["docs", "index"] then "cms docs"
-    in ["docs", "show"] if @guide then "cms docs #{@guide.slug}"
-    in ["docs", "site_health"] then "cms site-health"
-    else nil
-    end
-  end
 end

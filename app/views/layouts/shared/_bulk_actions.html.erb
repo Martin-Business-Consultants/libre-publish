@@ -1,5 +1,7 @@
-<%# locals: (id:, noun:, status_path: nil, statuses: nil, deletion_path: nil, delete_message: nil, search: nil) %>
-<%# A list table's top bar: the search box, until rows are ticked. Then the
+<%# locals: (id:, noun:, status_path: nil, statuses: nil, deletion_path: nil, delete_message: nil, search: nil, filters: nil) %>
+<%# A list table's top bar: the list's filters (filters:, e.g. its
+    status_links) on the left and the search box on the right, one row, until
+    rows are ticked. Then the
     bulk bar takes the row (bulk_actions_controller): how many are ticked,
     a button per action, Delete, and Clear. The ticked rows' checkboxes join
     the form with form="<id>" (x ticks the row j / k is on); each action's
@@ -52,6 +54,9 @@
       <% end %>
       <button type="button" class="btn btn--ghost btn--sm" title="Untick every row (Esc)" data-keys="esc" data-action="bulk-actions#clear" hidden data-bulk-actions-target="clear">Clear</button>
     <% end %>
+  <% end %>
+  <% if filters.present? %>
+    <div class="list-toolbar__filters"><%= filters %></div>
   <% end %>
   <% unless search == false %>
     <div class="list-toolbar__search">

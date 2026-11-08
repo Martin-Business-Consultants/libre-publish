@@ -28,15 +28,9 @@
   font-size: var(--text-meta);
 }
 
-/* An editor's Edit, SEO, JSON and Preview tabs: rune's tabs, which the tabs
-   controller marks with aria-selected. */
+/* An editor's Edit, SEO, JSON and Preview tabs: rune's pill tabs, which
+   the tabs controller marks with aria-selected. */
 .editor-tabs { overflow: auto hidden; flex-wrap: nowrap; }
-
-.tabs__tab[aria-selected="true"] {
-  border-bottom-color: var(--text);
-  color: var(--text);
-  font-weight: var(--weight-strong);
-}
 
 /* The Publish box (content_form/_publish_box): Save Draft, then a line each
    for the status, the schedule and the revisions (an icon, the words, an
@@ -372,28 +366,8 @@
   color: var(--text-faint);
 }
 
-/* A Markdown field's Write and Preview tabs (markdown_editor_controller),
-   its textarea and its rendered preview. */
-.markdown-editor__tab {
-  height: var(--control-h-sm);
-  padding: 0 .625rem;
-  border: 0;
-  border-radius: var(--radius-control);
-  background: none;
-  color: var(--text-muted);
-  font: inherit;
-  font-size: var(--text-meta);
-  font-weight: var(--weight-strong);
-  cursor: pointer;
-}
-
-.markdown-editor__tab:hover { color: var(--text); }
-
-.markdown-editor__tab[aria-selected="true"] {
-  background: var(--layer-2);
-  color: var(--text);
-}
-
+/* A Markdown field's textarea and its rendered preview, under its Write
+   and Preview tabs (rune's pill tabs; markdown_editor_controller). */
 textarea.markdown-editor__input {
   font-family: var(--font-mono);
   font-size: var(--text-meta);

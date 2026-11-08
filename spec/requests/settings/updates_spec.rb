@@ -52,7 +52,7 @@ RSpec.describe "Settings: the version and updates", type: :request do
       get settings_updates_path
 
       expect(response).to have_http_status(:ok)
-      expect(response.body).to include("Updates", "CMS 99.0.0", "Faster pages.", "cms updates")
+      expect(response.body).to include("Updates", "CMS 99.0.0", "Faster pages.")
       expect(response.body).to match(%r{href="/cms/settings/updates"[^>]*sidebar__link--update|sidebar__link--update[^>]*href="/cms/settings/updates"})
     end
 

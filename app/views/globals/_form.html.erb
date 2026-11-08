@@ -8,12 +8,11 @@
 <%= form_with model: global, url: global_path(global.slug), scope: :global, id: "global_form", class: "with-aside",
       data: { controller: "form", action: "keydown.esc->form#cancel" } do |form| %>
   <%= form.hidden_field :lock_version %>
+  <div class="with-aside__lead">
+    <label class="visually-hidden" for="global_name">Name</label>
+    <%= form.text_field :name, required: true, class: "title-input", placeholder: "Add name" %>
+  </div>
   <div class="with-aside__main">
-    <div>
-      <label class="visually-hidden" for="global_name">Name</label>
-      <%= form.text_field :name, required: true, class: "title-input", placeholder: "Add name" %>
-    </div>
-
     <% if tabs.empty? %>
       <section class="empty">
         <p>This global has no fields yet. <%= link_to "Define its fields", global_schema_path(global.slug) %>.</p>

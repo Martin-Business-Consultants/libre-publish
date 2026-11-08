@@ -78,8 +78,9 @@ module RuneUi
 
       # Tabs as links: tabs([["Work", work_path, current: true, count: 3], ["History", history_path]]).
       # Or as buttons that set state: pass a block and write the buttons yourself, with
-      # aria-pressed.
-      def tabs(items = nil, label: "Sections", &buttons)
+      # aria-pressed (or aria-selected, for role="tab"). pills: true draws them as a segmented
+      # strip of pills rather than underlined.
+      def tabs(items = nil, label: "Sections", pills: false, &buttons)
         content = if buttons
           capture(&buttons)
         else
@@ -89,7 +90,7 @@ module RuneUi
             end
           end)
         end
-        tag.nav content, class: "tabs", aria: { label: label }
+        tag.nav content, class: [ "tabs", ("tabs--pills" if pills) ].compact, aria: { label: label }
       end
 
       # A message that stays on the page (not a flash): tone :info, :ok, :attention, :danger.
