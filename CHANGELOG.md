@@ -8,6 +8,8 @@ out.
 
 ## Unreleased
 
+## 1.35.0
+
 ### Changed
 - **Plugins and themes install from GitHub only**: Settings › Plugins and
   Settings › Themes take a repository and install its latest release, and
