@@ -1,10 +1,11 @@
 # frozen_string_literal: true
 
-# Carrying out a page's or an entry's schedule (ProcessScheduledPublishingJob,
-# every minute): a passed `publish_at` publishes it, a passed `unpublish_at`
-# archives it. The including model supplies the `due_to_publish` and
-# `due_to_unpublish` scopes and `schedule_particulars`, what its events name it
-# by.
+# A page's or an entry's status (draft, published, archived) and its
+# schedule, carried out by ProcessScheduledPublishingJob every minute: a passed
+# `publish_at` publishes it, a passed `unpublish_at` archives it. The
+# including model supplies `status_particulars`, what its status and schedule
+# events name it by. Changing status is an ordinary save, so Announceable
+# announces the transition either way.
 #
 # Each record is flipped on its own, under a lock that re-reads it, so:
 #
@@ -19,6 +20,21 @@
 #     leaves it due for the next run, and is returned to the job to report.
 module PublishesOnSchedule
   extend ActiveSupport::Concern
+
+  STATUSES = %w[draft published archived].freeze
+
+  included do
+    # What visitors see: published, and not waiting on a schedule (the
+    # scheduler flips status when publish_at or unpublish_at arrives).
+    scope :live, -> { where(status: "published") }
+
+    scope :due_to_publish, ->(now = Time.current) {
+      where("publish_at IS NOT NULL AND publish_at <= ? AND status != 'published'", now)
+    }
+    scope :due_to_unpublish, ->(now = Time.current) {
+      where("unpublish_at IS NOT NULL AND unpublish_at <= ? AND status = 'published'", now)
+    }
+  end
 
   class_methods do
     # The errors that left due records for the next run (empty when all went).
@@ -40,6 +56,33 @@ module PublishesOnSchedule
         Rails.error.report(error, handled: true, context: {scheduled: record.class.name, id: record.id})
         error
       end
+    end
+  end
+
+  def published?
+    status == "published"
+  end
+
+  def scheduled?
+    (publish_at.present? && publish_at > Time.current && !published?) ||
+      (unpublish_at.present? && unpublish_at > Time.current && published?)
+  end
+
+  # The event for an edit, named for what it did to the status, in the audit
+  # vocabulary the editors, bulk status changes and a publishing Build board
+  # all speak: published when it went live, unpublished when it came down,
+  # updated otherwise. `details` are the screen's own particulars (a board's
+  # fields and column).
+  def track_update(from:, **details)
+    base = status_particulars.merge(details)
+    if status == from
+      track_event(:updated, **base, status: status)
+    elsif published?
+      track_event(:published, **base, from: from)
+    elsif from == "published"
+      track_event(:unpublished, **base, to: status)
+    else
+      track_event(:updated, **base, from: from, to: status)
     end
   end
 
@@ -76,7 +119,7 @@ module PublishesOnSchedule
     scheduled_for = attribute_in_database(column)
     reload
     update_columns(column => nil)
-    track_event(:schedule_failed, **schedule_particulars,
+    track_event(:schedule_failed, **status_particulars,
       scheduled: column == :publish_at ? "publish" : "unpublish",
       scheduled_for: scheduled_for&.iso8601,
       errors: error.record&.errors&.full_messages.presence || [error.message])

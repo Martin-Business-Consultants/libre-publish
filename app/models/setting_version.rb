@@ -12,18 +12,11 @@ class SettingVersion < ApplicationRecord
   VERSIONED = {"general" => "General", "branding" => "Branding", "search" => "Search", "media" => "Media",
                "forms_settings" => "Forms", "mail_delivery" => "Email delivery"}.freeze
 
-  belongs_to :setting
-  belongs_to :author, class_name: "User", optional: true
-
-  scope :newest_first, -> { order(created_at: :desc, id: :desc) }
-
-  def self.versioned_association = :setting
+  snapshot_of :setting
 
   def self.versioned?(key) = VERSIONED.key?(key.to_s)
 
   def self.without_secrets(data) = data.to_h.reject { |key, _| Redactable::SECRET_KEY.match?(key.to_s) }
-
-  def versioned_record = setting
 
   def label = VERSIONED.fetch(key, key.humanize)
 

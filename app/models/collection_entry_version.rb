@@ -6,12 +6,5 @@ class CollectionEntryVersion < ApplicationRecord
 
   SNAPSHOT_ATTRIBUTES = %w[frontmatter body_markdown blocks].freeze
 
-  belongs_to :collection_entry
-  belongs_to :author, class_name: "User", optional: true
-
-  scope :newest_first, -> { order(created_at: :desc, id: :desc) }
-
-  def self.versioned_association = :collection_entry
-
-  def versioned_record = collection_entry
+  snapshot_of :collection_entry
 end

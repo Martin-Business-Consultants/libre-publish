@@ -28,8 +28,6 @@ class CollectionEntry < ApplicationRecord
   include Referencing
   include Taxonomized
 
-  STATUSES = Page::STATUSES
-
   belongs_to :collection, inverse_of: :entries
 
   belongs_to :translation_group, optional: true
