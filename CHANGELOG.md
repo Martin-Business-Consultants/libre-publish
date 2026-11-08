@@ -9,6 +9,15 @@ out.
 ## Unreleased
 
 ### Added
+- **A collection says whether its entries have pages of their own**:
+  "Entries have their own page" in the collection's schema settings (and
+  `routable` in the API), on by default. Turned off for data a block lists,
+  such as testimonials, its entries stay out of the sitemap, and a frontend
+  needs no template for them. `/api/v1/schema` carries `routable` for each
+  collection and `deprecated` for each block type, so a build can hold the
+  site to the CMS: the Astro integration (0.3.0) fails a build when a block
+  type editors can place has no component, or a collection with pages has
+  no template.
 - **Keyboard, as in Runwell.** `?` lists every key; `.` turns on hint
   mode, which puts each control's key on it as a keycap. The admin menu's
   items have go-to chords (`g p` Pages, `g c` Collections, `g l` Globals,
