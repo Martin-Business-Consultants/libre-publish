@@ -2,12 +2,12 @@
 
 <%= render "layouts/shared/page_header", title: @page_title %>
 
-<section class="panel panel--padded fields measure--lg">
+<section class="card measure">
 
   <% if Current.user.can?("hello:write") %>
     <%= render "layouts/shared/errors", record: @greeting %>
-    <%= form_with model: @greeting, url: hello_greetings_path, scope: :greeting, class: "row" do |form| %>
-      <%= form.text_field :message, class: "grow", maxlength: 200, aria: { label: "Greeting" } %>
+    <%= form_with model: @greeting, url: hello_greetings_path, scope: :greeting, class: "hello-form" do |form| %>
+      <%= form.text_field :message, maxlength: 200, aria: { label: "Greeting" } %>
       <button type="submit" class="btn btn--primary">Say it</button>
     <% end %>
   <% end %>
@@ -18,12 +18,12 @@
         <%# herb:key greeting.id %>
         <li id="<%= dom_id(greeting) %>" class="hello-greeting" data-filter-target="item">
           <%= greeting.message %>
-          <span class="no-shrink text-small text-muted"><%= time_ago_tag greeting.created_at %></span>
+          <span class="nowrap small muted"><%= time_ago_tag greeting.created_at %></span>
         </li>
       <% end %>
     </ul>
     <%= pagination_nav @pagination %>
   <% else %>
-    <p class="empty-state">Nobody has said hello yet.</p>
+    <p class="empty empty--compact">Nobody has said hello yet.</p>
   <% end %>
 </section>

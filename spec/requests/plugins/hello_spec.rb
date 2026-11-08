@@ -74,7 +74,7 @@ RSpec.describe "The Hello plugin", type: :request do
       patch hello_settings_path, params: {settings: {default_message: "Howdy"}}
       get hello_settings_path
 
-      expect(response.body).to include("Howdy", 'class="settings-screen"')
+      expect(response.body).to include("Howdy", 'class="with-aside__aside settings-aside"')
       expect(Hello::Greeting.default_message).to eq("Howdy")
     end
 

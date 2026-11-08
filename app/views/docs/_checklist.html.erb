@@ -11,16 +11,16 @@ and its cms command, for Site health. %>
       <% in_group.each do |check| %>
         <%# herb:key check.key %>
         <% state = check.ok.nil? ? "unknown" : (check.ok ? "pass" : "fail") %>
-        <li class="row row--md row--top" id="check_<%= check.key %>">
+        <li class="row row--top" id="check_<%= check.key %>">
           <span class="check-mark" data-state="<%= state %>" aria-label="<%= check.ok.nil? ? "Check yourself" : (check.ok ? "Passes" : "To do") %>">
             <%= icon_tag(check.ok ? "check" : (check.ok.nil? ? "help-circle" : "close"), class: "icon--xs") %>
           </span>
-          <span class="stack stack--2xs grow">
-            <strong class="text-medium text-ink"><%= check.title %></strong>
-            <span class="text-small text-muted"><%= check.detail %></span>
-            <span class="cluster text-small">
-              <% if check.href %><%= link_to (check.ok ? "Open" : "Fix it"), check.href, class: "link" %><% end %>
-              <% if check.cli %><code class="code"><%= check.cli %></code><% end %>
+          <span class="stack stack--xs grow">
+            <strong><%= check.title %></strong>
+            <span class="small muted"><%= check.detail %></span>
+            <span class="button-row small">
+              <% if check.href %><%= link_to (check.ok ? "Open" : "Fix it"), check.href %><% end %>
+              <% if check.cli %><code><%= check.cli %></code><% end %>
             </span>
           </span>
         </li>

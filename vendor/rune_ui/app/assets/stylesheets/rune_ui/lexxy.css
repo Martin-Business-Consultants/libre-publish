@@ -1,0 +1,46 @@
+/* Lexxy, themed with rune's tokens. Not layered: these must beat Lexxy's own (unlayered) CSS,
+   which this file pulls in from the lexxy gem. */
+
+@import url("../lexxy-variables.css");
+@import url("../lexxy-content.css");
+@import url("../lexxy-editor.css");
+
+:root {
+  --lexxy-color-ink: var(--text);
+  --lexxy-color-ink-medium: var(--text-muted);
+  --lexxy-color-ink-light: var(--text-muted);
+  --lexxy-color-ink-lighter: var(--line-strong);
+  --lexxy-color-ink-lightest: var(--layer-1);
+  --lexxy-color-ink-inverted: var(--panel);
+  --lexxy-color-canvas: var(--panel);
+  --lexxy-color-text: var(--text);
+  --lexxy-color-text-subtle: var(--text-muted);
+  --lexxy-color-link: var(--accent);
+  --lexxy-color-accent-dark: var(--accent);
+  --lexxy-color-code-bg: var(--layer-1);
+  --lexxy-color-selected: color-mix(in srgb, var(--accent) 22%, transparent);
+  --lexxy-color-selected-hover: color-mix(in srgb, var(--accent) 32%, transparent);
+  --lexxy-color-code-token-punctuation: var(--text);
+  --lexxy-color-code-token-comment: var(--text-muted);
+  --lexxy-color-code-token-property: light-dark(#005cc5, #79b8ff);
+  --lexxy-color-code-token-function: light-dark(#6f42c1, #b392f0);
+  --lexxy-color-code-token-att: light-dark(#d73a49, #f97583);
+  --lexxy-color-code-token-operator: light-dark(#d73a49, #f97583);
+  --lexxy-color-code-token-selector: light-dark(#22863a, #85e89d);
+}
+
+lexxy-editor {
+  display: block;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-control);
+  background: var(--panel);
+  color: var(--text);
+  min-height: 8rem;
+}
+
+lexxy-editor:focus-within { border-color: var(--accent); }
+.lexxy-content { color: var(--text); }
+
+.composer__box lexxy-editor { min-height: 4rem; max-height: 40vh; overflow-y: auto; border: 0; border-radius: var(--radius-lg) var(--radius-lg) 0 0; background: transparent; font-size: var(--text-read); }
+.composer__box lexxy-editor:focus-within { border: 0; }
+.composer__box [contenteditable] { padding: var(--s-3) var(--s-4) var(--s-1); }

@@ -5,7 +5,7 @@
   <%= render "dashboard/content" %>
 
   <% if Current.user.can?("pages:read") %>
-    <div class="dashboard__columns">
+    <div class="grid-2">
       <%= render "dashboard/api_use" %>
       <% if Serving.api? then %>
         <%= render "dashboard/frontend" %>

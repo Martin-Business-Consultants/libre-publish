@@ -3,11 +3,11 @@
 
 <%= render "layouts/shared/page_header", title: "Service tokens" %>
 
-<section class="panel panel--padded stack">
-  <p class="text-muted">Credentials for machines — a published site, a build, an agent. They belong to this workspace rather than to a person, so rotating your own token or changing your role can’t take production down.</p>
+<section class="card">
+  <p class="muted">Credentials for machines — a published site, a build, an agent. They belong to this workspace rather than to a person, so rotating your own token or changing your role can’t take production down.</p>
 
-  <div class="stack stack--sm text-body">
-    <strong class="text-semibold text-ink">Which token goes where</strong>
+  <div class="stack stack--sm">
+    <strong>Which token goes where</strong>
     <ul class="bullet-list">
       <li>The published site — its <code>CMS_API_TOKEN</code>. Issue it against <strong>Production site</strong> (read-only): the site renders, it never edits, so a leaked secret reads only what the site already shows the world.</li>
       <li><code>USER_AGENT_TOKEN</code> — agents and scripts. Issue it against <strong>Agent</strong> (writes drafts, never publishes): changing live content or publishing is refused, and with the Approvals plugin every change waits for a person.</li>
@@ -15,15 +15,15 @@
   </div>
 
   <% unless can_manage %>
-    <p class="text-muted">Your role can see these tokens but not issue, reveal or change them (that needs settings:write).</p>
+    <p class="muted">Your role can see these tokens but not issue, reveal or change them (that needs settings:write).</p>
   <% end %>
 </section>
 
 <% if can_manage %>
-  <section class="panel panel--padded fields">
-    <h2 class="heading">Issue a token</h2>
-    <%= form_with url: settings_service_tokens_path, class: "fields" do |form| %>
-      <div class="grid grid--2 fields-grid">
+  <section class="card">
+    <h2 class="card__title">Issue a token</h2>
+    <%= form_with url: settings_service_tokens_path do |form| %>
+      <div class="field-row">
         <%= settings_field "Name" do %>
           <%= form.text_field :name, required: true, placeholder: "Production site" %>
         <% end %>
@@ -39,8 +39,8 @@
   </section>
 <% end %>
 
-<section class="panel panel--padded stack stack--sm">
-  <h2 class="heading">Live</h2>
+<section class="card">
+  <h2 class="card__title">Live</h2>
   <% if @live.any? %>
     <ul class="divided">
       <% @live.each do |token| %>
@@ -49,13 +49,13 @@
       <% end %>
     </ul>
   <% else %>
-    <p class="empty-state">No service tokens yet.</p>
+    <p class="empty empty--compact">No service tokens yet.</p>
   <% end %>
 </section>
 
 <% if @revoked.any? %>
-  <section class="panel panel--padded stack stack--sm">
-    <h2 class="heading">Revoked</h2>
+  <section class="card">
+    <h2 class="card__title">Revoked</h2>
     <ul class="divided">
       <% @revoked.each do |token| %>
         <%# herb:key token.id %>

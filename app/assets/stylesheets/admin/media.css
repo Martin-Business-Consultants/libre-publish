@@ -1,0 +1,335 @@
+/* The media library (file_manager/index): its toolbar, folders, the grid of
+   tiles and the list, the drop zone and uploads, Bulk select, a file's
+   details and the job pages (bulk uploads, the Image Optimizer). The tiles
+   and thumbnails are the asset picker's too (asset_pickers). */
+
+.media-library {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+
+/* One row: the search, the filters, Bulk select and the view switch. The
+   search takes what room is left, and its own row on a phone. */
+.media-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.media-toolbar > form { flex-direction: row; }
+.media-toolbar__search { flex: 1 1 16rem; }
+.media-toolbar__filters { flex-wrap: wrap; align-items: center; gap: var(--s-2); }
+.media-toolbar__filters select { width: auto; }
+
+/* Bulk select: a checkbox dressed as a button. Ticked, it reads Cancel,
+   shows the bulk actions, and each tile, above its link, becomes its own
+   tick. In the list (no Bulk select) the bulk actions always show. */
+.media-toolbar__bulk-off { display: none; }
+.media-library:has([data-media-bulk]:checked) .media-toolbar__bulk-on { display: none; }
+.media-library:has([data-media-bulk]:checked) .media-toolbar__bulk-off { display: inline; }
+
+/* The drop zone, always there above the library. */
+.upload-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-3);
+  padding: var(--s-5);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-lg);
+  background: var(--layer-1);
+  text-align: center;
+}
+
+.upload-zone__badge {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--panel);
+  color: var(--text-faint);
+}
+
+.upload-zone__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+}
+
+/* Upload's progress, and the zip's form, open under their buttons. */
+.upload-anchor { position: relative; flex-direction: row; }
+.upload-anchor--wide { position: relative; }
+
+.upload-popover {
+  position: absolute;
+  top: calc(100% + var(--s-2));
+  left: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-lg);
+  background: var(--panel);
+  box-shadow: var(--shadow-popover);
+  text-align: left;
+}
+
+.upload-popover--progress {
+  gap: var(--s-2);
+  width: 18rem;
+  padding: var(--s-3);
+}
+
+.upload-popover--zip {
+  gap: var(--s-3);
+  width: 20rem;
+  padding: var(--s-4);
+}
+
+@media (min-width: 40rem) {
+  .upload-popover--zip { left: auto; right: 0; }
+}
+
+/* A file's progress as it uploads (media--direct-upload builds the rows). */
+.upload-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  color: var(--text-muted);
+  font-size: var(--text-meta);
+  line-height: var(--leading-tight);
+}
+
+.upload-list__item { display: flex; align-items: center; gap: var(--s-2); }
+.upload-list__item--failed { color: var(--danger); }
+
+.upload-list__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.upload-list__bar { flex: 0 0 6rem; }
+
+/* New folder / Rename folder: open, the form takes the row's width. */
+.file-manager__folder-actions { align-items: flex-start; }
+.file-manager__inline-form[open] { flex-basis: 100%; }
+
+.file-manager__inline-form > form {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--s-2);
+  margin-top: var(--s-2);
+}
+
+.file-manager__inline-form > form > input { max-width: 20rem; }
+
+/* The folders: each a box with its icon and name. */
+.folder-link {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  color: var(--text);
+  font-weight: var(--weight-strong);
+  text-decoration: none;
+}
+
+.folder-link:hover { background: var(--layer-1); border-color: var(--line-strong); color: var(--text); }
+.folder-link > .icon { color: var(--text-faint); }
+
+/* A thumbnail's box: the picture fills it (asset_thumbnail draws a bare
+   <img>), or a file's icon sits in its middle. --square for a tile's,
+   --row for a list row's. */
+.media-thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--layer-1);
+  color: var(--text-faint);
+}
+
+.media-thumb--square {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius);
+}
+
+.media-thumb--row {
+  flex: 0 0 auto;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-sm);
+}
+
+.media-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* The grid of files: as many tiles as fit. */
+.media-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  gap: var(--s-5) var(--s-4);
+}
+
+/* The pagination frames the grid loads into lay their tiles out in it. */
+.media-grid turbo-frame { display: contents; }
+
+/* One file in the grid: its square, its name and what it is. */
+.media-tile {
+  position: relative;
+  min-width: 0;
+}
+
+.media-tile__link {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  border-radius: var(--radius);
+  color: var(--text);
+  text-align: left;
+  text-decoration: none;
+  outline: none;
+}
+
+.media-tile__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 0 2px;
+}
+
+.media-tile__name { font-weight: var(--weight-strong); }
+.media-tile__meta { color: var(--text-faint); font-size: var(--text-meta); line-height: var(--leading-tight); }
+
+.media-tile__select {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.media-tile__select > input {
+  position: absolute;
+  top: var(--s-2);
+  right: var(--s-2);
+}
+
+.media-library:has([data-media-bulk]:checked) .media-tile__select { display: block; }
+
+/* A tile (in the grid, or the picker's) rings its square while it's
+   pointed at, focused or, in Bulk select, ticked. */
+.media-tile:hover .media-thumb,
+.media-tile:focus-visible .media-thumb,
+.media-tile:has(:focus-visible) .media-thumb,
+.media-library:has([data-media-bulk]:checked) .media-tile:has(:checked) .media-thumb {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* The ticked files' actions: shown in the list, and in the grid only in Bulk select. */
+.media-bulk-actions {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--layer-1);
+}
+
+.media-bulk-actions select { width: auto; }
+.media-bulk-actions__move { display: flex; align-items: center; gap: var(--s-2); }
+.media-bulk-actions__delete { margin-left: auto; }
+.media-library:has([data-media-bulk]:not(:checked)) .media-bulk-actions { display: none; }
+
+.media-library__count {
+  color: var(--text-faint);
+  font-size: var(--text-meta);
+  text-align: center;
+}
+
+/* A file's details: the picture, whole, at most half the screen tall, in a box. */
+.media-details__preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 10rem;
+  padding: var(--s-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--layer-1);
+  color: var(--text-faint);
+}
+
+.media-details__preview img {
+  max-width: 100%;
+  max-height: 50dvh;
+  object-fit: contain;
+}
+
+.media-details__delete { margin-left: auto; }
+
+/* A section under a rule (the details' Used in, a job's failures). */
+.media-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--line);
+}
+
+/* The details in the library's sheet: wider than rune's, the frame scrolls. */
+.media-sheet { width: min(40rem, 100vw); }
+
+/* Files dragged over the library (file_drop_controller): the overlay shows
+   (it toggles [hidden]) over a faint wash of the accent, and the folder they'd
+   land in is ringed. */
+.file-drop { position: relative; }
+
+.file-drop__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed var(--accent);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  pointer-events: none;
+}
+
+.file-drop__message {
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--radius);
+  background: var(--panel);
+  box-shadow: var(--shadow-popover);
+  color: var(--text);
+}
+
+.file-drop__folder--over {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* A job's progress (a bulk upload, the Image Optimizer). */
+.media-job__progress { width: 100%; }

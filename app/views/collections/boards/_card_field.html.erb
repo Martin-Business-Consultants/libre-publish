@@ -9,7 +9,7 @@
   <span class="board-card__field-label" aria-hidden="true"><%= label %></span>
   <% if field["type"] == "boolean" %>
     <%= hidden_field_tag :value, (!value).to_s, id: nil %>
-    <button type="submit" class="btn btn--sm" aria-pressed="<%= value == true %>" title="<%= label %>">
+    <button type="submit" class="btn btn--secondary btn--sm" aria-pressed="<%= value == true %>" title="<%= label %>">
       <span class="<%= class_names("board-dot", "board-dot--on" => value) %>" aria-hidden="true"></span>
       <%= value ? "On" : "Off" %>
     </button>

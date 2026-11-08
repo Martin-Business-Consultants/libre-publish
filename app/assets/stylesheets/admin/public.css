@@ -1,0 +1,32 @@
+/* The signed-out screens (layouts/public: sign in, sign up, password reset,
+   two-factor) and connecting a machine (device_approvals/new): a card in
+   rune's narrow column, and a line under it. */
+
+.public-card__title {
+  font-size: var(--text-title);
+  line-height: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -.015em;
+}
+
+.public-aside {
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* A one-time code, typed into the middle of a wide field. */
+input.one-time-code {
+  font-family: var(--font-mono);
+  font-size: var(--text-read);
+  letter-spacing: .1em;
+  text-align: center;
+}
+
+/* A device's code (cms login), as the terminal shows it. */
+input.device-code {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+}
+
+.device-approval__form { flex-direction: row; align-items: center; gap: var(--s-2); }
+.device-approval__problem { color: var(--danger); }

@@ -200,123 +200,112 @@ ERB with Herb/ReActionView, Stimulus and Turbo, no build step.
 `bundle exec herb lint app/views engines` must pass. Every partial declares
 strict locals; no ERB output in attribute names; no inline styles.
 
-### Styling: the admin's own CSS
+### Styling: rune_ui
 
-The admin is drawn with its own small CSS library, written for this CMS:
-`app/assets/stylesheets`, served as written (no build, no framework). The
-markup names what a thing *is* (`panel`, `btn btn--primary`, `field`,
-`data-table`); the stylesheets say how it looks. The look is the admin's
-classic one (Fizzy's): ink grays, a gray menu and admin bar, hairlines, 3px
-corners, semibold controls, the accent in blue until the branding sets a
-primary color.
+The admin is drawn with rune_ui, the UI kit Libre Publish shares with
+Runwell and Botter (`vendor/rune_ui`, its README, copied in from
+`../rune_ui` by `bin/sync-rune-ui`; never edit the copy). It brings the
+shell (a sidebar on the page, the screen in an inset panel under a bar of
+crumbs), components as helpers, plain CSS in the `rune` cascade layer and
+Stimulus controllers named `rune-*`. The markup names what a thing *is*
+(`card`, `btn btn--primary`, `field`, `table data-table`); the stylesheets
+say how it looks.
 
-Layers, in the order they win (`_global.css`): `reset` (reset.css), `base`
-(element defaults, base.css: body type, native form controls, focus rings),
-`components` (everything else), `helpers` (helpers.css).
+The stylesheets, in the order `app_stylesheet_tags` loads them: rune_ui's
+(all layered, so the app's always win), then the app's, unlayered:
+`_global.css` (the palette and the branding contract), `_rune-theme.css`
+(points rune's tokens at the palette), and `admin/*.css`: `base.css` (the
+admin's additions to rune's vocabulary), `components.css` (its shared
+pieces), `shell.css` (the shell's admin parts), and one file per area of
+screens (`editor.css`, `records.css`, `settings.css`, `media.css`…).
 
-**The vocabulary.** Reach for these before writing a new class; each file's
-header comment has the details.
+**The vocabulary.** Reach for these before writing a new class.
 
-- *Layout* (layout.css): `stack` (a column), `row` (a line that doesn't
-  wrap), `cluster` (a line that wraps), `grid` with `grid--2|3|4` (columns
-  from a breakpoint) or `grid--tiles`. A stack and a grid space their
-  children 16px apart, a row and a cluster 8px; a modifier picks another
-  step of the scale (`2xs|xs|sm|md|base|lg|xl`: 2, 4, 8, 12, 16, 24, 32px).
-  layout.css defines the steps in use (`stack--2xs|xs|sm|md|lg`,
-  `row--2xs|xs|md|base`, `cluster--xs|sm|md|base`, `grid--sm|md`): add a
-  step to its line when a screen needs one. Alignment:
-  `row--between|end|top|baseline`, `cluster--between|end|top`,
-  `stack--start`.
-  `with-sidebar` (main column + 20rem sidebar from 64rem; its first child
-  is the main column, its last the sidebar; `with-sidebar--sticky`),
-  `measure--sm|md|lg|xl` (max width; `measure--centered`), `divided`
-  (hairlines between children).
-- *Type* (type.css): `page-title`, `title`, `heading` (`heading--lg`,
-  `heading--sm`), `eyebrow` (small caps over a group), `link`,
-  `title-link` (a record's name that opens it), `code` (inline),
-  `code-block` (`code-block--wrap`), `prose`.
-- *Buttons* (buttons.css): `btn` (outlined), `btn--primary`, `btn--danger`
-  (outlined red), `btn--destructive` (filled red, confirms a delete),
-  `btn--plain`, `btn--sm`, `btn--icon`, `btn--block`.
-- *Boxes* (panels.css): `panel` (`panel--padded`, `panel--scroll`,
-  `panel__header`, `panel__footer`; a `<details class="panel panel--padded">`
-  stands its summary off its contents), `well`, `empty-state`, `details` (a `<dl>` of
-  labels and values; `details--wide`).
-- *Status* (badges.css): `badge` and `notice`, toned `--success`,
-  `--danger`, `--warning`, `--info` (a badge without a tone is neutral).
-  `status_tag` picks a badge's tone from its words.
-- *Tables* (tables.css): `data-table` styles its own `<th>` and `<td>`;
-  `data-table__check`, `data-table__num`, `data-table__empty`,
-  `row-actions`.
-- *Forms* (forms.css): `fields` (a form's fields, 20px apart), `field`
-  (label, control, help; a text control in it fills its width), `label`
-  (`label__required`, `label__note`), `help`, `field-error`, `choice` (a
-  checkbox and its words; `choice--top`), `form-actions`, a `<legend
-  class="label">` (spaced off its fieldset's contents),
-  `input-with-icon` (`input-with-icon__icon`), `title-input`,
-  `switch-field`/`switch`, `secret-field`. `settings_field` and
-  `settings_switch` write fields for you.
-- *Menus and dialogs* (menus.css, dialog.css): `menu`, `menu__item`,
-  `popup` in a `popup-anchor`; `dialog` (`dialog--action`, `dialog--sheet`, `dialog--sheet-half`,
-  `dialog__header`, `dialog__actions`).
-- *Icons* (icons.css): `icon_tag "name"`, 1em unless sized
-  `icon--xs|sm|md|lg|xl` (12, 16, 20, 24, 40px).
-- *Helpers* (helpers.css), for text inside a component that the component
-  doesn't decide: `text-ink|body|muted|faint|accent|danger`,
-  `text-small` (12px), `text-large` (16px), `text-medium`,
-  `text-semibold`, `text-mono`, `text-center|end`, `text-tabular`,
-  `truncate`, `nowrap`, `break-all`, `grow`, `no-shrink`, `push-end`,
-  `full-width`, `visually-hidden`, `contents`, `wide-only`.
+- *rune's helpers* (vendor/rune_ui/README.md): `button_link`,
+  `action_button`, `icon_button`, `button_classes(variant:, size:)`
+  (`:primary`, `:secondary`, `:ghost`, `:danger`; `:sm`), `card(title,
+  hint:, actions:)`, `badge(text, label, tone:)`, `callout(text, tone:)`,
+  `empty_state`, `menu { menu_link / menu_button / menu_label /
+  menu_divider }`, `popover_menu` (in rows that scroll or clip), `tabs`,
+  `settings_group` / `setting_row`, `switch`, `copy_button`, `avatar`. The
+  admin's own: `icon_tag` (rune's icons, plus the admin's, registered in
+  `config/initializers/rune_ui.rb`), `status_tag` (a badge toned by its
+  word), `postbox`, `settings_field`, `settings_switch`, `secret_field`, and
+  the partials in `layouts/shared` (page_header, delete_dialog,
+  confirm_dialog, save_box, status_links, quick_filter, row_links,
+  bulk_actions, pagination, errors, editor_bar).
+- *rune's classes*: `stack`, `grid-2`, `catalog`, `button-row`,
+  `dot-list`, `dl.details`; `card` (`card__head`, `card__header`,
+  `card__title`, `card__hint`, `card__content`, `card__footer`, `card--flush`,
+  `card--muted`, `card--sm`); `btn` (always with a variant), `icon-button`,
+  `pill`; `field` (`field__label`, `field__hint`, `field__error`),
+  `field-row`, `checkbox`, `search`; bare inputs, selects and textareas
+  need no class; `table` in a `table-wrap`; `badge`, `count`, `alert`,
+  `empty`, `tabs`, `dialog` (`dialog__box`, `dialog__header`,
+  `dialog__title`, `dialog__body`, `dialog__actions`), `sheet`, `menu`,
+  `menu__items`, `menu__item`, `prose`; text: `muted`, `faint`, `small`,
+  `nowrap`, `visually-hidden`.
+- *The admin's* (admin/base.css, admin/components.css): `stack--xs|sm|md|lg`
+  (4, 8, 12, 24px), `row` (a line that doesn't wrap; `row--between`,
+  `row--top`), `grow`, `with-aside` (main column and a sidebar of
+  boxes: `with-aside__main`, `with-aside__aside`), `measure`, `divided`,
+  `bullet-list`, `code-block`, `mono`, `strong`, `tabular`, `truncate`,
+  `contents`, `icon--xs|md|lg|xl`; list tables (`data-table` with
+  `data-table__check|num|empty`, `row-actions`, `list-toolbar`,
+  `pagination`), `postbox`, `save-box`, `editor-bar`, `switch-field`,
+  `checkbox--top`, `secret-field`, `title-input`, `link-button--danger`.
 
 **Rules.**
 
 - **A look that repeats is a component.** When a screen needs something
   the vocabulary doesn't have, add a class for it (a BEM block named for
-  what it is: `media-tile`, `media-tile__name`) to the stylesheet for that
-  screen or, when it's general, to the library's file for its kind, and
-  write it there in full. Don't stack helpers to draw it: helpers adjust a
-  component, they don't build one.
+  what it is: `media-tile`, `media-tile__name`) to its area's stylesheet
+  or, when it's general, to `admin/components.css`, and write it there in
+  full. Don't stack utilities to draw it.
 - **No variant classes.** States and breakpoints (`:hover`, `:focus-within`,
-  `[open]`, `@media (width >= 40rem)`) live in the component's rule, not
+  `[open]`, `@media (max-width: 860px)`) live in the component's rule, not
   the markup.
 - **Only classes that exist.** `spec/architecture/css_classes_spec.rb`
-  fails on a class nothing defines, on a variant class, and on a rule
-  nothing uses (unless something else puts the class in the DOM:
-  `BUILT_ELSEWHERE`, or `BUILT_ELSEWHERE_PATTERNS` for a family, like
-  `icon--*` and Lexxy's). Class lists kept in a constant or variable are named
-  `*_CLASSES`/`*_classes` so the spec reads them.
-- **Everything respects Settings › Branding's color, type and surface.**
-  Rules draw only with the tokens (`_global.css`), which the branding sets
-  (`Branding#stylesheet`) and the dark theme re-points, so a rule written
-  for the light theme reads in the dark one:
-  - *Color*: `--gray-50…900` is the neutral, mixed from `--neutral-tint`
-    (the secondary color tints it, faintly); `--surface` is the canvas.
-    `--accent-50…900` is the primary color (blue until one is set), for
-    primary buttons, links, focus, selection and what's current; words on
-    an accent fill are `--on-accent`. `--red-*`, `--green-*` and
-    `--yellow-*` are for status. No other color, no hex (except pure white
-    or black on a photo).
-  - *Type*: `--font-sans` (the branding's font) and `--font-mono`; sizes
-    `--text-xs…3xl` with `--leading-*`, weights `--weight-*`.
-  - *Space*: `--space-*` (`--space-4` is 16px; `--space-1-5` 6px).
-  - *Surface*: corners `--radius-sm|md|lg|xl` (which the branding's
-    corners set): `md` for controls, `lg` for notices and wells, `xl` for
-    panels, menus and dialogs, `sm` for badges, `--radius-full` only for
-    true circles. Shadows `--shadow-surface` (panels) and
-    `--shadow-overlay` (menus, dialogs, sheets, toasts).
+  fails on a class neither rune_ui nor the admin defines, on a variant
+  class, and on an admin rule nothing uses (unless something else puts the
+  class in the DOM: `BUILT_ELSEWHERE`, or `BUILT_ELSEWHERE_PATTERNS` for a
+  family, like Lexxy's). Class lists kept in a constant or variable are
+  named `*_CLASSES`/`*_classes` so the spec reads them. rune defines `panel`
+  (the shell's panel) and a bare `btn` (no look without a variant), so the
+  spec can't catch those used the old way: don't.
+- **Space with `gap`, never sibling margins.** Herb can wrap output in
+  `display: contents` elements, which `gap` sees through. No coloured edge
+  stripes: states show as tints, weight, dots and badges.
+- **Everything respects Settings › Branding and the dark theme.** Rules
+  draw only with rune's tokens, which `_rune-theme.css` points at the
+  palette that the branding sets (`Branding#stylesheet`) and the dark
+  theme re-points: `--page`, `--panel`, `--layer-1..3`, `--text`,
+  `--text-muted`, `--text-faint`, `--line`, `--line-strong`, `--hover`,
+  `--accent` (`--accent-hover`, `--accent-ink`, `--accent-soft`),
+  `--attention`, `--danger`, `--ok`; space `--s-1..6`; type `--text-xs`,
+  `--text-meta`, `--text-ui`, `--text-read`, `--text-title`, `--weight`,
+  `--weight-strong`, `--font-sans`, `--font-mono`; surface `--radius-*`
+  (all multiples of `--radius-scale`, which the branding's corners set),
+  `--radius-control`, `--radius-pill`, `--shadow-card` and
+  `--shadow-popover` (which its shadow sets); sizes `--control-h`,
+  `--control-h-sm`, `--row-h`. A palette step (`--gray-*`, `--red-*`,
+  `--accent-*`…) only for a colour rune has no token for. No hex (except
+  pure white or black on a photo).
 - **Don't give a display class to something a stylesheet shows and hides**
   (a `stack` on an element a rule sets `display: none`): let the
   stylesheet set its display.
 - **Hooks**: keep a BEM class only while a stylesheet, JavaScript or a spec
   reads it; the classes spec reports one nothing reads.
-- **Plugins** use the same vocabulary, and ship their own stylesheet for
-  what's theirs (docs/plugins.md).
+- **Plugins** use the same kit, and ship their own stylesheet for what's
+  theirs (docs/plugins.md).
 - Mailers keep their own inline styles: email clients don't load the admin's.
 
 Screens follow WordPress's admin conventions:
 
-- One primary action per screen, `btn btn--primary`; everything else is a
-  secondary, outlined `btn`. A title row's "Add New" is secondary.
+- One primary action per screen, `btn btn--primary`; everything else is
+  `btn btn--secondary` or `btn--ghost`. A title row's "Add New" is
+  secondary. The page's title is in the panel bar (`layouts/shared/page_header`
+  puts it there, after the page one level up that `parent_page` names).
 - Editors (pages, entries, globals) put the title and permalink first and
   the content in the main column, with a sidebar of boxes
   (`content_form_helper#postbox`) led by the Publish box

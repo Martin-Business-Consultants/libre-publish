@@ -6,18 +6,18 @@
     wraps the whole page, as the New button sits in the title row. %>
 <% content_for :page_actions do %>
   <% if Current.user.can?("webhooks:write") %>
-    <%= link_to new_webhook_path, class: "btn", data: { keys: "n", turbo_frame: "webhook_sheet", action: "dialog#open" } do %>
+    <%= link_to new_webhook_path, class: "btn btn--secondary", data: { keys: "n", turbo_frame: "webhook_sheet", action: "dialog#open" } do %>
       <%= icon_tag "add" %>
       <span>New webhook</span>
     <% end %>
   <% end %>
 <% end %>
-<div class="contents" data-controller="dialog" data-dialog-modal-value="true" data-dialog-auto-open-value="<%= @sheet_webhook.present? %>"
+<div class="dialog-wrap" data-controller="dialog" data-dialog-modal-value="true" data-dialog-auto-open-value="<%= @sheet_webhook.present? %>"
      data-action="keydown.esc->dialog#close:stop">
 <%= render "layouts/shared/page_header", title: @page_title %>
 
-<section class="panel panel--scroll">
-  <table class="data-table">
+<section class="table-wrap">
+  <table class="table data-table">
     <thead>
       <tr>
         <th>Name</th>
@@ -33,18 +33,18 @@
         <tr id="<%= dom_id(webhook) %>" data-filter-target="item">
           <td>
             <% if Current.user.can?("webhooks:write") %>
-              <%= link_to webhook.name, edit_webhook_path(webhook), class: "title-link", data: { turbo_frame: "webhook_sheet", action: "dialog#open" } %>
+              <%= link_to webhook.name, edit_webhook_path(webhook), class: "row-link", data: { turbo_frame: "webhook_sheet", action: "dialog#open" } %>
             <% else %>
-              <%= link_to webhook.name, webhook_path(webhook), class: "title-link" %>
+              <%= link_to webhook.name, webhook_path(webhook), class: "row-link" %>
             <% end %>
             <%= render "layouts/shared/row_links", name: webhook.name,
                 delete_path: (webhook_path(webhook) if Current.user.can?("webhooks:delete")),
                 delete_message: "Its receiver stops hearing about changes. Its delivery log goes too." %>
           </td>
-          <td><span class="webhooks__url truncate text-mono text-small text-muted"><%= webhook.url %></span></td>
+          <td><span class="webhooks__url truncate mono small muted"><%= webhook.url %></span></td>
           <td class="data-table__num" title="<%= Array(webhook.events).join(", ") %>"><%= Array(webhook.events).size %></td>
           <td><%= webhook_health(webhook) %></td>
-          <td><span class="nowrap text-small text-muted"><%= time_ago_tag webhook.last_delivery_at %></span></td>
+          <td><span class="nowrap small muted"><%= time_ago_tag webhook.last_delivery_at %></span></td>
         </tr>
       <% end %>
       <%= table_empty_row("No webhooks yet.", columns: 5) if @webhooks.none? %>
@@ -53,11 +53,11 @@
 </section>
 <%= pagination_nav @pagination %>
 
-<dialog class="dialog dialog--sheet dialog--sheet-half" data-dialog-target="dialog" aria-label="Webhook" closedby="any">
+<dialog class="dialog sheet webhook-sheet" data-dialog-target="dialog" aria-label="Webhook" closedby="any">
   <% if @sheet_webhook %>
     <%= render "webhooks/sheet", webhook: @sheet_webhook, deliveries: @sheet_deliveries || [] %>
   <% else %>
-    <turbo-frame id="webhook_sheet"><p class="text-muted">Loading…</p></turbo-frame>
+    <turbo-frame id="webhook_sheet"><div class="dialog__box"><p class="muted">Loading…</p></div></turbo-frame>
   <% end %>
 </dialog>
 </div>

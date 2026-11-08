@@ -1,9 +1,9 @@
 <%# locals: (service_token:, can_manage:) %>
-<li id="<%= dom_id(service_token) %>" class="list-row list-row--lg stack stack--md">
-  <div class="cluster cluster--between cluster--md">
-    <div class="stack stack--2xs">
-      <span class="cluster">
-        <span class="text-semibold text-ink"><%= service_token.name %></span>
+<li id="<%= dom_id(service_token) %>" class="stack stack--md">
+  <div class="row row--between row--top">
+    <div class="stack stack--xs">
+      <span class="button-row">
+        <span class="strong"><%= service_token.name %></span>
         <% if service_token.role %>
           <%= status_tag service_token.role.name %>
         <% end %>
@@ -12,9 +12,9 @@
         <% end %>
       </span>
       <% if service_token.description.present? %>
-        <span class="text-small text-muted"><%= service_token.description %></span>
+        <span class="small muted"><%= service_token.description %></span>
       <% end %>
-      <span class="text-small text-muted">
+      <span class="small muted">
         <% if service_token.last_used_at %>
           Last used <%= time_ago_tag service_token.last_used_at %><% if service_token.last_used_ip.present? %> from <%= service_token.last_used_ip %><% end %>
         <% else %>
@@ -42,6 +42,6 @@
   <% end %>
 
   <% if service_token.capabilities.any? %>
-    <p class="text-mono text-small text-muted"><%= service_token.capabilities.join(", ") %></p>
+    <p class="mono small muted"><%= service_token.capabilities.join(", ") %></p>
   <% end %>
 </li>

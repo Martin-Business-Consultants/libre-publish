@@ -1,0 +1,265 @@
+/* The admin's part of rune_ui's shell (layouts/application,
+   layouts/shared/_sidebar, _panel_bar): the admin menu's items with their
+   submenus, update notices, the account row, the theme toggle, the panel
+   bar's tools (the "/" filter, Screen options), ⌘K search, the update
+   progress modal, and the signed-out layout (layouts/public). */
+
+.skip-link {
+  position: fixed;
+  top: var(--s-2);
+  left: var(--s-2);
+  z-index: 100;
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--radius-control);
+  background: var(--panel);
+  box-shadow: var(--shadow-popover);
+  transform: translateY(-200%);
+}
+
+.skip-link:focus-visible { transform: none; }
+
+/* The admin menu: each item's submenu under it, shown for the current item;
+   the others' first link is the item's own. */
+.sidebar__item {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.sidebar__sub {
+  display: none;
+  flex-direction: column;
+  gap: 1px;
+  margin: 0;
+  padding: 0 0 var(--s-1) 1.625rem;
+  list-style: none;
+}
+
+.sidebar__item--current > .sidebar__sub { display: flex; }
+
+.sidebar__item--current > .sidebar__link {
+  color: var(--text);
+  font-weight: var(--weight-strong);
+}
+
+.sidebar__item--current > .sidebar__link .icon { color: var(--text-muted); }
+
+.sidebar__sub-link {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  height: var(--control-h-sm);
+  padding: 0 var(--s-2);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+.sidebar__sub-link:hover { background: var(--hover); color: var(--text); }
+.sidebar__sub-link[aria-current="page"] { background: var(--layer-2); color: var(--text); }
+.sidebar__sub-link .icon { color: var(--text-faint); }
+
+/* A newer version of the CMS or a plugin. */
+.sidebar__link--update,
+.sidebar__link--update .icon { color: var(--accent); }
+
+.sidebar__account-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-1);
+  width: 100%;
+}
+
+.sidebar__account-row .menu {
+  flex: 1;
+  min-width: 0;
+}
+
+.sidebar__account { cursor: pointer; }
+
+/* Settings › Branding's dark sidebar: the dark steps on the page's colour. */
+.sidebar--dark {
+  background: var(--page);
+  color: var(--text);
+}
+
+/* The theme toggle: a moon in light, a sun in dark. */
+.theme-toggle__sun { display: none; }
+
+html[data-theme="dark"] .theme-toggle__sun { display: block; }
+html[data-theme="dark"] .theme-toggle__moon { display: none; }
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme]) .theme-toggle__sun { display: block; }
+  html:not([data-theme]) .theme-toggle__moon { display: none; }
+}
+
+/* "/" filters the rows of the current page (the filter controller on
+   #global-container): just the key until focused or holding text, when it
+   opens into a field. It shows only on pages with rows to filter, and a
+   filtered-out row stays hidden even when its own class sets a display. */
+.nav-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  height: var(--control-h-sm);
+  padding: 0 var(--s-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  color: var(--text-faint);
+  cursor: text;
+}
+
+.nav-filter:hover { background: var(--hover); }
+
+#global-container:not(:has([data-filter-target~="item"])) .nav-filter { display: none; }
+
+.nav-filter:is(:focus-within, :has(.nav-filter__input:not(:placeholder-shown))) {
+  border-color: var(--line-strong);
+  background: var(--panel);
+}
+
+.nav-filter .nav-filter__input {
+  width: 0;
+  height: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--text);
+  transition: width .15s var(--ease);
+}
+
+.nav-filter:is(:focus-within, :has(.nav-filter__input:not(:placeholder-shown))) .nav-filter__input { width: 20ch; }
+.nav-filter .nav-filter__input:focus { box-shadow: none; }
+
+[data-filter-target~="item"][hidden] { display: none !important; }
+
+/* Screen options: which of the page's table columns show
+   (screen_options_controller), in a panel under its button. */
+.screen-options { position: relative; display: inline-flex; }
+
+.screen-options__panel {
+  top: calc(100% + 4px);
+  right: 0;
+  padding: var(--s-3);
+}
+
+.screen-options__choices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(9rem, 1fr));
+  gap: var(--s-2) var(--s-4);
+  padding-top: var(--s-2);
+}
+
+.screen-options__choice {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  color: var(--text);
+}
+
+/* ⌘K: search everything (layouts/shared/_global_search), drawn as rune's
+   palette. Results are grouped under a heading, each a title over a snippet. */
+.palette__heading {
+  padding: var(--s-2) var(--s-3) var(--s-1);
+  color: var(--text-faint);
+  font-size: var(--text-meta);
+}
+
+.palette__group {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.palette__item--tall {
+  height: auto;
+  min-height: 2.25rem;
+  padding-block: var(--s-1);
+}
+
+.palette__text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.palette__item mark {
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--attention) 28%, transparent);
+  color: inherit;
+}
+
+/* While an update runs: a spinner and each item's progress. */
+.update-progress__title {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+}
+
+.update-progress__item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+}
+
+.update-progress__line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-3);
+}
+
+.update-progress__bar {
+  display: block;
+  height: 6px;
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  background: var(--layer-3);
+}
+
+.update-progress__bar > span {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: var(--accent);
+  transition: width .3s var(--ease);
+}
+
+/* The CLI command for what's on the page, under its title row. */
+.cli-hint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+  color: var(--text-muted);
+  font-size: var(--text-meta);
+}
+
+/* Signed-out pages: the site's logo and the theme toggle over rune's narrow
+   column. */
+.public__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 25rem;
+  margin: 10vh auto 0;
+  padding: 0 var(--s-4);
+  font-size: var(--text-read);
+  font-weight: var(--weight-strong);
+}
+
+.public__logo img {
+  max-height: 2.5rem;
+  width: auto;
+}
+
+.public .public__main { margin-top: var(--s-4); }
+
+.update-progress--finished .status--busy { display: none; }
+.update-progress--failed .update-progress__bar > span { background: var(--danger); }

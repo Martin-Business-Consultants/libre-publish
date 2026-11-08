@@ -4,8 +4,8 @@
   <% if refs %>
     <%= hidden_field_tag scope.name, item, id: nil %>
     <span class="content-list__ref">
-      <span class="truncate text-ink"><%= title.presence || item %></span>
-      <span class="truncate text-mono text-small text-muted"><%= item %></span>
+      <span class="truncate"><%= title.presence || item %></span>
+      <span class="truncate mono small muted"><%= item %></span>
     </span>
   <% else %>
     <%= text_field_tag scope.name, (item == "__VALUE__" ? nil : item), id: nil, class: "grow", autocomplete: "off", aria: { label: "Item" } %>

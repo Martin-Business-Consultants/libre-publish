@@ -54,7 +54,7 @@ class Api::CollectionsController < Api::BaseController
 
   def collection_params
     params.require(:collection).permit(
-      :slug, :name, :enable_blocks, :categories_collection_id, :tags_collection_id,
+      :slug, :name, :enable_blocks, :routable, :categories_collection_id, :tags_collection_id,
       schema: {}
     )
   end

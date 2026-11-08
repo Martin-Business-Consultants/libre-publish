@@ -1,0 +1,64 @@
+/* rune_ui in the admin's palette. rune's colour tokens (in the `rune.tokens`
+   layer) are pointed at _global.css's steps, unlayered, so Settings › Branding
+   (primary and secondary colour, font, corners, shadow) and the dark theme
+   reach every rune component without it knowing about them. The steps turn
+   over in dark (_global.css), so most of these read in both; what rune draws
+   differently in dark (a page darker than the panel, lines as light on dark)
+   is re-pointed below.
+
+   .sidebar--dark (Settings › Branding's dark sidebar) takes the dark steps in
+   light mode, so it re-reads these too. */
+
+:root,
+.sidebar--dark {
+  --page: var(--gray-100);
+  --panel: var(--surface);
+  --layer-1: var(--gray-50);
+  --layer-2: var(--gray-100);
+  --layer-3: var(--gray-200);
+  --text: var(--gray-900);
+  --text-muted: var(--gray-600);
+  --text-faint: var(--gray-500);
+  --line: var(--gray-200);
+  --line-strong: var(--gray-300);
+  --hover: color-mix(in oklch, var(--gray-900) 5%, transparent);
+  --accent: var(--accent-600);
+  --accent-hover: var(--accent-700);
+  --accent-ink: var(--on-accent);
+  --accent-soft: var(--accent-50);
+  --attention: var(--yellow-600);
+  --danger: var(--red-600);
+  --ok: var(--green-600);
+
+  /* The admin's screens are wider than rune's default: list tables, and
+     editors with a sidebar of boxes. */
+  --main-width: 80rem;
+}
+
+html[data-theme="dark"],
+.sidebar--dark {
+  --page: oklch(from var(--neutral-tint) 12% min(calc(c * 0.25), 0.03) h);
+  --line: oklch(100% 0 0 / 9%);
+  --line-strong: oklch(100% 0 0 / 15%);
+  --hover: oklch(100% 0 0 / 5%);
+  --accent: var(--accent-500);
+  --accent-hover: var(--accent-600);
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme]) {
+    --page: oklch(from var(--neutral-tint) 12% min(calc(c * 0.25), 0.03) h);
+    --line: oklch(100% 0 0 / 9%);
+    --line-strong: oklch(100% 0 0 / 15%);
+    --hover: oklch(100% 0 0 / 5%);
+    --accent: var(--accent-500);
+    --accent-hover: var(--accent-600);
+  }
+}
+
+/* Branding's shadow lifts what sits on the panel. */
+.card,
+.table-wrap,
+.settings-group__card {
+  box-shadow: var(--shadow-card);
+}

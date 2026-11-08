@@ -63,7 +63,8 @@ RSpec.describe "Settings pages", type: :request do
 
       get settings_profile_path
 
-      expect(response.body).to include(%(data-tone="positive">Verified<), %(data-tone="negative">Off<))
+      badges = Nokogiri::HTML5(response.body).css("[data-tone]").to_h { [it.text, it["data-tone"]] }
+      expect(badges).to include("Verified" => "positive", "Off" => "negative")
       expect(response.body).to include(%(href="#two-factor"), %(id="two-factor"))
     end
 
@@ -203,17 +204,17 @@ RSpec.describe "Settings pages", type: :request do
       expect(response.body).to include("--brand-600: #fde68a;", "--on-accent: #1c1917;")
     end
 
-    it "keeps the top bar dark in light mode when asked" do
+    it "keeps the sidebar dark in light mode when asked" do
       sign_in_as admin
 
       get settings_branding_path
-      expect(response.body).not_to include("admin-bar--dark")
+      expect(response.body).not_to include("sidebar--dark")
 
       patch settings_branding_path, params: {branding: {top_bar: "dark"}}
       expect(Setting.get("branding")).to include("top_bar" => "dark")
 
       get settings_branding_path
-      expect(Nokogiri::HTML(response.body).at_css("header#header")["class"]).to include("admin-bar--dark")
+      expect(Nokogiri::HTML(response.body).at_css("nav.sidebar")["class"]).to include("sidebar--dark")
     end
 
     it "serves the secondary color, corners and shadow as the admin's tokens too" do
@@ -222,8 +223,8 @@ RSpec.describe "Settings pages", type: :request do
       get branding_stylesheet_path
 
       expect(response.body).to include("--neutral-tint: #1e3a5f;")
-      expect(response.body).to include("--radius-md: 0.625rem;", "--radius-xl: 1.25rem;")
-      expect(response.body).to include("--shadow-surface: 0 1px 2px 0 rgb(0 0 0 / 0.05);", "--shadow-overlay: ")
+      expect(response.body).to include("--radius-scale: 1.5;")
+      expect(response.body).to include("--shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.05);", "--shadow-popover: ")
       expect(response.body).not_to include("--brand-")
     end
 

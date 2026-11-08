@@ -122,12 +122,24 @@ module NavigationHelper
     link_to label, path, **options, aria: {current: ("page" if current)}
   end
 
-  # The page one level up. Not a button: a <link rel="up"> in the head, which
-  # Esc follows (keyboard_controller).
+  # The page one level up: a <link rel="up"> in the head, which Esc follows
+  # (keyboard_controller), and the crumb before the page's title in the panel
+  # bar (page_header).
   def parent_page(label, url)
     content_for :parent_page, tag.link(rel: "up", href: url_for(url), title: label)
+    @parent_crumb = [label, url_for(url)]
     nil
   end
+
+  # The panel bar's trail for a page titled `title`: the page one level up
+  # (parent_page), when it has one, then the title.
+  def page_crumbs(title)
+    crumbs(*[(@parent_crumb && [tx(@parent_crumb.first.to_s), @parent_crumb.last]), title].compact)
+    nil
+  end
+
+  # The page's title (@page_title), for the panel bar of a page with no title row.
+  def page_title_text = tx(@page_title.to_s)
 
   # Where "View site" goes: Settings › General's site address, if set.
   def public_site_url

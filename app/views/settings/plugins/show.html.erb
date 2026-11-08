@@ -4,10 +4,10 @@
 
 <%= render "layouts/shared/page_header", title: @plugin.name %>
 
-<section class="panel panel--padded stack">
-  <p class="text-body"><%= @plugin.description %></p>
+<section class="card">
+  <p><%= @plugin.description %></p>
 
-  <dl class="fact-list">
+  <dl class="settings-facts">
     <div><dt>Version</dt><dd><%= @plugin.version %></dd></div>
     <div><dt>Source</dt><dd><%= plugin_source_label(@plugin) %></dd></div>
     <% if @plugin.author.present? %>
@@ -24,21 +24,21 @@
       <div><dt>Its data</dt><dd><%= tables.to_sentence %></dd></div>
     <% end %>
     <% if @plugin.homepage.present? %>
-      <div><dt>Homepage</dt><dd><%= link_to @plugin.homepage, @plugin.homepage, class: "link", rel: "noopener" %></dd></div>
+      <div><dt>Homepage</dt><dd><%= link_to @plugin.homepage, @plugin.homepage, rel: "noopener" %></dd></div>
     <% end %>
   </dl>
 </section>
 
-<section class="panel panel--padded stack stack--md">
-  <h2 class="heading">What it adds</h2>
+<section class="card">
+  <h2 class="card__title">What it adds</h2>
   <% if additions.any? %>
-    <ul class="bullets text-body">
+    <ul class="bullet-list">
       <% additions.each do |addition| %>
         <%# herb:key addition %>
         <li><%= addition %></li>
       <% end %>
     </ul>
   <% else %>
-    <p class="text-muted">Nothing the core shows.</p>
+    <p class="muted">Nothing the core shows.</p>
   <% end %>
 </section>

@@ -1,0 +1,312 @@
+/* Settings (layouts/settings, app/views/settings), on rune_ui's tokens: the
+   aside kept in view beside the page, the sections down it, the Settings
+   index's cards, lists of plugins and themes, facts, logs of past runs,
+   Branding's appearance choices and image drop zones. */
+
+/* The aside (layouts/settings, in base.css's with-aside): its Save box, then
+   the sections, kept in view under the panel bar on a wide screen. */
+@media (min-width: 1101px) {
+  .settings-aside {
+    position: sticky;
+    top: 3.5rem;
+  }
+}
+
+/* The sections down the aside (settings/_sections_box), and a page's own
+   "On this page" links: groups under a small heading, the current page
+   raised. */
+.settings-nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+
+.settings-nav__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+}
+
+.settings-nav__group > ul {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.settings-nav__heading {
+  padding: 0 var(--s-2);
+  color: var(--text-faint);
+  font-size: var(--text-meta);
+  font-weight: var(--weight-strong);
+}
+
+.settings-nav__link {
+  display: block;
+  padding: var(--s-1) var(--s-2);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+.settings-nav__link:hover { background: var(--hover); color: var(--text); }
+
+.settings-nav__link[aria-current] {
+  background: var(--layer-2);
+  color: var(--text);
+  font-weight: var(--weight-strong);
+}
+
+/* A section on the Settings index (settings/sections): a card that links to
+   it, its name over what it's for. */
+/* API token › What it can do: a card per group of capabilities. */
+.settings-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: var(--s-3);
+}
+
+a.settings-card {
+  height: 100%;
+  gap: var(--s-1);
+  color: var(--text);
+  text-decoration: none;
+}
+
+a.settings-card:hover {
+  border-color: var(--line-strong);
+  background: var(--layer-1);
+  color: var(--text);
+}
+
+.settings-card__name { font-weight: var(--weight-strong); }
+.settings-card__description { color: var(--text-muted); }
+
+/* A section a page's "On this page" links go to: it scrolls to below the
+   panel bar. */
+.settings-section { scroll-margin-top: 4rem; }
+
+/* What a <details> opens under its summary button (two-factor, delete
+   account). */
+.settings-disclosure { padding-top: var(--s-3); }
+
+/* The two-factor code: six digits, not a whole row. */
+.field > input.settings-otp { max-width: 10rem; }
+
+/* A list of things, one per row, ruled off between and above (Settings ›
+   Plugins, Themes, the directory): each item a row of its text (name, a
+   quieter meta after it, an accent for news like "1.2 available", a
+   description under) and its actions, and any notes under the row. */
+.settings-items {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--line);
+}
+
+.settings-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+  padding: var(--s-3) 0;
+}
+
+.settings-item + .settings-item { border-top: 1px solid var(--line); }
+
+.settings-item__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+}
+
+.settings-item__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.settings-item__name { font-weight: var(--weight-strong); }
+.settings-item__name a { color: var(--text); text-decoration: none; }
+.settings-item__name a:hover { text-decoration: underline; }
+
+.settings-item__meta,
+.settings-item__accent {
+  margin-left: var(--s-1);
+  font-size: var(--text-meta);
+}
+
+.settings-item__meta { color: var(--text-faint); font-weight: var(--weight); }
+.settings-item__accent { color: var(--accent); }
+.settings-item__description { color: var(--text-muted); }
+
+.settings-item__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+/* A record's facts as a grid of small labels over their values (a plugin's
+   version and source, the Updates page's). */
+.settings-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-4) var(--s-5);
+}
+
+.settings-facts dt {
+  color: var(--text-faint);
+  font-size: var(--text-meta);
+}
+
+.settings-facts dd { margin-top: 2px; }
+
+@media (max-width: 640px) {
+  .settings-facts { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* A log of past runs (plugin changes, updates, deploys): rows ruled off
+   between, each its summary line and any output under it. */
+.settings-log {
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-log > li {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+  padding: var(--s-2) 0;
+}
+
+.settings-log > li + li { border-top: 1px solid var(--line); }
+
+.settings-log__error {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--danger);
+  font-size: var(--text-meta);
+  white-space: pre-wrap;
+}
+
+/* A release's notes (Settings › Updates): a well that scrolls past 20rem. */
+.settings-release-notes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  max-height: 20rem;
+  overflow-y: auto;
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--layer-1);
+  color: var(--text-muted);
+}
+
+/* A field across two columns of a field-row (Email delivery's host). */
+.settings-span-2 { grid-column: span 2; }
+
+@media (max-width: 860px) {
+  .settings-span-2 { grid-column: auto; }
+}
+
+/* A theme setting's color well (settings/themes/designs). */
+input.settings-color {
+  width: 6rem;
+  height: 2.5rem;
+  padding: 2px;
+}
+
+/* Branding › Appearance: a card per theme around a radio, side by side,
+   marked while its radio is checked. */
+.theme-switcher {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-3);
+}
+
+.theme-switcher__option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  background: var(--panel);
+  color: var(--text-muted);
+  font-weight: var(--weight-strong);
+  cursor: pointer;
+}
+
+.theme-switcher__option:hover { background: var(--layer-1); color: var(--text); }
+
+.theme-switcher__option:has(input:checked) {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.theme-switcher__option:has(input:focus-visible) { box-shadow: var(--ring); }
+
+@media (max-width: 640px) {
+  .theme-switcher { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* A branding image field (settings/brandings/_image_dropzone): a dashed zone
+   the file input covers, tinted while a file is dragged over it
+   (image_dropzone_controller toggles image-dropzone--over); the prompt
+   shrinks once it holds an image (image-dropzone--filled). */
+.image-dropzone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  min-height: 9rem;
+  padding: var(--s-4);
+  border: 2px dashed var(--line-strong);
+  border-radius: var(--radius-lg);
+  background: var(--panel);
+  text-align: center;
+  transition: border-color .15s, background-color .15s;
+}
+
+.image-dropzone:is(:hover, :focus-within, .image-dropzone--over) {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.image-dropzone__preview { display: contents; }
+
+.image-dropzone__preview img {
+  max-width: 100%;
+  max-height: 6rem;
+  object-fit: contain;
+}
+
+.image-dropzone__prompt {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  color: var(--text-muted);
+}
+
+.image-dropzone--filled .image-dropzone__prompt { font-size: var(--text-meta); }
+
+.image-dropzone .image-dropzone__file {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* Install a plugin or theme by its repository: the field and its button on one line. */
+.settings-install { flex-direction: row; gap: var(--s-2); }
+
+/* A failed run's error, on its log line. */
+.settings-error { color: var(--danger); }

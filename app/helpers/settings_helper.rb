@@ -76,46 +76,38 @@ module SettingsHelper
     [where, InstalledPlugins.repo(key)].compact.join(" · ")
   end
 
-  # A secret, code or command shown for copying (type.css's code-block,
+  # A secret, code or command shown for copying (base.css's code-block,
   # wrapped wherever it breaks).
   def settings_code_classes(extra = nil)
-    ["code-block code-block--wrap", extra].compact.join(" ")
+    ["code-block", extra].compact.join(" ")
   end
 
-  # A labelled field: its name, the control from the block, and a hint.
+  # A labelled field (rune_ui's): its name, the control from the block, and a hint.
   def settings_field(label, hint: nil, &block)
     tag.label class: "field" do
       safe_join([
-        tag.span(label, class: "label"),
+        tag.span(label, class: "field__label"),
         capture(&block),
-        (tag.span(hint, class: "help") if hint)
+        (tag.span(hint, class: "field__hint") if hint)
       ].compact)
     end
   end
 
-  # A labelled on/off switch for a boolean field. The switch's look is
-  # forms.css's (switch, switch__input, switch__btn): it follows the
-  # checkbox's :checked and :disabled.
+  # A labelled on/off switch for a boolean field: rune_ui's switch beside its
+  # label and hint.
   def settings_switch(form, method, label, hint: nil, checked: nil)
     tag.label class: "switch-field" do
       safe_join([
         tag.span(class: "switch") do
           safe_join([
-            form.check_box(method, {class: "switch__input", checked: checked}.compact),
-            tag.span(class: "switch__btn")
+            form.check_box(method, {role: "switch", checked: checked}.compact),
+            tag.span(class: "switch__track", aria: {hidden: true})
           ])
         end,
-        tag.span(class: "stack stack--2xs") do
-          safe_join([tag.span(label, class: "label"), (tag.span(hint, class: "help") if hint)].compact)
+        tag.span(class: "switch-field__text") do
+          safe_join([tag.span(label, class: "field__label"), (tag.span(hint, class: "field__hint") if hint)].compact)
         end
       ])
     end
-  end
-
-  # A button that copies text (a secret, a command) to the clipboard.
-  def copy_button(content, label: "Copy")
-    tag.button label, type: "button", class: "btn btn--sm no-shrink",
-      data: {controller: "copy-to-clipboard", copy_to_clipboard_content_value: content,
-             copy_to_clipboard_success_class: "btn--success", action: "copy-to-clipboard#copy"}
   end
 end

@@ -1,8 +1,8 @@
 <%# locals: (deliveries:, pagination: nil) %>
 <section class="stack stack--md">
-  <h2 class="heading">Recent deliveries</h2>
-  <div class="panel panel--scroll">
-    <table class="data-table">
+  <h2 class="card__title">Recent deliveries</h2>
+  <div class="table-wrap">
+    <table class="table data-table">
       <thead>
         <tr>
           <th>When</th>
@@ -16,8 +16,8 @@
         <% deliveries.each do |delivery| %>
           <%# herb:key delivery.id %>
           <tr id="<%= dom_id(delivery) %>">
-            <td><span class="nowrap text-small text-muted"><%= time_ago_tag delivery.created_at %></span></td>
-            <td><span class="text-mono text-small"><%= delivery.event %></span></td>
+            <td><span class="nowrap small muted"><%= time_ago_tag delivery.created_at %></span></td>
+            <td><span class="mono small"><%= delivery.event %></span></td>
             <td>
               <% if delivery.success %>
                 <%= status_tag((delivery.response_status || "OK").to_s, highlight: true) %>
@@ -26,7 +26,7 @@
               <% end %>
             </td>
             <td class="data-table__num nowrap"><%= "#{delivery.duration_ms} ms" if delivery.duration_ms %></td>
-            <td><span class="text-small text-muted"><%= delivery.error %></span></td>
+            <td><span class="small muted"><%= delivery.error %></span></td>
           </tr>
         <% end %>
         <%= table_empty_row("Nothing delivered yet.", columns: 5) if deliveries.none? %>

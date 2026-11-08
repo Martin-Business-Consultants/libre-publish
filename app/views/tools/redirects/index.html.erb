@@ -2,7 +2,7 @@
 
 <% content_for :page_actions do %>
   <% if Current.user.can?("redirects:write") %>
-    <%= link_to new_tools_redirect_path, class: "btn", data: { keys: "n", turbo_frame: "redirect_sheet", action: "dialog#open" } do %>
+    <%= link_to new_tools_redirect_path, class: "btn btn--secondary", data: { keys: "n", turbo_frame: "redirect_sheet", action: "dialog#open" } do %>
       <%= icon_tag "add" %>
       <span>New redirect</span>
     <% end %>
@@ -15,16 +15,16 @@
      data-action="keydown.esc->dialog#close:stop">
 <%= render "layouts/shared/page_header", title: @page_title %>
 
-<div class="cluster cluster--end">
+<div class="button-row tools-list-actions">
   <% if Current.user.can?("redirects:write") %>
-    <%= form_with url: tools_redirects_import_path, class: "contents", data: { controller: "form" } do |form| %>
-      <label class="btn btn--sm" title="Import CSV">
+    <%= form_with url: tools_redirects_import_path, data: { controller: "form" } do |form| %>
+      <label class="btn btn--secondary btn--sm" title="Import CSV">
         <span>Import CSV</span>
         <%= form.file_field :file, accept: ".csv,text/csv", hidden: true, data: { action: "change->form#submit" } %>
       </label>
     <% end %>
   <% end %>
-  <%= link_to tools_redirects_export_path, class: "btn btn--sm", data: { turbo: false } do %>
+  <%= link_to tools_redirects_export_path, class: "btn btn--secondary btn--sm", data: { turbo: false } do %>
     <span>Export</span>
   <% end %>
 </div>
@@ -35,8 +35,8 @@
         noun: "redirect", message: "These rules stop being enforced. This can’t be undone." %>
 <% end %>
 
-<section class="panel panel--scroll" data-controller="select-all">
-  <table class="data-table">
+<section class="table-wrap" data-controller="select-all">
+  <table class="table data-table">
     <thead>
       <tr>
         <% if can_delete %>
@@ -61,11 +61,13 @@
 
 <%= pagination_nav @pagination %>
 
-<dialog class="dialog dialog--sheet" data-dialog-target="dialog" aria-label="Redirect" closedby="any">
-  <% if @sheet_redirect %>
-    <%= render "tools/redirects/sheet", redirect: @sheet_redirect %>
-  <% else %>
-    <turbo-frame id="redirect_sheet"><p class="text-muted">Loading…</p></turbo-frame>
-  <% end %>
+<dialog class="dialog sheet" data-dialog-target="dialog" aria-label="Redirect" closedby="any">
+  <div class="dialog__box">
+    <% if @sheet_redirect %>
+      <%= render "tools/redirects/sheet", redirect: @sheet_redirect %>
+    <% else %>
+      <turbo-frame id="redirect_sheet"><p class="muted">Loading…</p></turbo-frame>
+    <% end %>
+  </div>
 </dialog>
 </div>

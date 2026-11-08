@@ -27,6 +27,7 @@ class Api::Collections::SchemasController < Api::BaseController
   def schema_attributes
     attrs = schema_attrs_from(:collection)
     attrs[:enable_blocks] = ActiveRecord::Type::Boolean.new.cast(params.dig(:collection, :enable_blocks)) if params[:collection].key?(:enable_blocks)
+    attrs[:routable] = ActiveRecord::Type::Boolean.new.cast(params.dig(:collection, :routable)) if params[:collection].key?(:routable)
 
     if params[:collection].key?(:notification_events)
       attrs[:notification_events] = Array(params.dig(:collection, :notification_events)).map(&:to_s) & Collection::NOTIFICATION_EVENTS

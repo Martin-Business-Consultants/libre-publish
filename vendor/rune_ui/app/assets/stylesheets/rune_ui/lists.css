@@ -1,0 +1,28 @@
+/* Lists: rows of avatar · title · muted detail · meta, grouped by day if wanted. */
+
+@layer rune.components {
+  .list { display: flex; flex-direction: column; gap: 1px; }
+  .list-row { display: flex; align-items: center; gap: var(--s-3); min-height: var(--row-h); padding: 6px var(--s-3); border-radius: var(--radius-sm); color: var(--text); text-decoration: none; }
+  a.list-row:hover, a.list-row:focus-visible { background: var(--hover); color: var(--text); }
+  .list-row--tall { align-items: flex-start; }
+  .list-row > .icon { color: var(--text-faint); }
+  .list-row__title { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: var(--weight-strong); }
+  .list-row__sub { flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-faint); }
+  .list-row--tall .list-row__sub { white-space: normal; }
+  .list-row__meta { flex: 0 0 auto; display: flex; align-items: center; gap: var(--s-2); color: var(--text-faint); white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+  /* A row with more to it: a picture (__media), a title over a description (__content with
+     __title and __desc), and buttons at the end (__actions). */
+  .list-row__media { flex: 0 0 auto; display: inline-flex; align-items: center; color: var(--text-faint); }
+  .list-row__content { flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .list-row__content > .list-row__title { flex: none; }
+  .list-row__desc { min-width: 0; color: var(--text-faint); font-size: var(--text-meta); line-height: var(--leading-tight); overflow-wrap: anywhere; }
+  .list-row__actions { flex: 0 0 auto; display: flex; align-items: center; gap: var(--s-2); margin-left: auto; }
+  .list-row--outline { border: 1px solid var(--line); border-radius: var(--radius); }
+
+  .day-list { display: flex; flex-direction: column; gap: var(--s-5); }
+  .day-list__group { display: flex; flex-direction: column; gap: var(--s-1); }
+  .day-list__heading { padding: 0 var(--s-3); color: var(--text-muted); font-size: var(--text-ui); }
+
+  [data-nav-item]:focus-visible { box-shadow: var(--ring); }
+}

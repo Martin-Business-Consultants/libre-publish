@@ -2,8 +2,8 @@
 
 require "rails_helper"
 
-# The admin layout (layouts/application): the admin menu, the admin bar and
-# the page title with its notices, as WordPress lays them out.
+# The admin layout (layouts/application): rune_ui's shell, with the admin
+# menu in the sidebar, the panel bar's tools, and the notices.
 RSpec.describe "The admin layout", type: :request do
   let(:admin) { create(:user) }
 
@@ -11,7 +11,7 @@ RSpec.describe "The admin layout", type: :request do
     sign_in_as create(:user, admin: false, role: create(:role, permissions: capabilities))
   end
 
-  def item(label) = response.body[%r{<li class="admin-menu__item[^"]*"[^>]*>\s*<a [^>]*class="admin-menu__link[ "][^>]*>(?:(?!</li>).)*?#{Regexp.escape(label)}</span>}m]
+  def item(label) = response.body[%r{<div class="sidebar__item[^"]*"[^>]*>\s*<a [^>]*class="sidebar__link[ "][^>]*>(?:(?!</a>).)*?#{Regexp.escape(label)}</span>}m]
 
   it "lists the menu in its groups, Pages first and Settings last" do
     sign_in_as admin
@@ -62,9 +62,9 @@ RSpec.describe "The admin layout", type: :request do
 
     get new_page_path
 
-    expect(item("Pages")).to include("admin-menu__item--current")
-    expect(item("Collections")).not_to include("admin-menu__item--current")
-    expect(response.body).to match(%r{<a class="admin-menu__submenu-link[ "][^>]*aria-current="page" href="/cms/pages/new">Add new</a>})
+    expect(item("Pages")).to include("sidebar__item--current")
+    expect(item("Collections")).not_to include("sidebar__item--current")
+    expect(response.body).to match(%r{<a class="sidebar__sub-link[ "][^>]*aria-current="page" href="/cms/pages/new">\s*<span class="sidebar__label">Add new</span>})
     expect(response.body).not_to match(%r{aria-current="page" href="/cms/pages">All pages})
   end
 
@@ -85,27 +85,27 @@ RSpec.describe "The admin layout", type: :request do
     expect(response.body).to include(">Greeting</a>")
   end
 
-  it "has the admin bar: the site, New, and the person signed in" do
+  it "has the site and the person signed in in the sidebar, and New in the panel bar" do
     Setting.set("general", {"site_base_url" => "https://www.example.org"})
     sign_in_as admin
 
     get dashboard_path
 
-    bar = response.body[%r{<header class="admin-bar[ "].*?</header>}m]
-    expect(bar).to include("View site", "https://www.example.org", ">Page</a>", ">User</a>", "Howdy", "Sign out")
+    sidebar = admin_menu(response.body)
+    expect(sidebar).to include("View site", "https://www.example.org", admin.email, "Sign out")
+    bar = response.body[%r{<header class="panel-bar".*?</header>}m]
+    expect(bar).to include(">Page</a>", ">User</a>")
   end
 
-  it "shows a notice as a dismissible toast, outside the page" do
+  it "shows a notice as a dismissible flash at the top of the page" do
     sign_in_as admin
     redirect = Redirect.create!(source_path: "/old", destination_url: "/new", status_code: 301)
 
     delete tools_redirect_path(redirect)
     follow_redirect!
 
-    main_end = response.body.index("</main>")
-    toast = response.body.index("notice toast notice--success")
-    expect(toast).to be > main_end
-    expect(response.body).to include("Redirect deleted", "Dismiss this notice", "animationend-&gt;element-removal#remove")
+    main = response.body[%r{<main .*?</main>}m]
+    expect(main).to include("flash flash--notice", "Redirect deleted", "Dismiss", "rune-flash#close")
   end
 
   it "renders the notices once a page, whether or not it has a title row" do

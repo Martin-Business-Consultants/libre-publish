@@ -1,0 +1,74 @@
+/* The dashboard (dashboard/index): what the CMS holds as cards, who's
+   working through the API and the frontend side by side, then the latest
+   activity and plugins' boxes. */
+
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-6);
+}
+
+.dashboard__cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  gap: var(--s-3);
+}
+
+/* A link to one kind of content, with its icon and how many there are. */
+.content-card {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-width: 0;
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--panel);
+  box-shadow: var(--shadow-card);
+  color: var(--text);
+  text-decoration: none;
+}
+
+.content-card:hover { border-color: var(--line-strong); background: var(--layer-1); color: var(--text); }
+
+.content-card__icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius);
+  background: var(--layer-2);
+  color: var(--text-muted);
+}
+
+.content-card__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+/* A line of a box's list: what, then when, at the ends. */
+.dashboard__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+}
+
+.dashboard__what {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+  min-width: 0;
+}
+
+.dashboard__title {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.dashboard__title .icon { color: var(--text-faint); }

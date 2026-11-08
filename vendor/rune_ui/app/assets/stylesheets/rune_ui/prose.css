@@ -1,0 +1,12 @@
+/* .prose: rendered Markdown or rich text, spaced with gap. */
+
+@layer rune.components {
+  .prose { display: flex; flex-direction: column; gap: var(--s-3); }
+  .prose > :is(ul, ol) { display: flex; flex-direction: column; gap: var(--s-1); }
+  .prose :is(h1, h2, h3, h4) { margin-top: var(--s-2); font-size: .9375rem; line-height: 1.375rem; font-weight: 600; }
+  .prose :not(pre) > code { font-size: .78125rem; }
+  .prose blockquote { padding-left: var(--s-3); color: var(--text-muted); }
+  .prose table { border-collapse: collapse; font-size: var(--text-ui); }
+  .prose :is(th, td) { padding: var(--s-2) var(--s-3); border: 1px solid var(--line); text-align: left; }
+  .prose img { border-radius: var(--radius); }
+}

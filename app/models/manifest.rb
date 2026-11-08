@@ -82,6 +82,7 @@ class Manifest
       frontmatter_json_schema: c.frontmatter_json_schema,
       entry_count:             c.entries.count,
       enable_blocks:           c.enable_blocks,
+      routable:                c.routable,
       categories_collection:   c.categories_collection&.slug,
       tags_collection:         c.tags_collection&.slug
     }

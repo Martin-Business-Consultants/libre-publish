@@ -1,0 +1,45 @@
+/* Page header, cards, folds, empty states. */
+
+@layer rune.components {
+  .page-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s-3) var(--s-4); min-height: var(--control-h); }
+  .page-header__text { display: flex; flex-direction: column; gap: var(--s-1); min-width: 0; flex: 1 1 22rem; }
+  .page-header__subtitle { color: var(--text-muted); }
+
+  .card { display: flex; flex-direction: column; gap: var(--s-4); padding: var(--s-4) var(--s-5); background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg); }
+  .card__head { display: flex; flex-direction: column; gap: 2px; }
+  .card__header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s-2) var(--s-3); min-height: var(--control-h-sm); }
+  .card__title { font-size: var(--text-read); }
+  .card__hint { color: var(--text-faint); font-size: var(--text-meta); line-height: var(--leading-tight); }
+  .card__footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--s-2); }
+  .card--flush { gap: 0; padding: 0; overflow: hidden; }
+  .card--flush > .card__head { padding: var(--s-3) var(--s-5); border-bottom: 1px solid var(--line); }
+  .card--flush > .list { padding: var(--s-1); }
+  .card--muted { background: var(--layer-1); }
+  .card--attention { background: color-mix(in srgb, var(--attention) 6%, var(--panel)); border-color: color-mix(in srgb, var(--attention) 35%, var(--line)); }
+  .card--danger { background: color-mix(in srgb, var(--danger) 5%, var(--panel)); border-color: color-mix(in srgb, var(--danger) 30%, var(--line)); }
+
+  /* A card's parts beyond its head: .card__content (the body, when it needs one), .card__action
+     (beside the title and hint, top right), and a rule under the head or over the footer. */
+  .card__content { display: flex; flex-direction: column; gap: var(--s-3); min-width: 0; }
+  .card__head:has(.card__action) { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: var(--s-3); }
+  .card__head:has(.card__action) :is(.card__title, .card__hint, .card__header) { grid-column: 1; }
+  .card__action { grid-column: 2; grid-row: 1 / span 2; align-self: start; display: flex; align-items: center; gap: var(--s-2); }
+  .card__head--bordered { padding-bottom: var(--s-3); border-bottom: 1px solid var(--line); }
+  .card__footer--bordered { padding-top: var(--s-3); border-top: 1px solid var(--line); }
+  .card--sm { gap: var(--s-3); padding: var(--s-3) var(--s-4); }
+  .card--flush > .card__content, .card--flush > .card__footer { padding: var(--s-3) var(--s-5); }
+
+  /* A <details> that folds: .fold > summary.fold__summary (with a .fold__chevron icon). */
+  .fold { color: var(--text-muted); font-size: var(--text-ui); line-height: var(--leading); }
+  .fold__summary { display: inline-flex; align-items: center; gap: 6px; padding: 2px 0; color: var(--text-muted); }
+  .fold__summary:hover { color: var(--text); }
+  .fold__chevron { width: .75rem; height: .75rem; color: var(--text-faint); transition: transform .12s var(--ease); }
+  [open] > .fold__summary .fold__chevron, [open] > .card__fold-summary .fold__chevron { transform: rotate(90deg); }
+  .fold__body { margin-top: var(--s-2); padding: var(--s-3) var(--s-4); border-radius: var(--radius); background: var(--layer-1); }
+  .card--fold { display: block; }
+  .card__fold-summary { display: flex; align-items: center; justify-content: space-between; font-weight: var(--weight-strong); }
+  .card--fold[open] > .card__fold-summary { margin-bottom: var(--s-4); }
+
+  .empty { display: flex; flex-direction: column; align-items: center; gap: var(--s-3); padding: var(--s-6) var(--s-5); border: 1px dashed var(--line-strong); border-radius: var(--radius-lg); color: var(--text-muted); text-align: center; }
+  .empty--compact { align-items: flex-start; padding: var(--s-3) var(--s-4); border: 0; text-align: left; color: var(--text-faint); }
+}

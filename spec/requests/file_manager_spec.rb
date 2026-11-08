@@ -67,7 +67,7 @@ RSpec.describe "File manager", type: :request do
 
       get file_manager_asset_path(asset), headers: {"Turbo-Frame" => "asset_details"}
       expect(response.body).to include("Alternative text", "Caption", "Description", "hero.png")
-      expect(response.body).not_to include("<header")
+      expect(response.body).not_to include('id="admin-menu"', 'class="panel-bar"')
 
       patch file_manager_asset_path(asset), params: {asset: {alt: "The team", caption: "Spring 2026", description: "Taken at the mill"}}
       expect(asset.reload).to have_attributes(alt: "The team", caption: "Spring 2026", description: "Taken at the mill")

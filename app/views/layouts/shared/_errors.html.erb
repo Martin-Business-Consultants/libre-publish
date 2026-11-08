@@ -1,16 +1,14 @@
 <%# locals: (record:) %>
-<%# A record's validation errors, above the form that didn't save. %>
+<%# A record's validation errors, above the form that didn't save, as rune_ui's danger alert. %>
 <% if record.errors.any? %>
-  <div class="notice notice--danger" role="alert">
-    <%= icon_tag "close-circle" %>
-    <div class="stack stack--xs">
-      <p class="text-medium">That didn’t work:</p>
-      <ul class="bullet-list">
-        <% record.errors.full_messages.each do |message| %>
-          <%# herb:key message %>
-          <li><%= message %></li>
-        <% end %>
-      </ul>
-    </div>
+  <div class="alert alert--danger" role="alert">
+    <%= icon_tag "close-circle", class: "alert__icon" %>
+    <strong class="alert__title">That didn’t work:</strong>
+    <ul class="alert__body">
+      <% record.errors.full_messages.each do |message| %>
+        <%# herb:key message %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
   </div>
 <% end %>

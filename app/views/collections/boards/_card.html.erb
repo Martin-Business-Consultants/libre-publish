@@ -7,7 +7,7 @@
     <% if can_move %>
       <span class="board-card__grip" aria-hidden="true">⠿</span>
     <% end %>
-    <%= link_to entry.title, edit_collection_entry_path(collection.slug, entry.slug), class: "title-link grow" %>
+    <%= link_to entry.title, edit_collection_entry_path(collection.slug, entry.slug), class: "board-card__title grow" %>
     <% if entry.status != "published" %>
       <%= status_tag entry.status %>
     <% end %>

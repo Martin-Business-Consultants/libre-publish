@@ -2,8 +2,8 @@
 <%# What restoring a version would change: the record as it is now, and what
     the version would bring back. %>
 <% diff = version.changes_from_current %>
-<p class="text-body">
-  Saved <%= site_time_tag version.created_at %><% if version.author %> by <strong class="text-semibold text-ink"><%= version.author.name.presence || version.author.email %></strong><% end %>.
+<p>
+  Saved <%= site_time_tag version.created_at %><% if version.author %> by <strong><%= version.author.name.presence || version.author.email %></strong><% end %>.
   <% if diff[:fields].empty? %>
     It matches the content as it is now.
   <% else %>
@@ -11,10 +11,7 @@
   <% end %>
 </p>
 
-<% diff[:fields].each do |field| %>
-  <%# herb:key field[:key] %>
-  <%= render "versions/field", field: field %>
-<% end %>
+<%= render partial: "versions/field", collection: diff[:fields], as: :field %>
 
 <% if can_restore && diff[:fields].any? %>
   <%= form_with url: restore_path, class: "version-restore" do %>

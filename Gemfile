@@ -23,6 +23,10 @@ gem "puma", "~> 8.0"
 gem "rails", "~> 8.1.3"
 gem "reactionview", "~> 0.6.0"
 gem "rubyzip", "~> 3.0"
+# The admin's UI kit (components, the app shell, plain CSS in the `rune` layer, rune-*
+# Stimulus controllers), shared with Runwell and Botter. Vendored, so the image builds
+# without a sibling checkout: bin/sync-rune-ui copies it from ../rune_ui.
+gem "rune_ui", path: "vendor/rune_ui"
 gem "solid_cable", "~> 4.0"
 gem "solid_cache", "~> 1.0"
 gem "solid_queue", "~> 1.7"

@@ -158,17 +158,18 @@ module ContentFormHelper
     nil
   end
 
-  # A sidebar or main-column box, as WordPress's editor stacks them: a titled
-  # header that collapses the box, remembered per box in this browser
-  # (postbox_controller, applied before paint by content_form/postbox_state).
-  # Its fields stay in the form when collapsed. flush: a body without padding,
-  # for a box that lays out its own rows (the Publish box).
+  # A sidebar or main-column box, as WordPress's editor stacks them: rune_ui's
+  # card, folding under its title (a <details>), remembered per box in this
+  # browser (postbox_controller, applied before paint by
+  # content_form/postbox_state). Its fields stay in the form when folded.
+  # flush: a body without padding, for a box that lays out its own rows (the
+  # Publish box).
   def postbox(key, title, open: true, klass: nil, flush: false, &block)
-    tag.details(class: class_names("postbox panel", klass), open: open,
+    tag.details(class: class_names("card card--flush postbox", klass), open: open,
       data: {postbox: key, controller: "postbox", action: "toggle->postbox#remember"}) do
       safe_join([
         tag.summary(class: "postbox__header") do
-          safe_join([tag.h2(title.is_a?(String) && !title.html_safe? ? tx(title) : title, class: "heading"), icon_tag("caret-down", class: "postbox__toggle")])
+          safe_join([tag.h2(title.is_a?(String) && !title.html_safe? ? tx(title) : title, class: "card__title"), icon_tag("chevron", class: "fold__chevron")])
         end,
         tag.div(class: flush ? "postbox__body" : "postbox__body postbox__body--padded", &block)
       ])

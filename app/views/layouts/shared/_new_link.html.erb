@@ -3,8 +3,8 @@
     is on the screen itself), n by default. %>
 <% icon ||= "add"
    key ||= "n" %>
-<a href="<%= path %>" class="btn" data-keys="<%= key %>">
-  <%= icon_tag icon, class: "icon--sm" %>
+<a href="<%= path %>" class="btn btn--secondary" data-keys="<%= key %>">
+  <%= icon_tag icon %>
   <span class="truncate"><%= text %></span>
   <kbd><%= key.upcase %></kbd>
 </a>

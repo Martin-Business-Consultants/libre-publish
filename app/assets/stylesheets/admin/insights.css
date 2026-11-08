@@ -1,0 +1,40 @@
+/* The Insights screens: the trash (trash/index, _details) and the audit
+   log (audit_logs/index). On rune's tokens. */
+
+/* A trashed item in its sheet: what it was over its name, an image's
+   preview on a tint, and its facts with a wide label column. */
+.trash-item__head { align-items: flex-start; }
+
+.trash-item__title {
+  font-size: var(--text-read);
+  overflow-wrap: anywhere;
+}
+
+.trash-item__preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 9rem;
+  padding: var(--s-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--layer-1);
+}
+
+.trash-item__facts { grid-template-columns: 8rem minmax(0, 1fr); }
+
+/* The audit log's filters: fields side by side in a card, wrapping on a
+   narrow screen, the buttons lined up with the controls at the end; the
+   search under them at the right. */
+.card.audit-filters {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.audit-filters .field { flex: 1 1 10rem; }
+
+.audit-search {
+  display: flex;
+  justify-content: flex-end;
+}

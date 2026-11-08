@@ -4,16 +4,16 @@
 <% can_write = Current.user.can?("trash:write") %>
 <% label = AuditLog.describe_target(record).to_s.presence || "Untitled " + kind %>
 <div class="stack stack--lg">
-  <div class="stack stack--sm stack--start">
+  <div class="stack stack--sm trash-item__head">
     <%= status_tag Trash.labels.fetch(kind, kind.humanize).singularize %>
-    <strong class="heading heading--lg"><%= label %></strong>
+    <strong class="trash-item__title"><%= label %></strong>
   </div>
 
   <% if record.respond_to?(:image?) && record.image? %>
     <div class="trash-item__preview"><%= media_thumbnail record, size: 640 %></div>
   <% end %>
 
-  <dl class="details details--wide">
+  <dl class="details trash-item__facts">
     <% trash_facts(kind, record).each do |name, value| %>
       <%# herb:key name %>
       <dt><%= name %></dt><dd><%= value %></dd>
@@ -28,7 +28,7 @@
   </dl>
 
   <% if can_write %>
-    <div class="cluster">
+    <div class="button-row">
       <%= button_to trash_item_restoration_path(kind, record.id), class: "btn btn--primary", form_class: "contents", data: { turbo_frame: "_top" } do %>
         <%= icon_tag "refresh" %>
         <span>Restore</span>
@@ -37,7 +37,7 @@
             message: "It’s deleted for good. This can’t be undone.", trigger_text: "Delete permanently" %>
     </div>
     <% if Trash.publish_capability(record) && record.try(:status) == "published" && !Current.user.can?(Trash.publish_capability(record)) %>
-      <p class="help">It was live; restored by you, it comes back as a draft for someone who can publish.</p>
+      <p class="field__hint">It was live; restored by you, it comes back as a draft for someone who can publish.</p>
     <% end %>
   <% end %>
 </div>

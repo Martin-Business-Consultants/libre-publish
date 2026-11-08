@@ -2,17 +2,17 @@
 
 <%= render "layouts/shared/page_header", title: @page_title %>
 
-<%= form_with url: search_path, method: :get, class: "row measure--lg", role: "search" do |form| %>
+<%= form_with url: search_path, method: :get, class: "search-page__form measure", role: "search" do |form| %>
   <%= form.search_field :q, value: @search.term, class: "grow", placeholder: "Search pages, entries, globals, users…",
         autofocus: true, autocomplete: "off", aria: { label: "Search everything" } %>
   <button type="submit" class="btn btn--primary">Search</button>
 <% end %>
 
 <% if @search.term.present? && !@search.searchable? %>
-  <p class="text-muted">Type at least <%= SearchIndexed::MIN_LENGTH %> characters.</p>
+  <p class="muted">Type at least <%= SearchIndexed::MIN_LENGTH %> characters.</p>
 <% elsif @search.searchable? %>
-  <section class="panel panel--scroll">
-    <table class="data-table">
+  <section class="table-wrap">
+    <table class="table data-table">
       <thead>
         <tr>
           <th>Found</th>
@@ -25,11 +25,11 @@
           <% snippet = record.hit.highlight(:body) %>
           <tr>
             <td>
-              <%= link_to search_result_path(record), class: "title-link" do %>
+              <%= link_to search_result_path(record), class: "row-link" do %>
                 <%= record.search_document[:title].presence || "Untitled" %>
               <% end %>
               <% if snippet.present? %>
-                <p class="search-results__snippet"><%= sanitize snippet, tags: %w[mark] %></p>
+                <p class="search-page__snippet"><%= sanitize snippet, tags: %w[mark] %></p>
               <% end %>
             </td>
             <td><span class="badge"><%= GlobalSearch.kind_label(record) %></span></td>

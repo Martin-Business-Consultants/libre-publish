@@ -1,0 +1,93 @@
+<%# locals: () %>
+<%# The sidebar (rune_ui's): the site, search, the admin menu
+    (NavigationHelper#admin_menu) in its groups, update notices, and the
+    signed-in person with the theme toggle at the foot. Each item's submenu is
+    under it, shown for the current item (shell.css); the others go to their
+    first link. ⇧⌘B or the panel bar's toggle hides it (rune-sidebar), and on
+    a narrow screen it's a drawer. %>
+<% branding = current_branding %>
+<% site_name = branding[:site_title].presence || Site.key %>
+<% site_url = public_site_url %>
+<nav id="admin-menu" class="<%= class_names("sidebar", "sidebar--dark" => Branding.current.dark_top_bar?) %>" aria-label="<%= tx("Admin menu") %>">
+  <div class="sidebar__top">
+    <%= link_to dashboard_path, class: "sidebar__brand", title: tx("Dashboard (g h)"), data: { keys: "g h" } do %>
+      <% if branding[:logo_url_small].present? %>
+        <%= image_tag branding[:logo_url_small], alt: "" %>
+      <% else %>
+        <span class="sidebar__logo" aria-hidden="true"><%= site_name.to_s.first.upcase %></span>
+      <% end %>
+      <span class="sidebar__label"><%= site_name %></span>
+    <% end %>
+    <% if site_url %>
+      <%= icon_button "external", label: tx("View site"), url: site_url, target: "_blank", rel: "noopener" %>
+    <% end %>
+    <%= sidebar_toggle label: tx("Hide the sidebar") %>
+  </div>
+
+  <%# Opens the search modal (layouts/shared/global_search); a link, so it still goes to Search without it. %>
+  <%= link_to search_path, class: "sidebar__link", data: { global_search_open: true } do %>
+    <%= icon "search" %>
+    <span class="sidebar__label"><%= tx("Search") %></span>
+    <span class="sidebar__kbd">⌘K</span>
+  <% end %>
+
+  <% admin_menu.each do |group, entries| %>
+    <%# herb:key group.to_s %>
+    <% unless group == "Settings" %>
+      <%= sidebar_section tx(group) %>
+    <% end %>
+    <% entries.each do |entry| %>
+      <%# herb:key entry.id %>
+      <% current_link = entry.submenu.find(&:current) %>
+      <div class="<%= class_names("sidebar__item", "sidebar__item--current": entry.current) %>" data-menu-group="<%= group %>">
+        <%= link_to entry.url, class: "sidebar__link", aria: { current: ("page" if entry.current && current_link.nil?) } do %>
+          <%= icon_tag entry.icon %>
+          <span class="sidebar__label"><%= tx(entry.label) %></span>
+        <% end %>
+        <% if entry.submenu.any? %>
+          <ul class="sidebar__sub" aria-label="<%= tx(entry.label) %>">
+            <% entry.submenu.each do |link| %>
+              <%# herb:key link.url %>
+              <li>
+                <%= link_to link.url, class: "sidebar__sub-link", aria: { current: ("page" if link.current) } do %>
+                  <% if link.icon %>
+                    <%= icon_tag link.icon, class: "icon--sm" %>
+                  <% end %>
+                  <span class="sidebar__label"><%= tx(link.label) %></span>
+                <% end %>
+              </li>
+            <% end %>
+          </ul>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <div class="sidebar__footer">
+    <% if UpdateCheck.update_available? && Current.user.can?("settings:read") %>
+      <%= link_to settings_updates_path, class: "sidebar__link sidebar__link--update", title: tx("A newer version is available") do %>
+        <%= icon_tag "refresh" %>
+        <span class="sidebar__label"><%= tx("Version %{version} available", version: UpdateCheck.latest_version) %></span>
+      <% end %>
+    <% end %>
+    <% plugin_updates = UpdateCheck::Plugins.available %>
+    <% if plugin_updates.any? && Current.user.admin? %>
+      <%= link_to settings_plugins_path, class: "sidebar__link sidebar__link--update", title: tx("Newer plugin releases are available") do %>
+        <%= icon_tag "refresh" %>
+        <span class="sidebar__label"><%= tx(plugin_updates.size == 1 ? "1 plugin update" : "%{count} plugin updates", count: plugin_updates.size) %></span>
+      <% end %>
+    <% end %>
+
+    <div class="sidebar__account-row">
+      <% person = Current.user.name.presence || Current.user.email %>
+      <%= menu safe_join([avatar(person), tag.span(person, class: "sidebar__label")]), up: true, trigger_class: "sidebar__account" do %>
+        <%= menu_label Current.user.email %>
+        <%= menu_link tx("Edit profile"), settings_profile_path %>
+        <%= menu_link tx("Settings"), settings_path, data: { keys: "g s" } %>
+        <%= menu_divider %>
+        <%= menu_button tx("Sign out"), session_path(Current.session), method: :delete, icon: "logout" %>
+      <% end %>
+      <%= render "layouts/shared/theme_toggle" %>
+    </div>
+  </div>
+</nav>

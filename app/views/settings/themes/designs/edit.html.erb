@@ -3,19 +3,19 @@
 <%= render "layouts/shared/page_header", title: @page_title,
       description: "The colors, fonts and choices the theme lets you change. Saving changes the website at once." %>
 
-<div class="measure--lg stack stack--lg">
+<div class="measure stack stack--lg">
   <% if @theme.settings.none? %>
-    <section class="panel panel--padded">
-      <p class="text-muted">This theme has nothing to customize: its design is in its code.</p>
+    <section class="card">
+      <p class="muted">This theme has nothing to customize: its design is in its code.</p>
     </section>
   <% else %>
     <%= form_with url: settings_theme_design_path(@theme.key), method: :patch, scope: :design, class: "stack stack--lg" do |form| %>
-      <section class="panel panel--padded fields">
+      <section class="card">
         <% @theme.settings.each do |setting| %>
           <%# herb:key setting.name %>
           <% value = @values[setting.name] %>
           <% if setting.type == "boolean" %>
-            <label class="choice choice--top text-ink">
+            <label class="checkbox checkbox--top">
               <%= form.check_box setting.name, { checked: value }, "1", "0" %>
               <span><%= setting.label %></span>
             </label>
@@ -23,7 +23,7 @@
             <%= settings_field setting.label, hint: setting.help do %>
               <% case setting.type %>
               <% when "color" %>
-                <%= form.color_field setting.name, value: value, class: "theme-design__color" %>
+                <%= form.color_field setting.name, value: value, class: "settings-color" %>
               <% when "select" %>
                 <%= form.select setting.name, setting.options.keys.map { |option| [option.humanize, option] }, { selected: value } %>
               <% else %>
@@ -33,11 +33,11 @@
           <% end %>
         <% end %>
       </section>
-      <div class="cluster">
+      <div class="button-row">
         <button type="submit" class="btn btn--primary">Save</button>
-        <%= link_to "View site", root_path, class: "btn", target: "_blank", rel: "noopener" %>
+        <%= link_to "View site", root_path, class: "btn btn--secondary", target: "_blank", rel: "noopener" %>
       </div>
     <% end %>
-    <%= button_to "Reset to the theme’s defaults", settings_theme_design_path(@theme.key), method: :delete, class: "link" %>
+    <%= button_to "Reset to the theme’s defaults", settings_theme_design_path(@theme.key), method: :delete, class: "btn btn--ghost btn--sm" %>
   <% end %>
 </div>

@@ -4,44 +4,47 @@
     (turbo_frame _top): done, back to the list; refused, the list again with
     the sheet open. %>
 <turbo-frame id="redirect_sheet">
-  <div class="fields">
-    <h2 class="heading heading--lg"><%= redirect.new_record? ? "New redirect" : "Edit redirect" %></h2>
+  <div class="stack">
+    <header class="dialog__header">
+      <h2 class="dialog__title"><%= redirect.new_record? ? "New redirect" : "Edit redirect" %></h2>
+      <%= icon_button "close", label: "Close", data: { action: "dialog#close" } %>
+    </header>
     <%= render "layouts/shared/errors", record: redirect %>
 
-    <%= form_with model: [:tools, redirect], class: "fields", data: { turbo_frame: "_top" } do |form| %>
+    <%= form_with model: [:tools, redirect], data: { turbo_frame: "_top" } do |form| %>
       <label class="field">
-        <span class="label">Source path</span>
-        <%= form.text_field :source_path, required: true, class: "text-mono", autofocus: true, autocomplete: "off", placeholder: "/old-page  or  /old-section/*" %>
-        <span class="help">A path on this site, with the leading slash. End it with <code class="code">/*</code> to match every path beneath it.</span>
+        <span class="field__label">Source path</span>
+        <%= form.text_field :source_path, required: true, class: "mono", autofocus: true, autocomplete: "off", placeholder: "/old-page  or  /old-section/*" %>
+        <span class="field__hint">A path on this site, with the leading slash. End it with <code>/*</code> to match every path beneath it.</span>
       </label>
 
       <label class="field">
-        <span class="label">Destination</span>
-        <%= form.text_field :destination_url, required: true, class: "text-mono", autocomplete: "off", placeholder: "/new-page  or  https://example.com/new" %>
-        <span class="help">A path or a full URL. For a wildcard source, end it with <code class="code">/*</code> to carry the rest of the path across.</span>
+        <span class="field__label">Destination</span>
+        <%= form.text_field :destination_url, required: true, class: "mono", autocomplete: "off", placeholder: "/new-page  or  https://example.com/new" %>
+        <span class="field__hint">A path or a full URL. For a wildcard source, end it with <code>/*</code> to carry the rest of the path across.</span>
       </label>
 
       <label class="field">
-        <span class="label">HTTP status</span>
+        <span class="field__label">HTTP status</span>
         <%= form.select :status_code, redirect_status_options %>
       </label>
 
-      <label class="choice choice--top">
+      <label class="checkbox checkbox--top">
         <%= form.check_box :active %>
-        <span class="stack stack--2xs">
-          <span class="label">Active</span>
-          <span class="help">Enforced on requests. Untick to keep the rule without applying it.</span>
+        <span class="stack stack--xs">
+          <span class="field__label">Active</span>
+          <span class="field__hint">Enforced on requests. Untick to keep the rule without applying it.</span>
         </span>
       </label>
 
       <label class="field">
-        <span class="label">Notes <span class="label__note">(optional)</span></span>
+        <span class="field__label">Notes <span class="faint">(optional)</span></span>
         <%= form.text_area :notes, rows: 3, placeholder: "Why this redirect exists, or when it can be removed." %>
       </label>
 
       <% if redirect.persisted? %>
-        <dl class="details well">
-          <dt>Hits</dt><dd class="text-tabular"><%= redirect.hit_count %></dd>
+        <dl class="details card card--muted card--sm">
+          <dt>Hits</dt><dd class="tabular"><%= redirect.hit_count %></dd>
           <dt>Last hit</dt><dd><%= redirect.last_hit_at ? time_ago_tag(redirect.last_hit_at) : "never" %></dd>
         </dl>
       <% end %>
@@ -53,7 +56,7 @@
                   message: "Anyone visiting " + redirect.source_path_was.to_s + " will get a 404 instead." %>
           </span>
         <% end %>
-        <button type="button" class="btn" data-action="dialog#close">Cancel</button>
+        <button type="button" class="btn btn--ghost" data-action="dialog#close">Cancel</button>
         <%= form.button (redirect.new_record? ? "Add redirect" : "Save changes"), class: "btn btn--primary" %>
       </div>
     <% end %>

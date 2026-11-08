@@ -7,9 +7,9 @@
 
 <%# The trash as a list table; picking an item opens what it was in a sheet
     (trash#show, into the trash_item frame), where it's restored or deleted. %>
-<div class="contents" data-controller="dialog" data-dialog-modal-value="true" data-action="keydown.esc->dialog#close:stop">
-  <section class="panel panel--scroll">
-    <table class="data-table">
+<div class="dialog-wrap" data-controller="dialog" data-dialog-modal-value="true" data-action="keydown.esc->dialog#close:stop">
+  <section class="table-wrap">
+    <table class="table data-table">
       <thead>
         <tr>
           <th>Title</th>
@@ -24,7 +24,7 @@
           <% label = AuditLog.describe_target(record).to_s.presence || "Untitled " + kind %>
           <tr id="trash_<%= kind %>_<%= record.id %>" data-filter-target="item">
             <td>
-              <%= link_to label, trash_item_path(kind, record.id), class: "title-link",
+              <%= link_to label, trash_item_path(kind, record.id), class: "row-link",
                     data: { turbo_frame: "trash_item", action: "dialog#open" } %>
               <%= render "layouts/shared/row_links",
                     links: [ [ "View", trash_item_path(kind, record.id) ] ],
@@ -33,8 +33,8 @@
                     delete_label: "Delete permanently", delete_message: "It’s deleted for good. This can’t be undone." %>
             </td>
             <td><%= status_tag Trash.labels.fetch(kind, kind.humanize).singularize %></td>
-            <td><span class="text-mono text-small text-muted"><%= trash_detail(kind, record) %></span></td>
-            <td><span class="nowrap text-small text-muted"><%= time_ago_tag record.deleted_at %></span></td>
+            <td><span class="mono small muted"><%= trash_detail(kind, record) %></span></td>
+            <td><span class="nowrap small muted"><%= time_ago_tag record.deleted_at %></span></td>
           </tr>
         <% end %>
         <%= table_empty_row("Nothing in the trash.", columns: 4) if @entries.none? %>
@@ -43,14 +43,16 @@
   </section>
   <%= pagination_nav @pagination %>
 
-  <dialog class="dialog dialog--sheet" data-dialog-target="dialog"
+  <dialog class="dialog sheet" data-dialog-target="dialog"
           aria-label="In the trash" closedby="any">
-    <header class="dialog__header">
-      <h2 class="heading heading--lg">In the trash</h2>
-      <button type="button" class="btn btn--sm" data-action="dialog#close">Close</button>
-    </header>
-    <turbo-frame id="trash_item">
-      <p class="text-muted">Loading…</p>
-    </turbo-frame>
+    <div class="dialog__box">
+      <header class="dialog__header">
+        <h2 class="dialog__title">In the trash</h2>
+        <%= icon_button "close", label: "Close", data: { action: "dialog#close" } %>
+      </header>
+      <turbo-frame id="trash_item">
+        <p class="muted">Loading…</p>
+      </turbo-frame>
+    </div>
   </dialog>
 </div>

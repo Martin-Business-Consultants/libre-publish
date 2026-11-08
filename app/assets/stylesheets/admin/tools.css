@@ -1,0 +1,101 @@
+/* Tools (backups/show, redirects, search_replaces/show, seo_audits/show) and
+   the Sitemap's robots.txt editor (robots/edit). */
+
+/* A short list in a bordered box, ruled between its rows (what a backup
+   will hold). */
+.tools-boxed-list {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.tools-boxed-list > li { padding: var(--s-2) var(--s-3); }
+.tools-boxed-list > li + li { border-top: 1px solid var(--line); }
+
+/* The Import and Export buttons, at the right above the redirects. */
+.tools-list-actions { justify-content: flex-end; }
+.tools-list-actions > form { display: contents; }
+
+/* A label drawn as a button (Import CSV, around a hidden file input) points like one. */
+label.btn { cursor: pointer; }
+
+/* A redirect's Delete, at the start of the sheet's actions. */
+.redirect-sheet__delete { margin-right: auto; }
+
+/* Replace all, ruled off under the matches. */
+.search-replace__confirm {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3);
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--line);
+}
+
+/* A backup's download, at the row's end. */
+.tools-cell-end { text-align: right; }
+
+/* robots.txt: what the site publishes, kept in view beside the form. */
+@media (min-width: 64rem) {
+  .robots-preview { position: sticky; top: 4rem; }
+}
+
+.robots-preview__text { max-height: 28rem; overflow-y: auto; }
+
+/* The Sitemap (sitemaps/index): where it's published beside the list's
+   search, and each row's Quick edit, the last row action, opening the row's
+   sitemap settings in place on a line of its own. */
+.sitemap-intro {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3) var(--s-4);
+}
+
+.quick-edit > summary { display: inline; }
+.row-actions > .quick-edit[open] { flex-basis: 100%; }
+.row-actions:has(.quick-edit[open]) { visibility: visible; }
+
+.row-actions .quick-edit__link { color: var(--accent); text-decoration: none; cursor: pointer; }
+.row-actions .quick-edit__link:hover { color: var(--accent-hover); text-decoration: underline; }
+
+.quick-edit__form {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--s-3);
+  margin-top: var(--s-2);
+  padding: var(--s-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--layer-1);
+  font-size: var(--text-ui);
+}
+
+.quick-edit__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+}
+
+.quick-edit__field select { width: auto; height: var(--control-h-sm); }
+.quick-edit__label { color: var(--text-muted); font-size: var(--text-meta); font-weight: var(--weight-strong); }
+.quick-edit__number { width: 6rem; }
+.quick-edit .quick-edit__number { height: var(--control-h-sm); }
+.quick-edit__check { height: var(--control-h-sm); font-size: var(--text-meta); }
+
+/* Search (searches/show): the box and its button on a line, each result's
+   snippet under its title, the term marked. */
+.search-page__form { flex-direction: row; align-items: center; gap: var(--s-2); }
+
+.search-page__snippet {
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: var(--text-meta);
+}
+
+.search-page__snippet mark {
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--attention) 28%, transparent);
+  color: inherit;
+}

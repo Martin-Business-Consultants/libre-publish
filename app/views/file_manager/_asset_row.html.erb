@@ -6,20 +6,20 @@
     </td>
   <% end %>
   <td>
-    <div class="row row--md">
+    <div class="row">
       <span class="media-thumb media-thumb--row">
         <%= asset_thumbnail asset, size: 64 %>
       </span>
       <div class="grow">
-        <%= link_to asset.title, file_manager_asset_path(asset), class: "title-link truncate",
+        <%= link_to asset.title, file_manager_asset_path(asset), class: "row-link truncate",
               data: { turbo_frame: "asset_details", action: "dialog#open" } %>
         <%= render "layouts/shared/row_links", name: asset.title, edit_path: file_manager_asset_path(asset),
               delete_path: (file_manager_asset_path(asset) if can_delete), delete_message: "It goes to the trash, where it can be restored." %>
       </div>
     </div>
   </td>
-  <td><span class="text-small text-muted"><%= asset.content_type %></span></td>
-  <td><span class="text-mono text-small text-muted"><%= asset.folder %></span></td>
+  <td><span class="small muted"><%= asset.content_type %></span></td>
+  <td><span class="mono muted"><%= asset.folder %></span></td>
   <td class="data-table__num"><span class="nowrap"><%= number_to_human_size(asset.byte_size) %></span></td>
-  <td><span class="nowrap text-small text-muted"><%= time_ago_tag asset.created_at %></span></td>
+  <td><span class="nowrap small muted"><%= time_ago_tag asset.created_at %></span></td>
 </tr>

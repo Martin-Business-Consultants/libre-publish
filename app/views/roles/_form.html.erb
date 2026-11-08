@@ -6,16 +6,16 @@
 <% removable = role.persisted? && !locked && Current.user.can?("roles:delete") %>
 <%= render "layouts/shared/errors", record: role %>
 
-<%= form_with model: role, id: "role_form", class: "record-form with-sidebar with-sidebar--sticky",
+<%= form_with model: role, id: "role_form", class: "with-aside",
       data: { controller: "form", action: "keydown.esc->form#cancel" } do |form| %>
-  <div>
+  <div class="with-aside__main">
     <div>
       <label class="visually-hidden" for="role_name">Name</label>
       <%= form.text_field :name, required: true, disabled: locked, class: "title-input", autofocus: role.new_record?, autocomplete: "off", placeholder: "Role name, such as Editor" %>
     </div>
 
     <%= postbox "role-details", "About it" do %>
-      <div class="fields">
+      <div class="stack">
         <%= settings_field "Description" do %>
           <%= form.text_area :description, rows: 2, disabled: locked, placeholder: "What this role is for." %>
         <% end %>
@@ -25,25 +25,25 @@
     <%= postbox "role-permissions", "Permissions" do %>
       <%= tag.fieldset class: "stack", disabled: locked do %>
         <legend class="visually-hidden">Permissions</legend>
-        <p class="text-muted">Pick which capabilities this role grants. Users with this role can do only what’s ticked.</p>
+        <p class="muted">Pick which capabilities this role grants. Users with this role can do only what’s ticked.</p>
         <%= hidden_field_tag "role[permissions][]", "", id: nil %>
-        <div class="grid grid--2 grid--md">
+        <div class="grid-2">
           <% Permissions.catalog.each do |group, capabilities| %>
             <%# herb:key group %>
-            <div class="panel permission-group">
+            <div class="card card--sm">
               <fieldset class="stack stack--sm" data-controller="select-all">
-                <legend class="full-width">
-                  <label class="choice text-semibold text-ink">
+                <legend>
+                  <label class="checkbox strong">
                     <input type="checkbox" aria-label="Every <%= group %> capability" data-select-all-target="all" data-action="select-all#toggle">
                     <span><%= group %></span>
                   </label>
                 </legend>
                 <% capabilities.each do |capability| %>
                   <%# herb:key capability %>
-                  <label class="choice">
+                  <label class="checkbox">
                     <%= check_box_tag "role[permissions][]", capability, role.admin? || role.permissions.include?(capability), id: "role_permission_" + capability.tr(":", "_"), data: { select_all_target: "box", action: "select-all#sync" } %>
-                    <span class="text-mono text-small"><%= capability %></span>
-                    <span class="push-end text-small text-muted"><%= capability_action_label(capability) %></span>
+                    <span class="mono small"><%= capability %></span>
+                    <span class="small muted"><%= capability_action_label(capability) %></span>
                   </label>
                 <% end %>
               </fieldset>
@@ -54,10 +54,10 @@
     <% end %>
   </div>
 
-  <aside>
+  <aside class="with-aside__aside">
     <% note = capture do %>
       <% if locked %>
-        <p class="text-muted">A system role. It can’t be edited or deleted.</p>
+        <p class="muted">A system role. It can’t be edited or deleted.</p>
       <% end %>
     <% end %>
     <%= render "layouts/shared/save_box", key: "role-save", title: (role.new_record? ? "Add role" : "Save"),

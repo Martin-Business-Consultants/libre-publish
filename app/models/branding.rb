@@ -22,8 +22,9 @@ class Branding
     "Lora"             => "Lora — Calligraphic serif"
   }.freeze
 
-  # The admin's top bar: as the appearance draws everything, or dark in
-  # either (.admin-bar--dark, which takes the dark tokens, _global.css).
+  # The admin's sidebar: as the appearance draws everything, or dark in
+  # either (.sidebar--dark, which takes the dark tokens, _global.css). Stored
+  # as top_bar, its name from before the sidebar held the bar's items.
   TOP_BARS = {"match" => "Match the appearance", "dark" => "Dark"}.freeze
 
   RADII   = %w[none small medium large].freeze
@@ -126,30 +127,25 @@ class Branding
     900 => "color-mix(in oklch, %s 56%%, black)"
   }.freeze
 
-  # Corners: the radii the components read (--radius-sm/-md/-lg/-xl: badges,
-  # controls, notices, panels and menus).
-  CORNERS = {
-    "none" => {sm: "0", md: "0", lg: "0", xl: "0"},
-    "small" => {sm: "0.125rem", md: "0.1875rem", lg: "0.25rem", xl: "0.375rem"},
-    "medium" => {sm: "0.25rem", md: "0.375rem", lg: "0.5rem", xl: "0.75rem"},
-    "large" => {sm: "0.375rem", md: "0.625rem", lg: "0.875rem", xl: "1.25rem"}
-  }.freeze
+  # Corners: rune's radii are all multiples of --radius-scale (controls,
+  # cards, panels, menus), so one number rounds the whole admin.
+  CORNERS = {"none" => "0", "small" => "0.5", "medium" => "1", "large" => "1.5"}.freeze
 
-  # Shadow: a panel's (--shadow-surface) and what floats over the page
-  # (--shadow-overlay: menus, dialogs, sheets, toasts).
+  # Shadow: a card's (--shadow-card: cards, tables, settings groups) and what
+  # floats over the page (--shadow-popover: rune's menus, dialogs, sheets).
   SHADOW_TOKENS = {
-    "none" => {surface: "0 0 #0000", overlay: "0 0 #0000"},
+    "none" => {card: "0 0 #0000", popover: "0 0 0 1px var(--line)"},
     "small" => {
-      surface: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
-      overlay: "0 4px 12px -2px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.06)"
+      card: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+      popover: "0 4px 12px -2px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.06), 0 0 0 1px var(--line)"
     },
     "medium" => {
-      surface: "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
-      overlay: "0 0 0 1px rgb(0 0 0 / 0.04), 0 10px 16px rgb(0 0 0 / 0.08), 0 2px 6px rgb(0 0 0 / 0.12)"
+      card: "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
+      popover: "0 10px 16px rgb(0 0 0 / 0.08), 0 2px 6px rgb(0 0 0 / 0.12), 0 0 0 1px var(--line)"
     },
     "large" => {
-      surface: "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
-      overlay: "0 25px 50px -12px rgb(0 0 0 / 0.25), 0 8px 16px -8px rgb(0 0 0 / 0.15)"
+      card: "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
+      popover: "0 25px 50px -12px rgb(0 0 0 / 0.25), 0 8px 16px -8px rgb(0 0 0 / 0.15), 0 0 0 1px var(--line)"
     }
   }.freeze
 
@@ -162,7 +158,7 @@ class Branding
     # The grays take the secondary color's hue, faintly (_global.css).
     declarations << "--neutral-tint: #{secondary_color};" if secondary_color
     declarations << %(--font-sans: "#{font}", #{FALLBACK_STACK};) if font
-    CORNERS.fetch(border_radius, {}).each { |size, value| declarations << "--radius-#{size}: #{value};" }
+    declarations << "--radius-scale: #{CORNERS.fetch(border_radius)};" if border_radius
     SHADOW_TOKENS.fetch(box_shadow, {}).each { |kind, value| declarations << "--shadow-#{kind}: #{value};" }
 
     declarations.any? ? ":root {\n  #{declarations.join("\n  ")}\n}\n" : ""

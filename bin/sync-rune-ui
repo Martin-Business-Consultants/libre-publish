@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Copies the rune_ui gem (the admin's UI kit) from its checkout, ../rune_ui by
+# default, into vendor/rune_ui, where the Gemfile and the image build read it.
+set -euo pipefail
+source="${1:-$(dirname "$0")/../../rune_ui}"
+target="$(dirname "$0")/../vendor/rune_ui"
+[ -f "$source/rune_ui.gemspec" ] || { echo "No rune_ui gem at $source" >&2; exit 1; }
+rm -rf "$target" && mkdir -p "$target"
+cp -r "$source"/{app,config,lib,README.md,LICENSE.md,rune_ui.gemspec} "$target"/
+echo "Copied rune_ui $(ruby -e 'load ARGV[0]; print RuneUi::VERSION' "$target/lib/rune_ui/version.rb") into vendor/rune_ui"

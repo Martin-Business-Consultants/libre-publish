@@ -1,8 +1,8 @@
 <%# locals: (versions:, pagination:, show_path:) %>
 <%# A record's saved versions, newest first. show_path: a lambda from a version
     to its page. %>
-<section class="panel panel--scroll">
-  <table class="data-table">
+<section class="table-wrap">
+  <table class="table data-table">
     <thead>
       <tr>
         <th>Saved</th>
@@ -16,15 +16,15 @@
         <% changed = version.changes_from_current[:fields].map { it[:key] } %>
         <tr id="<%= dom_id(version) %>" data-filter-target="item">
           <td>
-            <%= link_to show_path.call(version), class: "title-link" do %>
+            <%= link_to show_path.call(version), class: "row-link" do %>
               <%= site_time_tag version.created_at %>
             <% end %>
             <%= render "layouts/shared/row_links", links: [ [ "Compare", show_path.call(version) ] ] %>
           </td>
-          <td><span class="text-muted"><%= version.author&.name.presence || version.author&.email || "—" %></span></td>
+          <td><span class="muted"><%= version.author&.name.presence || version.author&.email || "—" %></span></td>
           <td>
             <% if changed.empty? %>
-              <span class="text-muted">Same as now</span>
+              <span class="muted">Same as now</span>
             <% else %>
               <%= changed.map(&:humanize).to_sentence %>
             <% end %>

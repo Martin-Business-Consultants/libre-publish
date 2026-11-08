@@ -1,70 +1,24 @@
-/* The admin's own CSS: a small library of components and layout pieces,
-   written for this CMS and served as written (no build). STYLE.md has the
-   vocabulary; each file says what it draws.
+/* The admin's palette and the branding contract, on top of rune_ui (the UI
+   kit, vendor/rune_ui), whose own tokens _rune-theme.css points here. Type,
+   space, corners and control sizes are rune's (--s-*, --text-*, --radius-*,
+   --control-h…); this file holds only what Settings › Branding and the dark
+   theme change.
 
-   The layers, in the order they win: the reset, element defaults, the
-   components, and last the few helpers (helpers.css) that adjust one. */
-@layer reset, base, components, helpers;
-
-/* Tokens are unlayered, so /branding.css (Branding#stylesheet) and the dark
+   Tokens are unlayered, so /branding.css (Branding#stylesheet) and the dark
    theme below win over these.
 
-   Every screen is drawn from Settings › Branding's color, type and surface,
-   through these tokens and nothing else:
-
-   - Color. gray is the neutral (--surface canvas, gray-50 sidebar and wells,
-     gray-200 hairlines, gray-500 secondary text, gray-900 text), every step
-     mixed from --neutral-tint: the branding's secondary color tints the
-     grays with its hue, at fixed lightness. accent is the brand's primary
-     color (primary buttons, links, focus, selection, what's current), from
-     --brand-*, which Branding sets; the classic blue until it does. red,
-     green and yellow are for status. The dark theme re-points every family's
-     steps, so a rule names one step and reads in both.
-   - Type. --font-sans, the branding's font; every component reads it.
-   - Surface. --radius-* (3px until the branding's corners set them),
-     --shadow-surface (panels) and --shadow-overlay (menus, dialogs, sheets,
-     toasts), which its shadow sets. */
+   - Color. gray is the neutral, every step mixed from --neutral-tint: the
+     branding's secondary color tints the grays with its hue, at fixed
+     lightness. accent is the brand's primary color (primary buttons, links,
+     focus, selection, what's current), from --brand-*, which Branding sets;
+     the classic blue until it does. red, green and yellow are for status.
+     The dark theme re-points every family's steps, so a token names one step
+     and reads in both.
+   - Type. --font-sans, the branding's font, else rune's Inter.
+   - Surface. --radius-scale (rune's corners, which the branding's corners
+     set), --shadow-card (cards and tables, none until the branding's shadow
+     sets one) and --shadow-popover (menus, dialogs, sheets). */
 :root {
-  --font-sans: "Inter", "InterVariable", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Text", "Segoe UI", "Adwaita Sans", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-
-  --text-xs: 0.75rem;
-  --leading-xs: 1rem;
-  --text-sm: 0.875rem;
-  --leading-sm: 1.25rem;
-  --text-base: 1rem;
-  --leading-base: 1.5rem;
-  --text-lg: 1.125rem;
-  --leading-lg: 1.75rem;
-  --text-xl: 1.25rem;
-  --leading-xl: 1.75rem;
-  --text-2xl: 1.5rem;
-  --leading-2xl: 2rem;
-  --text-3xl: 1.875rem;
-  --leading-3xl: 2.25rem;
-
-  --weight-normal: 400;
-  --weight-medium: 500;
-  --weight-semibold: 600;
-  --weight-bold: 700;
-
-  /* The spacing scale, in 4px steps (and the half steps the admin uses). */
-  --space-px: 1px;
-  --space-0-5: 0.125rem;
-  --space-1: 0.25rem;
-  --space-1-5: 0.375rem;
-  --space-2: 0.5rem;
-  --space-2-5: 0.625rem;
-  --space-3: 0.75rem;
-  --space-3-5: 0.875rem;
-  --space-4: 1rem;
-  --space-5: 1.25rem;
-  --space-6: 1.5rem;
-  --space-8: 2rem;
-  --space-10: 2.5rem;
-  --space-12: 3rem;
-  --space-16: 4rem;
-
   /* Fizzy's ink until branding sets a secondary color: cool grays, tinted a
      little more as they darken. The branding's secondary color sets the hue
      and how strongly (capped, so text stays text). */
@@ -138,32 +92,11 @@
   --yellow-800: oklch(47.6% 0.114 61.907);
   --yellow-900: oklch(42.1% 0.095 57.708);
 
-  /* Fizzy's corners, 3px, until branding sets its own. */
-  --radius-xs: 2px;
-  --radius-sm: 3px;
-  --radius-md: 3px;
-  --radius-lg: 3px;
-  --radius-xl: 3px;
-  --radius-2xl: 4px;
-  --radius-full: 9999px;
-
   --page-dark: oklch(from var(--neutral-tint) 19.5% min(calc(c * 0.25), 0.03) h);
   --surface-dark: oklch(from var(--neutral-tint) 16% min(calc(c * 0.25), 0.03) h);
 
-  /* Flat panels and a soft lift for what floats, until branding sets a
-     shadow. */
-  --shadow-surface: 0 0 #0000;
-  --shadow-overlay: 0 0 0 1px oklch(0% 0 0 / 4%), 0 2px 4px oklch(0% 0 0 / 4%), 0 12px 32px -8px oklch(0% 0 0 / 12%);
-
-  --focus-ring: 2px solid var(--accent-500);
-
-  /* Z-index */
-  --z-popup: 10;
-  --z-nav: 20;
-  --z-flash: 30;
-  --z-tooltip: 40;
-  --z-bar: 50;
-  --z-nav-open: 100;
+  /* Flat cards until branding sets a shadow; rune's popover shadow until then too. */
+  --shadow-card: 0 0 #0000;
 }
 
 /* Light chosen by the theme toggle: the browser's own controls (checkboxes,
@@ -174,13 +107,13 @@ html[data-theme="light"] {
 }
 
 /* Dark: surfaces go dark and the steps turn over, so gray-900 text is light,
-   gray-50 lifts the sidebar off the canvas, and an accent fill lightens with
-   dark words on it. Grays stay mixed from --neutral-tint and the accent from
-   --brand-*, so both follow branding. The admin's top bar takes them in
-   light mode too when Settings › Branding says so (.admin-bar--dark). Chosen
+   an accent fill lightens with dark words on it. Grays stay mixed from
+   --neutral-tint and the accent from --brand-*, so both follow branding. The
+   sidebar takes them in light mode too when Settings › Branding says so
+   (.sidebar--dark). Chosen
    by the toggle (data-theme) or, without a choice, by the system. */
 html[data-theme="dark"],
-.admin-bar--dark {
+.sidebar--dark {
   color-scheme: dark;
   --surface: var(--surface-dark);
   --gray-50: oklch(from var(--neutral-tint) 19.5% min(calc(c * 0.25), 0.03) h);

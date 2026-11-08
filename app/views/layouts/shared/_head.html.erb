@@ -12,7 +12,7 @@
   <% turbo_refreshes_with method: :morph, scroll: :preserve %>
 
   <%= render "layouts/theme_preference" %>
-  <%= render "layouts/menu_preference" %>
+  <%= sidebar_preload_tag("admin-menu") %>
   <%= app_stylesheet_tags %>
   <%= branding_stylesheet_tags %>
   <%= javascript_importmap_tags %>

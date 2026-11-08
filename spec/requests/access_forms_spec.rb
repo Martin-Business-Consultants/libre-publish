@@ -11,11 +11,11 @@ RSpec.describe "User and role forms", type: :request do
 
   it "lays out a user's new and edit pages with the role and saving to the side" do
     get new_user_path
-    expect(response.body).to include('class="record-form ', "Add user", "Email is verified")
+    expect(response.body).to include('class="with-aside"', "Add user", "Email is verified")
 
     other = create(:user, name: "Sam")
     get edit_user_path(other)
-    expect(response.body).to include('class="record-form ', "Save changes", "They can no longer sign in to this workspace.")
+    expect(response.body).to include('class="with-aside"', "Save changes", "They can no longer sign in to this workspace.")
 
     patch user_path(other), params: {user: {name: "Samantha", email: other.email, role_id: other.role_id, password: "", password_confirmation: ""}}
     expect(other.reload.name).to eq("Samantha")
@@ -23,11 +23,11 @@ RSpec.describe "User and role forms", type: :request do
 
   it "lays out a role's new and edit pages, locking a system role" do
     get new_role_path
-    expect(response.body).to include('class="record-form ', "Add role", "Permissions")
+    expect(response.body).to include('class="with-aside"', "Add role", "Permissions")
 
     role = create(:role, name: "Writer", permissions: %w[pages:read])
     get edit_role_path(role)
-    expect(response.body).to include('class="record-form ', "Save changes", "Users holding it are left with no role.")
+    expect(response.body).to include('class="with-aside"', "Save changes", "Users holding it are left with no role.")
 
     system = Role.find_by(system: true) || create(:role, system: true)
     get edit_role_path(system)

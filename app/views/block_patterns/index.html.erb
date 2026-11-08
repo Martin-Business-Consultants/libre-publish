@@ -9,8 +9,8 @@
       description: "Sets of blocks to use again. Add one to a page from the block picker’s Patterns section." %>
 
 <% if @patterns.any? %>
-  <section class="panel panel--scroll">
-    <table class="data-table">
+  <section class="table-wrap">
+    <table class="table data-table">
       <thead>
         <tr>
           <th>Name</th>
@@ -24,21 +24,21 @@
           <%# herb:key pattern.id %>
           <tr>
             <td>
-              <%= link_to pattern.name, edit_block_pattern_path(pattern), class: "title-link" %>
+              <%= link_to pattern.name, edit_block_pattern_path(pattern), class: "row-link" %>
               <% if pattern.description.present? %>
-                <div class="text-small text-muted"><%= pattern.description %></div>
+                <div class="small muted"><%= pattern.description %></div>
               <% end %>
             </td>
             <td><%= Array(pattern.blocks).size %></td>
             <td><%= status_tag pattern.synced? ? "Synced" : "Copied" %></td>
-            <td class="text-muted"><%= time_ago_tag pattern.updated_at %></td>
+            <td class="muted"><%= time_ago_tag pattern.updated_at %></td>
           </tr>
         <% end %>
       </tbody>
     </table>
   </section>
 <% else %>
-  <div class="panel empty-state">
+  <div class="empty">
     No patterns yet. A pattern is a set of blocks — a call to action, a pricing table, a team section — saved to add
     to any page.
   </div>

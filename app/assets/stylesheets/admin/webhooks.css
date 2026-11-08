@@ -1,0 +1,30 @@
+/* Webhooks (webhooks/index, _sheet, show): the sheet a webhook opens in,
+   wider than rune's, a receiver's URL held to a column, and the events to
+   send, grouped in hairline boxes. On rune's tokens. */
+
+.webhook-sheet { width: max(50vw, min(36rem, 100vw)); }
+
+.webhooks__url {
+  display: block;
+  max-width: 20rem;
+}
+
+.webhook-url { overflow-wrap: anywhere; }
+
+.webhook-events__legend { padding-bottom: 6px; }
+
+.webhook-events__group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: var(--s-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.webhook-events__group-name {
+  padding: 0 var(--s-1);
+  color: var(--text-muted);
+  font-size: var(--text-meta);
+  font-weight: var(--weight-strong);
+}

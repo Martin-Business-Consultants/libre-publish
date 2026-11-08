@@ -1,37 +1,37 @@
 <%# locals: (entries:, kind:, from: nil) %>
 <%# The plugin directory's plugins (or themes): each pinned to a reviewed
     release, and installed at exactly that commit (PluginDirectory). %>
-<section class="panel panel--padded stack stack--md">
-  <div class="stack stack--xs">
-    <h2 class="heading">From the directory</h2>
-    <p class="text-muted">
+<section class="card">
+  <div class="card__head">
+    <h2 class="card__title">From the directory</h2>
+    <p class="card__hint">
       <%= kind.capitalize.pluralize %> Libre Publish has reviewed. Each installs at the release that was checked, from a
       signed list, so what you get is what was reviewed.
       <% if PluginDirectory.checked_at %>Checked <%= time_ago_tag PluginDirectory.checked_at %>.<% end %>
     </p>
   </div>
   <% if entries.any? %>
-    <ul class="item-list">
+    <ul class="settings-items">
       <% entries.each do |entry| %>
         <%# herb:key entry.key %>
-        <li class="item">
-          <div class="item__row">
-            <div class="item__text">
-              <span class="item__name">
+        <li class="settings-item">
+          <div class="settings-item__row">
+            <div class="settings-item__text">
+              <span class="settings-item__name">
                 <%= entry.name %>
-                <span class="item__meta"><%= entry.version %><% if entry.author.present? %> · <%= entry.author %><% end %></span>
+                <span class="settings-item__meta"><%= entry.version %><% if entry.author.present? %> · <%= entry.author %><% end %></span>
               </span>
-              <span class="item__description"><%= entry.description %></span>
+              <span class="settings-item__description"><%= entry.description %></span>
               <% unless entry.compatible? %>
-                <span class="field-error">Needs CMS <%= entry.requires %>; this is <%= cms_version %>.</span>
+                <span class="field__error">Needs CMS <%= entry.requires %>; this is <%= cms_version %>.</span>
               <% end %>
             </div>
-            <div class="item__actions">
+            <div class="settings-item__actions">
               <%= status_tag "Verified", highlight: true %>
               <% if entry.installed? %>
-                <span class="text-muted">Installed</span>
+                <span class="muted">Installed</span>
               <% elsif entry.compatible? %>
-                <%= button_to "Install", settings_plugins_installations_path(from: from), params: { repo: entry.repo }, class: "btn btn--sm" %>
+                <%= button_to "Install", settings_plugins_installations_path(from: from), params: { repo: entry.repo }, class: "btn btn--secondary btn--sm" %>
               <% end %>
             </div>
           </div>
@@ -39,6 +39,6 @@
       <% end %>
     </ul>
   <% else %>
-    <p class="text-muted">The directory hasn’t been fetched yet; it is now, and shows here in a moment.</p>
+    <p class="muted">The directory hasn’t been fetched yet; it is now, and shows here in a moment.</p>
   <% end %>
 </section>

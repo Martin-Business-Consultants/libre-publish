@@ -5,10 +5,13 @@ module ApplicationHelper
     tag.title [(tx(@page_title) if @page_title), current_branding[:site_title].presence || "CMS"].compact.join(" | ")
   end
 
-  # Herb compiles stylesheet_link_tag into a single <link>, which skips
-  # Propshaft's :app expansion, so the layout calls this instead. The app's
-  # stylesheets are the admin's own CSS (STYLE.md); _global.css, first by
-  # name, sets the order of their layers.
+  # The admin is drawn with rune_ui (vendor/rune_ui, STYLE.md): its
+  # stylesheets first, all in the `rune` cascade layer, then the app's own,
+  # unlayered so they win: the palette and branding contract (_global.css),
+  # the bridge that points rune's tokens at it (_rune-theme.css) and each
+  # area's screens (admin/*.css). Herb compiles stylesheet_link_tag into a
+  # single <link>, which skips Propshaft's :app expansion, so the layout calls
+  # this instead.
   #
   # A plugin's stylesheets load only where it shows something
   # (page_plugins), each in its own tag, which Turbo adds and drops as pages
@@ -19,6 +22,7 @@ module ApplicationHelper
   # styles.
   def app_stylesheet_tags
     safe_join([
+      rune_ui_stylesheet_tags(lexxy: false),
       stylesheet_link_tag(:app, "data-turbo-track": "reload"),
       *Cms::Plugins.enabled_stylesheets(page_plugins).filter_map { plugin_stylesheet_tag(it) }
     ], "\n")
@@ -54,8 +58,12 @@ module ApplicationHelper
   # The core's version, for Settings and the footer of the Settings index.
   def cms_version = Cms::VERSION
 
+  # An icon from the admin's set (config/initializers/rune_ui.rb), as rune's
+  # inline SVG: 1rem, or icon--xs|sm|md|lg|xl (shell.css). Kept beside rune's
+  # icon() because plugins and the menu's data name icons as strings; a name
+  # the set doesn't have draws as a dot.
   def icon_tag(name, **options)
-    tag.span class: class_names("icon icon--#{name}", options.delete(:class)), "aria-hidden": true, **options
+    icon(RuneUi.icons.key?(name.to_s.to_sym) ? name : "dot", css: options[:class])
   end
 
   STATUS_TONES = {
@@ -70,16 +78,16 @@ module ApplicationHelper
     STATUS_TONES.fetch(label.to_s.downcase) { highlight ? "progress" : "neutral" }
   end
 
-  # The badge for each tone (badges.css): green for what's live or done, red
-  # for what failed, yellow for what waits, the accent for what's under way.
-  STATUS_BADGES = {"positive" => "badge badge--success", "negative" => "badge badge--danger", "waiting" => "badge badge--warning",
-                   "progress" => "badge badge--info", "neutral" => "badge"}.freeze
+  # rune's badge tone for each (RuneUi.badge_tones reads the same words,
+  # config/initializers/rune_ui.rb): green for what's live or done, red for
+  # what failed, amber for what waits, the accent for what's under way.
+  BADGE_TONES = {"positive" => :ok, "negative" => :danger, "waiting" => :attention, "progress" => :accent, "neutral" => :neutral}.freeze
 
-  # A status label as a small chip tinted by what it means (data-tone names
+  # A status label as rune's badge, tinted by what it means (data-tone names
   # the meaning).
   def status_tag(label, highlight: false)
     tone = status_tone(label, highlight: highlight)
-    tag.span label, class: STATUS_BADGES.fetch(tone), data: {tone: tone}
+    badge(label.to_s, label.to_s, tone: BADGE_TONES.fetch(tone), data: {tone: tone})
   end
 
   # The site's color and font (Settings › Branding) on top of the app's
@@ -122,7 +130,7 @@ module ApplicationHelper
   # shows as text.
   def external_link(url, text = url, link_class: nil)
     if external_url?(url)
-      link_to text, url.to_s, class: link_class || "link", target: "_blank", rel: "noopener"
+      link_to text, url.to_s, class: link_class, target: "_blank", rel: "noopener"
     else
       text.to_s
     end
@@ -152,10 +160,9 @@ module ApplicationHelper
       safe_join([
         form.password_field(method, value: form.object.try(method), autocomplete: "off",
           spellcheck: false, placeholder: placeholder, data: {reveal_target: "input", "1p-ignore": true}, **options),
-        tag.button(type: "button", class: "btn btn--plain btn--icon", title: "Show", aria: {pressed: false},
+        tag.button(type: "button", class: "icon-button", title: "Show", aria: {pressed: false, label: "Show or hide"},
           data: {reveal_target: "button", action: "reveal#toggle"}) do
-          safe_join([icon_tag("eye", class: "secret-field__show icon--sm"), icon_tag("eye-off", class: "secret-field__hide icon--sm"),
-            tag.span("Show or hide", class: "visually-hidden")])
+          safe_join([icon_tag("eye", class: "secret-field__show"), icon_tag("eye-off", class: "secret-field__hide")])
         end
       ])
     end

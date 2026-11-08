@@ -4,7 +4,7 @@ module FileManagerHelper
   # A preview for the file manager: a resized image when the image can be
   # resized here, the original when it can't (SVG, or no libvips), and a
   # paperclip for anything that isn't an image. The image is bare; the square
-  # around it (.media-thumb, file-manager.css) fits it.
+  # around it (.media-thumb, admin/media.css) fits it.
   def asset_thumbnail(asset, size:)
     if asset.image?
       source = asset.variantable? && ApplicationHelper.variants_supported? ? asset.thumb_url(size) : asset.url

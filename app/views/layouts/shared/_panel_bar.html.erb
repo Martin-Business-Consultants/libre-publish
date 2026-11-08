@@ -1,0 +1,24 @@
+<%# locals: () %>
+<%# The panel bar's content after the sidebar's toggle: the trail of crumbs
+    (page_header sets it, from parent_page), then the page's tools at the
+    right: plugins' items (the :nav_actions slot), the "/" filter, Screen
+    options (where the page has a table's columns to choose) and "+ New". %>
+<% new_items = admin_new_items %>
+<nav class="crumbs" aria-label="<%= tx("You are here") %>">
+  <%= content_for?(:crumbs) ? content_for(:crumbs) : tag.span(page_title_text, class: "crumbs__current") %>
+</nav>
+<div class="panel-bar__context">
+  <%= plugin_slots(:nav_actions) %>
+  <% unless content_for?(:list_search) %>
+    <%= render "layouts/shared/nav_filter" %>
+  <% end %>
+  <%= render "layouts/shared/screen_options" %>
+  <% if new_items.any? %>
+    <%= menu safe_join([icon_tag("add"), tag.span(tx("New"))], " "), trigger_class: button_classes(size: :sm) do %>
+      <% new_items.each do |label, url| %>
+        <%# herb:key label %>
+        <%= menu_link tx(label), url %>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

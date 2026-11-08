@@ -8,15 +8,15 @@
 
 <%= form_with url: settings_mail_delivery_path, id: "mail_delivery_form", method: :patch, scope: :mail_delivery do |form| %>
   <%= tag.fieldset class: "stack stack--lg", disabled: !can_write do %>
-    <section class="panel panel--padded fields">
-      <div class="stack stack--xs">
-        <h2 class="heading">SMTP server</h2>
-        <p class="text-muted">The server every email from the site goes through: form notifications and confirmations, password resets, collection notifications. Leave the host empty to use this install’s own. Who email comes from is set in Settings › Forms.</p>
+    <section class="card">
+      <div class="card__head">
+        <h2 class="card__title">SMTP server</h2>
+        <p class="card__hint">The server every email from the site goes through: form notifications and confirmations, password resets, collection notifications. Leave the host empty to use this install’s own. Who email comes from is set in Settings › Forms.</p>
       </div>
-      <div class="grid grid--3 fields-grid">
-        <div class="span-2">
+      <div class="field-row">
+        <div class="settings-span-2">
           <%= settings_field "Host" do %>
-            <%= form.text_field :address, value: @settings["address"], class: "text-mono", placeholder: "smtp.example.com", autocomplete: "off" %>
+            <%= form.text_field :address, value: @settings["address"], class: "mono", placeholder: "smtp.example.com", autocomplete: "off" %>
           <% end %>
         </div>
         <%= settings_field "Port", hint: "Blank uses the usual port for the encryption." do %>
@@ -26,7 +26,7 @@
       <%= settings_field "Encryption" do %>
         <%= form.select :security, MailDelivery::SECURITY.invert.to_a, { selected: @settings["security"] } %>
       <% end %>
-      <div class="grid grid--3 fields-grid">
+      <div class="field-row">
         <%= settings_field "Username" do %>
           <%= form.text_field :user_name, value: @settings["user_name"], autocomplete: "off", data: { "1p-ignore": true } %>
         <% end %>
@@ -43,11 +43,11 @@
 <% end %>
 
 <% if can_write %>
-  <section class="panel panel--padded cluster cluster--between cluster--md">
-    <div class="stack stack--xs">
-      <h2 class="heading">Send a test email</h2>
-      <p class="text-muted">To <%= Current.user.email %>, through the server saved above. Save your changes first.</p>
+  <section class="card">
+    <div class="card__head">
+      <h2 class="card__title">Send a test email</h2>
+      <p class="card__hint">To <%= Current.user.email %>, through the server saved above. Save your changes first.</p>
     </div>
-    <%= button_to "Send test email", settings_mail_delivery_test_path, class: "btn" %>
+    <%= button_to "Send test email", settings_mail_delivery_test_path, class: "btn btn--secondary" %>
   </section>
 <% end %>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_13_040000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_07_120000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -183,6 +183,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_13_040000) do
     t.string "name", null: false
     t.text "notification_emails"
     t.json "notification_events", default: [], null: false
+    t.boolean "routable", default: true, null: false
     t.json "schema", default: {}, null: false
     t.string "slug", null: false
     t.integer "tags_collection_id"

@@ -13,12 +13,12 @@
         message: "They can no longer sign in. Your own account is never included." %>
 <% end %>
 
-<section class="panel panel--scroll" data-controller="select-all">
-  <table class="data-table">
+<section class="table-wrap" data-controller="select-all">
+  <table class="table data-table">
     <thead>
       <tr>
         <% if can_delete %>
-          <th class="data-table__check text-center"><input type="checkbox" aria-label="Select every row" data-select-all-target="all" data-action="select-all#toggle"></th>
+          <th class="data-table__check"><input type="checkbox" aria-label="Select every row" data-select-all-target="all" data-action="select-all#toggle"></th>
         <% end %>
         <th>Name</th>
         <th>Email</th>
@@ -33,23 +33,23 @@
         <% yourself = user == Current.user %>
         <tr id="<%= dom_id(user) %>" data-filter-target="item">
           <% if can_delete %>
-            <td class="data-table__check text-center">
+            <td class="data-table__check">
               <% unless yourself %>
                 <input type="checkbox" data-select-all-target="box" data-action="select-all#sync" name="ids[]" value="<%= user.id %>" form="users_bulk_deletion" aria-label="Select <%= user.email %>">
               <% end %>
             </td>
           <% end %>
           <td>
-            <%= link_to user.name, edit_user_path(user), class: "title-link" %>
+            <%= link_to user.name, edit_user_path(user), class: "row-link" %>
             <% if yourself %>
-              <span class="text-small text-muted">(you)</span>
+              <span class="small muted">(you)</span>
             <% end %>
             <%= render "layouts/shared/row_links", name: user.name,
                   edit_path: (edit_user_path(user) if Current.user.can?("users:write")),
                   delete_path: (user_path(user) if can_delete && !yourself),
                   delete_message: "They can no longer sign in to this workspace." %>
           </td>
-          <td><span class="text-muted"><%= user.email %></span></td>
+          <td><span class="muted"><%= user.email %></span></td>
           <td><%= user.role&.name || "No role" %></td>
           <td><%= user.verified ? "Yes" : "No" %></td>
           <td><%= user.totp_enabled ? "On" : "Off" %></td>

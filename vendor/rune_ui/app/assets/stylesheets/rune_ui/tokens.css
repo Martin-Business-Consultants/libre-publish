@@ -1,0 +1,87 @@
+/* rune_ui: plain CSS, light and dark.
+ *
+ * Every rule is in a layer of `rune`, declared here in order, so an app's own (unlayered) CSS
+ * always wins, whatever its specificity. To restyle, set tokens on :root (an app can point the
+ * colours at its own palette, as Runwell does with its OKLCH theme tokens).
+ *
+ * Sizes are rem, so the root's size (calc(1rem * --text-scale)) scales the whole UI. Corners go
+ * through --radius-scale; controls share --radius-control; pills are --radius-pill.
+ *
+ * Rules the sheets keep:
+ * - Containers space their children with gap, never sibling margins (`> * + *`): ERB
+ *   tooling can wrap output in <span style="display: contents">, which gap sees through.
+ * - Two control heights: --control-h (page and form actions, inputs) and --control-h-sm
+ *   (inside cards, rows and bars; icon buttons).
+ * - No coloured edge stripes: states show as tints, weight, dots and badges. */
+
+@layer rune.tokens, rune.base, rune.components, rune.utilities;
+
+@layer rune.tokens {
+  :root {
+    /* Each colour is light-dark(light, dark): the device's setting picks one, and data-theme
+       on <html> (theme_data) overrides it through color-scheme. */
+    color-scheme: light dark;
+
+    --page: light-dark(#ededed, #0a0a0a);
+    --panel: light-dark(#ffffff, #161616);
+    --layer-1: light-dark(#f7f7f7, #1b1b1b);
+    --layer-2: light-dark(#f0f0f0, #232323);
+    --layer-3: light-dark(#e6e6e6, #2d2d2d);
+    --text: light-dark(#161616, #ededed);
+    --text-muted: light-dark(#646464, #a0a0a0);
+    --text-faint: light-dark(#8f8f8f, #6e6e6e);
+    --line: light-dark(rgb(0 0 0 / .08), rgb(255 255 255 / .08));
+    --line-strong: light-dark(rgb(0 0 0 / .15), rgb(255 255 255 / .15));
+    --hover: light-dark(rgb(0 0 0 / .045), rgb(255 255 255 / .05));
+    --accent: light-dark(#3b6cf6, #5b84ff);
+    --accent-hover: light-dark(#2f5de0, #7a9bff);
+    --accent-ink: light-dark(#ffffff, #0a0f1f);
+    --accent-soft: color-mix(in srgb, var(--accent) 9%, var(--panel));
+    --attention: light-dark(#c98d0a, #f2c14e);
+    --danger: light-dark(#d23f3f, #f06a6a);
+    --ok: light-dark(#1f8a57, #4cc38a);
+    --shadow-popover: light-dark(0 10px 30px rgb(0 0 0 / .14), 0 12px 32px rgb(0 0 0 / .6)), 0 0 0 1px var(--line);
+    --ring: 0 0 0 3px color-mix(in srgb, var(--accent) 28%, transparent);
+
+    --s-1: .25rem;
+    --s-2: .5rem;
+    --s-3: .75rem;
+    --s-4: 1rem;
+    --s-5: 1.5rem;
+    --s-6: 2rem;
+
+    --radius-scale: 1;
+    --radius-xs: calc(4px * var(--radius-scale));
+    --radius-sm: calc(6px * var(--radius-scale));
+    --radius: calc(8px * var(--radius-scale));
+    --radius-lg: calc(10px * var(--radius-scale));
+    --radius-panel: calc(12px * var(--radius-scale));
+    --radius-control: var(--radius-sm);
+    --radius-pill: 999px;
+    --ease: cubic-bezier(.2, .8, .2, 1);
+
+    --control-h: 2rem;
+    --control-h-sm: 1.75rem;
+    --row-h: 2.5rem;
+    --icon-size: 1rem;
+    --sidebar-width: 16.5rem;
+    --main-width: 1080px;
+    --breakpoint-narrow: 860px; /* for reference: media queries can't read it */
+
+    --font-sans: "Inter", "InterVariable", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    --text-scale: 1;
+    --text-xs: .6875rem;   /* 11px: badges, counts */
+    --text-meta: .75rem;  /* 12px: hints, meta */
+    --text-ui: .8125rem;   /* 13px: the UI */
+    --text-read: .875rem;  /* 14px: reading (chat, prose) */
+    --text-title: 1.25rem; /* 20px: h1 */
+    --leading: 1.25rem;
+    --leading-tight: 1rem;
+    --weight: 440;
+    --weight-strong: 530;
+  }
+
+  :root[data-theme="light"] { color-scheme: light; }
+  :root[data-theme="dark"] { color-scheme: dark; }
+}

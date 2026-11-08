@@ -13,12 +13,12 @@
         message: "Users holding them are left with no role. System roles are never included." %>
 <% end %>
 
-<section class="panel panel--scroll" data-controller="select-all">
-  <table class="data-table">
+<section class="table-wrap" data-controller="select-all">
+  <table class="table data-table">
     <thead>
       <tr>
         <% if can_delete %>
-          <th class="data-table__check text-center"><input type="checkbox" aria-label="Select every row" data-select-all-target="all" data-action="select-all#toggle"></th>
+          <th class="data-table__check"><input type="checkbox" aria-label="Select every row" data-select-all-target="all" data-action="select-all#toggle"></th>
         <% end %>
         <th>Name</th>
         <th>Description</th>
@@ -31,7 +31,7 @@
         <%# herb:key role.id %>
         <tr id="<%= dom_id(role) %>" data-filter-target="item">
           <% if can_delete %>
-            <td class="data-table__check text-center">
+            <td class="data-table__check">
               <% unless role.system? %>
                 <input type="checkbox" data-select-all-target="box" data-action="select-all#sync" name="ids[]" value="<%= role.id %>" form="roles_bulk_deletion" aria-label="Select <%= role.name %>">
               <% end %>
@@ -39,7 +39,7 @@
           <% end %>
           <td>
             <span class="row">
-              <%= link_to role.name, edit_role_path(role), class: "title-link" %>
+              <%= link_to role.name, edit_role_path(role), class: "row-link" %>
               <% if role.system? %>
                 <%= status_tag "System" %>
               <% end %>
@@ -49,7 +49,7 @@
                   delete_path: (role_path(role) if can_delete && !role.system?),
                   delete_message: "Users holding it are left with no role." %>
           </td>
-          <td><span class="text-muted"><%= role.description %></span></td>
+          <td><span class="muted"><%= role.description %></span></td>
           <td class="data-table__num"><%= role.admin? ? "All" : role.permissions.size %></td>
           <td class="data-table__num"><%= role.users.size %></td>
         </tr>

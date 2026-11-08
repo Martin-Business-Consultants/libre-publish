@@ -1,0 +1,132 @@
+/* The admin's additions to rune_ui's vocabulary: the few layout and text
+   pieces its screens need that rune doesn't have, on rune's tokens (STYLE.md
+   lists them). Unlayered, so they win over rune's own rules. Reach for
+   rune's first (stack, grid-2, catalog, button-row, dot-list, dl.details,
+   muted, faint, small, nowrap, visually-hidden). */
+
+/* Lists are unmarked, as the admin's lists are rows, menus and choices;
+   a list of points says so (bullet-list, prose, an alert's body). */
+:where(ul, ol) {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+:where(.bullet-list, .prose ul, .prose ol, ul.alert__body) {
+  padding-left: 1.4em;
+  list-style: revert;
+}
+
+/* Stacks closer together or further apart than rune's 16px. */
+.stack--xs { gap: var(--s-1); }
+.stack--sm { gap: var(--s-2); }
+.stack--md { gap: var(--s-3); }
+.stack--lg { gap: var(--s-5); }
+
+/* A line of things that doesn't wrap, 8px apart, centred; __between pushes
+   its ends apart. (A line that wraps is rune's button-row.) */
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-width: 0;
+}
+
+.row--between { justify-content: space-between; }
+.row--top { align-items: flex-start; }
+
+/* Takes the room left in a row. */
+.grow {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* A screen's main column and a sidebar of boxes beside it, as the editors
+   and edit screens lay out (WordPress's): the sidebar under it on a narrow
+   screen. */
+.with-aside {
+  display: grid;
+  gap: var(--s-5);
+  grid-template-columns: minmax(0, 1fr) 19rem;
+  align-items: start;
+}
+
+.with-aside__main,
+.with-aside__aside {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  min-width: 0;
+}
+
+@media (max-width: 1100px) {
+  .with-aside { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Text that reads best in a column, not across a wide screen. */
+.measure { max-width: 44rem; }
+
+/* Text, adjusted inside a component that doesn't decide it. */
+.mono { font-family: var(--font-mono); font-size: var(--text-meta); }
+.strong { font-weight: var(--weight-strong); }
+.tabular { font-variant-numeric: tabular-nums; }
+
+.truncate {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A block of code, a secret or a command to copy: wrapped wherever it breaks. */
+.code-block {
+  margin: 0;
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--layer-1);
+  font-family: var(--font-mono);
+  font-size: var(--text-meta);
+  line-height: 1.125rem;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* Icons at other sizes than rune's 1rem (and its icon--sm, 14px). */
+.icon--xs { width: .75rem; height: .75rem; }
+.icon--md { width: 1.25rem; height: 1.25rem; }
+.icon--lg { width: 1.5rem; height: 1.5rem; }
+.icon--xl { width: 2.5rem; height: 2.5rem; }
+
+/* A list of things one under another, ruled between. */
+.divided {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.divided > * {
+  padding: var(--s-2) 0;
+}
+
+.divided > * + * {
+  border-top: 1px solid var(--line);
+}
+
+/* A plain list with bullets, spaced with gap. */
+.bullet-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+}
+
+/* A delete or other dangerous action drawn as a link (a row's actions, the
+   Publish box's Move to Trash). */
+.link-button--danger { color: var(--danger); }
+.link-button--danger:hover { color: var(--danger); text-decoration: underline; }
+
+/* A turbo-frame or a wrapper that shouldn't make a box of its own. */
+.contents { display: contents; }

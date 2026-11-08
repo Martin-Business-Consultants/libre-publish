@@ -118,8 +118,10 @@ class Sitemap
     )
   end
 
+  # Entries of a collection without pages of its own (Collection#routable) have
+  # no URL to list.
   def build_entry_for_collection_entry(entry)
-    return nil unless entry.collection
+    return nil unless entry.collection&.routable?
 
     seo = entry.seo.is_a?(Hash) ? entry.seo : {}
     Entry.new(

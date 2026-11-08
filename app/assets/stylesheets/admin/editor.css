@@ -1,0 +1,757 @@
+/* The content editors (pages/_form, collection_entries/_form, globals/_form,
+   block_patterns/_form and content_form/*), on rune_ui's tokens: the boxes in
+   their main column, the Publish box, blocks and repeater items, the field
+   kinds rune has no control for, the pickers, the SEO and JSON tabs, the
+   preview with its image editor, the New page sheet, revisions compared,
+   and the lists of pages and entries. The two columns are base.css's
+   with-aside; folding boxes, the editor bar and the title are
+   components.css's. */
+
+/* A titled box in the main column that isn't a postbox (Blocks, Body): a
+   flush card, its title ruled off, its body padded, a status line at its
+   foot (.card__footer). */
+.editor__section-title {
+  padding: var(--s-3) var(--s-4);
+  border-bottom: 1px solid var(--line);
+}
+
+.editor__section-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding: var(--s-4);
+}
+
+.card--flush > .card__footer {
+  justify-content: flex-start;
+  color: var(--text-faint);
+  font-size: var(--text-meta);
+}
+
+/* An editor's Edit, SEO, JSON and Preview tabs: rune's tabs, which the tabs
+   controller marks with aria-selected. */
+.editor-tabs { overflow: auto hidden; flex-wrap: nowrap; }
+
+.tabs__tab[aria-selected="true"] {
+  border-bottom-color: var(--text);
+  color: var(--text);
+  font-weight: var(--weight-strong);
+}
+
+/* The Publish box (content_form/_publish_box): Save Draft, then a line each
+   for the status, the schedule and the revisions (an icon, the words, an
+   Edit that opens a field under them), then the actions on a tinted foot,
+   ruled off when lines come before it. */
+.publish-box__draft { padding: var(--s-4) var(--s-4) 0; }
+
+.publish-box__lines {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding: var(--s-4);
+}
+
+.publish-box__line {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-2);
+  color: var(--text-muted);
+}
+
+.publish-box__line strong { color: var(--text); }
+
+.publish-box__icon {
+  margin-top: 2px;
+  color: var(--text-faint);
+}
+
+.publish-box__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  margin-top: var(--s-2);
+}
+
+.publish-box__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+  padding: var(--s-3) var(--s-4);
+  background: var(--layer-1);
+}
+
+.publish-box__lines + .publish-box__actions { border-top: 1px solid var(--line); }
+
+/* How the API and the cms CLI name a record (content_form/_reference): a
+   tinted strip, the reference over its label, a copy button at its end. */
+.reference {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: 6px var(--s-1) 6px var(--s-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  background: var(--layer-1);
+}
+
+.reference__text {
+  display: flex;
+  flex: 1 1 0%;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* A block or repeater item (content_form/_block, _repeater_item): a box
+   whose header (the drag handle, the chevron, the title, the row's buttons)
+   opens onto its fields. Open, the header sits on a rule above the fields;
+   closed, the chevron points at the title. --invalid reddens its edge. */
+.content-item {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--panel);
+}
+
+.content-item--invalid { border-color: color-mix(in srgb, var(--danger) 45%, var(--line)); }
+
+.content-row__header {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: 6px 6px 6px var(--s-2);
+}
+
+.content-row[open] > .content-row__header { border-bottom: 1px solid var(--line); }
+
+.content-row__toggle {
+  color: var(--text-faint);
+  transition: transform .1s var(--ease);
+}
+
+.content-row:not([open]) > .content-row__header .content-row__toggle { transform: rotate(-90deg); }
+
+.content-row__title {
+  display: flex;
+  flex: 1 1 0%;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.content-row__name {
+  min-width: 0;
+  overflow: hidden;
+  font-weight: var(--weight-strong);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.content-row__summary {
+  overflow: hidden;
+  color: var(--text-faint);
+  font-size: var(--text-meta);
+  line-height: var(--leading-tight);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .content-row__category { display: none; }
+}
+
+.content-row__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  padding: var(--s-4);
+}
+
+/* sortable_list_controller marks the row being dragged. */
+.content-row--dragging { opacity: .5; }
+
+/* The grip a sortable row is dragged by. */
+.drag-handle {
+  padding: 0 var(--s-1);
+  color: var(--text-faint);
+  cursor: grab;
+  user-select: none;
+}
+
+/* A row's move, add, duplicate and remove buttons (content_form/_row_moves):
+   add and duplicate only where there's room, remove reddens on hover. */
+.row-moves {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+.row-moves__extra { display: flex; }
+
+@media (max-width: 640px) {
+  .row-moves__extra { display: none; }
+}
+
+.row-moves__down { transform: rotate(180deg); }
+
+.icon-button.row-moves__remove:hover {
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+  color: var(--danger);
+}
+
+/* A list of blocks: the rows, or "No blocks yet." on a tint. */
+.content-blocks__list,
+.content-list__items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.content-blocks__empty {
+  padding: var(--s-6) 0;
+  border-radius: var(--radius-lg);
+  background: var(--layer-1);
+  color: var(--text-faint);
+  text-align: center;
+}
+
+/* An entry in a list of references, shown by its title over its slug. */
+.content-list__ref {
+  display: flex;
+  flex: 1 1 0%;
+  flex-direction: column;
+  min-width: 0;
+  padding: 6px var(--s-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+}
+
+/* A group field's sub-fields, boxed under its name. */
+.content-group {
+  padding: var(--s-2) var(--s-4) var(--s-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+}
+
+.content-group__legend { padding: 0 var(--s-1); }
+
+/* A short or medium control in a field (a number, a date, a select), which
+   otherwise fills it. */
+.input--short { max-width: 20rem; }
+.input--medium { max-width: 28rem; }
+
+/* A link field shows the control for the kind it's set to. */
+.content-link__kind { width: auto; }
+
+.content-link__url,
+.content-link__page,
+.content-link__entry {
+  display: none;
+  flex: 1 1 16ch;
+}
+
+.content-link:has(.content-link__kind option[value="url"]:checked) .content-link__url,
+.content-link:has(.content-link__kind option[value="page"]:checked) .content-link__page,
+.content-link:has(.content-link__kind option[value="entry"]:checked) .content-link__entry { display: block; }
+
+/* An asset field: its thumbnail, hidden until there's a picture in it
+   (asset_field_controller fills it), beside its name and buttons. */
+.content-asset {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  padding: var(--s-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+}
+
+.content-asset__preview {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  overflow: hidden;
+  border-radius: var(--radius-control);
+  background: var(--layer-2);
+  color: var(--text-faint);
+}
+
+.content-asset__preview:not(:has(*)) { display: none; }
+
+.content-asset__preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.content-asset__info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  min-width: 0;
+}
+
+.content-asset__name {
+  overflow: hidden;
+  font-weight: var(--weight-strong);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The category and tags a record takes from its pools. */
+.content-taxonomy__legend { margin-bottom: var(--s-2); }
+
+.content-taxonomy__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2) var(--s-4);
+}
+
+/* The "Add block" picker: rune's large dialog, its groups of choices one
+   under another. */
+.content-picker .dialog__box { max-height: min(80dvh, 48rem); }
+
+.content-picker__groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.content-picker__deprecated > summary { color: var(--text-muted); }
+
+/* One choice in a picker (a block type, a pattern): a box with its name over
+   what it's for, shaded on hover. */
+.picker-option {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+  height: 100%;
+  padding: .625rem var(--s-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.picker-option:hover {
+  border-color: var(--line-strong);
+  background: var(--layer-1);
+}
+
+.picker-option__name {
+  display: flex;
+  gap: var(--s-2);
+  font-weight: var(--weight-strong);
+}
+
+/* A searchable picker (picker_controller): its results rune's menu under
+   the box, chosen with the arrow keys as well as the pointer. */
+.picker { position: relative; }
+
+.picker .picker__results {
+  top: 100%;
+  right: 0;
+  left: 0;
+  max-height: 18rem;
+}
+
+.picker__choice:focus-visible {
+  background: var(--layer-2);
+  box-shadow: none;
+}
+
+.content-picker__empty {
+  padding: 6px .625rem;
+  color: var(--text-faint);
+}
+
+/* A Markdown field's Write and Preview tabs (markdown_editor_controller),
+   its textarea and its rendered preview. */
+.markdown-editor__tab {
+  height: var(--control-h-sm);
+  padding: 0 .625rem;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: none;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: var(--text-meta);
+  font-weight: var(--weight-strong);
+  cursor: pointer;
+}
+
+.markdown-editor__tab:hover { color: var(--text); }
+
+.markdown-editor__tab[aria-selected="true"] {
+  background: var(--layer-2);
+  color: var(--text);
+}
+
+textarea.markdown-editor__input {
+  font-family: var(--font-mono);
+  font-size: var(--text-meta);
+  line-height: 1.625;
+}
+
+.markdown-editor__output {
+  min-height: 10rem;
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+}
+
+/* The SEO panel (content_form/_seo): its title and checks ruled off above
+   its groups of fields, which are ruled off from each other. A check that
+   found a problem shows in red. */
+.seo-panel { display: block; }
+
+.seo-panel__title,
+.seo-panel__checks {
+  padding: var(--s-3) var(--s-4);
+  border-bottom: 1px solid var(--line);
+}
+
+.seo-panel__checks {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+}
+
+.seo-panel__problem { color: var(--danger); }
+
+.seo-panel__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  padding: var(--s-4);
+}
+
+.seo-panel__group + .seo-panel__group { border-top: 1px solid var(--line); }
+
+/* The JSON tab (content_form/_api_json): the fetch examples spaced under
+   their summary, the response scrolling within the window's height. */
+.api-json__fetch { margin-top: var(--s-2); }
+
+.code-block.api-json__body {
+  max-height: 100vh;
+  padding: var(--s-3) var(--s-4);
+  overflow: auto;
+}
+
+/* The editor's Preview tab: the website, framed, the height of the window. */
+.website-preview__frame {
+  width: 100%;
+  height: calc(100dvh - 14rem);
+  min-height: 30rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--panel);
+}
+
+/* The preview's image editor (content_form/_image_editor): its tools beside
+   the stage, the aspect and turn chips, the save at their foot. */
+.image-editor[open] { width: min(72rem, calc(100vw - 2rem)); }
+
+.image-editor__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 15rem;
+  gap: var(--s-5);
+}
+
+@media (max-width: 768px) {
+  .image-editor__body { grid-template-columns: minmax(0, 1fr); }
+}
+
+.image-editor__stage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: min(65vh, 40rem);
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: repeating-conic-gradient(var(--layer-2) 0 25%, var(--panel) 0 50%) 0 0 / 16px 16px;
+  touch-action: none;
+  user-select: none;
+}
+
+.image-editor__canvas { display: block; }
+
+.image-editor__crop {
+  position: absolute;
+  border: 1px solid #fff;
+  outline: 1px solid rgb(0 0 0 / .3);
+  box-shadow: 0 0 0 9999px rgb(0 0 0 / .55);
+  cursor: move;
+}
+
+.image-editor__crop[hidden] { display: none; }
+
+.image-editor__handle {
+  position: absolute;
+  width: .875rem;
+  height: .875rem;
+  border: 1px solid rgb(0 0 0 / .4);
+  background: #fff;
+}
+
+.image-editor__handle[data-corner="nw"] { top: -.4375rem; left: -.4375rem; cursor: nwse-resize; }
+.image-editor__handle[data-corner="ne"] { top: -.4375rem; right: -.4375rem; cursor: nesw-resize; }
+.image-editor__handle[data-corner="sw"] { bottom: -.4375rem; left: -.4375rem; cursor: nesw-resize; }
+.image-editor__handle[data-corner="se"] { right: -.4375rem; bottom: -.4375rem; cursor: nwse-resize; }
+
+.image-editor__loading { position: absolute; }
+
+.image-editor__tools {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
+}
+
+.image-editor__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.image-editor__chip {
+  height: var(--control-h-sm);
+  padding: 0 .625rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-control);
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--text-meta);
+  font-weight: var(--weight-strong);
+  cursor: pointer;
+}
+
+.image-editor__chip:hover:not([aria-pressed="true"]) { background: var(--layer-1); }
+
+.image-editor__chip[aria-pressed="true"] {
+  border-color: var(--text);
+  background: var(--text);
+  color: var(--panel);
+}
+
+.image-editor__footer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  margin-top: auto;
+}
+
+/* The New page sheet's templates: each a radio and its words in a bordered
+   row that shades while hovered. Also the New collection sheet's, and the
+   Forms plugin's New form and webhook sheets. */
+.template-choice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-3);
+  padding: .625rem var(--s-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+}
+
+.template-choice:hover { background: var(--layer-1); }
+.template-choice:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+.template-choice > input { margin-top: 2px; }
+
+/* Content › Pages: a page sits under its parent, indented by its depth
+   (data-depth, 0 to 6) and marked with an arrow. */
+.page-tree__title { display: inline-block; }
+.page-tree__title[data-depth="1"] { padding-left: 1.25rem; }
+.page-tree__title[data-depth="2"] { padding-left: 2.5rem; }
+.page-tree__title[data-depth="3"] { padding-left: 3.75rem; }
+.page-tree__title[data-depth="4"] { padding-left: 5rem; }
+.page-tree__title[data-depth="5"] { padding-left: 6.25rem; }
+.page-tree__title[data-depth="6"] { padding-left: 7.5rem; }
+
+.page-tree__title:not([data-depth="0"])::before {
+  content: "↳ ";
+  color: var(--text-faint);
+}
+
+/* An entry's yes/no field switched from the list (collection_entries/_flag):
+   a small toggle, tinted with the accent while on. */
+.entry-flag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.5rem;
+  padding: 0 var(--s-2);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-control);
+  background: var(--panel);
+  color: var(--text-muted);
+  font: inherit;
+  font-size: var(--text-meta);
+  font-weight: var(--weight-strong);
+  cursor: pointer;
+}
+
+.entry-flag:hover { background: var(--layer-1); }
+
+.entry-flag[aria-pressed="true"] {
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* The asset picker (asset_pickers/show, _tiles, in media/slots/_picker's
+   sheet): a grid of square thumbnails, two to four across, each with its
+   name and size under it. .media-tile and .media-thumb stay on them as the
+   hooks media--asset-picker reads. */
+.asset-picker-sheet { width: min(48rem, 100vw); }
+
+.asset-picker__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  gap: var(--s-4) var(--s-3);
+}
+
+.asset-picker__item { min-width: 0; }
+
+.asset-picker__tile {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: none;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.asset-picker__thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--layer-1);
+  color: var(--text-faint);
+}
+
+.asset-picker__tile:hover .asset-picker__thumb { border-color: var(--line-strong); }
+
+.asset-picker__caption {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 0 2px;
+}
+
+.asset-picker__more {
+  grid-column: 1 / -1;
+  padding: var(--s-4) 0;
+  color: var(--text-faint);
+  text-align: center;
+}
+
+/* A revision compared with the content now (versions/_comparison): each
+   changed field under a rule, its before in red and its after in green
+   (data-tone), side by side from 40rem; a text's lines as a diff, each
+   tinted by its data-op; blocks as boxes tinted by what happened to them. */
+.version-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--line);
+}
+
+.version-restore {
+  flex-direction: row;
+  justify-content: flex-end;
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--line);
+}
+
+.diff-pair {
+  display: grid;
+  gap: var(--s-2);
+}
+
+@media (min-width: 640px) {
+  .diff-pair { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+pre.diff-value {
+  padding: var(--s-3);
+  border: 0;
+  border-radius: var(--radius-control);
+  background: var(--layer-1);
+  color: var(--text-muted);
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+.diff-value[data-tone="add"],
+.diff-lines__line[data-op="add"] {
+  background: color-mix(in srgb, var(--ok) 12%, var(--panel));
+  color: var(--text);
+}
+
+.diff-value[data-tone="del"],
+.diff-lines__line[data-op="del"] {
+  background: color-mix(in srgb, var(--danger) 11%, var(--panel));
+  color: var(--text);
+}
+
+.diff-lines {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  font-family: var(--font-mono);
+  font-size: var(--text-meta);
+  line-height: var(--leading-tight);
+}
+
+.diff-lines__line {
+  padding: 2px var(--s-3);
+  color: var(--text-muted);
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+.diff-lines__line[data-op="skip"] {
+  background: var(--layer-1);
+  color: var(--text-faint);
+}
+
+.diff-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding: var(--s-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--panel);
+}
+
+.diff-block[data-op="added"] {
+  border-color: color-mix(in srgb, var(--ok) 35%, var(--line));
+  background: color-mix(in srgb, var(--ok) 8%, var(--panel));
+}
+
+.diff-block[data-op="removed"] {
+  border-color: color-mix(in srgb, var(--danger) 35%, var(--line));
+  background: color-mix(in srgb, var(--danger) 7%, var(--panel));
+}

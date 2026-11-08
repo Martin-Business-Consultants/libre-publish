@@ -6,14 +6,14 @@
   <% if can_write %>
     <%= render "layouts/shared/new_link", text: "New block type", path: new_block_type_path %>
     <% if BlockType.none? %>
-      <%= button_to "Install the starter block types", block_types_seeding_path, class: "btn", form_class: "contents" %>
+      <%= button_to "Install the starter block types", block_types_seeding_path, class: "btn btn--secondary", form_class: "contents" %>
     <% end %>
   <% end %>
 <% end %>
 <%= render "layouts/shared/page_header", title: @page_title %>
 
 <% if @categories.many? %>
-  <div class="cluster">
+  <div class="button-row">
     <%= render "layouts/shared/quick_filter", title: "Category", param: :category, current: @category.to_s,
           options: [ [ "Every category", "" ] ] + @categories.map { [ it.humanize, it ] } %>
   </div>
@@ -24,8 +24,8 @@
         delete_message: "Pages using them keep their blocks, which stop validating until the type is back. This can’t be undone." %>
 <% end %>
 
-<section class="panel panel--scroll" data-controller="select-all">
-  <table class="data-table">
+<section class="table-wrap" data-controller="select-all">
+  <table class="table data-table">
     <thead>
       <tr>
         <% if can_delete %>
@@ -47,20 +47,20 @@
           <% end %>
           <td>
             <% if can_write %>
-              <%= link_to block_type.label, edit_block_type_path(block_type.slug), class: "title-link" %>
+              <%= link_to block_type.label, edit_block_type_path(block_type.slug), class: "row-link" %>
             <% else %>
-              <span class="text-medium text-ink"><%= block_type.label %></span>
+              <span class="strong"><%= block_type.label %></span>
             <% end %>
             <% if block_type.deprecated %>
-              <span class="badge">Deprecated</span>
+              <%= badge "Deprecated", tone: :neutral %>
             <% end %>
 <%= render "layouts/shared/row_links", name: block_type.label,
                 edit_path: (edit_block_type_path(block_type.slug) if can_write),
                 delete_path: (block_type_path(block_type.slug) if can_delete),
                 delete_message: "Pages using it keep their blocks, which stop validating. This can’t be undone." %>
           </td>
-          <td><span class="text-mono text-small text-muted"><%= block_type.slug %></span></td>
-          <td><span class="text-muted"><%= block_type.category.presence || "—" %></span></td>
+          <td><span class="mono small muted"><%= block_type.slug %></span></td>
+          <td><span class="muted"><%= block_type.category.presence || "—" %></span></td>
           <td class="data-table__num"><%= Array(block_type.fields).size %></td>
           <td><%= block_type.built_in ? "Built-in" : "Custom" %></td>
         </tr>

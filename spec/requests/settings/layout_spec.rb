@@ -2,20 +2,19 @@
 
 require "rails_helper"
 
-# Every Settings page: its title across the top, the page in two thirds, and
-# a sidebar with its Save box (when it has a form) and the sections.
+# Every Settings page: its title in the panel bar, the page in the main
+# column, and an aside with its Save box (when it has a form) and the sections.
 RSpec.describe "Settings layout", type: :request do
   let(:admin) { create(:user) }
 
   before { sign_in_as admin }
 
-  it "puts the title above the columns, and the Save box and sections in the sidebar" do
+  it "puts the title in the panel bar, and the Save box and sections in the aside" do
     get settings_general_path
 
     body = response.body
-    columns = body.index('class="settings-columns"')
-    expect(body.index('class="page-header"')).to be < columns
-    aside = body[%r{<aside class="settings-aside".*?</aside>}m]
+    expect(body[%r{<nav class="crumbs".*?</nav>}m]).to include("General")
+    aside = body[%r{<aside class="with-aside__aside settings-aside".*?</aside>}m]
     expect(aside).to include('form="settings_form"', "Save changes", 'aria-label="Settings sections"', 'aria-current="page"')
     expect(body).to include('id="settings_form"')
 

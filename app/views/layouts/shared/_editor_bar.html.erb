@@ -17,10 +17,9 @@
     <% if cli || actions %>
       <div class="editor-bar__actions">
         <% if cli %>
-          <span class="cluster cluster--xs text-small text-muted" title="<%= tx("From the CLI or MCP:") %>">
-            <code class="code"><%= cli %></code>
-            <button type="button" class="btn btn--plain btn--sm" title="<%= tx("Copy the command") %>" data-controller="copy-to-clipboard"
-                    data-copy-to-clipboard-content-value="<%= cli %>" data-copy-to-clipboard-success-class="btn--success" data-action="copy-to-clipboard#copy"><%= tx("Copy") %></button>
+          <span class="cli-hint" title="<%= tx("From the CLI or MCP:") %>">
+            <code><%= cli %></code>
+            <%= copy_button cli, label: tx("Copy") %>
           </span>
         <% end %>
         <%= content_for(:page_actions) %>

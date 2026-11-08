@@ -1,7 +1,7 @@
 <%# locals: (links: nil, buttons: nil, note: nil, name: nil, edit_path: nil, delete_path: nil, delete_name: nil, delete_message: nil, delete_label: nil) %>
 <%# A list table row's actions, under its title as WordPress shows them
     ("Edit | View | Delete"), revealed while the row is hovered or holds focus
-    (.row-actions, tables.css). links: [[label, url], …] after Edit (edit_path).
+    (.row-actions, components.css). links: [[label, url], …] after Edit (edit_path).
     buttons: [[label, url, title], …], actions that POST (Restore, Run), drawn
     as the same links. note: a line of text in place of an action that isn't
     available. delete_path: the record's delete, confirmed in a dialog. Pass
@@ -16,10 +16,10 @@
     <% end %>
     <% buttons.each do |label, url, title| %>
       <%# herb:key label %>
-      <%= button_to label, url, class: "row-actions__link", form_class: "contents", title: title %>
+      <%= button_to label, url, class: "row-actions__link", title: title %>
     <% end %>
     <% if note %>
-      <span class="text-faint"><%= note %></span>
+      <span class="faint"><%= note %></span>
     <% end %>
     <% if delete_path %>
       <%= render "layouts/shared/delete_dialog", name: delete_name || name || "this", path: delete_path, message: delete_message,

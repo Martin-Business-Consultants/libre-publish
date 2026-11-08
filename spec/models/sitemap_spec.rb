@@ -52,6 +52,14 @@ RSpec.describe Sitemap do
       expect(ce.priority).to eq(0.5)
     end
 
+    it "leaves out entries of a collection without pages of its own" do
+      coll = make_collection
+      coll.update!(routable: false)
+      entry = make_entry(coll, slug: "quote")
+
+      expect(described_class.new.all_entries.map(&:id)).not_to include(entry.id)
+    end
+
     it "honors seo overrides for canonical, priority, and changefreq" do
       make_page(slug: "promo", seo: {
         "canonical"            => "https://other.example.com/promo",

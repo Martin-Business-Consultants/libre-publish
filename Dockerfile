@@ -45,6 +45,8 @@ RUN apt-get update -qq && \
 
 # Install application gems
 COPY vendor/* ./vendor/
+# The admin's UI kit, a path gem the bundle installs from here.
+COPY vendor/rune_ui ./vendor/rune_ui
 COPY Gemfile Gemfile.lock ./
 # Plugins and the theme: the image's own, then those the secrets below name.
 COPY engines ./engines

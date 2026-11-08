@@ -2,13 +2,13 @@
 <%= parent_page "Docs", docs_path %>
 <%= render "layouts/shared/page_header", title: @guide.title %>
 
-<div class="with-sidebar">
-  <div>
-    <article class="panel panel--padded docs-article lexxy-content">
+<div class="with-aside">
+  <div class="with-aside__main">
+    <article class="card prose docs-article">
       <%= sanitize @guide.html(cms_url: request.base_url), tags: Markdown::TAGS, attributes: Markdown::ATTRIBUTES %>
     </article>
   </div>
-  <aside>
+  <aside class="with-aside__aside">
     <%= render "docs/nav", guides: @guides, current: @guide.slug %>
   </aside>
 </div>

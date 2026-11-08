@@ -2,28 +2,28 @@
     is mostly driven by the CLI, MCP and the site's build; this admin is for
     doing things by hand. %>
 <% uses = Frontend.recent_api_use %>
-<section class="panel dashboard__box">
-  <header class="row row--between row--base">
-    <h2 class="heading row"><%= icon_tag "ai", class: "icon--sm text-faint" %> Working through the API</h2>
-    <%= link_to "Developers", developers_path, class: "btn btn--sm" %>
-  </header>
+<section class="card">
+  <div class="card__header">
+    <h2 class="card__title dashboard__title"><%= icon_tag "ai", class: "icon--sm" %> Working through the API</h2>
+    <%= link_to "Developers", developers_path, class: "btn btn--secondary btn--sm" %>
+  </div>
   <% if uses.any? %>
     <ul class="divided">
       <% uses.each do |use| %>
         <%# herb:key use[:kind] + use[:name] %>
         <li class="dashboard__row">
-          <span class="row grow">
-            <span class="truncate text-medium text-ink"><%= use[:name] %></span>
-            <span class="text-small text-muted"><%= use[:kind] == "service" ? "service token" : "CLI, MCP or API" %></span>
+          <span class="dashboard__what">
+            <span class="truncate strong"><%= use[:name] %></span>
+            <span class="small muted"><%= use[:kind] == "service" ? "service token" : "CLI, MCP or API" %></span>
           </span>
-          <span class="nowrap text-small text-muted"><%= time_ago_tag use[:last_used_at] %></span>
+          <span class="nowrap small muted"><%= time_ago_tag use[:last_used_at] %></span>
         </li>
       <% end %>
     </ul>
   <% else %>
-    <p class="text-muted">No token has used the API this week.</p>
+    <p class="muted">No token has used the API this week.</p>
   <% end %>
-  <p class="help">
-    Drive this CMS from an agent: <code class="code">curl -fsSL <%= request.base_url %>/agent/install.sh | sh</code>, then <code class="code">cms connect</code> to use it from Claude, Codex or another AI app.
+  <p class="small faint">
+    Drive this CMS from an agent: <code>curl -fsSL <%= request.base_url %>/agent/install.sh | sh</code>, then <code>cms connect</code> to use it from Claude, Codex or another AI app.
   </p>
 </section>

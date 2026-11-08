@@ -8,12 +8,12 @@
 
 <%= form_with url: settings_media_path, id: "media_form", method: :patch, scope: :media do |form| %>
   <%= tag.fieldset class: "stack stack--lg", disabled: !can_write do %>
-    <section class="panel panel--padded fields">
-      <div class="stack stack--xs">
-        <h2 class="heading">Image limits</h2>
-        <p class="text-muted">How heavy an image on the website may be. Heavy images make pages slow, most of all on phones. A JPEG, PNG or WebP over either limit is made a lighter WebP within them; its original is kept, to restore from its details. GIFs and SVGs are left as they are.</p>
+    <section class="card">
+      <div class="card__head">
+        <h2 class="card__title">Image limits</h2>
+        <p class="card__hint">How heavy an image on the website may be. Heavy images make pages slow, most of all on phones. A JPEG, PNG or WebP over either limit is made a lighter WebP within them; its original is kept, to restore from its details. GIFs and SVGs are left as they are.</p>
       </div>
-      <div class="grid grid--2 fields-grid">
+      <div class="field-row">
         <%= settings_field "Largest file (KB)", hint: "#{ImageLimits::DEFAULT_MAX_KB} KB suits most sites; 1000 KB is 1 MB." do %>
           <%= form.number_field :max_kb, value: @limits["max_kb"], min: ImageLimits::KB_RANGE.min, max: ImageLimits::KB_RANGE.max, step: 50 %>
         <% end %>
@@ -27,10 +27,15 @@
   <% end %>
 <% end %>
 
-<section class="panel panel--padded cluster cluster--between cluster--md">
-  <div class="stack stack--xs">
-    <h2 class="heading">Images already in the library</h2>
-    <p class="text-muted">
+<section class="card">
+  <div class="card__head">
+    <div class="card__header">
+      <h2 class="card__title">Images already in the library</h2>
+      <% unless @over.zero? %>
+        <div class="button-row"><%= link_to "Open the Media Library", file_manager_path, class: "btn btn--secondary btn--sm" %></div>
+      <% end %>
+    </div>
+    <p class="card__hint">
       <% if @over.zero? then %>
         Every image is within the limits.
       <% else %>
@@ -38,5 +43,4 @@
       <% end %>
     </p>
   </div>
-  <%= link_to "Open the Media Library", file_manager_path, class: "btn" unless @over.zero? %>
 </section>

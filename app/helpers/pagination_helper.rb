@@ -61,7 +61,7 @@ module PaginationHelper
   def table_empty_row(message, columns:, link: nil)
     tag.tr do
       tag.td colspan: columns, class: "data-table__empty" do
-        safe_join([message, (link_to(link.first, link.last, class: "link") if link)].compact, " ")
+        safe_join([message, (link_to(link.first, link.last) if link)].compact, " ")
       end
     end
   end

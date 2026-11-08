@@ -20,7 +20,7 @@ Edit outside them; inside, your changes are replaced.
 
 | Package | What it gives the site |
 |---|---|
-| `@librepublish/astro` | The `cms()` integration; content loaders (`/loaders`); live loaders and `cacheHint` (`/live`); a typed client, `linkHref`, `routeParam` and the types (`/client`); forms — `getForm`/`getForms` and the form email helpers (`/forms`); quotes — `commerceEnabled` (`/commerce`); `<Blocks>`, `<Image>`, `<Seo>`, `<Form>`, `<QuoteRequest>` (`/components/*.astro`). Forms and Media, the CMS's default plugins, are part of it, and Commerce for a site that sells by quote. Source: github.com/Martin-Business-Consultants/libre-cms-astro. |
+| `@librepublish/astro` | The `cms()` integration; content loaders (`/loaders`); live loaders and `cacheHint` (`/live`); a typed client, `linkHref`, `routeParam` and the types (`/client`); forms — `getForm`/`getForms` and the form email helpers (`/forms`); quotes — `commerceEnabled` (`/commerce`); `<Blocks>`, `<Entry>`, `<Image>`, `<Seo>`, `<Form>`, `<QuoteRequest>` (`/components/*.astro`). Forms and Media, the CMS's default plugins, are part of it, and Commerce for a site that sells by quote. Source: github.com/Martin-Business-Consultants/libre-cms-astro. |
 
 Env: `CMS_BASE_URL` (the CMS's origin) and `CMS_API_TOKEN` (the site's
 read-only *service token*, Settings › Service tokens). Never commit either.
@@ -82,10 +82,21 @@ export async function getStaticPaths() {
 
 ## Rendering
 
-- **Blocks** — `<Blocks blocks={page.blocks} components={{ hero: Hero, text: Text }} assets={assets} />`.
-  Each component gets the block's data as props, plus `block` and `assets`.
-  A type without a component is skipped (editors can add a block type before
-  the site has one); add a component for every type the CMS uses.
+- **Blocks** — `<Blocks blocks={page.blocks} assets={assets} />`. Each block
+  type has one component at `src/cms/blocks/<block type slug>.astro`, which
+  gets the block's data as props, plus `block`, `resolved` and `assets`, and
+  declares `type Props = BlockProps<"<slug>">` (from `librepublish:types`).
+- **Entries** — `<Entry entry={entry} assets={assets} />` draws an entry with
+  its collection's template, `src/cms/templates/<collection slug>.astro`
+  (`type Props = TemplateProps<"<slug>">`). A collection needs one when its
+  entries have pages of their own ("Entries have their own page").
+- **The contract** — `astro build` fails when a block type editors can place
+  has no component, a component or template has nothing in the CMS to draw,
+  a collection with pages has no template, or a component doesn't type its
+  props from the schema. To add a block type, create it in the CMS and its
+  component here; to drop one, deprecate it in the CMS (the build asks for
+  its component only while live content still uses it). Files starting with
+  `_` are partials and are left alone.
 - **Images** — `<Image asset={assets[id]} sizes="…" />`: served from the CMS,
   with its renditions as a srcset, its size and alt text. Asset fields hold an
   id; look it up in the `assets` collection.

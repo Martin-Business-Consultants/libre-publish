@@ -1,0 +1,12 @@
+/* The composer: a message box (Lexxy, no toolbar) with its context and send button. Put it in
+   .composer-dock to keep it at the bottom of the panel as the page scrolls. */
+
+@layer rune.components {
+  .composer-dock { position: sticky; bottom: 0; z-index: 5; padding: var(--s-2) 0 var(--s-4); background: linear-gradient(to bottom, transparent, var(--panel) 28%); }
+  .composer { gap: var(--s-2); }
+  .composer__box { display: flex; flex-direction: column; border: 1px solid var(--line-strong); border-radius: var(--radius-lg); background: var(--layer-1); transition: border-color .12s, box-shadow .12s; }
+  .composer__box:focus-within { border-color: color-mix(in srgb, var(--accent) 55%, var(--line-strong)); box-shadow: var(--ring); }
+  .composer__bar { display: flex; align-items: center; gap: var(--s-2); padding: var(--s-2) var(--s-2) var(--s-2) var(--s-3); }
+  .composer__context { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-1); min-width: 0; }
+  .composer__hint { margin-left: auto; color: var(--text-faint); font-size: var(--text-meta); white-space: nowrap; }
+}

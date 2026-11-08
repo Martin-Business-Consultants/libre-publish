@@ -9,9 +9,9 @@
 <% fm_scope = content_scope("entry")["frontmatter"] %>
 <% trash = entry.persisted? && Current.user.can?("entries:delete") %>
 <%= form_with model: entry, url: (entry.persisted? ? collection_entry_path(collection.slug, entry.slug) : collection_entries_path(collection.slug)),
-      scope: :entry, id: "entry_form", class: "editor", data: { controller: "form slug", action: "keydown.esc->form#cancel", slug_locked_value: entry.persisted? } do |form| %>
+      scope: :entry, id: "entry_form", class: "with-aside", data: { controller: "form slug", action: "keydown.esc->form#cancel", slug_locked_value: entry.persisted? } do |form| %>
   <%= form.hidden_field :lock_version %>
-  <div class="editor__main">
+  <div class="with-aside__main">
     <div>
       <label class="visually-hidden" for="entry_title">Name</label>
       <%= form.text_field :title, required: true, class: "title-input", placeholder: "Add title", data: { slug_target: "source", action: "slug#fill" }, autofocus: entry.new_record? %>
@@ -25,23 +25,23 @@
     <% end %>
 
     <% if collection.enable_blocks? %>
-      <section class="panel">
-        <h2 class="heading editor__section-title">Blocks</h2>
+      <section class="card card--flush">
+        <h2 class="card__title editor__section-title">Blocks</h2>
         <div class="editor__section-body">
           <%= render "content_form/blocks", blocks: entry.blocks, scope: content_scope("entry")["blocks"], depth: 1, record: entry %>
         </div>
-        <p class="panel__footer"><%= editor_status_line(entry) %></p>
+        <p class="card__footer card__footer--bordered"><%= editor_status_line(entry) %></p>
       </section>
     <% end %>
 
-    <section class="panel">
-      <h2 class="heading editor__section-title">Body</h2>
+    <section class="card card--flush">
+      <h2 class="card__title editor__section-title">Body</h2>
       <div class="editor__section-body">
         <%= render "content_form/fields/rich_text", field: { "name" => "body_markdown", "label" => "Body" }, value: entry.body_markdown,
               scope: content_scope("entry")["body_markdown"], markdown: true %>
       </div>
       <% unless collection.enable_blocks? %>
-        <p class="panel__footer"><%= editor_status_line(entry) %></p>
+        <p class="card__footer card__footer--bordered"><%= editor_status_line(entry) %></p>
       <% end %>
     </section>
     <% end %>
@@ -49,7 +49,7 @@
     <%= render "content_form/seo", record: entry, scope: "entry", invalid_json: invalid_json %>
   </div>
 
-  <aside class="editor__aside">
+  <aside class="with-aside__aside">
     <%= render "content_form/publish_box", record: entry, form: form, scope: "entry", prefix: "entries", statuses: CollectionEntry::STATUSES.sort,
           trash_name: "this entry", trash_path: (collection_entry_path(collection.slug, entry.slug) if trash), trash_form: ("entry_trash_form" if trash) %>
     <%= plugin_slots(:content_aside, record: entry) if entry.persisted? %>
@@ -57,7 +57,7 @@
     <%= postbox "entry-attributes", "Entry Attributes" do %>
       <%= render "content_form/permalink", record: entry, form: form, hint: "Made from the name when blank." %>
       <label class="field">
-        <span class="label">Locale</span>
+        <span class="field__label">Locale</span>
         <%= form.text_field :locale, required: true, placeholder: "en", autocomplete: "off" %>
       </label>
       <% if sidebar_fields.any? %>

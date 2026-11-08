@@ -6,10 +6,10 @@
     (media--asset-picker#pick, which copies its .media-thumb). %>
 <turbo-frame id="asset_picker">
   <div class="stack">
-    <div class="cluster">
-      <%= form_with url: asset_picker_path, method: :get, class: "input-with-icon grow" do %>
+    <div class="button-row">
+      <%= form_with url: asset_picker_path, method: :get, class: "search grow" do %>
         <%= hidden_field_tag :folder, @folder, id: nil %>
-        <%= icon_tag "search", class: "input-with-icon__icon" %>
+        <%= icon_tag "search" %>
         <%= search_field_tag :q, @query, id: nil, placeholder: (@folder ? "Search #{@folder}…" : "Search every folder…"), autocomplete: "off",
               aria: { label: "Search files" } %>
       <% end %>
@@ -21,25 +21,27 @@
     </div>
 
     <% if Current.user.can?("assets:write") %>
-      <%= form_with url: asset_picker_path, class: "cluster", data: { controller: "form media--direct-upload" } do |form| %>
+      <%= form_with url: asset_picker_path, class: "button-row", data: { controller: "form media--direct-upload" } do |form| %>
         <%= form.hidden_field :folder, value: @folder || "/", id: nil %>
-        <label class="btn btn--sm" title="Upload into this folder">
+        <label class="btn btn--secondary btn--sm" title="Upload into this folder">
           <%= icon_tag "add" %>
           <span>Upload into <%= @folder || "/" %></span>
           <%= form.file_field :files, multiple: true, direct_upload: true, hidden: true,
                 data: { action: "change->form#submit", media__direct_upload_target: "input" } %>
         </label>
-        <ul class="stack stack--xs full-width text-small text-body" data-media--direct-upload-target="list" hidden></ul>
+        <ul class="stack stack--xs small" data-media--direct-upload-target="list" hidden></ul>
       <% end %>
     <% end %>
 
     <% if @upload_errors.present? %>
-      <ul class="notice notice--danger notice--stacked">
-        <% @upload_errors.each do |message| %>
-          <%# herb:key message %>
-          <li><%= message %></li>
-        <% end %>
-      </ul>
+      <div class="alert alert--danger" role="alert">
+        <ul class="alert__body">
+          <% @upload_errors.each do |message| %>
+            <%# herb:key message %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
     <% end %>
 
     <% if @assets.any? %>
@@ -48,7 +50,7 @@
         <%= render "tiles", assets: @assets, more: @more, page: @page, query: @query, folder: @folder %>
       </ul>
     <% else %>
-      <p class="empty-state asset-picker__empty">
+      <p class="empty">
         <% if @query.present? then %>
           Nothing matches “<%= @query %>”.
         <% elsif @folder then %>

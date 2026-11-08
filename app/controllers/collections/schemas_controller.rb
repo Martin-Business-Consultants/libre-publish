@@ -28,6 +28,7 @@ class Collections::SchemasController < ApplicationController
       notification_events: Array(raw[:notification_events]).map(&:to_s) & Collection::NOTIFICATION_EVENTS,
       notification_emails: raw[:notification_emails]
     }
+    attributes[:routable] = ActiveRecord::Type::Boolean.new.cast(raw[:routable]) if raw.key?(:routable)
     # Absent means "not this form's business", not "switch the board off" —
     # only a posted config replaces the stored one.
     if raw[:build_config]

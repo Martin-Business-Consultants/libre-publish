@@ -3,23 +3,23 @@
 <%= render "layouts/shared/page_header", title: "Search",
       description: "How search engines and AI answer engines find, read and describe this site." %>
 
-<div class="measure--lg stack stack--lg">
-  <section class="panel panel--padded stack stack--md">
-    <h2 class="heading">What the site already does</h2>
+<div class="measure stack stack--lg">
+  <section class="card">
+    <h2 class="card__title">What the site already does</h2>
     <ul class="bullet-list">
       <li>Every page has a canonical address, its title and description, Open Graph and Twitter tags, and its translations (hreflang).</li>
       <li>Structured data (schema.org) is made from the content: who you are, the site, each page or article, and its breadcrumbs.</li>
-      <li><%= link_to "/sitemap.xml", "#{@base_url}/sitemap.xml", class: "link" %> lists every published page and entry, with their translations.</li>
-      <li><%= link_to "/llms.txt", "#{@base_url}/llms.txt", class: "link" %> and a Markdown copy of each page (add <code>.md</code> to its address) give AI readers the content without the design.</li>
-      <li><%= link_to "/robots.txt", "#{@base_url}/robots.txt", class: "link" %> keeps the admin and the API out, and points to the sitemap.</li>
+      <li><%= link_to "/sitemap.xml", "#{@base_url}/sitemap.xml" %> lists every published page and entry, with their translations.</li>
+      <li><%= link_to "/llms.txt", "#{@base_url}/llms.txt" %> and a Markdown copy of each page (add <code>.md</code> to its address) give AI readers the content without the design.</li>
+      <li><%= link_to "/robots.txt", "#{@base_url}/robots.txt" %> keeps the admin and the API out, and points to the sitemap.</li>
     </ul>
   </section>
 
   <%= form_with url: settings_search_path, method: :patch, scope: :search, class: "stack stack--lg" do |form| %>
-    <section class="panel panel--padded fields">
-      <div class="stack stack--xs">
-        <h2 class="heading">AI crawlers</h2>
-        <p class="help">
+    <section class="card">
+      <div class="card__head">
+        <h2 class="card__title">AI crawlers</h2>
+        <p class="card__hint">
           Search engines (Google, Bing) always crawl the site. These choose which AI services may read it, by what they do.
         </p>
       </div>
@@ -31,10 +31,10 @@
       <% end %>
     </section>
 
-    <section class="panel panel--padded fields">
-      <div class="stack stack--xs">
-        <h2 class="heading">Who the site is</h2>
-        <p class="help">
+    <section class="card">
+      <div class="card__head">
+        <h2 class="card__title">Who the site is</h2>
+        <p class="card__hint">
           Search engines and AI tie what they say about you to this. The name, description and contact details come from
           Settings › General, the logo from Branding.
         </p>
@@ -47,8 +47,8 @@
       <% end %>
     </section>
 
-    <section class="panel panel--padded fields">
-      <label class="choice choice--top text-ink">
+    <section class="card">
+      <label class="checkbox checkbox--top">
         <%= form.check_box :indexnow, { checked: @search["indexnow"] != false }, "1", "0" %>
         <span>
           Tell search engines the moment a page is published, changed or taken down (IndexNow: Bing, which ChatGPT
@@ -56,7 +56,7 @@
         </span>
       </label>
       <%= settings_field "More for robots.txt", hint: "Added as written, for a crawler or a path the choices above don’t cover." do %>
-        <%= form.text_area :robots_extra, value: @search["robots_extra"], rows: 4, class: "text-mono text-small", placeholder: "User-agent: SomeBot\nDisallow: /" %>
+        <%= form.text_area :robots_extra, value: @search["robots_extra"], rows: 4, class: "mono small", placeholder: "User-agent: SomeBot\nDisallow: /" %>
       <% end %>
       <div><button type="submit" class="btn btn--primary">Save</button></div>
     </section>

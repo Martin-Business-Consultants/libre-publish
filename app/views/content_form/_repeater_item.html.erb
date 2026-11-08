@@ -9,7 +9,7 @@
         <% if summary %>
           <%= summary %>
         <% else %>
-          <span class="text-muted">Item <%= index ? index + 1 : "" %></span>
+          <span class="muted">Item <%= index ? index + 1 : "" %></span>
         <% end %>
       </span>
       <%= render "content_form/row_moves", noun: "item" %>

@@ -8,6 +8,24 @@ out.
 
 ## Unreleased
 
+### Changed
+- **The admin is drawn with rune_ui**, the UI kit shared with Runwell and
+  Botter (vendored in `vendor/rune_ui`). The WordPress-style admin bar and
+  fly-out menu give way to rune's shell: the admin menu in a sidebar (with
+  search, update notices, and your account and the theme toggle at its
+  foot), and each screen in an inset panel under a bar holding the page's
+  trail, the "/" filter, Screen options and "+ New". Every screen, the
+  sign-in pages included, is redrawn with rune's components, and the
+  admin's own CSS library and its mask icons are gone.
+- **Settings › Branding** reaches every rune component: the colours, font,
+  corners (rune's `--radius-scale`) and shadow (cards and menus), and the
+  dark top bar is now a dark sidebar.
+- **Plugins' views have to move to rune_ui's classes and helpers**
+  (docs/plugins.md, STYLE.md): the old classes (`panel`, `notice`,
+  `fields`, `text-muted`…) and tokens (`--space-*`, `--radius-md`…) no
+  longer exist. This is a breaking change for any plugin with admin
+  screens, Forms among them.
+
 ## 1.33.4
 
 ### Fixed

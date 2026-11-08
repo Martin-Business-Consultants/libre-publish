@@ -118,6 +118,20 @@ RSpec.describe "Delivery API v1", type: :request do
     expect(json.dig("data", "seo", "properties")).to have_key("meta_title")
   end
 
+  it "says in the schema which block types are deprecated and which collections' entries have pages" do
+    Collection.create!(slug: "posts", name: "Posts", schema: {"fields" => []})
+    Collection.create!(slug: "testimonials", name: "Testimonials", schema: {"fields" => []}, routable: false)
+    BlockType.find_by!(slug: "text").update!(deprecated: true)
+    BlockType.create!(slug: "quote", label: "Quote", fields: [{"name" => "text", "type" => "string", "label" => "Text"}])
+
+    get "/api/v1/schema", headers: token
+
+    expect(json.dig("data", "block_types", "text", "deprecated")).to be(true)
+    expect(json.dig("data", "block_types", "quote", "deprecated")).to be(false)
+    expect(json.dig("data", "collections", "posts", "routable")).to be(true)
+    expect(json.dig("data", "collections", "testimonials", "routable")).to be(false)
+  end
+
   it "serves redirects as JSON, and as a Cloudflare _redirects file, exact rules first" do
     Redirect.create!(source_path: "/blog/*", destination_url: "/news/*", status_code: 301)
     Redirect.create!(source_path: "/old", destination_url: "/new", status_code: 302)

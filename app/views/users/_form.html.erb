@@ -8,20 +8,20 @@
 <% removable = user.persisted? && Current.user.can?("users:delete") && user != Current.user %>
 <%= render "layouts/shared/errors", record: user %>
 
-<%= form_with model: user, id: "user_form", class: "record-form with-sidebar with-sidebar--sticky",
+<%= form_with model: user, id: "user_form", class: "with-aside",
       data: { controller: "form", action: "keydown.esc->form#cancel" } do |form| %>
-  <div>
+  <div class="with-aside__main">
     <div>
       <label class="visually-hidden" for="user_name">Name</label>
       <%= form.text_field :name, required: true, class: "title-input", autofocus: user.new_record?, autocomplete: "off", placeholder: "Full name" %>
     </div>
 
     <%= postbox "user-account", "Signing in" do %>
-      <div class="fields">
+      <div class="stack">
         <%= settings_field "Email", hint: "They sign in with it, and get the workspace's emails at it." do %>
           <%= form.email_field :email, required: true, autocomplete: "off", placeholder: "email@example.com" %>
         <% end %>
-        <div class="grid grid--2 fields-grid">
+        <div class="field-row">
           <%= settings_field (user.new_record? ? "Password" : "New password") do %>
             <%= form.password_field :password, required: user.new_record?, autocomplete: "new-password",
                   placeholder: user.new_record? ? "At least 8 characters" : "Leave blank to keep it" %>
@@ -34,16 +34,16 @@
     <% end %>
   </div>
 
-  <aside>
+  <aside class="with-aside__aside">
     <% settings = capture do %>
-      <div class="fields">
+      <div class="stack">
         <%= settings_field "Role" do %>
           <%= form.select :role_id, Role.ordered.map { |role| [role.name, role.id] }, { include_blank: "No role" } %>
         <% end %>
         <% if user.role&.description.present? %>
-          <p class="text-small text-muted"><%= user.role.description %></p>
+          <p class="small muted"><%= user.role.description %></p>
         <% end %>
-        <label class="choice">
+        <label class="checkbox">
           <%= form.check_box :verified %>
           <span>Email is verified</span>
         </label>

@@ -2,16 +2,18 @@
 
 require "rails_helper"
 
-# The admin is drawn with its own CSS (app/assets/stylesheets, STYLE.md):
-# components, layout pieces and a few helpers, named for what they are. A
-# class nothing defines silently does nothing, and a rule nothing uses is
-# weight every page carries, so both fail here.
+# The admin is drawn with rune_ui (vendor/rune_ui, STYLE.md) and its own CSS
+# on rune's tokens (app/assets/stylesheets): components and layout pieces,
+# named for what they are. A class nothing defines silently does nothing, and
+# a rule of the admin's own that nothing uses is weight every page carries,
+# so both fail here. (rune_ui's own rules are a kit's: the admin uses some.)
 RSpec.describe "Architecture: the admin's CSS classes" do
   VIEWS = ["app/views/**/*.erb", "engines/*/app/views/**/*.erb", "plugins/*/app/views/**/*.erb"].freeze
   RUBY = ["app/helpers/**/*.rb", "engines/*/app/helpers/**/*.rb", "plugins/*/app/helpers/**/*.rb"].freeze
   SCRIPTS = ["app/javascript/**/*.js", "engines/*/app/javascript/**/*.js", "plugins/*/app/javascript/**/*.js"].freeze
   SPECS = ["spec/**/*.rb", "plugins/*/spec/**/*.rb"].freeze
   STYLESHEETS = ["app/assets/stylesheets/**/*.css", "engines/*/app/assets/stylesheets/**/*.css", "plugins/*/app/assets/stylesheets/**/*.css"].freeze
+  RUNE_UI = ["vendor/rune_ui/app/assets/stylesheets/**/*.css"].freeze
 
   # Classes a stylesheet styles that the markup never writes, because
   # something else puts them in the DOM: Lexxy's editor, Turbo, the
@@ -28,6 +30,7 @@ RSpec.describe "Architecture: the admin's CSS classes" do
   # attachments' and mentions' classes themselves.
   BUILT_ELSEWHERE_PATTERNS = [
     /\Aicon(?:--[\w-]+)?\z/,
+    /\Aletter--\d\z/,
     /\Alexxy-/,
     /\Aattachment(?:-gallery)?(?:--|__|\z)/,
     /\A(?:actiontext|mention|node--selected|horizontal-divider)\z/
@@ -64,7 +67,9 @@ RSpec.describe "Architecture: the admin's CSS classes" do
   end
 
   it "defines no class that nothing uses" do
-    used = used_classes.keys.to_set | hook_classes | BUILT_ELSEWHERE.to_set
+    # A rule restyling one of rune_ui's classes (.card, .palette__item) is
+    # the admin's theming of the kit, used wherever the kit draws it.
+    used = used_classes.keys.to_set | hook_classes | BUILT_ELSEWHERE.to_set | definitions_in(RUNE_UI).keys.to_set
     unused = stylesheet_definitions.reject { |name, _| used.include?(name) || BUILT_ELSEWHERE_PATTERNS.any? { name.match?(it) } }
 
     expect(unused).to be_empty, <<~MESSAGE
@@ -105,12 +110,16 @@ RSpec.describe "Architecture: the admin's CSS classes" do
   end
 
   def stylesheet_classes
-    stylesheet_definitions.keys.to_set
+    stylesheet_definitions.keys.to_set | definitions_in(RUNE_UI).keys
   end
 
-  # name => the stylesheet that defines it.
+  # name => the admin's stylesheet that defines it.
   def stylesheet_definitions
-    @stylesheet_definitions ||= sources(STYLESHEETS).each_with_object({}) do |(file, source), found|
+    @stylesheet_definitions ||= definitions_in(STYLESHEETS)
+  end
+
+  def definitions_in(globs)
+    sources(globs).each_with_object({}) do |(file, source), found|
       css = source.gsub(%r{/\*.*?\*/}m, "").gsub(/url\([^)]*\)/, "")
       # Selectors only: what comes before a {, not property values.
       css.scan(/([^{};]+)\{/).flatten.each do |selector|

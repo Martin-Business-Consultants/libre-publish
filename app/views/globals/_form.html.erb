@@ -5,18 +5,18 @@
 <% tabs = global.fields.group_by { it["tab"].presence || "General" } %>
 <% data_scope = content_scope("global")["data"] %>
 <% trash = Current.user.can?("globals:delete") %>
-<%= form_with model: global, url: global_path(global.slug), scope: :global, id: "global_form", class: "editor",
+<%= form_with model: global, url: global_path(global.slug), scope: :global, id: "global_form", class: "with-aside",
       data: { controller: "form", action: "keydown.esc->form#cancel" } do |form| %>
   <%= form.hidden_field :lock_version %>
-  <div class="editor__main">
+  <div class="with-aside__main">
     <div>
       <label class="visually-hidden" for="global_name">Name</label>
       <%= form.text_field :name, required: true, class: "title-input", placeholder: "Add name" %>
     </div>
 
     <% if tabs.empty? %>
-      <section class="panel empty-state">
-        <p>This global has no fields yet. <%= link_to "Define its fields", global_schema_path(global.slug), class: "link" %>.</p>
+      <section class="empty">
+        <p>This global has no fields yet. <%= link_to "Define its fields", global_schema_path(global.slug) %>.</p>
       </section>
     <% end %>
     <% tabs.each do |tab, fields| %>
@@ -27,21 +27,21 @@
     <% end %>
   </div>
 
-  <aside class="editor__aside">
+  <aside class="with-aside__aside">
     <%= render "content_form/publish_box", record: global, form: form, scope: "global", prefix: "globals",
           trash_name: "this global", trash_path: (global_path(global.slug) if trash), trash_form: ("global_trash_form" if trash) %>
 
     <%= postbox "global-identity", "Global" do %>
       <label class="field">
-        <span class="label">Slug</span>
-        <%= form.text_field :slug, required: true, class: "text-mono", autocomplete: "off" %>
+        <span class="field__label">Slug</span>
+        <%= form.text_field :slug, required: true, class: "mono", autocomplete: "off" %>
       </label>
       <label class="field">
-        <span class="label">Description</span>
+        <span class="field__label">Description</span>
         <%= form.text_field :description %>
       </label>
       <label class="field">
-        <span class="label">Icon</span>
+        <span class="field__label">Icon</span>
         <%= form.text_field :icon, autocomplete: "off" %>
       </label>
       <%= render "content_form/reference", reference: "globals/" + global.slug %>

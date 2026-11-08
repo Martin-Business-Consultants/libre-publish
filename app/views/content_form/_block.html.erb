@@ -34,17 +34,19 @@
         <%= hidden_field_tag scope["type"].name, block["type"], id: nil %>
         <%= hidden_field_tag scope["version"].name, block["version"], id: nil %>
         <% if errors.any? %>
-          <ul class="notice notice--danger notice--stacked content-row__errors">
-            <% errors.each do |message| %>
-              <%# herb:key message %>
-              <li><%= message %></li>
-            <% end %>
-          </ul>
+          <div class="alert alert--danger" role="alert">
+            <ul class="alert__body">
+              <% errors.each do |message| %>
+                <%# herb:key message %>
+                <li><%= message %></li>
+              <% end %>
+            </ul>
+          </div>
         <% end %>
         <%= render "content_form/fields", fields: block_type.fields, values: block["data"], scope: scope["data"], depth: depth %>
       <% else %>
         <%= hidden_field_tag scope["_json"].name, block.to_json, id: nil %>
-        <p class="notice notice--danger">
+        <p class="alert alert--danger">
           <span>This block’s type, <code><%= block["type"] %></code>, doesn’t exist any more. It’s kept as it is; remove it or add the block type back.</span>
         </p>
       <% end %>

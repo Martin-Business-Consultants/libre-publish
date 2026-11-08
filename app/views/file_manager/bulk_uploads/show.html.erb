@@ -4,24 +4,24 @@
 
 <%= render "layouts/shared/page_header", title: "Unpacking into " + @bulk_upload.folder %>
 
-<%= tag.section class: "panel panel--padded measure--lg stack",
+<%= tag.section class: "card measure",
       data: ({ controller: "refresh", refresh_interval_value: 2 } unless @bulk_upload.finished?) do %>
-  <p class="cluster text-body">
+  <p class="button-row">
     <%= status_tag @bulk_upload.status.humanize %>
     <span>
       <%= @bulk_upload.processed %> of <%= @bulk_upload.total.positive? ? @bulk_upload.total : "…" %> files looked at ·
       <%= @bulk_upload.succeeded %> added · <%= @bulk_upload.skipped %> skipped · <%= @bulk_upload.failed %> failed
     </span>
   </p>
-  <progress class="full-width" max="100" value="<%= @bulk_upload.progress %>"><%= @bulk_upload.progress %>%</progress>
+  <progress class="media-job__progress" max="100" value="<%= @bulk_upload.progress %>"><%= @bulk_upload.progress %>%</progress>
 
   <% if @bulk_upload.errors_log.present? %>
     <section class="media-section">
-      <h2 class="heading">Couldn’t add</h2>
-      <ul class="stack stack--xs text-body">
+      <h2>Couldn’t add</h2>
+      <ul class="stack stack--xs">
         <% @bulk_upload.errors_log.each_with_index do |failure, index| %>
           <%# herb:key index %>
-          <li><span class="text-mono text-small"><%= failure["filename"] %></span> — <%= failure["message"] %></li>
+          <li><span class="mono"><%= failure["filename"] %></span> — <%= failure["message"] %></li>
         <% end %>
       </ul>
     </section>
@@ -33,6 +33,6 @@
       <%= icon_tag "arrow-right" %>
     <% end %>
   <% else %>
-    <p class="help">This page updates itself. You can leave it; the unpacking carries on.</p>
+    <p class="small faint">This page updates itself. You can leave it; the unpacking carries on.</p>
   <% end %>
 <% end %>

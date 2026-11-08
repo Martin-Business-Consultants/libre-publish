@@ -1,15 +1,15 @@
 <%# The dashboard's reminder that this CMS is headless: the site it serves,
     and whether that site's build has reported in (Frontend). %>
 <% build = Frontend.last_build %>
-<section class="panel dashboard__box">
-  <header class="row row--between row--base">
-    <h2 class="heading row"><%= icon_tag "code", class: "icon--sm text-faint" %> Your frontend</h2>
-    <%= link_to "Developers", developers_path, class: "btn btn--sm" %>
-  </header>
-  <p class="dashboard__text">
+<section class="card">
+  <div class="card__header">
+    <h2 class="card__title dashboard__title"><%= icon_tag "code", class: "icon--sm" %> Your frontend</h2>
+    <%= link_to "Developers", developers_path, class: "btn btn--secondary btn--sm" %>
+  </div>
+  <p class="muted">
     This CMS is headless: it serves content as JSON, and
     <% if Frontend.site_url %>
-      <%= external_link Frontend.site_url, Frontend.site_url.sub(%r{\Ahttps?://}, ""), link_class: "link" %>
+      <%= external_link Frontend.site_url, Frontend.site_url.sub(%r{\Ahttps?://}, "") %>
     <% else %>
       your site
     <% end %>

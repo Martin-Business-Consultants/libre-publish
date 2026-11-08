@@ -1,0 +1,247 @@
+/* The admin's own shared pieces, on rune_ui's tokens: what its screens have
+   that rune doesn't (list tables as WordPress lays them out, the editors'
+   folding boxes, the save box, an editor's top bar, switches beside their
+   label, secrets behind an eye). Each area's screens are in their own file
+   beside this one. */
+
+/* A list table, as WordPress lays one out (layouts/shared/_status_links,
+   _bulk_actions, _row_links): <table class="table data-table"> in a
+   .table-wrap, drawn by rune's .table. __check is the tick-box column,
+   __num a number (right aligned), __empty the one cell that says there's
+   nothing (PaginationHelper#table_empty_row). */
+.data-table__check { width: 2.5rem; }
+.data-table .data-table__num { text-align: right; }
+
+.data-table .data-table__empty {
+  padding-block: var(--s-6);
+  color: var(--text-faint);
+  text-align: center;
+}
+
+.data-table tbody tr:has(.data-table__empty):hover td { background: none; }
+
+/* The actions under a row's title show while the row is hovered or holds
+   focus, and always on a touch screen. */
+.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-1) var(--s-3);
+  margin-top: 2px;
+  font-size: var(--text-meta);
+  line-height: var(--leading-tight);
+  visibility: hidden;
+}
+
+tr:is(:hover, :focus-within) .row-actions,
+.row-actions:has(dialog[open]) { visibility: visible; }
+
+@media (any-hover: none) {
+  .row-actions { visibility: visible; }
+}
+
+.row-actions .row-actions__link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-muted);
+  font: inherit;
+  font-weight: var(--weight);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.row-actions .row-actions__link:hover { color: var(--text); text-decoration: underline; }
+.row-actions .link-button { font-size: inherit; }
+
+/* Over a list table: bulk actions on the left, the search on the right. */
+.list-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2) var(--s-4);
+}
+
+.list-toolbar > form { flex-direction: row; }
+.list-toolbar__choice { min-width: 10rem; }
+.list-toolbar__search { margin-left: auto; }
+.list-toolbar__confirm { padding-top: var(--s-2); }
+
+.list-search { flex-direction: row; }
+.list-search .search { min-width: 14rem; }
+.list-search .search input { height: var(--control-h-sm); }
+
+/* Under an index table: which rows these are, then the pages. */
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2) var(--s-4);
+}
+
+.pagination__pages {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-1);
+}
+
+.pagination__page { min-width: var(--control-h-sm); }
+.pagination__gap { padding: 0 var(--s-1); color: var(--text-faint); }
+
+/* A box that folds (ContentFormHelper#postbox): a rune card whose title is
+   the <summary>, ruled off its body while open; the chevron points down
+   while open. flush boxes lay out their own rows. */
+.postbox { display: block; }
+
+.postbox__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+  padding: var(--s-3) var(--s-4);
+  user-select: none;
+}
+
+.postbox[open] > .postbox__header { border-bottom: 1px solid var(--line); }
+.postbox[open] > .postbox__header .fold__chevron { transform: rotate(90deg); }
+
+.postbox__body { min-width: 0; }
+
+.postbox__body--padded {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  padding: var(--s-4);
+}
+
+/* An "Edit" that opens its field in place (the Publish box's status and
+   schedule): the field joins the line's flow, and the Edit goes away. */
+.inline-edit { display: contents; }
+.inline-edit > summary { display: inline; color: var(--accent); }
+.inline-edit[open] > summary { display: none; }
+
+/* The save box (layouts/shared/_save_box), the Publish box's shape for any
+   edit screen: facts about the record, then Delete and the primary button. */
+.save-box__lines {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding: var(--s-4);
+}
+
+.save-box__line {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  color: var(--text-muted);
+}
+
+.save-box__line .icon { color: var(--text-faint); }
+.save-box__line strong { color: var(--text); }
+
+.save-box__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+  padding: var(--s-3) var(--s-4);
+}
+
+.save-box__actions--ruled {
+  border-top: 1px solid var(--line);
+  background: var(--layer-1);
+}
+
+.save-box__submit { margin-left: auto; }
+
+/* An editor's top bar (layouts/shared/editor_bar), in place of a page
+   title: the tabs or a label on the left, the CLI command and the page's
+   actions on the right, on a rule. */
+.editor-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--s-2) var(--s-4);
+  box-shadow: inset 0 -1px var(--line);
+}
+
+.editor-bar > .tabs { border-bottom: 0; }
+
+.editor-bar__label {
+  padding-bottom: var(--s-2);
+  color: var(--text-muted);
+  font-weight: var(--weight-strong);
+}
+
+.editor-bar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--s-2);
+  margin-left: auto;
+  padding-bottom: var(--s-2);
+}
+
+/* A switch beside its label and hint (SettingsHelper#settings_switch). */
+.switch-field {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-3);
+  cursor: pointer;
+}
+
+.switch-field > .switch { margin-top: 1px; }
+
+.switch-field__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* rune's .checkbox (a checkbox or radio and its words, a <label>) when the
+   words run to several lines: the box stays by the first. */
+.checkbox--top { align-items: flex-start; }
+.checkbox--top input { margin-top: 2px; }
+
+/* A key, token or secret, masked until the eye is clicked
+   (ApplicationHelper#secret_field; reveal_controller toggles
+   .secret-field--shown, which swaps the eye's two icons). */
+.secret-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.secret-field input { padding-right: 2.25rem; }
+
+.secret-field .icon-button {
+  position: absolute;
+  right: 2px;
+}
+
+.secret-field .secret-field__hide,
+.secret-field--shown .secret-field__show { display: none; }
+.secret-field--shown .secret-field__hide { display: block; }
+
+/* An editor's title: large, on a rule rather than in a box. */
+input.title-input {
+  height: auto;
+  padding: var(--s-2) 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  font-size: var(--text-title);
+  font-weight: 600;
+  letter-spacing: -.015em;
+}
+
+input.title-input:focus {
+  border-bottom-color: var(--accent);
+  box-shadow: none;
+}

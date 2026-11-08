@@ -7,10 +7,10 @@
 
 <%= form_with url: settings_general_path, id: "settings_form", method: :patch, scope: :settings do |form| %>
   <%= tag.fieldset class: "stack stack--lg", disabled: !Current.user.can?("settings:write") do %>
-    <section class="panel panel--padded fields">
-      <div class="stack stack--xs">
-        <h2 class="heading">Identity</h2>
-        <p class="text-muted">Site title and description used as defaults across SEO, headers, and emails.</p>
+    <section class="card">
+      <div class="card__head">
+        <h2 class="card__title">Identity</h2>
+        <p class="card__hint">Site title and description used as defaults across SEO, headers, and emails.</p>
       </div>
       <%= settings_field "Business name" do %>
         <%= form.text_field :title, value: @settings["title"] %>
@@ -18,7 +18,7 @@
       <%= settings_field "Tagline / description" do %>
         <%= form.text_area :description, value: @settings["description"], rows: 2 %>
       <% end %>
-      <div class="grid grid--2">
+      <div class="field-row">
         <%= settings_field "Default locale" do %>
           <%= form.text_field :default_locale, value: @settings["default_locale"], placeholder: "en" %>
         <% end %>
@@ -33,29 +33,29 @@
         <%= form.url_field :site_base_url, value: @settings["site_base_url"], placeholder: "https://www.example.com" %>
       <% end %>
       <%= settings_field "Additional public origins", hint: "One origin per line. Used to allow CORS for form submissions from these domains (preview, www/apex, staging). The Site base URL above is always allowed." do %>
-        <%= form.text_area :public_origins_raw, value: @settings["public_origins"].join("\n"), rows: 3, placeholder: "https://www.example.com\nhttps://preview.example.com", class: "text-mono" %>
+        <%= form.text_area :public_origins_raw, value: @settings["public_origins"].join("\n"), rows: 3, placeholder: "https://www.example.com\nhttps://preview.example.com", class: "mono" %>
       <% end %>
     </section>
 
-    <section class="panel panel--padded fields" id="serving">
-      <div class="stack stack--xs">
-        <h2 class="heading">How the site is served</h2>
-        <p class="text-muted">Most sites are the theme’s website alone. Serve content as JSON too only when something else reads it: an app, another site, a frontend built elsewhere.</p>
+    <section class="card" id="serving">
+      <div class="card__head">
+        <h2 class="card__title">How the site is served</h2>
+        <p class="card__hint">Most sites are the theme’s website alone. Serve content as JSON too only when something else reads it: an app, another site, a frontend built elsewhere.</p>
       </div>
-      <div class="fields" data-controller="show-if">
+      <div class="stack" data-controller="show-if">
         <div class="stack stack--sm" data-field-name="serving">
           <%= settings_field "Served as" do %>
             <%= form.select :serving, Serving::MODES.invert.to_a, { selected: @settings["serving"] } %>
           <% end %>
-          <ul class="stack stack--xs text-small text-muted">
-            <li><strong class="text-medium text-body">Website</strong>: the theme draws the site. The delivery API (/api/v1) is off.</li>
-            <li><strong class="text-medium text-body">Website + API</strong>: the theme draws the site, and what you choose below is served as JSON too.</li>
-            <li><strong class="text-medium text-body">API only</strong>: a frontend elsewhere draws the site from /api/v1; this address shows a blank page.</li>
+          <ul class="stack stack--xs small muted">
+            <li><strong>Website</strong>: the theme draws the site. The delivery API (/api/v1) is off.</li>
+            <li><strong>Website + API</strong>: the theme draws the site, and what you choose below is served as JSON too.</li>
+            <li><strong>API only</strong>: a frontend elsewhere draws the site from /api/v1; this address shows a blank page.</li>
           </ul>
         </div>
         <div class="stack stack--md" data-show-if='{"field":"serving","equals":"website_api"}'>
-          <p class="label">Served over the API</p>
-          <label class="choice">
+          <p class="field__label">Served over the API</p>
+          <label class="checkbox">
             <%= hidden_field_tag "settings[api_pages]", "0", id: nil %>
             <%= check_box_tag "settings[api_pages]", "1", @settings["api_pages"], id: nil %>
             <span>Pages, with the globals (navigation, footer)</span>
@@ -63,7 +63,7 @@
           <%= hidden_field_tag "settings[api_collections][]", "", id: nil %>
           <% @collections.each do |collection| %>
             <%# herb:key collection.id %>
-            <label class="choice">
+            <label class="checkbox">
               <%= check_box_tag "settings[api_collections][]", collection.slug, collection.api_enabled?, id: nil %>
               <span><%= collection.name %></span>
             </label>
@@ -71,9 +71,9 @@
         </div>
       </div>
       <% if @tokens_reading.any? then %>
-        <div class="notice notice--warning notice--stacked">
+        <div class="alert alert--attention stack stack--sm">
           <p>These machine tokens read the site in the last 30 days. Choosing <strong>Website</strong> turns the API off, and they’d get nothing:</p>
-          <ul class="bullets">
+          <ul class="bullet-list">
             <% @tokens_reading.each do |token| %>
               <%# herb:key token.id %>
               <li><%= token.name %> (<%= token.role&.name %>), <%= time_ago_in_words(token.last_used_at) %> ago</li>
@@ -83,12 +83,12 @@
       <% end %>
     </section>
 
-    <section class="panel panel--padded fields">
-      <div class="stack stack--xs">
-        <h2 class="heading">Contact</h2>
-        <p class="text-muted">Surfaces on the public site footer, contact pages, and SEO structured data.</p>
+    <section class="card">
+      <div class="card__head">
+        <h2 class="card__title">Contact</h2>
+        <p class="card__hint">Surfaces on the public site footer, contact pages, and SEO structured data.</p>
       </div>
-      <div class="grid grid--2">
+      <div class="field-row">
         <%= settings_field "Phone" do %>
           <%= form.telephone_field :phone, value: @settings["phone"], placeholder: "(269) 555-1234" %>
         <% end %>
@@ -99,7 +99,7 @@
       <%= settings_field "Address" do %>
         <%= form.text_field :address_line1, value: @settings["address_line1"], placeholder: "717 E. Bridge Street" %>
       <% end %>
-      <div class="grid grid--3">
+      <div class="field-row">
         <%= settings_field "City" do %>
           <%= form.text_field :city, value: @settings["city"] %>
         <% end %>
