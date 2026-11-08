@@ -5,7 +5,8 @@
  * colours at its own palette, as Runwell does with its OKLCH theme tokens).
  *
  * Sizes are rem, so the root's size (calc(1rem * --text-scale)) scales the whole UI. Corners go
- * through --radius-scale; controls share --radius-control; pills are --radius-pill. Multi-line fields
+ * through --radius-scale; controls share --radius-control; pills are --radius-pill (round at any
+ * scale, square when the scale is 0, like every other corner). Multi-line fields
  * (textarea, the Lexxy editor) are boxes: --radius-lg, never the control radius.
  *
  * Rules the sheets keep:
@@ -58,7 +59,7 @@
     --radius-lg: calc(10px * var(--radius-scale));
     --radius-panel: calc(12px * var(--radius-scale));
     --radius-control: var(--radius-sm);
-    --radius-pill: 999px;
+    --radius-pill: calc(999px * var(--radius-scale)); /* round at any scale, square at 0 */
     --ease: cubic-bezier(.2, .8, .2, 1);
     /* Motion: everything that appears comes in the same way. Small things (menus) quickly, larger
        ones (dialogs, panels, the tray, search) a little slower, toasts the slowest; anything

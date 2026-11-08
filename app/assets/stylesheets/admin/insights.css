@@ -23,12 +23,17 @@
 
 .trash-item__facts { grid-template-columns: 8rem minmax(0, 1fr); }
 
-/* The audit log's filters, in rune's filter bar: a date with its label
-   beside it, on one line. */
-.audit-filters__date {
+/* The audit log's dates, "[from] to [to]", small controls on one line
+   among the list's filters. */
+.audit-dates {
   display: flex;
+  flex-direction: row;
   align-items: center;
-  gap: var(--s-1);
+  gap: var(--s-2);
 }
 
-.audit-filters__date input { height: var(--control-h-sm); }
+.audit-dates input {
+  width: auto;
+  height: var(--control-h-sm);
+  font-size: var(--text-meta);
+}

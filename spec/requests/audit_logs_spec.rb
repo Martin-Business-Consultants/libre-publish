@@ -12,6 +12,20 @@ RSpec.describe "AuditLogs", type: :request do
     expect(response).to have_http_status(:success)
   end
 
+  it "filters in one toolbar: the action, a day's range through its end, and one search box" do
+    AuditLog.record(action: "page.created", actor: user)
+    AuditLog.record(action: "user.signed_in", actor: user)
+    AuditLog.where(action: "user.signed_in").update_all(created_at: 2.days.ago)
+    today = Date.current.iso8601
+
+    get audit_logs_url(action_filter: "page.created", from: today, to: today)
+    rows = response.body.scan(/<tr id="audit_log_\d+"/).size
+    expect(rows).to eq(1)
+    expect(response.body).to include("page.created")
+    expect(response.body).to include('id="list_search_s"')
+    expect(response.body).not_to include('name="actor"')
+  end
+
   it "instruments page deletion via the audit helper" do
     Page.create!(slug: "scratch", title: "Scratch", status: "draft", locale: "en",
                  blocks: [], schema: {"fields" => []}, frontmatter: {}, seo: {})

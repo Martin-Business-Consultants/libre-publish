@@ -2,35 +2,30 @@
 
 <%= render "layouts/shared/page_header", title: @page_title %>
 
-<%# The filters (rune_ui's filter bar), sent as they change; the actor a moment after typing
-    stops. The list's search box keeps them on its own searches, and they keep it. %>
+<%# One toolbar row, as the other lists have: the action (a quick filter) and
+    the dates on the left, sent as they change; the list's search on the
+    right, which finds people and targets as well as actions. Each keeps the
+    others' params. ?actor= still filters, for links that carry it. %>
 <% filtered = %i[actor action_filter from to].any? { params[it].present? } %>
-<div class="list-toolbar">
-  <%= form_with url: audit_logs_path, method: :get, class: "filter-bar", aria: { label: "Filter the audit log" },
+<% list_filters = capture do %>
+  <%= render "layouts/shared/quick_filter", title: "Action", param: :action_filter, current: params[:action_filter].to_s,
+        options: [["Any action", ""]] + @known_actions.map { [it, it] } %>
+  <%= form_with url: audit_logs_path, method: :get, class: "audit-dates", aria: { label: "Dates" },
         data: { controller: "rune-autosubmit", turbo_action: "replace" } do %>
-    <% if params[:s].present? %>
-      <%= hidden_field_tag :s, params[:s], id: nil %>
+    <% request.query_parameters.slice("s", "action_filter", "actor").each do |name, value| %>
+      <%# herb:key name %>
+      <%= hidden_field_tag name, value, id: nil if value.is_a?(String) %>
     <% end %>
-    <%= search_input name: :actor, value: params[:actor], placeholder: "Actor: email or name", data: { action: "input->rune-autosubmit#later" } %>
-    <%= select_tag :action_filter, options_for_select(@known_actions, params[:action_filter]), include_blank: "Any action",
-          aria: { label: "Action" }, data: { action: "rune-autosubmit#submit" } %>
-    <label class="audit-filters__date">
-      <span class="muted small">From</span>
-      <%= datetime_local_field_tag :from, params[:from], data: { action: "rune-autosubmit#submit" } %>
-    </label>
-    <label class="audit-filters__date">
-      <span class="muted small">To</span>
-      <%= datetime_local_field_tag :to, params[:to], data: { action: "rune-autosubmit#submit" } %>
-    </label>
+    <%= date_field_tag :from, params[:from].to_s[0, 10], aria: { label: "From" }, data: { action: "rune-autosubmit#submit" } %>
+    <span class="muted">to</span>
+    <%= date_field_tag :to, params[:to].to_s[0, 10], aria: { label: "To" }, data: { action: "rune-autosubmit#submit" } %>
     <noscript><button type="submit" class="btn btn--secondary btn--sm">Apply</button></noscript>
-    <% if filtered %>
-      <%= link_to "Clear", audit_logs_path(s: params[:s].presence), class: "btn btn--ghost btn--sm" %>
-    <% end %>
   <% end %>
-  <div class="list-toolbar__search">
-    <%= render "layouts/shared/list_search", placeholder: "Search actions, people and targets…" %>
-  </div>
-</div>
+  <% if filtered %>
+    <%= link_to "Clear", audit_logs_path(s: params[:s].presence), class: "btn btn--ghost btn--sm" %>
+  <% end %>
+<% end %>
+<%= render "layouts/shared/list_toolbar", filters: list_filters, placeholder: "Search actions, people and targets…" %>
 
 <section class="table-wrap">
   <table class="table data-table">

@@ -17,6 +17,13 @@ out.
 ### Fixed
 - **A list table's tick boxes sit in the middle of their row**, not a
   little low.
+- **Square corners are square throughout**: with Branding's Corners at
+  None, counts, badges, switches and progress bars, which stayed round,
+  are square too (rune_ui's pills follow the corner scale).
+- **The audit log's filters are one row**, like every other list: the
+  action as a quick filter, a From–to date range, Clear, and the list's
+  search on the right, which finds people as well as actions and targets
+  (the separate Actor box is gone). A To date includes that whole day.
 
 ## 1.34.3
 
