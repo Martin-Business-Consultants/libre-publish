@@ -8,6 +8,8 @@ out.
 
 ## Unreleased
 
+## 1.34.1
+
 ### Security
 - **Gems with published vulnerabilities updated**, among them Rails 8.1.4.1
   (Active Storage, Action Pack and Active Support advisories, one critical),
