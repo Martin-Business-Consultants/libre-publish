@@ -35,8 +35,7 @@ module SettingsHelper
       ["History", :settings_histories_path, "settings:read", "Every change to these settings, to compare and restore."]
     ],
     "Integrations" => [
-      ["GitHub", :settings_github_path, "settings:read", "Access token and the site's repository."],
-      ["Deploy", :settings_deploy_path, "settings:read", "The build hook the CMS pings on publish."],
+      ["Deploy", :settings_deploy_path, "settings:read", "How the site rebuilds on publish: a build hook, Cloudflare, or GitHub with its repository and token."],
       ["Email delivery", :settings_mail_delivery_path, "settings:read", "The SMTP server the site's email goes through, and a test email."]
     ]
   }.freeze

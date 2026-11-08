@@ -98,7 +98,7 @@ RSpec.describe "Values encrypted with another install's key", type: :request do
 
     expect(record.reload.secrets_hash).to eq({})
 
-    get settings_github_path
+    get settings_deploy_path
     expect(response).to have_http_status(:ok)
   end
 end

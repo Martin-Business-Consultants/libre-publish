@@ -20,7 +20,7 @@
 #
 # Three providers ship with the core: a build hook (POST to a URL — Vercel,
 # Netlify, any CI), Cloudflare (a Pages or Workers Builds deploy hook) and
-# GitHub (a repository_dispatch on the site's repo, Settings › GitHub). A
+# GitHub (a repository_dispatch on the site's repo, Settings › Deploy). A
 # plugin adds more with `Cms::Plugins.deploy_provider`.
 #
 # Which one: the `provider` stored in the deploy setting, else the build hook

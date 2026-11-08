@@ -30,9 +30,10 @@ RSpec.describe "Settings pages", type: :request do
 
       get settings_path
 
-      expect(response.body).to include("Account", "General", "Branding", "GitHub", "Service tokens")
-      # A frontend's builds: only while the site is served over the API.
-      expect(response.body).not_to include("The build hook the CMS pings on publish.")
+      expect(response.body).to include("Account", "General", "Branding", "Service tokens")
+      # A frontend's builds (and the GitHub method's repository and token):
+      # only while the site is served over the API.
+      expect(response.body).not_to include("How the site rebuilds on publish")
 
       serve_over_api("website_api")
       get settings_path
@@ -42,7 +43,7 @@ RSpec.describe "Settings pages", type: :request do
     it "renders every section for an admin" do
       sign_in_as admin
       %w[/cms/settings /cms/settings/general /cms/settings/profile /cms/settings/api_token /cms/settings/service_tokens /cms/settings/branding
-        /cms/settings/github /cms/settings/deploy].each do |path|
+        /cms/settings/deploy].each do |path|
         get path
         expect(response).to have_http_status(:ok), "#{path} returned #{response.status}"
       end
@@ -50,7 +51,8 @@ RSpec.describe "Settings pages", type: :request do
       # Folded into Account and Branding; the old addresses land on their sections.
       {"/cms/settings/email" => "/cms/settings/profile#email", "/cms/settings/password" => "/cms/settings/profile#password",
        "/cms/settings/two_factor" => "/cms/settings/profile#two-factor", "/cms/settings/sessions" => "/cms/settings/profile#sessions",
-       "/cms/settings/brand" => "/cms/settings/branding#brand-context", "/cms/settings/appearance" => "/cms/settings/branding#appearance"}.each do |old, new|
+       "/cms/settings/brand" => "/cms/settings/branding#brand-context", "/cms/settings/appearance" => "/cms/settings/branding#appearance",
+       "/cms/settings/github" => "/cms/settings/deploy#github"}.each do |old, new|
         get old
         expect(response).to redirect_to("http://www.example.com#{new}"), old
       end

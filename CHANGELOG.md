@@ -16,6 +16,10 @@ out.
 - **The Help menu** (Docs, Site health, UI kit): the guides and site
   health stay in the CLI and MCP (`cms docs`, `cms site-health`) and the
   API (`/api/docs`, `/api/site_health`).
+- **Settings › GitHub**, folded into Settings › Deploy: the site's
+  repository and the token the GitHub method builds with are set there,
+  beside the method that uses them. What was saved carries over, and the
+  old address lands on Deploy.
 
 ### Fixed
 - **New installs get Forms 1.8.1**, whose list of forms draws its Import,

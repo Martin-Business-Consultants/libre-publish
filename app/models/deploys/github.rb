@@ -3,8 +3,8 @@
 require "net/http"
 require "json"
 
-# A `repository_dispatch` on the site's repo (Settings › GitHub: the token and
-# `frontend_github_repo`). The site's workflow starts a build on it:
+# A `repository_dispatch` on the site's repo (Settings › Deploy: the token and
+# `frontend_github_repo`, kept in the "github" setting). The site's workflow starts a build on it:
 #
 #   on:
 #     repository_dispatch:
@@ -20,6 +20,22 @@ class Deploys::Github < Deploys::Provider
   MAX_CHANGES = 50
 
   def self.label = "GitHub"
+
+  # Settings › Deploy's GitHub fields. A blank repository clears it (that's
+  # how one set wrong is undone); a blank token keeps the one there, which is
+  # never shown back.
+  def self.configure(repo: nil, token: nil)
+    incoming = {}
+    incoming["frontend_github_repo"] = repo.to_s.strip unless repo.nil?
+    incoming["token"] = token.to_s if token.present?
+    return if incoming.empty?
+
+    Setting.set("github", incoming)
+    Event.record("settings.github_updated", token_changed: incoming.key?("token"), frontend_github_repo: incoming["frontend_github_repo"])
+  end
+
+  def self.repo = Setting.get("github")["frontend_github_repo"].to_s.strip
+  def self.token_hint = Setting.get("github")["token"].to_s[-4..]
 
   def configured?
     repo.present? && token.present?

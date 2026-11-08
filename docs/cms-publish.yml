@@ -1,7 +1,7 @@
 # Rebuild and deploy the site when the CMS publishes.
 #
-# The CMS's GitHub deploy provider (Settings › Deploy, with the repo and a
-# token in Settings › GitHub) sends a `repository_dispatch` of type
+# The CMS's GitHub deploy provider (Settings › Deploy, with the site's repo
+# and a token) sends a `repository_dispatch` of type
 # `cms-publish` to this repo whenever content changes. This workflow listens
 # for it, builds the Astro site against the CMS's API, and deploys it.
 #

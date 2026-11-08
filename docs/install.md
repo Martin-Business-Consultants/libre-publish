@@ -285,7 +285,7 @@ that listens for it: copy `docs/cms-publish.yml` into the site's
 `CMS_API_TOKEN` (the read-only Production site token) repository secrets, and
 replace its placeholder deploy step with the host's (Cloudflare Pages,
 Netlify and GitHub Pages are sketched in comments). The GitHub token in
-Settings › GitHub needs `contents: write` on that repo to send the event.
+Settings › Deploy needs `contents: write` on that repo to send the event.
 
 The dispatch's `client_payload` is `{reason, site, changes}`: every content
 change in the debounce window (at most 50, then `truncated: true`), each

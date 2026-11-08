@@ -15,7 +15,7 @@
 
   <%= form_with url: settings_deploy_path, id: "settings_form", method: :patch, scope: :settings do |form| %>
     <%= tag.fieldset class: "stack", disabled: !Current.user.can?("settings:write") do %>
-      <%= settings_field "Provider", hint: "GitHub sends a repository_dispatch (type “cms-publish”) to the repository in Settings › GitHub, using its token; the site’s workflow builds on it. A build hook is a URL the CMS POSTs to." do %>
+      <%= settings_field "Provider", hint: "GitHub sends a repository_dispatch (type “cms-publish”) to the site’s repository below, using its token; the site’s workflow builds on it. A build hook is a URL the CMS POSTs to." do %>
         <%= form.select :provider, Deploys.providers.map { |key, provider| [provider.label, key] }, { selected: @provider.key } %>
       <% end %>
       <% if @provider.key == "github" %>
@@ -23,10 +23,21 @@
           <% if @provider.configured? %>
             Builds go to <span class="mono"><%= @provider.target %></span>.
           <% else %>
-            Set the repository and a token in <%= link_to "Settings › GitHub", settings_github_path %> first.
+            Set the site’s repository and a token below first.
           <% end %>
         </p>
       <% end %>
+      <fieldset id="github" class="stack">
+        <legend class="field__label">GitHub</legend>
+        <%= settings_field "Site repository", hint: "owner/name: the site’s repository, which the GitHub method builds and AI agents work in." do %>
+          <%= form.text_field :github_repo, value: Deploys::Github.repo, placeholder: "acme/acme-site", autocomplete: "off", class: "mono" %>
+        <% end %>
+        <%= settings_field "Access token", hint: "For the GitHub method: contents read and write on that repository. Leave blank to keep the one set." do %>
+          <% hint = Deploys::Github.token_hint %>
+          <%= form.password_field :github_token, autocomplete: "off", class: "mono", data: { "1p-ignore": true },
+                placeholder: (hint ? "Already set · ends in #{hint}" : "github_pat_…") %>
+        <% end %>
+      </fieldset>
       <%= settings_field "Deploy hook URL", hint: "For Cloudflare: Pages › your project › Settings › Builds › Deploy hooks, or Workers › your worker › Settings › Build › Deploy hooks. For a build hook: the same idea on Vercel and Netlify." do %>
         <%= form.url_field :url, value: @settings["url"], autocomplete: "off", placeholder: "https://api.cloudflare.com/client/v4/pages/.../deploy_hooks/...", class: "mono" %>
       <% end %>

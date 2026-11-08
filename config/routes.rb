@@ -238,7 +238,8 @@ Rails.application.routes.draw do
           resource :recovery_codes, only: :create
         end
       end
-      resource :github, only: [:show, :update], controller: "githubs"
+      # Folded into Deploy; the old address lands there.
+      resource :github, only: :show, controller: "githubs"
       resource :deploy, only: [:show, :update], controller: "deploys" do
         scope module: :deploys do
           resource :trigger, only: :create
