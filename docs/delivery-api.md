@@ -101,6 +101,17 @@ address from Settings › General. A page's `Cache-Tag` names what its blocks
 pull in (`collection:<slug>`, `site`), so publishing an entry purges the pages
 listing it.
 
+## The Astro integration and the contract
+
+`integrations/astro` is the Astro integration (`@libre-publish/astro`):
+content loaders and generated types from `/schema`, a schema lock
+(`cms.lock.json`, compared with `X-CMS-Schema-Digest`), `<Blocks>` with a
+component required for every block type, and the purge webhook. `contracts/`
+holds every answer above as recorded from a seeded install
+(`spec/contracts/delivery_contract_spec.rb`); the integration's tests run on
+the same files, so a change to an answer fails both until both follow
+(`RECORD_CONTRACTS=1` rewrites them). See its README.
+
 ## Builds and publishing
 
 A build reports itself to `POST /api/frontend/builds` with how it renders

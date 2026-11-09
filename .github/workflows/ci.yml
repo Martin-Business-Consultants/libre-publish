@@ -24,3 +24,22 @@ jobs:
           bundler-cache: true
 
       - run: bin/ci
+
+  # The Astro integration (integrations/astro), on the same contracts/ the
+  # Rails specs record: a change to the delivery API fails here until the
+  # integration follows.
+  astro:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: integrations/astro
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: integrations/astro/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
