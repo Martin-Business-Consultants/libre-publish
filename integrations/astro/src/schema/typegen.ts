@@ -36,7 +36,7 @@ export function definitions(raw: CmsSchema): string {
     "export type Translation = { locale: string; path: string };",
     "export type Asset = {",
     "  id: number; url: string; original: string; filename: string; content_type: string; byte_size: number;",
-    "  width: number | null; height: number | null; alt: string; folder: string;",
+    "  width: number | null; height: number | null; alt: string | null; folder: string;",
     "  variants?: Record<string, string>; thumb_url?: string;",
     "  srcset?: { width: number; descriptor: string; url: string }[];",
     "  focal_x?: number; focal_y?: number;",

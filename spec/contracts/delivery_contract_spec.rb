@@ -48,7 +48,7 @@ RSpec.describe "Delivery contract", type: :request do
 
   let(:token) { {"Authorization" => "Bearer #{create(:user).api_token.token}"} }
 
-  def upload(path, type) = Asset.upload!(Rack::Test::UploadedFile.new(Rails.root.join(path), type), folder: "/images", alt: "The logo")
+  def upload(path, type, alt: nil) = Asset.upload!(Rack::Test::UploadedFile.new(Rails.root.join(path), type), folder: "/images", alt: alt)
 
   # A small site with every field type, live and draft records, a collection
   # with blocks, a collection list, nested pages, a global, an asset and a
@@ -64,8 +64,8 @@ RSpec.describe "Delivery contract", type: :request do
       "title" => "Acme", "site_base_url" => "https://acme.example", "serving" => "api_only", "api_pages" => true
     ))
 
-    png = upload("public/icon.png", "image/png")
-    svg = upload("public/icon.svg", "image/svg+xml")
+    png = upload("public/icon.png", "image/png", alt: "The logo")
+    svg = upload("public/icon.svg", "image/svg+xml") # no alt text: delivered as null
 
     every_field = [
       {"name" => "title", "label" => "Title", "type" => "string", "required" => true},

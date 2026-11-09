@@ -21,7 +21,7 @@
   "included": {
     "assets": {
       "2": {
-        "alt": "The logo",
+        "alt": null,
         "byte_size": 122,
         "content_type": "image/svg+xml",
         "filename": "icon.svg",

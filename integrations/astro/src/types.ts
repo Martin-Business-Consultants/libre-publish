@@ -31,7 +31,8 @@ export interface CmsAsset {
   filename: string;
   content_type: string;
   byte_size: number;
-  alt: string;
+  /** null when the asset has no alt text. */
+  alt: string | null;
   width: number | null;
   height: number | null;
   /** The media library folder it's in, e.g. "/" or "/team". */

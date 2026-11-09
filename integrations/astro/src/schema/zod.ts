@@ -325,7 +325,8 @@ export const asset = z.strictObject({
   byte_size: z.number().int(),
   width: z.number().int().nullable(),
   height: z.number().int().nullable(),
-  alt: z.string(),
+  /** null when the asset has no alt text. */
+  alt: z.string().nullable(),
   folder: z.string(),
   variants: z.record(z.string(), z.string()).optional(),
   thumb_url: z.string().optional(),
