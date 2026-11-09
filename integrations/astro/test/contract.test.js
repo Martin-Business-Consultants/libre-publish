@@ -73,12 +73,11 @@ test("a missing or draft record is a 404 in the API's one error shape", () => {
 });
 
 test("the answers have the envelope and the paging the client reads", () => {
-  // /robots answers {data} alone (the CMS's one exception to its own envelope; the client reads only data).
   for (const [name, entry] of Object.entries(index)) {
     if (entry.status !== 200) continue;
     const body = fixture(name);
     assert.ok("data" in body, `${name}: data`);
-    if (name !== "robots") assert.ok("meta" in body, `${name}: meta`);
+    assert.ok("meta" in body, `${name}: meta`);
   }
   for (const name of ["pages", "entries-posts", "entries-projects"]) {
     assert.deepEqual(Object.keys(fixture(name).meta).sort(), ["next_page", "page", "per", "total"], name);

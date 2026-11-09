@@ -4,3 +4,4 @@ json.data do
   json.text @robots.to_s
   json.mode @robots.custom? ? "custom" : "generated"
 end
+json.meta({})

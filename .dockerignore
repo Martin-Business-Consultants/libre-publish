@@ -48,3 +48,6 @@
 # Ignore Docker-related files
 /.dockerignore
 /Dockerfile*
+
+# The Astro integration is a package for sites, not part of the CMS image.
+/integrations/
