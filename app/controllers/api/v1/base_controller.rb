@@ -27,6 +27,10 @@ class Api::V1::BaseController < Api::BaseController
   # on).
   before_action :require_serving
 
+  # Every answer names the schema it was made under (DeliverySchema), so a
+  # site can tell when the schema moved since it was built.
+  after_action :schema_digest_header
+
   rate_limit to: RATE_LIMIT, within: 1.minute, scope: "api/v1", if: -> { RATE_LIMIT.positive? },
     by: -> { Current.api_token ? "#{Current.api_token.class.name}:#{Current.api_token.id}" : request.remote_ip },
     with: -> { render_rate_limited }
@@ -65,6 +69,10 @@ class Api::V1::BaseController < Api::BaseController
 
     [MediaLibrary.resolve(:pages, pages), MediaLibrary.resolve(:entries, entries), MediaLibrary.resolve(:globals, globals)]
       .compact.reduce({}, :merge)
+  end
+
+  def schema_digest_header
+    response.headers["X-CMS-Schema-Digest"] = @schema_digest || DeliverySchema.digest if response.successful?
   end
 
   def cache_tags(*tags)

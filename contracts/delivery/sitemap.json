@@ -1,0 +1,71 @@
+{
+  "data": [
+    {
+      "alternates": [],
+      "changefreq": "weekly",
+      "lastmod": "2026-01-01T00:00:00Z",
+      "locale": "en",
+      "path": "/posts/hello-world",
+      "priority": 0.5,
+      "url": "https://acme.example/posts/hello-world"
+    },
+    {
+      "alternates": [],
+      "changefreq": "weekly",
+      "lastmod": "2026-01-01T00:00:00Z",
+      "locale": "en",
+      "path": "/posts/second",
+      "priority": 0.5,
+      "url": "https://acme.example/posts/second"
+    },
+    {
+      "alternates": [],
+      "changefreq": "weekly",
+      "lastmod": "2026-01-01T00:00:00Z",
+      "locale": "en",
+      "path": "/projects/alpha",
+      "priority": 0.5,
+      "url": "https://acme.example/projects/alpha"
+    },
+    {
+      "alternates": [],
+      "changefreq": "weekly",
+      "lastmod": "2026-01-01T00:00:00Z",
+      "locale": "en",
+      "path": "/",
+      "priority": 1.0,
+      "url": "https://acme.example/"
+    },
+    {
+      "alternates": [],
+      "changefreq": "weekly",
+      "lastmod": "2026-01-01T00:00:00Z",
+      "locale": "en",
+      "path": "/about",
+      "priority": 0.7,
+      "url": "https://acme.example/about"
+    },
+    {
+      "alternates": [],
+      "changefreq": "weekly",
+      "lastmod": "2026-01-01T00:00:00Z",
+      "locale": "en",
+      "path": "/company",
+      "priority": 0.7,
+      "url": "https://acme.example/company"
+    },
+    {
+      "alternates": [],
+      "changefreq": "weekly",
+      "lastmod": "2026-01-01T00:00:00Z",
+      "locale": "en",
+      "path": "/company/team",
+      "priority": 0.7,
+      "url": "https://acme.example/company/team"
+    }
+  ],
+  "meta": {
+    "site_url": "https://acme.example",
+    "total": 7
+  }
+}

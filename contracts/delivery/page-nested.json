@@ -1,0 +1,30 @@
+{
+  "data": {
+    "blocks": [
+      {
+        "data": {
+          "body": "The team."
+        },
+        "id": "t1",
+        "type": "text"
+      }
+    ],
+    "category": null,
+    "frontmatter": {},
+    "id": 4,
+    "locale": "en",
+    "path": "company/team",
+    "published_at": "2026-01-01T00:00:00Z",
+    "seo": {},
+    "slug": "team",
+    "tags": [],
+    "title": "Team",
+    "translations": [],
+    "updated_at": "2026-01-01T00:00:00Z",
+    "url": "/company/team"
+  },
+  "included": {
+    "assets": {}
+  },
+  "meta": {}
+}

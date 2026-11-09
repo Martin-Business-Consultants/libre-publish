@@ -1,0 +1,40 @@
+{
+  "data": [
+    {
+      "blocks": [
+        {
+          "data": {
+            "body": "A project."
+          },
+          "id": "p1",
+          "type": "text"
+        }
+      ],
+      "body_markdown": "",
+      "category": null,
+      "collection": "projects",
+      "frontmatter": {
+        "client": "Acme"
+      },
+      "id": 4,
+      "locale": "en",
+      "published_at": "2026-01-01T00:00:00Z",
+      "seo": {},
+      "slug": "alpha",
+      "tags": [],
+      "title": "Alpha",
+      "translations": [],
+      "updated_at": "2026-01-01T00:00:00Z",
+      "url": "/projects/alpha"
+    }
+  ],
+  "included": {
+    "assets": {}
+  },
+  "meta": {
+    "next_page": null,
+    "page": 1,
+    "per": 50,
+    "total": 1
+  }
+}

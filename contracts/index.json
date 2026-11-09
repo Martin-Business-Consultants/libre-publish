@@ -1,0 +1,226 @@
+{
+  "site": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/site"
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Tag": "site",
+      "X-CMS-Schema-Digest": "sha256:6b03f7eaeb88b7ca72a6158b968049d1e6371a413a4903d9fa99c80df795ee98"
+    }
+  },
+  "schema": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/schema"
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Tag": "schema",
+      "X-CMS-Schema-Digest": "sha256:6b03f7eaeb88b7ca72a6158b968049d1e6371a413a4903d9fa99c80df795ee98"
+    }
+  },
+  "content-full": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/content"
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Tag": "content",
+      "X-CMS-Schema-Digest": "sha256:6b03f7eaeb88b7ca72a6158b968049d1e6371a413a4903d9fa99c80df795ee98"
+    }
+  },
+  "pages": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/pages"
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Tag": "pages,page:home,page:about,page:company,page:company/team,collection:posts,site",
+      "X-CMS-Schema-Digest": "sha256:6b03f7eaeb88b7ca72a6158b968049d1e6371a413a4903d9fa99c80df795ee98"
+    }
+  },
+  "page-home": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/pages/home"
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Tag": "page:home,collection:posts,site",
+      "X-CMS-Schema-Digest": "sha256:6b03f7eaeb88b7ca72a6158b968049d1e6371a413a4903d9fa99c80df795ee98"
+    }
+  },
+  "page-about": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/pages/about"
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Tag": "page:about",
+      "X-CMS-Schema-Digest": "sha256:6b03f7eaeb88b7ca72a6158b968049d1e6371a413a4903d9fa99c80df795ee98"
+    }
+  },
+  "page-nested": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/pages/company/team"
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Tag": "page:company/team",
+      "X-CMS-Schema-Digest": "sha256:6b03f7eaeb88b7ca72a6158b968049d1e6371a413a4903d9fa99c80df795ee98"
+    }
+  },
+  "collections": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/collections"
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Tag": "collection:posts,collection:projects",
+      "X-CMS-Schema-Digest": "sha256:6b03f7eaeb88b7ca72a6158b968049d1e6371a413a4903d9fa99c80df795ee98"
+    }
+  },
+  "collection-posts": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/collections/posts"
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Tag": "collection:posts",
+      "X-CMS-Schema-Digest": "sha256:6b03f7eaeb88b7ca72a6158b968049d1e6371a413a4903d9fa99c80df795ee98"
+    }
+  },
+  "entries-posts": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/collections/posts/entries"
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Tag": "collection:posts,entry:posts/hello-world,entry:posts/second",
+      "X-CMS-Schema-Digest": "sha256:6b03f7eaeb88b7ca72a6158b968049d1e6371a413a4903d9fa99c80df795ee98"
+    }
+  },
+  "entry-post": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/collections/posts/entries/hello-world"
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Tag": "entry:posts/hello-world",
+      "X-CMS-Schema-Digest": "sha256:6b03f7eaeb88b7ca72a6158b968049d1e6371a413a4903d9fa99c80df795ee98"
+    }
+  },
+  "entries-projects": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/collections/projects/entries"
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Tag": "collection:projects,entry:projects/alpha",
+      "X-CMS-Schema-Digest": "sha256:6b03f7eaeb88b7ca72a6158b968049d1e6371a413a4903d9fa99c80df795ee98"
+    }
+  },
+  "globals": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/globals"
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Tag": "global:footer",
+      "X-CMS-Schema-Digest": "sha256:6b03f7eaeb88b7ca72a6158b968049d1e6371a413a4903d9fa99c80df795ee98"
+    }
+  },
+  "global-footer": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/globals/footer"
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Tag": "global:footer",
+      "X-CMS-Schema-Digest": "sha256:6b03f7eaeb88b7ca72a6158b968049d1e6371a413a4903d9fa99c80df795ee98"
+    }
+  },
+  "sitemap": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/sitemap"
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Tag": "sitemap",
+      "X-CMS-Schema-Digest": "sha256:6b03f7eaeb88b7ca72a6158b968049d1e6371a413a4903d9fa99c80df795ee98"
+    }
+  },
+  "robots": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/robots"
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Tag": "robots",
+      "X-CMS-Schema-Digest": "sha256:6b03f7eaeb88b7ca72a6158b968049d1e6371a413a4903d9fa99c80df795ee98"
+    }
+  },
+  "redirects": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/redirects"
+    },
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Tag": "redirects",
+      "X-CMS-Schema-Digest": "sha256:6b03f7eaeb88b7ca72a6158b968049d1e6371a413a4903d9fa99c80df795ee98"
+    }
+  },
+  "page-missing": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/pages/nowhere"
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8"
+    }
+  },
+  "page-draft": {
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/pages/unfinished"
+    },
+    "status": 404,
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8"
+    }
+  }
+}

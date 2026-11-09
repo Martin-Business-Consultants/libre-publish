@@ -1,0 +1,392 @@
+{
+  "data": {
+    "entries": [
+      {
+        "blocks": [],
+        "body_markdown": "# Hello\n\nThe <first> post & more.",
+        "category": null,
+        "collection": "posts",
+        "frontmatter": {
+          "category": "news",
+          "cover": "1",
+          "date": "2026-01-01T09:00:00Z",
+          "summary": "The first post."
+        },
+        "id": 1,
+        "locale": "en",
+        "published_at": "2026-01-01T00:00:00Z",
+        "seo": {
+          "meta_description": "The first post.",
+          "meta_title": "Hello",
+          "og_image_id": "1"
+        },
+        "slug": "hello-world",
+        "tags": [],
+        "title": "Hello, world",
+        "translations": [],
+        "updated_at": "2026-01-01T00:00:00Z",
+        "url": "/posts/hello-world"
+      },
+      {
+        "blocks": [],
+        "body_markdown": "",
+        "category": null,
+        "collection": "posts",
+        "frontmatter": {
+          "summary": "Another."
+        },
+        "id": 2,
+        "locale": "en",
+        "published_at": "2026-01-01T00:00:00Z",
+        "seo": {},
+        "slug": "second",
+        "tags": [],
+        "title": "Second",
+        "translations": [],
+        "updated_at": "2026-01-01T00:00:00Z",
+        "url": "/posts/second"
+      },
+      {
+        "blocks": [
+          {
+            "data": {
+              "body": "A project."
+            },
+            "id": "p1",
+            "type": "text"
+          }
+        ],
+        "body_markdown": "",
+        "category": null,
+        "collection": "projects",
+        "frontmatter": {
+          "client": "Acme"
+        },
+        "id": 4,
+        "locale": "en",
+        "published_at": "2026-01-01T00:00:00Z",
+        "seo": {},
+        "slug": "alpha",
+        "tags": [],
+        "title": "Alpha",
+        "translations": [],
+        "updated_at": "2026-01-01T00:00:00Z",
+        "url": "/projects/alpha"
+      }
+    ],
+    "globals": [
+      {
+        "data": {
+          "copyright": "© Acme",
+          "links": [
+            {
+              "href": {
+                "kind": "page",
+                "value": "about"
+              },
+              "label": "About"
+            }
+          ],
+          "logo": "2"
+        },
+        "id": 1,
+        "name": "Footer",
+        "slug": "footer",
+        "updated_at": "2026-01-01T00:00:00Z"
+      }
+    ],
+    "pages": [
+      {
+        "blocks": [
+          {
+            "data": {
+              "body": "**Bold** and a [link](/about).",
+              "contact": {
+                "link": {
+                  "kind": "url",
+                  "value": "https://example.org/contact"
+                },
+                "phone": "555-0100"
+              },
+              "count": 3,
+              "cta": {
+                "collection": "posts",
+                "kind": "entry",
+                "value": "hello-world"
+              },
+              "embed": "<div class=\"x\">&nbsp;</div>",
+              "featured": true,
+              "image": "1",
+              "inner": [
+                {
+                  "data": {
+                    "body": "Nested."
+                  },
+                  "type": "text"
+                }
+              ],
+              "items": [
+                {
+                  "icon": "2",
+                  "label": "One"
+                },
+                {
+                  "label": "Two"
+                }
+              ],
+              "post": "hello-world",
+              "posts": [
+                "hello-world",
+                "second"
+              ],
+              "starts_at": "2026-01-01T09:00:00Z",
+              "summary": "Plain text\non two lines.",
+              "tags": [
+                "a",
+                "b"
+              ],
+              "title": "Every field",
+              "tone": "dark",
+              "website": "https://example.org"
+            },
+            "id": "b1",
+            "type": "every_field"
+          },
+          {
+            "data": {
+              "collection_slug": "posts",
+              "filter_status": "published",
+              "heading": "Latest",
+              "limit": 10,
+              "sort_by": "published_at",
+              "sort_dir": "desc"
+            },
+            "id": "b2",
+            "resolved": {
+              "collection": {
+                "name": "Posts",
+                "slug": "posts"
+              },
+              "entries": [
+                {
+                  "body_markdown": "",
+                  "category": null,
+                  "collection": "posts",
+                  "frontmatter": {
+                    "summary": "Another."
+                  },
+                  "id": 2,
+                  "locale": "en",
+                  "published_at": "2026-01-01T00:00:00Z",
+                  "slug": "second",
+                  "status": "published",
+                  "tags": [],
+                  "title": "Second",
+                  "updated_at": "2026-01-01T00:00:00Z",
+                  "url": "/posts/second"
+                },
+                {
+                  "body_markdown": "# Hello\n\nThe <first> post & more.",
+                  "category": null,
+                  "collection": "posts",
+                  "frontmatter": {
+                    "category": "news",
+                    "cover": "1",
+                    "date": "2026-01-01T09:00:00Z",
+                    "summary": "The first post."
+                  },
+                  "id": 1,
+                  "locale": "en",
+                  "published_at": "2026-01-01T00:00:00Z",
+                  "slug": "hello-world",
+                  "status": "published",
+                  "tags": [],
+                  "title": "Hello, world",
+                  "updated_at": "2026-01-01T00:00:00Z",
+                  "url": "/posts/hello-world"
+                }
+              ],
+              "total": 2
+            },
+            "type": "collection_list"
+          },
+          {
+            "data": {
+              "heading": "Find us"
+            },
+            "id": "b3",
+            "resolved": {
+              "contact": {
+                "title": "Acme"
+              }
+            },
+            "type": "contact_info"
+          }
+        ],
+        "category": null,
+        "frontmatter": {},
+        "id": 1,
+        "locale": "en",
+        "path": "home",
+        "published_at": "2026-01-01T00:00:00Z",
+        "seo": {
+          "meta_description": "What Acme does.",
+          "meta_title": "Acme"
+        },
+        "slug": "home",
+        "tags": [],
+        "title": "Home",
+        "translations": [],
+        "updated_at": "2026-01-01T00:00:00Z",
+        "url": "/"
+      },
+      {
+        "blocks": [
+          {
+            "data": {
+              "body": "About Acme."
+            },
+            "id": "a1",
+            "type": "text"
+          }
+        ],
+        "category": null,
+        "frontmatter": {},
+        "id": 2,
+        "locale": "en",
+        "path": "about",
+        "published_at": "2026-01-01T00:00:00Z",
+        "seo": {},
+        "slug": "about",
+        "tags": [],
+        "title": "About",
+        "translations": [],
+        "updated_at": "2026-01-01T00:00:00Z",
+        "url": "/about"
+      },
+      {
+        "blocks": [],
+        "category": null,
+        "frontmatter": {},
+        "id": 3,
+        "locale": "en",
+        "path": "company",
+        "published_at": "2026-01-01T00:00:00Z",
+        "seo": {},
+        "slug": "company",
+        "tags": [],
+        "title": "Company",
+        "translations": [],
+        "updated_at": "2026-01-01T00:00:00Z",
+        "url": "/company"
+      },
+      {
+        "blocks": [
+          {
+            "data": {
+              "body": "The team."
+            },
+            "id": "t1",
+            "type": "text"
+          }
+        ],
+        "category": null,
+        "frontmatter": {},
+        "id": 4,
+        "locale": "en",
+        "path": "company/team",
+        "published_at": "2026-01-01T00:00:00Z",
+        "seo": {},
+        "slug": "team",
+        "tags": [],
+        "title": "Team",
+        "translations": [],
+        "updated_at": "2026-01-01T00:00:00Z",
+        "url": "/company/team"
+      }
+    ],
+    "removed": {
+      "entries": [],
+      "globals": [],
+      "pages": []
+    }
+  },
+  "included": {
+    "assets": {
+      "1": {
+        "alt": "The logo",
+        "byte_size": 4166,
+        "content_type": "image/png",
+        "filename": "icon.png",
+        "focal_x": 0.5,
+        "focal_y": 0.5,
+        "folder": "/images",
+        "height": 512,
+        "id": 1,
+        "original": "http://example.com/rails/active_storage/blobs/redirect/<blob>/icon.png",
+        "srcset": [
+          {
+            "descriptor": "320w",
+            "url": "http://example.com/rails/active_storage/representations/redirect/<blob>/icon.png",
+            "width": 320
+          },
+          {
+            "descriptor": "640w",
+            "url": "http://example.com/rails/active_storage/representations/redirect/<blob>/icon.png",
+            "width": 640
+          },
+          {
+            "descriptor": "1024w",
+            "url": "http://example.com/rails/active_storage/representations/redirect/<blob>/icon.png",
+            "width": 1024
+          },
+          {
+            "descriptor": "1600w",
+            "url": "http://example.com/rails/active_storage/representations/redirect/<blob>/icon.png",
+            "width": 1600
+          },
+          {
+            "descriptor": "1920w",
+            "url": "http://example.com/rails/active_storage/representations/redirect/<blob>/icon.png",
+            "width": 1920
+          },
+          {
+            "descriptor": "3840w",
+            "url": "http://example.com/rails/active_storage/representations/redirect/<blob>/icon.png",
+            "width": 3840
+          }
+        ],
+        "thumb_url": "http://example.com/rails/active_storage/representations/redirect/<blob>/icon.png",
+        "url": "http://example.com/rails/active_storage/blobs/redirect/<blob>/icon.png",
+        "variants": {
+          "w1280": "http://example.com/rails/active_storage/representations/redirect/<blob>/icon.png",
+          "w1920": "http://example.com/rails/active_storage/representations/redirect/<blob>/icon.png",
+          "w640": "http://example.com/rails/active_storage/representations/redirect/<blob>/icon.png"
+        },
+        "width": 512
+      },
+      "2": {
+        "alt": "The logo",
+        "byte_size": 122,
+        "content_type": "image/svg+xml",
+        "filename": "icon.svg",
+        "focal_x": 0.5,
+        "focal_y": 0.5,
+        "folder": "/images",
+        "height": null,
+        "id": 2,
+        "original": "http://example.com/rails/active_storage/blobs/redirect/<blob>/icon.svg",
+        "srcset": [],
+        "thumb_url": "http://example.com/rails/active_storage/blobs/redirect/<blob>/icon.svg",
+        "url": "http://example.com/rails/active_storage/blobs/redirect/<blob>/icon.svg",
+        "variants": {},
+        "width": null
+      }
+    }
+  },
+  "meta": {
+    "cursor": "<cursor>",
+    "full": true,
+    "since": null
+  }
+}

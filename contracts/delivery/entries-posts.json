@@ -1,0 +1,111 @@
+{
+  "data": [
+    {
+      "blocks": [],
+      "body_markdown": "# Hello\n\nThe <first> post & more.",
+      "category": null,
+      "collection": "posts",
+      "frontmatter": {
+        "category": "news",
+        "cover": "1",
+        "date": "2026-01-01T09:00:00Z",
+        "summary": "The first post."
+      },
+      "id": 1,
+      "locale": "en",
+      "published_at": "2026-01-01T00:00:00Z",
+      "seo": {
+        "meta_description": "The first post.",
+        "meta_title": "Hello",
+        "og_image_id": "1"
+      },
+      "slug": "hello-world",
+      "tags": [],
+      "title": "Hello, world",
+      "translations": [],
+      "updated_at": "2026-01-01T00:00:00Z",
+      "url": "/posts/hello-world"
+    },
+    {
+      "blocks": [],
+      "body_markdown": "",
+      "category": null,
+      "collection": "posts",
+      "frontmatter": {
+        "summary": "Another."
+      },
+      "id": 2,
+      "locale": "en",
+      "published_at": "2026-01-01T00:00:00Z",
+      "seo": {},
+      "slug": "second",
+      "tags": [],
+      "title": "Second",
+      "translations": [],
+      "updated_at": "2026-01-01T00:00:00Z",
+      "url": "/posts/second"
+    }
+  ],
+  "included": {
+    "assets": {
+      "1": {
+        "alt": "The logo",
+        "byte_size": 4166,
+        "content_type": "image/png",
+        "filename": "icon.png",
+        "focal_x": 0.5,
+        "focal_y": 0.5,
+        "folder": "/images",
+        "height": 512,
+        "id": 1,
+        "original": "http://example.com/rails/active_storage/blobs/redirect/<blob>/icon.png",
+        "srcset": [
+          {
+            "descriptor": "320w",
+            "url": "http://example.com/rails/active_storage/representations/redirect/<blob>/icon.png",
+            "width": 320
+          },
+          {
+            "descriptor": "640w",
+            "url": "http://example.com/rails/active_storage/representations/redirect/<blob>/icon.png",
+            "width": 640
+          },
+          {
+            "descriptor": "1024w",
+            "url": "http://example.com/rails/active_storage/representations/redirect/<blob>/icon.png",
+            "width": 1024
+          },
+          {
+            "descriptor": "1600w",
+            "url": "http://example.com/rails/active_storage/representations/redirect/<blob>/icon.png",
+            "width": 1600
+          },
+          {
+            "descriptor": "1920w",
+            "url": "http://example.com/rails/active_storage/representations/redirect/<blob>/icon.png",
+            "width": 1920
+          },
+          {
+            "descriptor": "3840w",
+            "url": "http://example.com/rails/active_storage/representations/redirect/<blob>/icon.png",
+            "width": 3840
+          }
+        ],
+        "thumb_url": "http://example.com/rails/active_storage/representations/redirect/<blob>/icon.png",
+        "url": "http://example.com/rails/active_storage/blobs/redirect/<blob>/icon.png",
+        "variants": {
+          "w1280": "http://example.com/rails/active_storage/representations/redirect/<blob>/icon.png",
+          "w1920": "http://example.com/rails/active_storage/representations/redirect/<blob>/icon.png",
+          "w640": "http://example.com/rails/active_storage/representations/redirect/<blob>/icon.png"
+        },
+        "width": 512
+      }
+    }
+  },
+  "meta": {
+    "next_page": null,
+    "page": 1,
+    "per": 50,
+    "total": 2
+  }
+}

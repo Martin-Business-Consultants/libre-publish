@@ -1,0 +1,13 @@
+{
+  "data": [
+    {
+      "destination": "/about",
+      "source": "/old-about",
+      "status": 301,
+      "wildcard": false
+    }
+  ],
+  "meta": {
+    "total": 1
+  }
+}

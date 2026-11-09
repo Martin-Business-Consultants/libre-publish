@@ -1,0 +1,21 @@
+{
+  "data": {
+    "contact": {},
+    "default_locale": "en",
+    "description": "",
+    "locales": [
+      "en"
+    ],
+    "name": "Acme",
+    "plugin_config": {},
+    "plugins": [
+      "media"
+    ],
+    "url": "https://acme.example"
+  },
+  "meta": {
+    "api_version": "v1",
+    "cms_url": "http://example.com",
+    "cms_version": "1.36.0"
+  }
+}

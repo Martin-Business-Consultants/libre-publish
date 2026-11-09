@@ -1,0 +1,30 @@
+{
+  "data": {
+    "blocks": [
+      {
+        "data": {
+          "body": "About Acme."
+        },
+        "id": "a1",
+        "type": "text"
+      }
+    ],
+    "category": null,
+    "frontmatter": {},
+    "id": 2,
+    "locale": "en",
+    "path": "about",
+    "published_at": "2026-01-01T00:00:00Z",
+    "seo": {},
+    "slug": "about",
+    "tags": [],
+    "title": "About",
+    "translations": [],
+    "updated_at": "2026-01-01T00:00:00Z",
+    "url": "/about"
+  },
+  "included": {
+    "assets": {}
+  },
+  "meta": {}
+}

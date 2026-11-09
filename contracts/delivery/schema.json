@@ -1,0 +1,519 @@
+{
+  "data": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "block_types": {
+      "collection_list": {
+        "data": {
+          "additionalProperties": false,
+          "properties": {
+            "collection_slug": {
+              "title": "Collection",
+              "type": "string",
+              "x-cms-type": "string"
+            },
+            "filter_status": {
+              "enum": [
+                "published",
+                "any"
+              ],
+              "title": "Status",
+              "type": "string",
+              "x-cms-type": "select"
+            },
+            "heading": {
+              "title": "Heading",
+              "type": "string",
+              "x-cms-type": "string"
+            },
+            "limit": {
+              "title": "Limit",
+              "type": "integer",
+              "x-cms-type": "integer"
+            },
+            "sort_by": {
+              "enum": [
+                "published_at",
+                "title"
+              ],
+              "title": "Sort by",
+              "type": "string",
+              "x-cms-type": "select"
+            },
+            "sort_dir": {
+              "enum": [
+                "desc",
+                "asc"
+              ],
+              "title": "Direction",
+              "type": "string",
+              "x-cms-type": "select"
+            }
+          },
+          "required": [
+            "collection_slug"
+          ],
+          "type": "object"
+        },
+        "deprecated": false,
+        "title": "Collection list",
+        "version": 1
+      },
+      "contact_info": {
+        "data": {
+          "additionalProperties": false,
+          "properties": {
+            "heading": {
+              "title": "Heading",
+              "type": "string",
+              "x-cms-type": "string"
+            }
+          },
+          "required": [],
+          "type": "object"
+        },
+        "deprecated": false,
+        "title": "Contact info",
+        "version": 1
+      },
+      "every_field": {
+        "data": {
+          "additionalProperties": false,
+          "properties": {
+            "body": {
+              "title": "Body",
+              "type": "string",
+              "x-cms-type": "markdown"
+            },
+            "contact": {
+              "properties": {
+                "link": {
+                  "properties": {
+                    "collection": {
+                      "type": "string"
+                    },
+                    "kind": {
+                      "enum": [
+                        "url",
+                        "page",
+                        "entry"
+                      ],
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "value"
+                  ],
+                  "title": "Link",
+                  "type": "object",
+                  "x-cms-type": "link"
+                },
+                "phone": {
+                  "title": "Phone",
+                  "type": "string",
+                  "x-cms-type": "string"
+                }
+              },
+              "required": [],
+              "title": "Contact",
+              "type": "object",
+              "x-cms-type": "group"
+            },
+            "count": {
+              "title": "Count",
+              "type": "integer",
+              "x-cms-type": "integer"
+            },
+            "cta": {
+              "properties": {
+                "collection": {
+                  "type": "string"
+                },
+                "kind": {
+                  "enum": [
+                    "url",
+                    "page",
+                    "entry"
+                  ],
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind",
+                "value"
+              ],
+              "title": "Button",
+              "type": "object",
+              "x-cms-type": "link"
+            },
+            "embed": {
+              "title": "Embed",
+              "type": "string",
+              "x-cms-type": "code"
+            },
+            "featured": {
+              "title": "Featured",
+              "type": "boolean",
+              "x-cms-type": "boolean"
+            },
+            "image": {
+              "title": "Image",
+              "type": "string",
+              "x-cms-type": "asset"
+            },
+            "inner": {
+              "items": {
+                "properties": {
+                  "data": {
+                    "type": "object"
+                  },
+                  "type": {
+                    "type": "string"
+                  },
+                  "version": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "type",
+                  "data"
+                ],
+                "type": "object"
+              },
+              "title": "Inner blocks",
+              "type": "array",
+              "x-cms-type": "blocks"
+            },
+            "items": {
+              "items": {
+                "properties": {
+                  "icon": {
+                    "title": "Icon",
+                    "type": "string",
+                    "x-cms-type": "asset"
+                  },
+                  "label": {
+                    "title": "Label",
+                    "type": "string",
+                    "x-cms-type": "string"
+                  }
+                },
+                "required": [
+                  "label"
+                ],
+                "type": "object"
+              },
+              "title": "Items",
+              "type": "array",
+              "x-cms-type": "repeater"
+            },
+            "post": {
+              "title": "Post",
+              "type": "string",
+              "x-cms-type": "record_ref"
+            },
+            "posts": {
+              "items": {
+                "type": "string"
+              },
+              "title": "Posts",
+              "type": "array",
+              "x-cms-type": "record_refs"
+            },
+            "starts_at": {
+              "format": "date-time",
+              "title": "Starts",
+              "type": "string",
+              "x-cms-type": "datetime"
+            },
+            "summary": {
+              "title": "Summary",
+              "type": "string",
+              "x-cms-type": "text"
+            },
+            "tags": {
+              "items": {
+                "type": "string"
+              },
+              "title": "Tags",
+              "type": "array",
+              "x-cms-type": "string_list"
+            },
+            "title": {
+              "title": "Title",
+              "type": "string",
+              "x-cms-type": "string"
+            },
+            "tone": {
+              "enum": [
+                "light",
+                "dark"
+              ],
+              "title": "Tone",
+              "type": "string",
+              "x-cms-type": "select"
+            },
+            "website": {
+              "format": "uri-reference",
+              "title": "Website",
+              "type": "string",
+              "x-cms-type": "url"
+            }
+          },
+          "required": [
+            "title"
+          ],
+          "type": "object"
+        },
+        "deprecated": false,
+        "title": "Every field",
+        "version": 1
+      },
+      "retired": {
+        "data": {
+          "additionalProperties": false,
+          "properties": {
+            "note": {
+              "title": "Note",
+              "type": "string",
+              "x-cms-type": "string"
+            }
+          },
+          "required": [],
+          "type": "object"
+        },
+        "deprecated": true,
+        "title": "Retired",
+        "version": 1
+      },
+      "text": {
+        "data": {
+          "additionalProperties": false,
+          "properties": {
+            "body": {
+              "title": "Body",
+              "type": "string",
+              "x-cms-type": "markdown"
+            }
+          },
+          "required": [],
+          "type": "object"
+        },
+        "deprecated": false,
+        "title": "Text",
+        "version": 1
+      }
+    },
+    "collections": {
+      "posts": {
+        "enable_blocks": false,
+        "frontmatter": {
+          "additionalProperties": false,
+          "properties": {
+            "category": {
+              "enum": [
+                "news",
+                "guides"
+              ],
+              "title": "Category",
+              "type": "string",
+              "x-cms-type": "select"
+            },
+            "cover": {
+              "title": "Cover",
+              "type": "string",
+              "x-cms-type": "asset"
+            },
+            "date": {
+              "format": "date-time",
+              "title": "Date",
+              "type": "string",
+              "x-cms-type": "datetime"
+            },
+            "summary": {
+              "title": "Summary",
+              "type": "string",
+              "x-cms-type": "text"
+            }
+          },
+          "required": [
+            "summary"
+          ],
+          "type": "object"
+        },
+        "routable": true,
+        "title": "Posts"
+      },
+      "projects": {
+        "enable_blocks": true,
+        "frontmatter": {
+          "additionalProperties": false,
+          "properties": {
+            "client": {
+              "title": "Client",
+              "type": "string",
+              "x-cms-type": "string"
+            }
+          },
+          "required": [],
+          "type": "object"
+        },
+        "routable": true,
+        "title": "Projects"
+      }
+    },
+    "globals": {
+      "footer": {
+        "data": {
+          "additionalProperties": false,
+          "properties": {
+            "copyright": {
+              "title": "Copyright",
+              "type": "string",
+              "x-cms-type": "string"
+            },
+            "links": {
+              "items": {
+                "properties": {
+                  "href": {
+                    "properties": {
+                      "collection": {
+                        "type": "string"
+                      },
+                      "kind": {
+                        "enum": [
+                          "url",
+                          "page",
+                          "entry"
+                        ],
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "value"
+                    ],
+                    "title": "Link",
+                    "type": "object",
+                    "x-cms-type": "link"
+                  },
+                  "label": {
+                    "title": "Label",
+                    "type": "string",
+                    "x-cms-type": "string"
+                  }
+                },
+                "required": [],
+                "type": "object"
+              },
+              "title": "Links",
+              "type": "array",
+              "x-cms-type": "repeater"
+            },
+            "logo": {
+              "title": "Logo",
+              "type": "string",
+              "x-cms-type": "asset"
+            }
+          },
+          "required": [],
+          "type": "object"
+        },
+        "title": "Footer"
+      }
+    },
+    "pages": {},
+    "seo": {
+      "additionalProperties": false,
+      "properties": {
+        "canonical_url": {
+          "format": "uri-reference",
+          "title": "Canonical URL",
+          "type": "string",
+          "x-cms-type": "url"
+        },
+        "focus_keyword": {
+          "title": "Focus keyword",
+          "type": "string",
+          "x-cms-type": "string"
+        },
+        "json_ld": {
+          "description": "One node or a list of nodes, each with an @type. Leave blank to use the schema.org type above.",
+          "title": "JSON-LD",
+          "type": "string",
+          "x-cms-type": "json"
+        },
+        "meta_description": {
+          "description": "A concise summary that search engines and previews show under the title.",
+          "title": "Meta description",
+          "type": "string",
+          "x-cms-type": "plain_text"
+        },
+        "meta_title": {
+          "description": "Shown as the result's title. Defaults to the page title.",
+          "title": "Meta title",
+          "type": "string",
+          "x-cms-type": "string"
+        },
+        "nofollow": {
+          "title": "Ask search engines not to follow links",
+          "type": "boolean",
+          "x-cms-type": "boolean"
+        },
+        "noindex": {
+          "title": "Hide from search engines",
+          "type": "boolean",
+          "x-cms-type": "boolean"
+        },
+        "og_description": {
+          "title": "Description override",
+          "type": "string",
+          "x-cms-type": "plain_text"
+        },
+        "og_image_id": {
+          "title": "Social share image",
+          "type": "string",
+          "x-cms-type": "asset"
+        },
+        "og_title": {
+          "title": "Title override",
+          "type": "string",
+          "x-cms-type": "string"
+        },
+        "og_type": {
+          "enum": null,
+          "title": "Open Graph type",
+          "type": "string",
+          "x-cms-type": "select"
+        },
+        "schema_type": {
+          "enum": null,
+          "title": "schema.org type",
+          "type": "string",
+          "x-cms-type": "select"
+        },
+        "twitter_card": {
+          "enum": null,
+          "title": "Twitter card",
+          "type": "string",
+          "x-cms-type": "select"
+        }
+      },
+      "required": [],
+      "type": "object"
+    }
+  },
+  "meta": {
+    "cms_version": "1.36.0",
+    "schema_digest": "sha256:6b03f7eaeb88b7ca72a6158b968049d1e6371a413a4903d9fa99c80df795ee98"
+  }
+}

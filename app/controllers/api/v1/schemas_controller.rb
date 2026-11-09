@@ -7,10 +7,8 @@ class Api::V1::SchemasController < Api::V1::BaseController
   requires_capability "block_types:read", only: :show
 
   def show
-    @block_types = BlockType.order(:slug).to_a
-    @collections = Collection.order(:slug).to_a.select { Serving.collection?(it) }
-    @globals = Global.order(:slug).to_a
-    @pages = Page.live.order(:path).select { it.fields.any? }
+    @schema = DeliverySchema.data
+    @schema_digest = CanonicalJson.digest(@schema)
     cache_tags("schema")
   end
 end

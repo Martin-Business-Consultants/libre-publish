@@ -1,0 +1,6 @@
+{
+  "data": {
+    "mode": "generated",
+    "text": "User-agent: *\nAllow: /\n\nSitemap: https://acme.example/sitemap.xml\n"
+  }
+}

@@ -1,14 +1,8 @@
 # frozen_string_literal: true
 
-# JSON Schema (2020-12) for what a site renders. Each field is annotated with
-# its label (title) and the CMS's type (x-cms-type), which says how to render
-# it: markdown, an asset id, a link, nested blocks…
-json.data do
-  json.set! "$schema", "https://json-schema.org/draft/2020-12/schema"
-  json.block_types(@block_types.to_h { |block_type| [block_type.slug, {title: block_type.label, version: block_type.version, deprecated: block_type.deprecated, data: block_type.json_schema}] })
-  json.collections(@collections.to_h { |collection| [collection.slug, {title: collection.name, enable_blocks: collection.enable_blocks, routable: collection.routable, frontmatter: collection.frontmatter_json_schema}] })
-  json.globals(@globals.to_h { |global| [global.slug, {title: global.name, data: global.frontmatter_json_schema}] })
-  json.pages(@pages.to_h { |page| [page.path, {title: page.title, frontmatter: BlockType.json_schema_for(page.fields)}] })
-  json.seo BlockType.json_schema_for(SeoFields::ALL)
-end
-json.meta({cms_version: Cms::VERSION})
+# JSON Schema (2020-12) for what a site renders (DeliverySchema). Each field is
+# annotated with its label (title) and the CMS's type (x-cms-type), which
+# says how to render it: markdown, an asset id, a link, nested blocks…
+# meta.schema_digest names this exact schema (CanonicalJson of `data`).
+json.data @schema
+json.meta({cms_version: Cms::VERSION, schema_digest: @schema_digest})

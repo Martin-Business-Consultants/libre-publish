@@ -1,0 +1,55 @@
+{
+  "data": [
+    {
+      "enable_blocks": false,
+      "fields": [
+        {
+          "label": "Summary",
+          "name": "summary",
+          "required": true,
+          "type": "text"
+        },
+        {
+          "label": "Cover",
+          "name": "cover",
+          "type": "asset"
+        },
+        {
+          "label": "Category",
+          "name": "category",
+          "options": [
+            "news",
+            "guides"
+          ],
+          "type": "select"
+        },
+        {
+          "label": "Date",
+          "name": "date",
+          "type": "datetime"
+        }
+      ],
+      "id": 1,
+      "name": "Posts",
+      "routable": true,
+      "slug": "posts"
+    },
+    {
+      "enable_blocks": true,
+      "fields": [
+        {
+          "label": "Client",
+          "name": "client",
+          "type": "string"
+        }
+      ],
+      "id": 2,
+      "name": "Projects",
+      "routable": true,
+      "slug": "projects"
+    }
+  ],
+  "meta": {
+    "total": 2
+  }
+}

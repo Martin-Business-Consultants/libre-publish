@@ -1,0 +1,43 @@
+{
+  "data": {
+    "data": {
+      "copyright": "© Acme",
+      "links": [
+        {
+          "href": {
+            "kind": "page",
+            "value": "about"
+          },
+          "label": "About"
+        }
+      ],
+      "logo": "2"
+    },
+    "id": 1,
+    "name": "Footer",
+    "slug": "footer",
+    "updated_at": "2026-01-01T00:00:00Z"
+  },
+  "included": {
+    "assets": {
+      "2": {
+        "alt": "The logo",
+        "byte_size": 122,
+        "content_type": "image/svg+xml",
+        "filename": "icon.svg",
+        "focal_x": 0.5,
+        "focal_y": 0.5,
+        "folder": "/images",
+        "height": null,
+        "id": 2,
+        "original": "http://example.com/rails/active_storage/blobs/redirect/<blob>/icon.svg",
+        "srcset": [],
+        "thumb_url": "http://example.com/rails/active_storage/blobs/redirect/<blob>/icon.svg",
+        "url": "http://example.com/rails/active_storage/blobs/redirect/<blob>/icon.svg",
+        "variants": {},
+        "width": null
+      }
+    }
+  },
+  "meta": {}
+}
