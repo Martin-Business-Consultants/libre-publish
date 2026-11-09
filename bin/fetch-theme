@@ -5,8 +5,9 @@
 # (docs/themes.md), as bin/fetch-plugins does plugins. A theme is
 # usually a site's own work, kept in a private repository, so it comes from
 # the CMS_THEME builder secret: one git URL, optionally with #<tag, branch or
-# commit>, and a token in the URL for a private one. Unset, the install is
-# headless and nothing is fetched.
+# commit>, and a token in the URL for a private one. Unset, empty or `none`,
+# the install is headless and nothing is fetched (`none` is for hosts that
+# won't keep an empty secret, as CMS_PLUGINS has `default`).
 #
 #   CMS_THEME="https://x-access-token:TOKEN@github.com/org/acme-theme#v1.0.0"
 #   bin/fetch-theme                   # reads CMS_THEME, or /run/secrets/CMS_THEME in a build
@@ -32,7 +33,7 @@ elsif File.exist?(SECRET_FILE) then File.read(SECRET_FILE)
 else ENV["CMS_THEME"].to_s
 end.strip
 
-if entry.empty?
+if entry.empty? || entry.casecmp?("none")
   puts "No theme to fetch: the site is headless."
   exit
 end
