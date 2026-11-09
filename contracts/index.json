@@ -8,7 +8,7 @@
     "headers": {
       "Content-Type": "application/json; charset=utf-8",
       "Cache-Tag": "site",
-      "X-CMS-Schema-Digest": "sha256:6b03f7eaeb88b7ca72a6158b968049d1e6371a413a4903d9fa99c80df795ee98"
+      "X-CMS-Schema-Digest": "sha256:1b8cea1cdaacbddb611d4485410f41e5bd39d7a828400d8a310fb05648c02540"
     }
   },
   "schema": {
@@ -20,7 +20,7 @@
     "headers": {
       "Content-Type": "application/json; charset=utf-8",
       "Cache-Tag": "schema",
-      "X-CMS-Schema-Digest": "sha256:6b03f7eaeb88b7ca72a6158b968049d1e6371a413a4903d9fa99c80df795ee98"
+      "X-CMS-Schema-Digest": "sha256:1b8cea1cdaacbddb611d4485410f41e5bd39d7a828400d8a310fb05648c02540"
     }
   },
   "content-full": {
@@ -32,7 +32,7 @@
     "headers": {
       "Content-Type": "application/json; charset=utf-8",
       "Cache-Tag": "content",
-      "X-CMS-Schema-Digest": "sha256:6b03f7eaeb88b7ca72a6158b968049d1e6371a413a4903d9fa99c80df795ee98"
+      "X-CMS-Schema-Digest": "sha256:1b8cea1cdaacbddb611d4485410f41e5bd39d7a828400d8a310fb05648c02540"
     }
   },
   "pages": {
@@ -44,7 +44,7 @@
     "headers": {
       "Content-Type": "application/json; charset=utf-8",
       "Cache-Tag": "pages,page:home,page:about,page:company,page:company/team,collection:posts,site",
-      "X-CMS-Schema-Digest": "sha256:6b03f7eaeb88b7ca72a6158b968049d1e6371a413a4903d9fa99c80df795ee98"
+      "X-CMS-Schema-Digest": "sha256:1b8cea1cdaacbddb611d4485410f41e5bd39d7a828400d8a310fb05648c02540"
     }
   },
   "page-home": {
@@ -56,7 +56,7 @@
     "headers": {
       "Content-Type": "application/json; charset=utf-8",
       "Cache-Tag": "page:home,collection:posts,site",
-      "X-CMS-Schema-Digest": "sha256:6b03f7eaeb88b7ca72a6158b968049d1e6371a413a4903d9fa99c80df795ee98"
+      "X-CMS-Schema-Digest": "sha256:1b8cea1cdaacbddb611d4485410f41e5bd39d7a828400d8a310fb05648c02540"
     }
   },
   "page-about": {
@@ -68,7 +68,7 @@
     "headers": {
       "Content-Type": "application/json; charset=utf-8",
       "Cache-Tag": "page:about",
-      "X-CMS-Schema-Digest": "sha256:6b03f7eaeb88b7ca72a6158b968049d1e6371a413a4903d9fa99c80df795ee98"
+      "X-CMS-Schema-Digest": "sha256:1b8cea1cdaacbddb611d4485410f41e5bd39d7a828400d8a310fb05648c02540"
     }
   },
   "page-nested": {
@@ -80,7 +80,7 @@
     "headers": {
       "Content-Type": "application/json; charset=utf-8",
       "Cache-Tag": "page:company/team",
-      "X-CMS-Schema-Digest": "sha256:6b03f7eaeb88b7ca72a6158b968049d1e6371a413a4903d9fa99c80df795ee98"
+      "X-CMS-Schema-Digest": "sha256:1b8cea1cdaacbddb611d4485410f41e5bd39d7a828400d8a310fb05648c02540"
     }
   },
   "collections": {
@@ -92,7 +92,7 @@
     "headers": {
       "Content-Type": "application/json; charset=utf-8",
       "Cache-Tag": "collection:posts,collection:projects",
-      "X-CMS-Schema-Digest": "sha256:6b03f7eaeb88b7ca72a6158b968049d1e6371a413a4903d9fa99c80df795ee98"
+      "X-CMS-Schema-Digest": "sha256:1b8cea1cdaacbddb611d4485410f41e5bd39d7a828400d8a310fb05648c02540"
     }
   },
   "collection-posts": {
@@ -104,7 +104,7 @@
     "headers": {
       "Content-Type": "application/json; charset=utf-8",
       "Cache-Tag": "collection:posts",
-      "X-CMS-Schema-Digest": "sha256:6b03f7eaeb88b7ca72a6158b968049d1e6371a413a4903d9fa99c80df795ee98"
+      "X-CMS-Schema-Digest": "sha256:1b8cea1cdaacbddb611d4485410f41e5bd39d7a828400d8a310fb05648c02540"
     }
   },
   "entries-posts": {
@@ -116,7 +116,7 @@
     "headers": {
       "Content-Type": "application/json; charset=utf-8",
       "Cache-Tag": "collection:posts,entry:posts/hello-world,entry:posts/second",
-      "X-CMS-Schema-Digest": "sha256:6b03f7eaeb88b7ca72a6158b968049d1e6371a413a4903d9fa99c80df795ee98"
+      "X-CMS-Schema-Digest": "sha256:1b8cea1cdaacbddb611d4485410f41e5bd39d7a828400d8a310fb05648c02540"
     }
   },
   "entry-post": {
@@ -128,7 +128,7 @@
     "headers": {
       "Content-Type": "application/json; charset=utf-8",
       "Cache-Tag": "entry:posts/hello-world",
-      "X-CMS-Schema-Digest": "sha256:6b03f7eaeb88b7ca72a6158b968049d1e6371a413a4903d9fa99c80df795ee98"
+      "X-CMS-Schema-Digest": "sha256:1b8cea1cdaacbddb611d4485410f41e5bd39d7a828400d8a310fb05648c02540"
     }
   },
   "entries-projects": {
@@ -140,7 +140,7 @@
     "headers": {
       "Content-Type": "application/json; charset=utf-8",
       "Cache-Tag": "collection:projects,entry:projects/alpha",
-      "X-CMS-Schema-Digest": "sha256:6b03f7eaeb88b7ca72a6158b968049d1e6371a413a4903d9fa99c80df795ee98"
+      "X-CMS-Schema-Digest": "sha256:1b8cea1cdaacbddb611d4485410f41e5bd39d7a828400d8a310fb05648c02540"
     }
   },
   "globals": {
@@ -152,7 +152,7 @@
     "headers": {
       "Content-Type": "application/json; charset=utf-8",
       "Cache-Tag": "global:footer",
-      "X-CMS-Schema-Digest": "sha256:6b03f7eaeb88b7ca72a6158b968049d1e6371a413a4903d9fa99c80df795ee98"
+      "X-CMS-Schema-Digest": "sha256:1b8cea1cdaacbddb611d4485410f41e5bd39d7a828400d8a310fb05648c02540"
     }
   },
   "global-footer": {
@@ -164,7 +164,7 @@
     "headers": {
       "Content-Type": "application/json; charset=utf-8",
       "Cache-Tag": "global:footer",
-      "X-CMS-Schema-Digest": "sha256:6b03f7eaeb88b7ca72a6158b968049d1e6371a413a4903d9fa99c80df795ee98"
+      "X-CMS-Schema-Digest": "sha256:1b8cea1cdaacbddb611d4485410f41e5bd39d7a828400d8a310fb05648c02540"
     }
   },
   "sitemap": {
@@ -176,7 +176,7 @@
     "headers": {
       "Content-Type": "application/json; charset=utf-8",
       "Cache-Tag": "sitemap",
-      "X-CMS-Schema-Digest": "sha256:6b03f7eaeb88b7ca72a6158b968049d1e6371a413a4903d9fa99c80df795ee98"
+      "X-CMS-Schema-Digest": "sha256:1b8cea1cdaacbddb611d4485410f41e5bd39d7a828400d8a310fb05648c02540"
     }
   },
   "robots": {
@@ -188,7 +188,7 @@
     "headers": {
       "Content-Type": "application/json; charset=utf-8",
       "Cache-Tag": "robots",
-      "X-CMS-Schema-Digest": "sha256:6b03f7eaeb88b7ca72a6158b968049d1e6371a413a4903d9fa99c80df795ee98"
+      "X-CMS-Schema-Digest": "sha256:1b8cea1cdaacbddb611d4485410f41e5bd39d7a828400d8a310fb05648c02540"
     }
   },
   "redirects": {
@@ -200,7 +200,7 @@
     "headers": {
       "Content-Type": "application/json; charset=utf-8",
       "Cache-Tag": "redirects",
-      "X-CMS-Schema-Digest": "sha256:6b03f7eaeb88b7ca72a6158b968049d1e6371a413a4903d9fa99c80df795ee98"
+      "X-CMS-Schema-Digest": "sha256:1b8cea1cdaacbddb611d4485410f41e5bd39d7a828400d8a310fb05648c02540"
     }
   },
   "page-missing": {

@@ -371,12 +371,14 @@ class BlockType::Validator
         .merge(field_type_schema(fd))
     end
 
+    # Every object is closed (additionalProperties: false): the delivery API
+    # hands a site only the keys declared here (DeliveredData), at any depth.
     def field_type_schema(fd)
       case fd["type"]
       when "integer"     then {"type" => "integer"}
       when "boolean"     then {"type" => "boolean"}
       when "datetime"    then {"type" => "string", "format" => "date-time"}
-      when "select"      then {"type" => "string", "enum" => fd["options"]}
+      when "select"      then {"type" => "string", "enum" => select_values(fd)}
       when "link"
         {
           "type" => "object",
@@ -385,7 +387,8 @@ class BlockType::Validator
             "value"      => {"type" => "string"},
             "collection" => {"type" => "string"}
           },
-          "required" => ["kind", "value"]
+          "required" => ["kind", "value"],
+          "additionalProperties" => false
         }
       when "record_refs" then {"type" => "array", "items" => {"type" => "string"}}
       when "string_list" then {"type" => "array", "items" => {"type" => "string"}}
@@ -395,31 +398,45 @@ class BlockType::Validator
           "items" => {
             "type" => "object",
             "properties" => Array(fd["of"]).to_h { |sf| [sf["name"], field_to_json_schema(sf)] },
-            "required" => Array(fd["of"]).select { |sf| sf["required"] == true }.map { |sf| sf["name"] }
+            "required" => Array(fd["of"]).select { |sf| sf["required"] == true }.map { |sf| sf["name"] },
+            "additionalProperties" => false
           }
         }
       when "group"
         {
           "type" => "object",
           "properties" => Array(fd["of"]).to_h { |sf| [sf["name"], field_to_json_schema(sf)] },
-          "required" => Array(fd["of"]).select { |sf| sf["required"] == true }.map { |sf| sf["name"] }
+          "required" => Array(fd["of"]).select { |sf| sf["required"] == true }.map { |sf| sf["name"] },
+          "additionalProperties" => false
         }
       when "blocks"
+        # Each item's `data` is its block type's (block_types.<type>.data);
+        # x-cms-allowed-types names the types it may be, when it's limited.
         {
           "type"  => "array",
           "items" => {
             "type" => "object",
             "properties" => {
+              "id"      => {"type" => "string"},
               "type"    => {"type" => "string"},
               "version" => {"type" => "integer"},
               "data"    => {"type" => "object"}
             },
-            "required" => ["type", "data"]
+            "required" => ["type", "data"],
+            "additionalProperties" => false
           }
-        }
+        }.merge(fd["allowed_types"].present? ? {"x-cms-allowed-types" => Array(fd["allowed_types"])} : {})
       when "url"         then {"type" => "string", "format" => "uri-reference"}
       else {"type" => "string"}
       end
+    end
+
+    # A select's values: `options` (strings), or the core's own `choices`
+    # ([label, value] pairs, SeoFields).
+    def select_values(fd)
+      return fd["options"] if fd["options"].is_a?(Array)
+
+      Array(fd["choices"]).map { it.is_a?(Array) ? it.last : it }
     end
   end
 end

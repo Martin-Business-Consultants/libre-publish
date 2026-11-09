@@ -51,8 +51,14 @@ RSpec.describe "Delivery contract", type: :request do
   def upload(path, type) = Asset.upload!(Rack::Test::UploadedFile.new(Rails.root.join(path), type), folder: "/images", alt: "The logo")
 
   # A small site with every field type, live and draft records, a collection
-  # with blocks, a collection list, nested pages, a global, an asset and a redirect.
+  # with blocks, a collection list, nested pages, a global, an asset and a
+  # redirect -- and keys left over from older data at every depth (`stale`),
+  # plus blocks whose type is gone, none of which may be delivered.
   def seed!
+    # Record ids appear in the answers. SQLite's autoincrement counters
+    # outlive a rolled-back example, so start them over: the same ids
+    # whatever ran before.
+    ActiveRecord::Base.connection.execute("DELETE FROM sqlite_sequence")
     serve_over_api
     Setting.set("general", Setting.get("general").merge(
       "title" => "Acme", "site_base_url" => "https://acme.example", "serving" => "api_only", "api_pages" => true
@@ -114,7 +120,7 @@ RSpec.describe "Delivery contract", type: :request do
       frontmatter: {"summary" => "The first post.", "cover" => png.id.to_s, "category" => "news", "date" => "2026-01-01T09:00:00Z"},
       seo: {"meta_title" => "Hello", "meta_description" => "The first post.", "og_image_id" => png.id.to_s})
     posts.entries.create!(slug: "second", title: "Second", status: "published", locale: "en", published_at: 1.day.ago,
-      frontmatter: {"summary" => "Another."})
+      frontmatter: {"summary" => "Another.", "stale" => "x"})
     posts.entries.create!(slug: "not-yet", title: "Not yet", status: "draft", locale: "en", frontmatter: {"summary" => "Draft."})
     projects.entries.create!(slug: "alpha", title: "Alpha", status: "published", locale: "en", published_at: 1.day.ago,
       frontmatter: {"client" => "Acme"},
@@ -127,11 +133,11 @@ RSpec.describe "Delivery contract", type: :request do
         {"name" => "label", "label" => "Label", "type" => "string"},
         {"name" => "href", "label" => "Link", "type" => "link"}
       ]}
-    ]}, data: {"copyright" => "© Acme", "logo" => svg.id.to_s,
+    ]}, data: {"copyright" => "© Acme", "logo" => svg.id.to_s, "stale" => "x",
                "links" => [{"label" => "About", "href" => {"kind" => "page", "value" => "about"}}]})
 
     Page.create!(slug: "home", title: "Home", status: "published", locale: "en", published_at: 3.days.ago,
-      seo: {"meta_title" => "Acme", "meta_description" => "What Acme does."},
+      seo: {"meta_title" => "Acme", "meta_description" => "What Acme does.", "stale" => "x"},
       blocks: [
         {"id" => "b1", "type" => "every_field", "data" => {
           "title" => "Every field", "summary" => "Plain text\non two lines.", "body" => "**Bold** and a [link](/about).",
@@ -139,9 +145,10 @@ RSpec.describe "Delivery contract", type: :request do
           "website" => "https://example.org", "starts_at" => "2026-01-01T09:00:00Z",
           "cta" => {"kind" => "entry", "value" => "hello-world", "collection" => "posts"},
           "image" => png.id.to_s, "post" => "hello-world", "posts" => %w[hello-world second], "tags" => %w[a b],
-          "items" => [{"label" => "One", "icon" => svg.id.to_s}, {"label" => "Two"}],
-          "contact" => {"phone" => "555-0100", "link" => {"kind" => "url", "value" => "https://example.org/contact"}},
-          "inner" => [{"type" => "text", "data" => {"body" => "Nested."}}]
+          "items" => [{"label" => "One", "icon" => svg.id.to_s, "stale" => true}, {"label" => "Two"}],
+          "contact" => {"phone" => "555-0100", "stale" => "x", "link" => {"kind" => "url", "value" => "https://example.org/contact", "stale" => "x"}},
+          "inner" => [{"type" => "text", "data" => {"body" => "Nested.", "stale" => 1}, "stale" => 1}],
+          "stale" => "a field since removed"
         }},
         {"id" => "b2", "type" => "collection_list", "data" => {"collection_slug" => "posts", "heading" => "Latest",
                                                                "filter_status" => "published", "sort_by" => "published_at", "sort_dir" => "desc", "limit" => 10}},
@@ -156,6 +163,14 @@ RSpec.describe "Delivery contract", type: :request do
     about.touch
 
     Redirect.create!(source_path: "/old-about", destination_url: "/about", status_code: 301)
+
+    # Blocks whose type has since been deleted, written straight to the
+    # column as a deletion leaves them: there's no schema for them to be held to.
+    home = Page.find_by!(slug: "home")
+    blocks = home.blocks.deep_dup
+    blocks.first["data"]["inner"] << {"type" => "gone", "data" => {"body" => "No type."}}
+    blocks << {"id" => "b0", "type" => "gone", "data" => {"body" => "Its block type was deleted."}}
+    home.update_columns(blocks: blocks)
   end
 
   # What changes from run to run, made stable: times, the content cursor,
@@ -193,6 +208,10 @@ RSpec.describe "Delivery contract", type: :request do
     expect(index.values.filter_map { it.dig("headers", "X-CMS-Schema-Digest") }.uniq)
       .to eq([CanonicalJson.digest(JSON.parse(response_for_schema(answers)))])
     expect(answers.dig("schema", "meta", "schema_digest")).to eq(index.dig("schema", "headers", "X-CMS-Schema-Digest"))
+
+    # Nothing the schema doesn't declare is delivered, at any depth.
+    leaks = answers.except("schema").select { |_, body| JSON.generate(body).match?(/stale|No type\.|Its block type was deleted/) }
+    expect(leaks.keys).to be_empty, -> { "Undeclared keys delivered in: #{leaks.map { |name, body| "#{name}: #{JSON.generate(body).scan(/.{0,80}(?:stale|No type\.|block type was deleted).{0,40}/).first}" }.join("\n")}" }
 
     files = answers.to_h { |name, body| ["delivery/#{name}.json", body] }
     files["index.json"] = index

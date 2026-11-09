@@ -85,8 +85,10 @@
               "x-cms-type": "markdown"
             },
             "contact": {
+              "additionalProperties": false,
               "properties": {
                 "link": {
+                  "additionalProperties": false,
                   "properties": {
                     "collection": {
                       "type": "string"
@@ -128,6 +130,7 @@
               "x-cms-type": "integer"
             },
             "cta": {
+              "additionalProperties": false,
               "properties": {
                 "collection": {
                   "type": "string"
@@ -169,9 +172,13 @@
             },
             "inner": {
               "items": {
+                "additionalProperties": false,
                 "properties": {
                   "data": {
                     "type": "object"
+                  },
+                  "id": {
+                    "type": "string"
                   },
                   "type": {
                     "type": "string"
@@ -188,10 +195,14 @@
               },
               "title": "Inner blocks",
               "type": "array",
+              "x-cms-allowed-types": [
+                "text"
+              ],
               "x-cms-type": "blocks"
             },
             "items": {
               "items": {
+                "additionalProperties": false,
                 "properties": {
                   "icon": {
                     "title": "Icon",
@@ -380,8 +391,10 @@
             },
             "links": {
               "items": {
+                "additionalProperties": false,
                 "properties": {
                   "href": {
+                    "additionalProperties": false,
                     "properties": {
                       "collection": {
                         "type": "string"
@@ -490,19 +503,41 @@
           "x-cms-type": "string"
         },
         "og_type": {
-          "enum": null,
+          "enum": [
+            "article",
+            "product",
+            "profile",
+            "video.other",
+            "website"
+          ],
           "title": "Open Graph type",
           "type": "string",
           "x-cms-type": "select"
         },
         "schema_type": {
-          "enum": null,
+          "enum": [
+            "Article",
+            "BlogPosting",
+            "Event",
+            "FAQPage",
+            "HowTo",
+            "LocalBusiness",
+            "NewsArticle",
+            "Product",
+            "Recipe",
+            "WebPage"
+          ],
           "title": "schema.org type",
           "type": "string",
           "x-cms-type": "select"
         },
         "twitter_card": {
-          "enum": null,
+          "enum": [
+            "app",
+            "player",
+            "summary",
+            "summary_large_image"
+          ],
           "title": "Twitter card",
           "type": "string",
           "x-cms-type": "select"
@@ -514,6 +549,6 @@
   },
   "meta": {
     "cms_version": "1.36.0",
-    "schema_digest": "sha256:6b03f7eaeb88b7ca72a6158b968049d1e6371a413a4903d9fa99c80df795ee98"
+    "schema_digest": "sha256:1b8cea1cdaacbddb611d4485410f41e5bd39d7a828400d8a310fb05648c02540"
   }
 }

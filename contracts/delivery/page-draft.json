@@ -1,4 +1,4 @@
 {
   "error": "not_found",
-  "message": "Couldn't find Page with [WHERE \"pages\".\"deleted_at\" IS NULL AND \"pages\".\"status\" = ? AND \"pages\".\"path\" = ?]"
+  "message": "No page there."
 }

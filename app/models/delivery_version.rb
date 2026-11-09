@@ -5,8 +5,9 @@
 # page, entry or global's JSON reads — the records (trashed ones too, so a
 # trash or restore counts), their taxonomy and translation siblings, their
 # collections, and Settings (the default locale shapes every URL, General's
-# contact details fill contact_info blocks), and patterns (a synced one is
-# drawn into every page that uses it). Each table answers with its row
+# contact details fill contact_info blocks), patterns (a synced one is
+# drawn into every page that uses it), and block types (what a block's data
+# delivers is what its type declares, DeliveredData). Each table answers with its row
 # count, its newest updated_at and the sum of them all, so an insert, an edit
 # and a delete all move it — the sum even when the edited row's new time
 # isn't the newest (a row imported with a later clock's timestamp).
@@ -26,6 +27,6 @@ module DeliveryVersion
 
   def scopes
     [Page.with_discarded, CollectionEntry.with_discarded, Global.with_discarded, Collection.all, Tagging.all,
-      TranslationGroup.all, Setting.all, BlockPattern.all]
+      TranslationGroup.all, Setting.all, BlockPattern.all, BlockType.all]
   end
 end

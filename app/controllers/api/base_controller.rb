@@ -95,8 +95,11 @@ class Api::BaseController < ApplicationController
     ApiToken.authenticate(plaintext) || ServiceToken.authenticate(plaintext)
   end
 
+  # Says what wasn't found, not how it was looked for: Active Record's own
+  # message carries the query.
   def render_not_found(error)
-    render json: {error: "not_found", message: error.message}, status: :not_found
+    thing = error.model.presence&.underscore&.humanize&.downcase || "record"
+    render json: {error: "not_found", message: "No #{thing} there."}, status: :not_found
   end
 
   def render_invalid(error)
