@@ -30,6 +30,7 @@ checkout with `bin/install`.
 | `CMS_ALLOW_PRIVATE_WEBHOOKS` | `true` lets webhooks, build hooks and a site's purge URL point at private, loopback or link-local addresses — for an install whose receivers are on its own network. Off by default (on while developing). |
 | `CMS_FORCE_SSL` | `false` to serve the admin over plain HTTP. Otherwise, when `APP_PROTOCOL` is `https`, HTTP redirects to HTTPS (except `/up` and localhost), with Strict-Transport-Security and Secure cookies. Behind a proxy that forwards plain HTTP, set `ASSUME_SSL=true` too, or the redirect loops. |
 | `CMS_PLUGINS` | The install's plugins, for a Docker build (see Plugins below). |
+| `CMS_THEME` | The site's theme, for a Docker build: a git URL (docs/themes.md). Empty or `none`, the install is headless. |
 | `CMS_RELEASES_REPO`, `CMS_RELEASES_TOKEN` | Where the daily update check looks (default `Martin-Business-Consultants/libre-publish`), and a token if that repo is private. |
 | `CMS_UPDATE_CHECK` | `false` stops the daily check for a newer release. |
 | `CMS_UPDATES` | How Settings › Updates updates: `local` (bin/update), `github` (the Deploy workflow), `in_place` (a Docker install updating itself), `manual` (shows the command), or a plugin's strategy (docs/plugins.md). Worked out from the install when unset. |

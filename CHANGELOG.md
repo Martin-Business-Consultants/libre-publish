@@ -8,6 +8,11 @@ out.
 
 ## Unreleased
 
+### Changed
+- **`CMS_THEME=none`** builds a headless install, as an empty `CMS_THEME`
+  does, for hosts that won't keep an empty secret (as `CMS_PLUGINS` has
+  `default`).
+
 ## 1.36.0
 
 ### Removed
