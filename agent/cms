@@ -140,10 +140,9 @@ PROFILE = opt!("--profile") || env_profile || default_profile
 
 config = PROFILE ? load_profile(PROFILE) : {}
 # The environment wins over a file: CI and one-offs should not need a profile.
-# USER_AGENT_TOKEN is the name; CMS_TOKEN is honoured for installs predating it.
+# CMS_TOKEN is not read here: that name is the published site's read-only token.
 BASE  = (ENV["CMS_URL"].presence || config["CMS_URL"]).to_s.chomp("/")
-TOKEN = (ENV["USER_AGENT_TOKEN"].presence || ENV["CMS_TOKEN"].presence ||
-         config["USER_AGENT_TOKEN"].presence || config["CMS_TOKEN"]).to_s
+TOKEN = (ENV["USER_AGENT_TOKEN"].presence || config["USER_AGENT_TOKEN"]).to_s
 
 # --- talking to the API -----------------------------------------------------
 

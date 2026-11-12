@@ -39,7 +39,7 @@ archive = options[:file]
 unless archive
   settings = ARGV.first ? profile(ARGV.first) : {}
   url = (options[:url] || settings["CMS_URL"]).to_s.chomp("/")
-  token = options[:token] || settings["USER_AGENT_TOKEN"] || settings["CMS_TOKEN"]
+  token = options[:token] || settings["USER_AGENT_TOKEN"]
   abort "Which site? Give a profile, or --url and --token." if url.empty? || token.to_s.empty?
 
   FileUtils.mkdir_p(File.join(APP_ROOT, "tmp/pulls"))

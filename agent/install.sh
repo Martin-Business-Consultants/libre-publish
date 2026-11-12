@@ -119,7 +119,7 @@ CMS="$BIN_DIR/cms"
 step "Connect"
 mkdir -p "$CONFIG_DIR"
 
-token="${USER_AGENT_TOKEN:-${CMS_TOKEN:-}}"
+token="${USER_AGENT_TOKEN:-}"
 if [ -n "$token" ]; then
   # A token supplied up front: CI, or a re-run of a machine that already has
   # one. Verify it rather than writing a credential that turns out to be dead.
