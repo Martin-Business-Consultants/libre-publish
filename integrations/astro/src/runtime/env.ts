@@ -1,7 +1,6 @@
 /**
- * The CMS connection when a page renders: from astro:env (CMS_BASE_URL or
- * CMS_URL, and CMS_API_TOKEN or PRODUCTION_TOKEN; on Cloudflare, the Worker's
- * variables and secrets), or, while
+ * The CMS connection when a page renders: from astro:env (CMS_URL and
+ * CMS_TOKEN; on Cloudflare, the Worker's variables and secrets), or, while
  * the build prerenders in Node, the connection the integration resolved.
  *
  * On Cloudflare, prerender in Node — `cloudflare({ prerenderEnvironment:
@@ -25,7 +24,7 @@ export function runtimeConnection(): { url: string; token: string } {
   if (built) return built;
 
   throw new Error(
-    "@libre-publish/astro: CMS_BASE_URL (or CMS_URL) and CMS_API_TOKEN (or PRODUCTION_TOKEN) aren't set where this page renders. " +
+    "@libre-publish/astro: CMS_URL and CMS_TOKEN aren't set where this page renders. " +
     "On Cloudflare, set them as the Worker's variables and secrets (locally: .dev.vars beside the wrangler config); " +
     'for prerendering at build time, use cloudflare({ prerenderEnvironment: "node" }).',
   );

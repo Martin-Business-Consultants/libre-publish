@@ -10,7 +10,7 @@ require "securerandom"
 # in a site's environment — the site inherits an admin's reach, and anything
 # that happens to the human (rotating their token, a role change, an account
 # migration) takes production with it. A ServiceToken belongs to the site,
-# names what it's for, and carries a role chosen for that job: `PRODUCTION_TOKEN`
+# names what it's for, and carries a role chosen for that job: `CMS_TOKEN`
 # is read-only, `USER_AGENT_TOKEN` can write but not publish, so its edits to
 # live content land in the review queue rather than on the site.
 #

@@ -95,9 +95,8 @@ test("libre-publish-astro sync writes the lock; check exits 1 once the CMS moves
   const root = await mkdtemp(join(tmpdir(), "lp-cli-"));
   const lines = [];
   const out = (line) => lines.push(line);
-  // The Worker's names work too: CMS_URL and PRODUCTION_TOKEN.
   process.env.CMS_URL = "https://cms.test";
-  process.env.PRODUCTION_TOKEN = "t";
+  process.env.CMS_TOKEN = "t";
   const saved = globalThis.fetch;
   try {
     globalThis.fetch = cms().fetcher;
@@ -121,6 +120,6 @@ test("libre-publish-astro sync writes the lock; check exits 1 once the CMS moves
   } finally {
     globalThis.fetch = saved;
     delete process.env.CMS_URL;
-    delete process.env.PRODUCTION_TOKEN;
+    delete process.env.CMS_TOKEN;
   }
 });

@@ -9,8 +9,8 @@
 # docs/cms-publish.yml in the CMS repo), then set the
 # repository secrets it reads:
 #
-#   CMS_BASE_URL    https://<site>.librepublish.com
-#   CMS_API_TOKEN   the site's read-only service token (Settings › Service
+#   CMS_URL    https://<site>.librepublish.com
+#   CMS_TOKEN   the site's read-only service token (Settings › Service
 #                   tokens, "Production site" role)
 #
 # and pick ONE deploy step at the bottom (Cloudflare Pages, Netlify or GitHub
@@ -54,8 +54,8 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          CMS_BASE_URL: ${{ secrets.CMS_BASE_URL }}
-          CMS_API_TOKEN: ${{ secrets.CMS_API_TOKEN }}
+          CMS_URL: ${{ secrets.CMS_URL }}
+          CMS_TOKEN: ${{ secrets.CMS_TOKEN }}
 
       - uses: actions/upload-artifact@v4
         with:

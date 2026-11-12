@@ -9,7 +9,7 @@
  *
  *   export default defineConfig({ adapter: cloudflare(), integrations: [cms()] });
  *
- * With CMS_BASE_URL (or CMS_URL) and CMS_API_TOKEN (or PRODUCTION_TOKEN) set
+ * With CMS_URL and CMS_TOKEN set
  * (environment or .env), it:
  *
  *   - reads the CMS's schema and holds it to cms.lock.json: `astro build`,
@@ -56,9 +56,9 @@ export const NAME = "libre-publish";
 export const VERSION: string = createRequire(import.meta.url)("../package.json").version;
 
 export interface CmsOptions {
-  /** The CMS's address. Default: CMS_BASE_URL, else CMS_URL. */
+  /** The CMS's address. Default: CMS_URL. */
   url?: string;
-  /** The site's service token ("Production site" role). Default: CMS_API_TOKEN, else PRODUCTION_TOKEN. Keep it out of source. */
+  /** The site's service token ("Production site" role). Default: CMS_TOKEN. Keep it out of source. */
   token?: string;
   /** Configure Astro's i18n from the CMS's locales. Default: true. */
   i18n?: boolean;
@@ -113,10 +113,8 @@ export default function cms(options: CmsOptions = {}): AstroIntegration {
         updateConfig({
           env: {
             schema: {
-              CMS_BASE_URL: envField.string({ context: "server", access: "secret", optional: true }),
               CMS_URL: envField.string({ context: "server", access: "secret", optional: true }),
-              CMS_API_TOKEN: envField.string({ context: "server", access: "secret", optional: true }),
-              PRODUCTION_TOKEN: envField.string({ context: "server", access: "secret", optional: true }),
+              CMS_TOKEN: envField.string({ context: "server", access: "secret", optional: true }),
               CMS_WEBHOOK_SECRET: envField.string({ context: "server", access: "secret", optional: true }),
               CLOUDFLARE_ZONE_ID: envField.string({ context: "server", access: "secret", optional: true }),
               CLOUDFLARE_API_TOKEN: envField.string({ context: "server", access: "secret", optional: true }),
@@ -127,7 +125,7 @@ export default function cms(options: CmsOptions = {}): AstroIntegration {
         if (command === "preview") return;
 
         if (!connection) {
-          const message = "CMS_BASE_URL (or CMS_URL) and CMS_API_TOKEN (or PRODUCTION_TOKEN) aren't set (environment or .env), so the site can't read the CMS.";
+          const message = "CMS_URL and CMS_TOKEN aren't set (environment or .env), so the site can't read the CMS.";
           if (strict()) throw new Error(message);
           logger.warn(message);
           return;
@@ -254,7 +252,7 @@ export default function cms(options: CmsOptions = {}): AstroIntegration {
           for (const file of local.missing) logger.warn(`localFiles: the CMS has no file at ${file}: pages still link it there`);
         }
         // A fully prerendered site reads the CMS only while it builds; one rendered on demand needs it at run time.
-        if (render === "static" && await scrubDevVars(serverDir)) logger.info("CMS_BASE_URL and CMS_API_TOKEN left out of the server's .dev.vars");
+        if (render === "static" && await scrubDevVars(serverDir)) logger.info("CMS_URL and CMS_TOKEN left out of the server's .dev.vars");
 
         if (sitemap) {
           const file = new URL("sitemap.xml", assetsDir);

@@ -8,7 +8,7 @@
 #   package.json   adds @librepublish/astro — Forms and Media, the CMS's default
 #                  plugins, are part of it, and Commerce's <QuoteRequest> (npm,
 #                  pnpm, yarn or bun: whichever the project uses)
-#   .env           CMS_BASE_URL and CMS_API_TOKEN (kept out of git)
+#   .env           CMS_URL and CMS_TOKEN (kept out of git)
 #
 # and prints what to add to astro.config if cms() isn't there yet. The
 # integration lives at github.com/Martin-Business-Consultants/libre-cms-astro
@@ -17,7 +17,7 @@
 #
 # The token is the site's own read-only service token, approved in your
 # browser — nobody copies one out of a settings page. For CI, pass one
-# instead: CMS_API_TOKEN=lps_… sh -c "$(curl -fsSL __CMS_URL__/frontend/install.sh)"
+# instead: CMS_TOKEN=lps_… sh -c "$(curl -fsSL __CMS_URL__/frontend/install.sh)"
 #
 # Then `npx astro dev` writes AGENTS.md (how this site works with the CMS,
 # and the Site health checks it's held to). Re-running is safe: it updates
@@ -72,9 +72,9 @@ step "Connect"
 # A value from JSON on stdin by dotted path; a list comes out comma-separated.
 json() { node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{const v=process.argv[1].split(".").reduce((o,k)=>o?.[k],JSON.parse(s));console.log(Array.isArray(v)?v.join(","):(v??""))}catch{console.log("")}})' "$1"; }
 
-token="${CMS_API_TOKEN:-}"
+token="${CMS_TOKEN:-}"
 if [ -z "$token" ] && [ -f "$ROOT/.env" ]; then
-  token="$(sed -n 's/^CMS_API_TOKEN=//p' "$ROOT/.env" | tail -1)"
+  token="$(sed -n 's/^CMS_TOKEN=//p' "$ROOT/.env" | tail -1)"
 fi
 
 if [ -n "$token" ]; then
@@ -110,7 +110,7 @@ elif [ -r /dev/tty ]; then
   say "  ✓ approved: the site has a read-only service token of its own"
 else
   die "no terminal to approve in, and no token. Pass one:
-    CMS_API_TOKEN=lps_… sh -c \"\$(curl -fsSL $CMS_URL/frontend/install.sh)\""
+    CMS_TOKEN=lps_… sh -c \"\$(curl -fsSL $CMS_URL/frontend/install.sh)\""
 fi
 
 # The delivery API the site reads (/api/v1), to check the token works.
@@ -119,14 +119,14 @@ check="$(curl -sS -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $toke
 
 env_file="$ROOT/.env"
 touch "$env_file"
-grep -v '^CMS_BASE_URL=\|^CMS_API_TOKEN=' "$env_file" > "$env_file.tmp" || true
-{ cat "$env_file.tmp"; printf 'CMS_BASE_URL=%s\nCMS_API_TOKEN=%s\n' "$CMS_URL" "$token"; } > "$env_file"
+grep -v '^CMS_URL=\|^CMS_TOKEN=' "$env_file" > "$env_file.tmp" || true
+{ cat "$env_file.tmp"; printf 'CMS_URL=%s\nCMS_TOKEN=%s\n' "$CMS_URL" "$token"; } > "$env_file"
 rm -f "$env_file.tmp"
 chmod 600 "$env_file"
 if [ ! -f "$ROOT/.gitignore" ] || ! grep -qx '.env' "$ROOT/.gitignore"; then
   printf '.env\n' >> "$ROOT/.gitignore"
 fi
-say "  ✓ .env (CMS_BASE_URL, CMS_API_TOKEN) — kept out of git"
+say "  ✓ .env (CMS_URL, CMS_TOKEN) — kept out of git"
 
 # ── 3. Packages ─────────────────────────────────────────────────────────────
 step "Packages"

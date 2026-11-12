@@ -10,19 +10,19 @@ import type { CmsSchema } from "./types.js";
 
 export interface Connection { url: string; token: string }
 
-/** The variables a connection can come from, in the order they're read. */
-export const URL_VARIABLES = ["CMS_BASE_URL", "CMS_URL"] as const;
-export const TOKEN_VARIABLES = ["CMS_API_TOKEN", "PRODUCTION_TOKEN"] as const;
+/** The two variables a connection comes from. There are no other names for them. */
+export const URL_VARIABLE = "CMS_URL";
+export const TOKEN_VARIABLE = "CMS_TOKEN";
 
 /**
- * The CMS's address (CMS_BASE_URL, else CMS_URL) and the site's token
- * (CMS_API_TOKEN, else PRODUCTION_TOKEN), from whatever `read` looks in. A
+ * The CMS's address (CMS_URL) and the site's token
+ * (CMS_TOKEN), from whatever `read` looks in. A
  * trailing /api or /api/v1 on the address is dropped: the client adds it.
  */
 export function connectionFrom(read: (name: string) => string | undefined, options: { url?: string; token?: string } = {}): Connection | null {
-  const first = (names: readonly string[]) => names.map(read).find((value) => typeof value === "string" && value.trim() !== "");
-  const url = options.url ?? first(URL_VARIABLES);
-  const token = options.token ?? first(TOKEN_VARIABLES);
+  const set = (name: string) => { const value = read(name); return typeof value === "string" && value.trim() !== "" ? value : undefined; };
+  const url = options.url ?? set(URL_VARIABLE);
+  const token = options.token ?? set(TOKEN_VARIABLE);
   return url && token ? { url: url.trim().replace(/\/+$/, "").replace(/\/api(\/v1)?$/, ""), token: token.trim() } : null;
 }
 
@@ -57,7 +57,7 @@ export function heldConnection(): Connection | null {
 export function buildConnection(): Connection {
   const connection = heldConnection();
   if (!connection) {
-    throw new Error("@libre-publish/astro: no CMS connection. Add cms() to astro.config's integrations and set CMS_BASE_URL and CMS_API_TOKEN.");
+    throw new Error("@libre-publish/astro: no CMS connection. Add cms() to astro.config's integrations and set CMS_URL and CMS_TOKEN.");
   }
   return connection;
 }

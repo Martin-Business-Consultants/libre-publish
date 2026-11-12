@@ -46,8 +46,8 @@ With pnpm, let it build (`allowBuilds` in `pnpm-workspace.yaml`): `prepare` comp
 `.env` (keep it out of git):
 
 ```sh
-CMS_BASE_URL=https://cms.example.com    # or CMS_URL
-CMS_API_TOKEN=…                         # or PRODUCTION_TOKEN: a service token on the "Production site" role
+CMS_URL=https://cms.example.com
+CMS_TOKEN=…                         # a service token on the "Production site" role
 ```
 
 The CMS must serve the site over the API: Settings › General › How the site
@@ -249,7 +249,7 @@ export const collections = {
 
 On Cloudflare, prerender in Node (`prerenderEnvironment: "node"`): workerd
 doesn't read `.env` at build time. At request time the server reads
-`CMS_BASE_URL` (or `CMS_URL`) and `CMS_API_TOKEN` (or `PRODUCTION_TOKEN`)
+`CMS_URL` and `CMS_TOKEN`
 from its environment: on Cloudflare, the Worker's variables and secrets;
 locally, `.dev.vars`.
 
@@ -257,7 +257,7 @@ locally, `.dev.vars`.
 
 | Option | Default | |
 |---|---|---|
-| `url`, `token` | `CMS_BASE_URL` or `CMS_URL`; `CMS_API_TOKEN` or `PRODUCTION_TOKEN` | Where the CMS is, and the site's service token. |
+| `url`, `token` | `CMS_URL`; `CMS_TOKEN` | Where the CMS is, and the site's service token. |
 | `i18n` | `true` | Sets up Astro's i18n from the CMS's locales. Every locale except the default gets a path prefix. |
 | `sitemap` | `true` | Adds `/sitemap.xml`, and `/robots.txt` unless `public/robots.txt` exists. After a build, the sitemap keeps only the URLs the site serves. |
 | `report` | `true` | Tells the CMS about each build: how the site renders, its webhook, and the content cursor it built from. |

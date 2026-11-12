@@ -4,7 +4,7 @@
  *   npx libre-publish-astro sync     read the CMS's schema now and write cms.lock.json
  *   npx libre-publish-astro check    exit 1 when the CMS's schema isn't the locked one
  *
- * It reads CMS_BASE_URL (or CMS_URL) and CMS_API_TOKEN (or PRODUCTION_TOKEN) as `astro build` does (the
+ * It reads CMS_URL and CMS_TOKEN as `astro build` does (the
  * environment, then .env). After a sync, run `astro check`: the generated
  * types follow the new schema, so it names every place the site must change.
  */
@@ -28,7 +28,7 @@ export async function main(argv: string[], out: (line: string) => void = console
 
   const connection = resolveConnection(root, "production", {});
   if (!connection) {
-    out("CMS_BASE_URL (or CMS_URL) and CMS_API_TOKEN (or PRODUCTION_TOKEN) aren't set (environment or .env).");
+    out("CMS_URL and CMS_TOKEN aren't set (environment or .env).");
     return 2;
   }
   const client = createClient(connection);

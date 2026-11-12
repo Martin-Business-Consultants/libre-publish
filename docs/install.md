@@ -281,8 +281,8 @@ secret for the Deploy workflow, then deploy.
 With Settings › Deploy set to GitHub, publishing sends the site repo a
 `repository_dispatch` event of type `cms-publish`. The repo needs a workflow
 that listens for it: copy `docs/cms-publish.yml` into the site's
-`.github/workflows/`, set its `CMS_BASE_URL` and
-`CMS_API_TOKEN` (the read-only Production site token) repository secrets, and
+`.github/workflows/`, set its `CMS_URL` and
+`CMS_TOKEN` (the read-only Production site token) repository secrets, and
 replace its placeholder deploy step with the host's (Cloudflare Pages,
 Netlify and GitHub Pages are sketched in comments). The GitHub token in
 Settings › Deploy needs `contents: write` on that repo to send the event.

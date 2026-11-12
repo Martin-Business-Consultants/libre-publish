@@ -8,7 +8,7 @@
 import { loadEnv } from "vite";
 import { connectionFrom, type Connection } from "./build-connection.js";
 
-export { buildClient, buildConnection, buildState, connectionFrom, keepConnection, keepSchema, TOKEN_VARIABLES, URL_VARIABLES, type Connection } from "./build-connection.js";
+export { buildClient, buildConnection, buildState, connectionFrom, keepConnection, keepSchema, TOKEN_VARIABLE, URL_VARIABLE, type Connection } from "./build-connection.js";
 
 export function resolveConnection(root: string, mode: string, options: { url?: string; token?: string }): Connection | null {
   const env = { ...loadEnv(mode, root, ""), ...process.env };

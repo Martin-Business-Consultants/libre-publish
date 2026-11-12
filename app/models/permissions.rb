@@ -60,7 +60,7 @@ module Permissions
   # Roles for machines rather than people (see ServiceToken).
   #
   # A published site only renders: it needs to read content and nothing else,
-  # so a leaked PRODUCTION_TOKEN reads what the site already shows the world.
+  # so a leaked CMS_TOKEN reads what the site already shows the world.
   SITE_DEFAULT = %w[
     pages:read
     collections:read

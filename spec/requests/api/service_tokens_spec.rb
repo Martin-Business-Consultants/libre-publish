@@ -15,7 +15,7 @@ RSpec.describe "Api service tokens", type: :request do
   # there — issuing against a second role of the same name would test nothing.
   let(:site_role) do
     Role.find_or_create_by!(name: "Production site") do |r|
-      r.description = "Read-only. The role behind a published site's PRODUCTION_TOKEN."
+      r.description = "Read-only. The role behind a published site's CMS_TOKEN."
       r.permissions = Permissions.defaults_for(:site)
     end
   end
@@ -243,7 +243,7 @@ RSpec.describe "Api service tokens", type: :request do
     end
   end
 
-  # The case the whole design is for: a leaked PRODUCTION_TOKEN reads what the
+  # The case the whole design is for: a leaked CMS_TOKEN reads what the
   # site already shows the world, and cannot mint itself something wider.
   describe "a service token acting on this endpoint" do
     def as_service(role)

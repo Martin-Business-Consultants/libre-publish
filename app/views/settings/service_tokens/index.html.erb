@@ -9,7 +9,7 @@
   <div class="stack stack--sm">
     <strong>Which token goes where</strong>
     <ul class="bullet-list">
-      <li>The published site — its <code>CMS_API_TOKEN</code>. Issue it against <strong>Production site</strong> (read-only): the site renders, it never edits, so a leaked secret reads only what the site already shows the world.</li>
+      <li>The published site — its <code>CMS_TOKEN</code>. Issue it against <strong>Production site</strong> (read-only): the site renders, it never edits, so a leaked secret reads only what the site already shows the world.</li>
       <li><code>USER_AGENT_TOKEN</code> — agents and scripts. Issue it against <strong>Agent</strong> (writes drafts, never publishes): changing live content or publishing is refused, and with the Approvals plugin every change waits for a person.</li>
     </ul>
   </div>

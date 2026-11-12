@@ -2,7 +2,7 @@
 
 # JSON API for service tokens — the same surface as Settings → Service tokens,
 # so the `cms` CLI can issue the credential a site needs without a browser.
-# That matters because the place a PRODUCTION_TOKEN has to end up (a Cloudflare
+# That matters because the place a CMS_TOKEN has to end up (a Cloudflare
 # Pages env var, a CI secret) is reached from a terminal, not from the admin UI.
 #
 #   GET  /api/service_tokens

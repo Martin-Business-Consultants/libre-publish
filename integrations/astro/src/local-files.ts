@@ -44,7 +44,7 @@ export async function* textFiles(dir: string): AsyncGenerator<string> {
 /**
  * Copies the CMS files the built site links into `<clientDir>/cms-files/` and
  * points the links at the copies. `hosts` are the CMS's addresses its file
- * URLs can start with (CMS_BASE_URL, and its own public address); `fetchBase`
+ * URLs can start with (CMS_URL, and its own public address); `fetchBase`
  * is where the build reaches it.
  */
 export async function localizeFiles(options: {
@@ -122,7 +122,7 @@ export async function scrubDevVars(serverDir: URL | undefined): Promise<boolean>
   const file = fileURLToPath(new URL(".dev.vars", serverDir));
   if (!existsSync(file)) return false;
   const lines = (await readFile(file, "utf8")).split("\n");
-  const kept = lines.filter((line) => !/^\s*CMS_(BASE_URL|API_TOKEN)\s*=/.test(line));
+  const kept = lines.filter((line) => !/^\s*CMS_(URL|TOKEN)\s*=/.test(line));
   if (kept.length === lines.length) return false;
   await writeFile(file, kept.join("\n"));
   return true;

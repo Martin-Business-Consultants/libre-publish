@@ -215,7 +215,7 @@ cms service-token revoke 3
 ```
 
 The published site runs on a **read-only** token issued against the **Production
-site** role and stored in its environment as `CMS_API_TOKEN`. Yours is a
+site** role and stored in its environment as `CMS_TOKEN`. Yours is a
 different one: `USER_AGENT_TOKEN`, on the **Agent** role, which writes drafts but
 can't publish or change live content. Issuing or revealing either needs `settings:write`.
 
@@ -262,7 +262,7 @@ sites). `cms profiles` lists them; `--profile <name>` or `CMS_PROFILE` picks one
 - Write `USER_AGENT_TOKEN` into `AGENTS.md`, the repo, or a commit. It lives in
   `~/.config/cms/<profile>.env`, mode 0600, and it belongs nowhere else.
 - Write a service token secret anywhere either — not into a file, the site repo,
-  a commit, or a message you leave behind. `PRODUCTION_TOKEN` goes straight into
+  a commit, or a message you leave behind. `CMS_TOKEN` goes straight into
   the host's environment settings and nowhere else.
 - Present unverified work as done. If `npm run build` failed or you couldn't run
   it, say so and open the PR as a draft.

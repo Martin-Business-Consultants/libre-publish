@@ -58,13 +58,14 @@ test("a 404 is a CmsError carrying the CMS's message", async () => {
   await assert.rejects(cms.page("nowhere"), (error) => error instanceof CmsError && error.status === 404 && error.message.includes(missing.message));
 });
 
-test("the connection: CMS_BASE_URL or CMS_URL, CMS_API_TOKEN or PRODUCTION_TOKEN, a trailing /api dropped", () => {
+test("the connection: CMS_URL, CMS_TOKEN, a trailing /api dropped", () => {
   const from = (env) => connectionFrom((name) => env[name]);
-  assert.deepEqual(from({ CMS_BASE_URL: "https://a.test/", CMS_API_TOKEN: "t" }), { url: "https://a.test", token: "t" });
-  assert.deepEqual(from({ CMS_URL: "https://b.test/api/v1", PRODUCTION_TOKEN: "p" }), { url: "https://b.test", token: "p" });
-  assert.deepEqual(from({ CMS_BASE_URL: "https://a.test", CMS_URL: "https://b.test", CMS_API_TOKEN: "t", PRODUCTION_TOKEN: "p" }), { url: "https://a.test", token: "t" }, "the integration's own names first");
+  assert.deepEqual(from({ CMS_URL: "https://a.test/", CMS_TOKEN: "t" }), { url: "https://a.test", token: "t" });
+  assert.deepEqual(from({ CMS_URL: "https://b.test/api/v1", CMS_TOKEN: "p" }), { url: "https://b.test", token: "p" });
+  assert.equal(from({ CMS_BASE_URL: "https://a.test", CMS_API_TOKEN: "t" }), null, "no other names");
+  assert.equal(from({ CMS_URL: "https://b.test", PRODUCTION_TOKEN: "p" }), null, "no other names");
   assert.equal(from({ CMS_URL: "https://b.test" }), null);
-  assert.equal(from({ CMS_URL: "https://b.test", PRODUCTION_TOKEN: " " }), null);
+  assert.equal(from({ CMS_URL: "https://b.test", CMS_TOKEN: " " }), null);
   assert.deepEqual(connectionFrom(() => undefined, { url: "https://o.test", token: "o" }), { url: "https://o.test", token: "o" });
 });
 

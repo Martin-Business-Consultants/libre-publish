@@ -197,7 +197,7 @@ cms service-token revoke 3
 ```
 
 The published Astro site holds a **read-only** token on the **Production site**
-role, stored in its environment as `CMS_API_TOKEN` (what `@librepublish/astro`
+role, stored in its environment as `CMS_TOKEN` (what `@librepublish/astro`
 reads). That is not the token you
 are using: agents run on `USER_AGENT_TOKEN`, which sits on the **Agent** role and
 can write drafts but not publish or change live content. Don't reach for one when the task calls for the other.

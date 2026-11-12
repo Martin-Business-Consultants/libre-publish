@@ -119,7 +119,7 @@ module SiteBootstrap
   MACHINE_ROLES = [
     {
       name:        "Production site",
-      description: "Read-only. The role behind a published site's PRODUCTION_TOKEN.",
+      description: "Read-only. The role behind a published site's CMS_TOKEN.",
       defaults: :site, permissions: Permissions::SITE_DEFAULT
     },
     {

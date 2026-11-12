@@ -22,7 +22,7 @@ Edit outside them; inside, your changes are replaced.
 |---|---|
 | `@librepublish/astro` | The `cms()` integration; content loaders (`/loaders`); live loaders and `cacheHint` (`/live`); a typed client, `linkHref`, `routeParam` and the types (`/client`); forms — `getForm`/`getForms` and the form email helpers (`/forms`); quotes — `commerceEnabled` (`/commerce`); `<Blocks>`, `<Entry>`, `<Image>`, `<Seo>`, `<Form>`, `<QuoteRequest>` (`/components/*.astro`). Forms and Media, the CMS's default plugins, are part of it, and Commerce for a site that sells by quote. Source: github.com/Martin-Business-Consultants/libre-cms-astro. |
 
-Env: `CMS_BASE_URL` (the CMS's origin) and `CMS_API_TOKEN` (the site's
+Env: `CMS_URL` (the CMS's origin) and `CMS_TOKEN` (the site's
 read-only *service token*, Settings › Service tokens). Never commit either.
 A site rendered on demand also needs `CMS_WEBHOOK_SECRET` (Settings ›
 Deploy), and, to purge Cloudflare's cache, `CLOUDFLARE_ZONE_ID` and

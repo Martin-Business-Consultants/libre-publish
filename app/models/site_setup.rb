@@ -4,7 +4,7 @@ require "securerandom"
 
 # Setting up a new install, once: the site's starter content and roles
 # (SiteBootstrap), an owner who can sign in, and the two machine tokens a
-# site needs — the read-only one the Astro build holds (PRODUCTION_TOKEN)
+# site needs — the read-only one the Astro build holds (CMS_TOKEN)
 # and the write-but-not-publish one agents use (USER_AGENT_TOKEN).
 #
 # Idempotent: run it again and it finds the owner and tokens rather than
